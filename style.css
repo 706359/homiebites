@@ -60,19 +60,21 @@ header {
   display: flex;
   align-items: center;
   gap: 16px;
+
 }
 
 .brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  color: #10364a;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    color: #10364a;
 }
 
 .brand img {
-  height: 42px;
-  width: auto;
+    /* border: 2px solid red; */
+  height: 80px;
+  width: 80px;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .12));
 }
 
@@ -183,7 +185,7 @@ header {
   }
 }
 
-/* Hero */
+
 .hero {
   position: relative;
   overflow: hidden;
@@ -304,28 +306,30 @@ header {
 }
 
 .f1 {
-  top: 6%;
-  left: 6%;
+  top: 100%;
+  left: -20%;
+
 }
 
 .f2 {
-  bottom: 8%;
+  bottom: 100%;
   right: 10%;
   animation-delay: 1.2s;
 }
 
 .f3 {
-  top: 50%;
-  right: -6%;
-  animation-delay: .6s;
+    top: 50%;
+    right: -16%;
+    animation-delay: .6s;
 }
+
 
 @keyframes float {
   0%, 100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-50px);
   }
 }
 
@@ -362,6 +366,7 @@ section {
 }
 
 .section-title {
+  justify-self: center;
   font-size: 1.9rem;
   margin: 0 0 18px;
   color: #0f2f44;
@@ -375,7 +380,7 @@ section {
   bottom: 0;
   left: 0;
   height: 3px;
-  width: 60px;
+  width: 100%;
   background: var(--brand-orange);
   border-radius: 3px;
 }
@@ -705,6 +710,7 @@ footer {
 .footer-column h4 {
   color: white;
   margin-top: 0;
+  justify-self: center;
   margin-bottom: 15px;
   font-size: 1.1rem;
 }
@@ -717,6 +723,7 @@ footer {
 
 .footer-column li {
   margin-bottom: 8px;
+  justify-self: center;
 }
 
 .footer-column a {
@@ -784,6 +791,7 @@ footer {
 }
 
 .reveal.in {
+    justify-self: center;
   opacity: 1;
   transform: none;
 }
@@ -908,7 +916,7 @@ footer {
 }
 
 /* Dark mode support */
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --ink: #e7eef5;
     --muted: #a0aec0;
@@ -957,7 +965,7 @@ footer {
   .special-offer {
     background: linear-gradient(135deg, rgba(255, 224, 204, 0.1) 0%, rgba(255, 237, 204, 0.1) 100%);
   }
-}
+} */
 
 /* Print styles */
 @media print {
