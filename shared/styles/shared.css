@@ -1,0 +1,385 @@
+/* =========================================================
+   SHARED CORE STYLES – HOMIEBITES DESIGN SYSTEM
+   Web Only (Fonts handled separately for App)
+   ========================================================= */
+
+/* Web font (DO NOT use in React Native) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@import './variables.css';
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Typography */
+body {
+  font-family: var(--font-primary);
+  color: var(--text-primary);
+  background: var(--bg-white);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================================
+   BUTTON SYSTEM – SINGLE SOURCE OF TRUTH
+   ========================================================= */
+
+/* Base Button */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+
+  font-family: var(--font-primary);
+  text-align: center;
+  text-decoration: none;
+
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  user-select: none;
+
+  /* Skew design */
+  transform: skewX(-8deg);
+  position: relative;
+
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+
+  width: fit-content;
+  max-width: 100%;
+  white-space: normal;
+  box-sizing: border-box;
+}
+
+/* Counter-skew content to keep text readable */
+.btn > * {
+  transform: skewX(8deg);
+  display: inline-block;
+}
+
+/* Disabled */
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Focus (Accessibility) */
+.btn:focus-visible {
+  outline: 2px solid var(--primary-orange);
+  outline-offset: 2px;
+}
+
+/* Active (Press feedback) */
+.btn:active:not(:disabled) {
+  transform: skewX(-8deg) translateY(0);
+  box-shadow: none;
+}
+
+/* ================= VARIANTS ================= */
+
+/* Primary */
+.btn-primary {
+  background: var(--primary-orange);
+  color: var(--white);
+  border-radius: 0;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--orange-hover);
+  box-shadow: 0 6px 16px var(--shadow-orange);
+  transform: skewX(-8deg) translateY(-1px);
+}
+
+/* Secondary */
+.btn-secondary {
+  background: var(--primary-green);
+  color: var(--white);
+  border-radius: 0;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--green-hover);
+  box-shadow: 0 6px 16px var(--shadow-green);
+  transform: skewX(-8deg) translateY(-1px);
+}
+
+/* Outline */
+.btn-outline {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--white);
+  border: 1px solid var(--glass-border);
+  border-radius: 0;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: rgba(54, 54, 54, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--white);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: skewX(-8deg) translateY(-1px);
+}
+
+/* Ghost */
+.btn-ghost {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--white);
+  border: 1px solid var(--glass-border);
+  border-radius: 0;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: rgba(54, 54, 54, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--white);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: skewX(-8deg) translateY(-1px);
+}
+
+/* Text */
+.btn-text {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--white);
+  padding: 0.5rem 1rem;
+  border-radius: 0;
+  border: 1px solid var(--glass-border);
+}
+
+.btn-text:hover:not(:disabled) {
+  background: rgba(54, 54, 54, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--white);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: skewX(-8deg) translateY(-1px);
+}
+
+/* ================= SIZES ================= */
+
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  border-radius: 0;
+}
+
+.btn-large {
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  border-radius: 0;
+}
+
+.btn-full {
+  width: 100%;
+  border-radius: 0;
+}
+
+/* Icon Button */
+.btn-icon {
+  padding: 0.5rem;
+  width: auto;
+  min-width: fit-content;
+  border-radius: 0;
+}
+
+.btn-icon:hover:not(:disabled) {
+  opacity: 0.8;
+  transform: skewX(-8deg) translateY(-1px);
+}
+
+/* ================= QTY BUTTON ================= */
+
+.btn-qty {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+
+  background: var(--light-gray);
+  color: var(--text-primary);
+
+  font-size: 1.2rem;
+  font-weight: 500;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  /* No skew for circular buttons */
+  transform: none;
+}
+
+.btn-qty > * {
+  transform: none;
+}
+
+.btn-qty:hover:not(:disabled) {
+  background: var(--primary-orange);
+  color: var(--white);
+  transform: translateY(-1px);
+}
+
+/* ================= WHATSAPP ================= */
+
+.btn-whatsapp {
+  background: var(--whatsapp-green);
+  color: var(--white);
+  border-radius: 0;
+}
+
+.btn-whatsapp:hover:not(:disabled) {
+  box-shadow: 0 6px 16px rgba(37, 211, 102, 0.35);
+  transform: skewX(-8deg) translateY(-1px);
+}
+
+/* =========================================================
+   LAYOUT HELPERS
+   ========================================================= */
+
+.section-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.section-heading {
+  font-size: clamp(2.4rem, 5vw, 4.5rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 3.5rem;
+  text-align: center;
+  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+}
+
+.section-subtitle {
+  font-size: 1.05rem;
+  color: var(--gray);
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+/* =========================================================
+   LOADER
+   ========================================================= */
+
+.loader-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+}
+
+.loader-inline {
+  padding: 2rem;
+}
+
+.loader-circle {
+  position: relative;
+  border: 4px solid var(--light-gray);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.loader-logo {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  animation: loader-spin 2s linear infinite;
+}
+
+.loader-logo img {
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
+}
+
+.loader-small {
+  width: 60px;
+  height: 60px;
+  border-width: 3px;
+}
+
+.loader-medium {
+  width: 100px;
+  height: 100px;
+  border-width: 4px;
+}
+
+.loader-large {
+  width: 150px;
+  height: 150px;
+  border-width: 5px;
+}
+
+@keyframes loader-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loader-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.95);
+  }
+}
+
+@media (max-width: 768px) {
+  .loader-medium {
+    width: 80px;
+    height: 80px;
+  }
+
+  .loader-large {
+    width: 120px;
+    height: 120px;
+  }
+}

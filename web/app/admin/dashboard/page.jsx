@@ -1,0 +1,8 @@
+'use client';
+
+import AdminDashboard from '../../../../admin/AdminDashboard';
+
+export default function AdminDashboardPage() {
+  return <AdminDashboard onLogout={() => window.location.href = '/admin'} />;
+}
+

@@ -1,0 +1,10 @@
+# HomieBites Robots.txt
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+
+# Sitemap
+Sitemap: https://homiebites.com/sitemap.xml
+
