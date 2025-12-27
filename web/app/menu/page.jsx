@@ -207,7 +207,7 @@ Please confirm this order. Thank you!`;
       <Header onOrderClick={openOrderModal} />
       <div className='menu-page'>
         <div className='menu-header'>
-          <button className='btn btn-text' onClick={() => router.push('/')}>
+          <button className='btn btn-ghost' onClick={() => router.push('/')}>
             ← {t('common.back')}
           </button>
           <h1>{t('menu.title')}</h1>
@@ -285,7 +285,7 @@ Please confirm this order. Thank you!`;
             <div className='cart-sidebar'>
               <div className='cart-header'>
                 <h3>{t('menu.cart')}</h3>
-                <button className='btn btn-text btn-small' onClick={() => setCart({})}>
+                <button className='btn btn-ghost btn-small' onClick={() => setCart({})}>
                   {t('common.remove')}
                 </button>
               </div>
@@ -300,7 +300,7 @@ Please confirm this order. Thank you!`;
                           ₹{item.price} × {item.quantity} = ₹{item.price * item.quantity}
                         </span>
                       </div>
-                      <button className='btn btn-text btn-icon' onClick={() => removeFromCart(key)}>
+                      <button className='btn btn-ghost' onClick={() => removeFromCart(key)}>
                         ×
                       </button>
                     </div>
@@ -340,7 +340,7 @@ Please confirm this order. Thank you!`;
                     <div className='address-selection-header'>
                       <h4>{t('menu.selectAddress')}</h4>
                       <button
-                        className='btn btn-text btn-small'
+                        className='btn btn-ghost btn-small'
                         onClick={() => setUseGuestCheckout(true)}
                       >
                         {t('menu.addNewAddress')}
@@ -385,7 +385,7 @@ Please confirm this order. Thank you!`;
                       <div className='guest-checkout-notice'>
                         <p>{t('menu.guestCheckout')}</p>
                         <button
-                          className='btn btn-outline btn-small'
+                          className='btn btn-ghost btn-small'
                           onClick={() => {
                             setUseGuestCheckout(false);
                             if (user.addresses && user.addresses.length > 0) {

@@ -43,7 +43,7 @@ export default function ErrorPage({ error, reset }) {
             <button onClick={handleReset} className='btn btn-primary'>
               {t('error.tryAgain') || 'Try Again'}
             </button>
-            <Link to='/' className='btn btn-outline'>
+            <Link to='/' className='btn btn-ghost'>
               {t('error.goHome') || 'Go to Homepage'}
             </Link>
           </div>

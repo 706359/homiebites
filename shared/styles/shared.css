@@ -29,7 +29,7 @@ body {
    BUTTON SYSTEM – SINGLE SOURCE OF TRUTH
    ========================================================= */
 
-/* Base Button */
+/* Base Button - NON-NEGOTIABLE */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -39,32 +39,21 @@ body {
   padding: 0.75rem 1.5rem;
   font-size: 0.95rem;
   font-weight: 600;
-  line-height: 1.4;
 
-  font-family: var(--font-primary);
-  text-align: center;
-  text-decoration: none;
-
-  border: none;
   border-radius: 0;
-  cursor: pointer;
-  user-select: none;
+  border: 2px solid transparent;
 
-  /* Skew design */
   transform: skewX(-8deg);
-  position: relative;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
 
   transition:
-    background-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.15s ease,
-    border-color 0.2s ease,
-    color 0.2s ease;
-
-  width: fit-content;
-  max-width: 100%;
-  white-space: normal;
-  box-sizing: border-box;
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.15s ease;
 }
 
 /* Counter-skew content to keep text readable */
@@ -73,187 +62,129 @@ body {
   display: inline-block;
 }
 
+/* Hover lift effect */
+.btn:hover:not(:disabled) {
+  transform: skewX(-8deg) translateY(-1px);
+}
+
+/* Focus (Accessibility) */
+.btn:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 3px;
+}
+
 /* Disabled */
-.btn:disabled {
+.btn:disabled,
+.btn[aria-disabled='true'] {
   opacity: 0.55;
   cursor: not-allowed;
   pointer-events: none;
 }
 
-/* Focus (Accessibility) - Base for all buttons */
-.btn:focus-visible {
-  outline: 3px solid var(--primary-orange);
-  outline-offset: 3px;
-  box-shadow: 0 0 0 2px rgba(196, 92, 45, 0.3);
-}
+/* ================= VARIANTS - ONLY 5 ALLOWED ================= */
 
-/* Active (Press feedback) */
-.btn:active:not(:disabled) {
-  transform: skewX(-8deg) translateY(0);
-  box-shadow: none;
-}
-
-/* ================= VARIANTS ================= */
-
-/* Primary - Green */
+/* 1. PRIMARY - Green → Orange (fade), White text always */
 .btn-primary {
-  background: var(--primary-green);
-  color: var(--white);
-  border-radius: 0;
+  background-color: var(--primary-green);
+  color: #fff;
+  border-color: transparent; /* Explicit transparent border */
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--primary-orange);
-  color: var(--white);
-  box-shadow: 0 6px 16px var(--shadow-orange);
-  transform: skewX(-8deg) translateY(-1px);
+  background-color: var(--primary-orange);
+  border-color: transparent; /* Maintain transparent border on hover */
 }
 
-.btn-primary:focus-visible {
-  outline: 3px solid var(--primary-green);
-  outline-offset: 3px;
-  box-shadow:
-    0 0 0 2px rgba(68, 144, 49, 0.3),
-    0 6px 16px var(--shadow-green);
-}
-
-/* Secondary - Orange */
+/* 2. SECONDARY - Orange → Green (fade), White text always */
 .btn-secondary {
-  background: var(--primary-orange);
-  color: var(--white);
-  border-radius: 0;
+  background-color: var(--primary-orange);
+  color: #fff;
+  border-color: transparent; /* Explicit transparent border */
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: var(--orange-hover);
-  color: var(--white);
-  box-shadow: 0 6px 16px var(--shadow-orange);
-  transform: skewX(-8deg) translateY(-1px);
+  background-color: var(--primary-green);
+  border-color: transparent; /* Maintain transparent border on hover */
 }
 
-.btn-secondary:focus-visible {
-  outline: 3px solid var(--primary-orange);
-  outline-offset: 3px;
-  box-shadow:
-    0 0 0 2px rgba(196, 92, 45, 0.3),
-    0 6px 16px var(--shadow-orange);
-}
-
-/* Outline - Transparent with border, filled on hover */
-.btn-outline {
-  background: transparent;
-  color: var(--primary-orange);
-  border: 2px solid var(--primary-orange);
-  border-radius: 0;
-}
-
-.btn-outline:hover:not(:disabled) {
-  background: var(--primary-orange);
-  color: var(--white);
-  border-color: var(--primary-orange);
-  box-shadow: 0 4px 12px rgba(196, 92, 45, 0.3);
-  transform: skewX(-8deg) translateY(-1px);
-}
-
-.btn-outline:focus-visible {
-  outline: 3px solid var(--primary-orange);
-  outline-offset: 3px;
-  box-shadow:
-    0 0 0 2px rgba(196, 92, 45, 0.3),
-    0 4px 12px rgba(196, 92, 45, 0.3);
-  border-color: var(--primary-orange);
-}
-
-/* Ghost - Transparent with border, solid on hover */
+/* 3. GHOST - Transparent, Orange text + border, Hover → Green text + border, NO filled background */
 .btn-ghost {
-  background: transparent;
+  background-color: transparent;
   color: var(--primary-orange);
-  border: 2px solid var(--primary-orange);
-  border-radius: 0;
+  border-color: var(--primary-orange) !important;
 }
 
 .btn-ghost:hover:not(:disabled) {
-  background: var(--primary-orange);
-  color: var(--white);
-  border-color: var(--primary-orange);
-  box-shadow: 0 6px 16px rgba(196, 92, 45, 0.3);
-  transform: skewX(-8deg) translateY(-1px);
+  background-color: transparent; /* NO filled background */
+  color: var(--primary-green);
+  border-color: var(--primary-green);
 }
 
-.btn-ghost:focus-visible {
-  outline: 3px solid var(--primary-orange);
-  outline-offset: 3px;
-  box-shadow:
-    0 0 0 2px rgba(196, 92, 45, 0.3),
-    0 6px 16px rgba(196, 92, 45, 0.3);
-  border-color: var(--primary-orange);
+/* 4. PUBLIC - Theme-neutral, safe, boring by design */
+.btn-public {
+  background-color: var(--neutral-200, var(--gray-lighter));
+  color: var(--neutral-900, var(--gray-dark));
+  border-color: transparent; /* Explicit transparent border */
 }
 
-/* Text */
-.btn-text {
-  background: var(--primary-orange);
-  color: var(--white);
-  padding: 0.5rem 1rem;
-  border-radius: 0;
-  border: 1px solid var(--primary-orange);
+.btn-public:hover:not(:disabled) {
+  background-color: var(--neutral-300, var(--gray-light));
+  border-color: transparent; /* Maintain transparent border on hover */
 }
 
-.btn-text:hover:not(:disabled) {
-  background: rgba(196, 92, 45, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: var(--white);
-  border-color: rgba(196, 92, 45, 0.3);
-  box-shadow: 0 4px 12px rgba(196, 92, 45, 0.15);
-  transform: skewX(-8deg) translateY(-1px);
+/* 5. SPECIAL - The only extension point via CSS variables */
+.btn-special {
+  background-color: var(--btn-bg, var(--primary-green));
+  color: var(--btn-text, #fff);
+  border-color: var(--btn-border, transparent);
 }
 
-.btn-text:focus-visible {
-  outline: 3px solid var(--primary-orange);
-  outline-offset: 3px;
-  box-shadow:
-    0 0 0 2px rgba(196, 92, 45, 0.3),
-    0 2px 8px rgba(196, 92, 45, 0.15);
-  text-decoration: none;
+.btn-special:hover:not(:disabled) {
+  background-color: var(--btn-bg-hover, var(--primary-orange));
+  border-color: var(
+    --btn-border-hover,
+    var(--btn-border, transparent)
+  ); /* Maintain border on hover */
 }
 
-/* ================= SIZES ================= */
+/* Special button examples via modifiers (DO NOT CREATE NEW CLASSES) */
+.btn-special.whatsapp {
+  --btn-bg: #25d366;
+  --btn-bg-hover: #20ba5a;
+}
+
+.btn-special.danger {
+  --btn-bg: #ef4444;
+  --btn-bg-hover: #dc2626;
+}
+
+.btn-special.admin {
+  --btn-bg: var(--primary-green);
+  --btn-bg-hover: var(--primary-orange);
+}
+
+/* ================= SIZE MODIFIERS (SAFE TO KEEP) ================= */
 
 .btn-small {
   padding: 0.5rem 1rem;
   font-size: 0.85rem;
-  border-radius: 0;
 }
 
 .btn-large {
   padding: 1rem 2.5rem;
   font-size: 1.1rem;
-  border-radius: 0;
 }
 
 .btn-full {
   width: 100%;
-  border-radius: 0;
 }
 
-/* Icon Button */
+/* Icon-only button modifier (utility) */
 .btn-icon {
   padding: 0.5rem;
   width: auto;
   min-width: fit-content;
-  border-radius: 0;
-}
-
-.btn-icon:hover:not(:disabled) {
-  background: rgba(196, 92, 45, 0.1);
-  color: var(--primary-orange);
-  transform: skewX(-8deg) translateY(-1px);
-}
-
-.btn-icon:focus-visible {
-  outline: 3px solid var(--primary-orange);
-  outline-offset: 3px;
-  box-shadow: 0 0 0 2px rgba(196, 92, 45, 0.3);
+  /* Border inherited from base .btn and variant */
 }
 
 /* ================= QTY BUTTON ================= */
@@ -262,6 +193,7 @@ body {
   width: 32px;
   height: 32px;
   border-radius: 50%;
+  border: 2px solid transparent; /* Explicit border for consistency */
 
   background: var(--light-gray);
   color: var(--text-primary);
@@ -285,6 +217,7 @@ body {
 .btn-qty:hover:not(:disabled) {
   background: var(--primary-green);
   color: var(--white);
+  border-color: transparent; /* Maintain transparent border on hover */
   transform: translateY(-1px);
 }
 
@@ -294,28 +227,7 @@ body {
   box-shadow: 0 0 0 2px rgba(68, 144, 49, 0.3);
 }
 
-/* ================= WHATSAPP ================= */
-
-.btn-whatsapp {
-  background: var(--whatsapp-green);
-  color: var(--white);
-  border-radius: 0;
-}
-
-.btn-whatsapp:hover:not(:disabled) {
-  background: #20ba5a;
-  color: var(--white);
-  box-shadow: 0 6px 16px rgba(37, 211, 102, 0.35);
-  transform: skewX(-8deg) translateY(-1px);
-}
-
-.btn-whatsapp:focus-visible {
-  outline: 3px solid var(--whatsapp-green);
-  outline-offset: 3px;
-  box-shadow:
-    0 0 0 2px rgba(37, 211, 102, 0.3),
-    0 6px 16px rgba(37, 211, 102, 0.35);
-}
+/* ================= SIZE MODIFIERS (SAFE TO KEEP) ================= */
 
 /* =========================================================
    LAYOUT HELPERS

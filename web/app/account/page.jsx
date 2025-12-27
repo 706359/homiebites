@@ -52,8 +52,14 @@ export default function AccountPage() {
       phone: currentUser.phone || ''
     });
     
-    const userOrders = getUserOrders();
-    setOrders(userOrders);
+    // Load orders safely
+    try {
+      const userOrders = getUserOrders();
+      setOrders(userOrders || []);
+    } catch (err) {
+      console.error('Error loading orders:', err);
+      setOrders([]);
+    }
   }, [router]);
 
   const handleProfileUpdate = (e) => {

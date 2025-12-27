@@ -153,7 +153,19 @@ export default function MenuPage() {
         setIsLoading(false);
       }
     };
-    loadMenu();
+    
+    // Wrap in try-catch to prevent unhandled errors
+    try {
+      loadMenu().catch((err) => {
+        console.error('loadMenu promise rejected:', err);
+        setIsLoading(false);
+        setMenuData([]);
+      });
+    } catch (err) {
+      console.error('loadMenu threw synchronously:', err);
+      setIsLoading(false);
+      setMenuData([]);
+    }
   }, []);
 
   const addToCart = (categoryId, itemId, itemName, itemPrice) => {
@@ -322,7 +334,7 @@ Please confirm this order. Thank you!`;
       <Header onOrderClick={openOrderModal} />
       <div className='menu-page'>
         <div className='menu-header'>
-          <button className='btn btn-text' onClick={() => navigate('/')}>
+          <button className='btn btn-ghost' onClick={() => navigate('/')}>
             ← {t('common.back')}
           </button>
           <h1>{t('menu.title')}</h1>
@@ -400,7 +412,7 @@ Please confirm this order. Thank you!`;
             <div className='cart-header'>
               <h3>{t('menu.cart')}</h3>
               {Object.keys(cart).length > 0 && (
-                <button className='btn btn-text btn-small' onClick={() => setCart({})}>
+                <button className='btn btn-ghost btn-small' onClick={() => setCart({})}>
                   {t('common.remove')}
                 </button>
               )}
@@ -430,7 +442,7 @@ Please confirm this order. Thank you!`;
                           ₹{item.price} × {item.quantity} = ₹{item.price * item.quantity}
                         </span>
                       </div>
-                      <button className='btn btn-text btn-icon' onClick={() => removeFromCart(key)}>
+                      <button className='btn btn-ghost' onClick={() => removeFromCart(key)}>
                         ×
                       </button>
                     </div>
@@ -473,7 +485,7 @@ Please confirm this order. Thank you!`;
                       <div className='address-selection-header'>
                         <h4>{t('menu.selectAddress')}</h4>
                         <button
-                          className='btn btn-text btn-small'
+                          className='btn btn-ghost btn-small'
                           onClick={() => {
                             setUseGuestCheckout(true);
                             fetchCurrentLocation();
@@ -524,7 +536,7 @@ Please confirm this order. Thank you!`;
                         <div className='guest-checkout-notice'>
                           <p>{t('menu.addNewAddress')}</p>
                           <button
-                            className='btn btn-outline btn-small'
+                            className='btn btn-ghost btn-small'
                             onClick={() => {
                               setUseGuestCheckout(false);
                               const defaultAddress =
@@ -547,7 +559,7 @@ Please confirm this order. Thank you!`;
                         <div className='location-fetch-section'>
                           <button
                             type='button'
-                            className='btn btn-outline btn-small'
+                            className='btn btn-ghost btn-small'
                             onClick={fetchCurrentLocation}
                             disabled={isFetchingLocation}
                           >
@@ -609,7 +621,7 @@ Please confirm this order. Thank you!`;
                       {user && (
                         <button
                           type='button'
-                          className='btn btn-outline btn-small'
+                          className='btn btn-ghost btn-small'
                           onClick={() => {
                             if (!customerInfo.address.trim()) {
                               error(t('menu.addressRequired') || 'Please enter an address');

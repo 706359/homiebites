@@ -1,9 +1,5 @@
 {
-  "extends": [
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "plugin:react/jsx-runtime"
-  ],
+  "extends": ["eslint:recommended", "plugin:react/recommended", "plugin:react/jsx-runtime"],
   "parserOptions": {
     "ecmaVersion": 2020,
     "sourceType": "module",
@@ -21,14 +17,30 @@
       "version": "detect"
     }
   },
-  "ignorePatterns": [
-    "dist/**",
-    "node_modules/**",
-    "build/**"
-  ],
+  "ignorePatterns": ["dist/**", "node_modules/**", "build/**"],
   "rules": {
     "react/prop-types": "off",
-    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
-  }
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "TemplateLiteral[expressions.length=0] > TemplateElement[value.raw=/btn-(outline|text|whatsapp|danger|add-item|view-details|edit-order|delete-order|remove|edit|delete)/]",
+        "message": "Use the 5-button system instead. See docs/BUTTON_VARIANTS_GUIDE.md"
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["**/*.jsx", "**/*.tsx"],
+      "rules": {
+        "no-restricted-syntax": [
+          "warn",
+          {
+            "selector": "JSXAttribute[name.name='className'] > Literal[value=/btn-(outline|text|whatsapp|danger|add-item|view-details|edit-order|delete-order|remove|edit|delete)/]",
+            "message": "Use the 5-button system instead. See docs/BUTTON_VARIANTS_GUIDE.md"
+          }
+        ]
+      }
+    }
+  ]
 }
-

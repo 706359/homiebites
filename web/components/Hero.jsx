@@ -27,7 +27,7 @@ const Hero = ({ onOrderClick }) => {
           <button className='btn btn-primary btn-large' onClick={onOrderClick}>
             <i className='fa-solid fa-utensils'></i> {t('hero.orderNow')}
           </button>
-          <Link to='/menu' className='btn btn-outline btn-large hero-view-menu-btn'>
+          <Link to='/menu' className='btn btn-ghost btn-large hero-view-menu-btn'>
             <i className='fa-solid fa-book-open'></i> {t('hero.viewMenu')}
           </Link>
         </div>

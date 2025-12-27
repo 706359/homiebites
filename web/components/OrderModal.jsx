@@ -13,10 +13,28 @@ const OrderModal = ({ isOpen, onClose }) => {
   const [menuItems, setMenuItems] = useState([]);
 
   useEffect(() => {
-    loadMenuItems();
+    // Wrap in try-catch to prevent unhandled errors
+    try {
+      loadMenuItems().catch((err) => {
+        console.error('loadMenuItems promise rejected:', err);
+        setMenuItems([]);
+      });
+    } catch (err) {
+      console.error('loadMenuItems threw synchronously:', err);
+      setMenuItems([]);
+    }
 
     const handleMenuUpdate = () => {
-      loadMenuItems();
+      // Wrap in try-catch to prevent unhandled errors
+      try {
+        loadMenuItems().catch((err) => {
+          console.error('loadMenuItems promise rejected:', err);
+          setMenuItems([]);
+        });
+      } catch (err) {
+        console.error('loadMenuItems threw synchronously:', err);
+        setMenuItems([]);
+      }
     };
 
     // Listen for storage changes (when localStorage is updated from another tab)

@@ -30,7 +30,7 @@ export default function NotFound() {
             <Link href='/' className='btn btn-primary'>
               {t('error.goHome') || 'Go to Homepage'}
             </Link>
-            <Link href='/menu' className='btn btn-outline'>
+            <Link href='/menu' className='btn btn-ghost'>
               {t('error.viewMenu') || 'View Menu'}
             </Link>
           </div>

@@ -73,7 +73,7 @@ const Gallery = () => {
         </div>
 
         <div className='gallery-cta'>
-          <Link to='/menu' className='btn btn-outline btn-large'>
+          <Link to='/menu' className='btn btn-ghost btn-large'>
             {t('gallery.viewFullMenu')}
           </Link>
         </div>

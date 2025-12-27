@@ -122,30 +122,79 @@ function AppContent() {
 
 function App() {
   useEffect(() => {
-    // Global error handler for unhandled promise rejections
+    // Enhanced global error handler for unhandled promise rejections
     const handleUnhandledRejection = (event) => {
       console.error('Unhandled promise rejection:', event.reason);
-      // Prevent the default browser error handling
+      
+      // Prevent the default browser error handling and window crash
       event.preventDefault();
-      // Log error but don't crash the app
-      if (event.reason) {
-        console.error('Error details:', event.reason);
+      event.stopPropagation();
+      
+      // Log error details safely
+      try {
+        if (event.reason) {
+          console.error('Error details:', event.reason);
+          if (event.reason.stack) {
+            console.error('Stack trace:', event.reason.stack);
+          }
+        }
+      } catch (logError) {
+        console.error('Error logging failed:', logError);
       }
+      
+      // Return false to prevent further error propagation
+      return false;
     };
 
-    // Global error handler for uncaught errors
+    // Enhanced global error handler for uncaught errors
     const handleError = (event) => {
       console.error('Uncaught error:', event.error);
-      // Prevent default error handling
+      
+      // Prevent default error handling and window crash
       event.preventDefault();
+      event.stopPropagation();
+      
+      // Log error details safely
+      try {
+        if (event.error) {
+          console.error('Error object:', event.error);
+          if (event.error.stack) {
+            console.error('Stack trace:', event.error.stack);
+          }
+        }
+        if (event.message) {
+          console.error('Error message:', event.message);
+        }
+        if (event.filename) {
+          console.error('Error in file:', event.filename, 'at line', event.lineno);
+        }
+      } catch (logError) {
+        console.error('Error logging failed:', logError);
+      }
+      
+      // Return false to prevent further error propagation
+      return false;
     };
 
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
-    window.addEventListener('error', handleError);
+    // Handle console errors (for additional safety)
+    const originalConsoleError = console.error;
+    console.error = (...args) => {
+      originalConsoleError.apply(console, args);
+      // Don't crash on console errors
+    };
+
+    // Add all error listeners with capture phase for maximum coverage
+    window.addEventListener('unhandledrejection', handleUnhandledRejection, true);
+    window.addEventListener('error', handleError, true);
+    
+    // Also handle React error boundaries at window level
+    window.addEventListener('react-error', handleError, true);
 
     return () => {
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection, true);
+      window.removeEventListener('error', handleError, true);
+      window.removeEventListener('react-error', handleError, true);
+      console.error = originalConsoleError;
     };
   }, []);
 

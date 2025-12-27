@@ -1,0 +1,29 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "rules": {
+    "selector-class-pattern": [
+      "^btn(-(primary|secondary|ghost|public|special|small|large|full|icon|qty))?$",
+      {
+        "message": "Only use allowed button classes. See docs/BUTTON_VARIANTS_GUIDE.md"
+      }
+    ],
+    "no-restricted-selectors": [
+      [
+        ".btn-outline",
+        ".btn-text",
+        ".btn-whatsapp",
+        ".btn-danger",
+        ".btn-add-item",
+        ".btn-view-details",
+        ".btn-edit-order",
+        ".btn-delete-order",
+        ".btn-remove",
+        ".btn-edit",
+        ".btn-delete"
+      ],
+      {
+        "message": "Use the 5-button system instead. See docs/BUTTON_VARIANTS_GUIDE.md"
+      }
+    ]
+  }
+}

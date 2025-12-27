@@ -28,7 +28,7 @@ export default function NotFoundPage() {
             <Link to='/' className='btn btn-primary'>
               {t('error.goHome') || 'Go to Homepage'}
             </Link>
-            <Link to='/menu' className='btn btn-outline'>
+            <Link to='/menu' className='btn btn-ghost'>
               {t('error.viewMenu') || 'View Menu'}
             </Link>
           </div>

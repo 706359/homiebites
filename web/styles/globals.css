@@ -4093,7 +4093,19 @@ footer {
   margin-bottom: 1.5rem;
 }
 
-/* Legacy: Use .btn .btn-whatsapp instead */
+/* =========================================================
+   LEGACY BUTTON MAPPINGS - REMOVE AFTER v1.2.0
+   =========================================================
+   TODO: Delete all legacy button classes after v1.2.0 release
+   Date: 2025-01-27
+   Target Removal: After v1.2.0 (Q2 2025)
+   
+   These classes exist for backward compatibility only.
+   All JSX has been migrated to the new 5-button system.
+   After v1.2.0, these can be safely removed.
+   ========================================================= */
+
+/* Legacy: Use .btn .btn-special.whatsapp instead */
 .faq-whatsapp-btn {
   display: inline-flex;
   align-items: center;

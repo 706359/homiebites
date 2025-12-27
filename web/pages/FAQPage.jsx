@@ -95,7 +95,7 @@ export default function FAQPage() {
               href={`https://wa.me/919958983578`}
               target='_blank'
               rel='noopener noreferrer'
-              className='btn btn-whatsapp btn-large'
+              className='btn btn-special whatsapp btn-large'
             >
               <i className='fa-brands fa-whatsapp'></i>
               {t('faq.contactWhatsApp') || 'Contact us on WhatsApp'}

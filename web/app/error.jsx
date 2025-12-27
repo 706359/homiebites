@@ -34,7 +34,7 @@ export default function Error({ error, reset }) {
             <button onClick={reset} className='btn btn-primary'>
               {t('error.tryAgain') || 'Try Again'}
             </button>
-            <Link href='/' className='btn btn-outline'>
+            <Link href='/' className='btn btn-ghost'>
               {t('error.goHome') || 'Go to Homepage'}
             </Link>
           </div>

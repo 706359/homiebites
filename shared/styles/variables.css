@@ -25,6 +25,11 @@
   --light-gray: #f5f5f5;
   --white: #ffffff;
 
+  /* Neutral Colors for btn-public */
+  --neutral-200: #e5e7eb;
+  --neutral-300: #d1d5db;
+  --neutral-900: #111827;
+
   /* Border Colors */
   --border-color: #e5e5e5;
   --border-light: #f5f5f5;

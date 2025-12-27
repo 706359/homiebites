@@ -24,7 +24,18 @@ export default function OffersPage() {
       }
     };
 
-    loadOffers();
+    // Wrap in try-catch to prevent unhandled errors
+    try {
+      loadOffers().catch((err) => {
+        console.error('loadOffers promise rejected:', err);
+        setIsLoading(false);
+        setOffers([]);
+      });
+    } catch (err) {
+      console.error('loadOffers threw synchronously:', err);
+      setIsLoading(false);
+      setOffers([]);
+    }
   }, []);
 
   const openOrderModal = () => {

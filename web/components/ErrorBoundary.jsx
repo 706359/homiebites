@@ -13,10 +13,28 @@ class ErrorBoundaryClass extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log error to error reporting service in production
-    if (import.meta.env.PROD) {
-      // You can integrate with error reporting services like Sentry here
+    // Log error safely without throwing
+    try {
       console.error('Error caught by boundary:', error, errorInfo);
+      
+      // Dispatch custom event for window-level error handler
+      if (typeof window !== 'undefined') {
+        const errorEvent = new CustomEvent('react-error', {
+          detail: { error, errorInfo },
+          bubbles: true,
+          cancelable: true,
+        });
+        window.dispatchEvent(errorEvent);
+      }
+      
+      // Log to error reporting service in production (if configured)
+      if (import.meta.env.PROD) {
+        // You can integrate with error reporting services like Sentry here
+        // Example: Sentry.captureException(error, { contexts: { react: errorInfo } });
+      }
+    } catch (logError) {
+      // Even error logging failed, don't crash
+      console.error('Error logging failed:', logError);
     }
   }
 
@@ -62,7 +80,7 @@ function ErrorFallback({ error, resetError }) {
           <button onClick={resetError} className='btn btn-primary'>
             {getTranslation('error.tryAgain')}
           </button>
-          <Link to='/' className='btn btn-outline'>
+          <Link to='/' className='btn btn-ghost'>
             {getTranslation('error.goHome')}
           </Link>
         </div>

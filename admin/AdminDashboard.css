@@ -1292,6 +1292,32 @@
   border-top: 1px solid var(--admin-border);
 }
 
+/* =========================================================
+   LEGACY BUTTON MAPPINGS - REMOVE AFTER v1.2.0
+   =========================================================
+   TODO: Delete all legacy button classes after v1.2.0 release
+   Date: 2025-01-27
+   Target Removal: After v1.2.0 (Q2 2025)
+   
+   These classes exist for backward compatibility only.
+   All JSX has been migrated to the new 5-button system.
+   After v1.2.0, these can be safely removed.
+   ========================================================= */
+
+/* =========================================================
+   LEGACY BUTTON MAPPINGS - REMOVE AFTER v1.2.0
+   =========================================================
+   TODO: Delete all legacy button classes after v1.2.0 release
+   Date: 2025-01-27
+   Target Removal: After v1.2.0 (Q2 2025)
+   
+   These classes exist for backward compatibility only.
+   All JSX has been migrated to the new 5-button system.
+   After v1.2.0, these can be safely removed.
+   
+   Migration: .btn-remove → .btn.btn-special.danger
+   ========================================================= */
+
 .btn-remove {
   background: var(--admin-danger);
   color: white;
@@ -1341,6 +1367,7 @@
   color: var(--admin-secondary);
 }
 
+/* Migration: .btn-add-item → .btn.btn-primary */
 .btn-add-item {
   background: var(--admin-accent);
   color: white;
@@ -1654,56 +1681,10 @@
   flex-wrap: wrap;
 }
 
-.btn-view-details,
-.btn-edit-order,
-.btn-delete-order {
-  background: transparent;
-  border: 2px solid var(--admin-border);
-  color: var(--admin-text);
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: fit-content;
-  font-size: 0.875rem;
-}
-
-.btn-view-details:hover {
-  border-color: var(--admin-accent);
-  color: var(--admin-accent);
-  background: var(--admin-accent-light);
-}
-
-.btn-edit-order {
-  border-color: var(--admin-secondary);
-  color: var(--admin-secondary);
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.btn-edit-order:hover {
-  background: var(--admin-secondary);
-  color: white;
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(196, 92, 45, 0.3);
-}
-
-.btn-delete-order {
-  background: var(--admin-danger);
-  border-color: var(--admin-danger);
-  color: white;
-}
-
-.btn-delete-order:hover {
-  background: #dc2626;
-  border-color: #dc2626;
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-}
+/* Legacy button classes removed - use new system instead */
+/* .btn-view-details → use .btn-secondary */
+/* .btn-edit-order → use .btn-secondary */
+/* .btn-delete-order → use .btn-special.danger */
 
 .orders-table tfoot {
   background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
@@ -3101,65 +3082,71 @@ select:focus {
   transform: skewX(-8deg) !important;
 }
 
-/* Button Variants - All use skew design with different colors */
+/* Button Variants - Mapped to new 5-button system */
 
-/* Primary Variant - Green */
-.admin-dashboard .btn-primary,
-.admin-actions .btn-primary,
+/* =========================================================
+   LEGACY BUTTON MAPPINGS - REMOVE AFTER v1.2.0
+   =========================================================
+   TODO: Delete all legacy button classes after v1.2.0 release
+   Date: 2025-01-27
+   Target Removal: After v1.2.0 (Q2 2025)
+   
+   These classes exist for backward compatibility only.
+   All JSX has been migrated to the new 5-button system.
+   After v1.2.0, these can be safely removed.
+   ========================================================= */
+
+/* =========================================================
+   LEGACY BUTTON MAPPINGS - REMOVE AFTER v1.2.0
+   =========================================================
+   TODO: Delete all legacy button classes after v1.2.0 release
+   Date: 2025-01-27
+   Target Removal: After v1.2.0 (Q2 2025)
+   
+   These classes exist for backward compatibility only.
+   All JSX has been migrated to the new 5-button system.
+   After v1.2.0, these can be safely removed.
+   ========================================================= */
+
+/* Legacy aliases - Map old classes to new system via selectors */
+/* Migration: .btn-view-details → .btn.btn-secondary */
 .btn-view-details {
-  background: var(--admin-accent);
+  background-color: var(--admin-secondary);
   color: white;
 }
 
-.admin-dashboard .btn-primary:hover:not(:disabled),
-.admin-actions .btn-primary:hover:not(:disabled),
 .btn-view-details:hover:not(:disabled) {
-  background: var(--admin-secondary);
-  color: white;
-  transform: skewX(-8deg) translateY(-1px);
-  box-shadow: 0 6px 16px rgba(68, 144, 49, 0.3);
+  background-color: var(--admin-accent);
 }
 
-.admin-dashboard .btn-primary:focus-visible,
-.admin-actions .btn-primary:focus-visible,
-.btn-view-details:focus-visible {
-  outline: 3px solid var(--admin-accent);
-  outline-offset: 3px;
-  box-shadow:
-    0 0 0 2px rgba(68, 144, 49, 0.3),
-    0 6px 16px rgba(68, 144, 49, 0.3);
-}
-
-/* Secondary Variant - Orange */
-.admin-dashboard .btn-secondary,
+/* Migration: .btn-edit-order → .btn.btn-secondary */
 .btn-edit-order {
-  background: var(--admin-secondary);
+  background-color: var(--admin-secondary);
   color: white;
 }
 
-.admin-dashboard .btn-secondary:hover:not(:disabled),
 .btn-edit-order:hover:not(:disabled) {
-  background: var(--admin-accent);
+  background-color: var(--admin-accent);
+}
+
+/* Migration: .btn-add-item → .btn.btn-primary */
+.btn-add-item {
+  background-color: var(--admin-accent);
   color: white;
-  transform: skewX(-8deg) translateY(-1px);
-  box-shadow: 0 6px 16px rgba(196, 92, 45, 0.3);
 }
 
-.admin-dashboard .btn-secondary:focus-visible,
-.btn-edit-order:focus-visible {
-  outline: 3px solid var(--admin-secondary);
-  outline-offset: 3px;
-  box-shadow:
-    0 0 0 2px rgba(196, 92, 45, 0.3),
-    0 6px 16px rgba(196, 92, 45, 0.3);
+.btn-add-item:hover:not(:disabled) {
+  background-color: var(--admin-secondary);
 }
 
-/* Special/Danger Variant - Red */
+/* Migration: Legacy danger classes → .btn.btn-special.danger */
 .admin-dashboard .btn-danger,
 .btn-delete-order,
 .btn-remove,
 .btn-small.btn-danger {
-  background: var(--admin-danger);
+  --btn-bg: var(--admin-danger);
+  --btn-bg-hover: #dc2626;
+  background-color: var(--btn-bg);
   color: white;
 }
 
@@ -3167,21 +3154,7 @@ select:focus {
 .btn-delete-order:hover:not(:disabled),
 .btn-remove:hover:not(:disabled),
 .btn-small.btn-danger:hover:not(:disabled) {
-  background: #dc2626;
-  color: white;
-  transform: skewX(-8deg) translateY(-1px);
-  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
-}
-
-.admin-dashboard .btn-danger:focus-visible,
-.btn-delete-order:focus-visible,
-.btn-remove:focus-visible,
-.btn-small.btn-danger:focus-visible {
-  outline: 3px solid var(--admin-danger);
-  outline-offset: 3px;
-  box-shadow:
-    0 0 0 2px rgba(239, 68, 68, 0.3),
-    0 6px 16px rgba(239, 68, 68, 0.3);
+  background-color: var(--btn-bg-hover);
 }
 
 /* Ensure all buttons use skew design */
@@ -3476,6 +3449,313 @@ select:focus {
 
   .offer-dates-admin {
     flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* Pagination Controls */
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.pagination-info label {
+  font-weight: 500;
+}
+
+.records-per-page-select {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.records-per-page-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.pagination-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.page-numbers .btn {
+  min-width: 2.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.page-numbers .btn.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.page-ellipsis {
+  padding: 0 0.5rem;
+  color: var(--text-secondary);
+}
+
+.pagination-navigation .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Summary Report Styles */
+.summary-info {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.summary-table-container {
+  overflow-x: auto;
+}
+
+.summary-table {
+  width: 100%;
+  min-width: 800px;
+}
+
+.summary-table th {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.75rem;
+  text-align: center;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.summary-table th:first-child {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--primary-color);
+}
+
+.summary-table td {
+  padding: 0.75rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.summary-table td:first-child {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--card-bg);
+  font-weight: 500;
+}
+
+.address-cell {
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.amount-cell {
+  min-width: 100px;
+  color: var(--text-primary);
+}
+
+.grand-total-cell {
+  font-weight: 600;
+  color: var(--primary-color);
+  background: rgba(var(--primary-rgb), 0.1);
+}
+
+.summary-total-row {
+  background: var(--card-bg);
+  font-weight: 600;
+}
+
+.summary-total-row td {
+  border-top: 2px solid var(--primary-color);
+  padding: 1rem 0.75rem;
+}
+
+.month-total-cell {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.summary-table tbody tr:hover {
+  background: rgba(var(--primary-rgb), 0.05);
+}
+
+.summary-table tbody tr:nth-child(even) {
+  background: rgba(var(--primary-rgb), 0.02);
+}
+
+.summary-table tbody tr:nth-child(even):hover {
+  background: rgba(var(--primary-rgb), 0.08);
+}
+
+@media (max-width: 768px) {
+  .pagination-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pagination-navigation {
+    gap: 0.25rem;
+  }
+
+  .page-numbers .btn {
+    min-width: 2rem;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .summary-info {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* Customer Details Modal */
+.customer-details-modal {
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.customer-details-section,
+.customer-orders-section {
+  margin-bottom: 2rem;
+}
+
+.customer-details-section h4,
+.customer-orders-section h4 {
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  font-size: 1.1rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 150px;
+}
+
+.detail-value {
+  color: var(--text-primary);
+  text-align: right;
+}
+
+.customer-orders-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.customer-order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.customer-order-item > div {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.customer-order-item strong {
+  color: var(--primary-color);
+}
+
+.days-ago {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-left: 0.5rem;
+}
+
+.status-badge.status-active {
+  background: #10b981;
+  color: white;
+}
+
+.status-badge.status-inactive {
+  background: #6b7280;
+  color: white;
+}
+
+.address-cell {
+  max-width: 250px;
+  word-break: break-word;
+}
+
+.orders-table tbody tr.selected {
+  background: rgba(var(--primary-rgb), 0.1);
+}
+
+@media (max-width: 768px) {
+  .customer-details-modal {
+    max-width: 95vw;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .detail-value {
+    text-align: left;
+  }
+
+  .customer-order-item {
+    flex-direction: column;
+    align-items: flex-start;
     gap: 0.5rem;
   }
 }

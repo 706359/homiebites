@@ -48,6 +48,18 @@ export const adminFeatures = {
     name: 'Offers & Discounts',
     icon: 'fa-tag',
     description: 'Create and manage special offers and discounts'
+  },
+  summary: {
+    enabled: true,
+    name: 'Summary Report',
+    icon: 'fa-table',
+    description: 'View orders in Excel-style summary format with monthly totals'
+  },
+  customers: {
+    enabled: true,
+    name: 'Customers & Addresses',
+    icon: 'fa-address-book',
+    description: 'View all customer addresses with order history and statistics'
   }
 }
 
