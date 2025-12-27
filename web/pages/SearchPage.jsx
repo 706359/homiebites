@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getMenuData } from '../lib/menuData';
+import { getMenuDataSync } from '../lib/menuData';
 import '../styles/globals.css';
 
 export default function SearchPage() {
@@ -11,10 +11,10 @@ export default function SearchPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
-  const openOrderModal = () => setIsOrderModalOpen(true);
-  const closeOrderModal = () => setIsOrderModalOpen(false);
+  const openOrderModal = () => {
+    // Order modal functionality can be added here if needed
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -23,7 +23,7 @@ export default function SearchPage() {
       return;
     }
 
-    const menuData = getMenuData();
+    const menuData = getMenuDataSync();
     const query = searchQuery.toLowerCase();
     const results = [];
 

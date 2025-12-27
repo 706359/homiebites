@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -29,11 +27,6 @@ const ReviewForm = ({ onReviewSubmitted, onClose }) => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('homiebites_token');
-      const headers = {
-        'Content-Type': 'application/json',
-      };
-
       const api = (await import('../lib/api')).default;
       const data = await api.createReview(formData);
 

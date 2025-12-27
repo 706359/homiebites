@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useRef, useState } from 'react';
 import { getLanguageName, getSupportedLanguages } from '../../shared/utils/i18n';
 import { useLanguage } from '../contexts/LanguageContext';

@@ -8,11 +8,11 @@ import '../../styles/globals.css';
 
 export default function FAQPage() {
   const { t } = useLanguage();
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [openIndex, setOpenIndex] = useState(null);
 
-  const openOrderModal = () => setIsOrderModalOpen(true);
-  const closeOrderModal = () => setIsOrderModalOpen(false);
+  const openOrderModal = () => {
+    // Order modal functionality can be added here if needed
+  };
 
   const faqs = [
     {

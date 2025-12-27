@@ -1,9 +1,14 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useNotification } from '../contexts/NotificationContext';
 
 const Footer = ({ onOrderClick }) => {
   const { t } = useLanguage();
+  const { success, error: showError } = useNotification();
   const navigate = useNavigate();
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
 
   const handleHashLink = (e, hash) => {
     e.preventDefault();
@@ -37,6 +42,41 @@ const Footer = ({ onOrderClick }) => {
         }
       }, 300);
     }
+  };
+
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
+    if (!newsletterEmail || !newsletterEmail.includes('@')) {
+      showError(t('footer.newsletterInvalidEmail') || 'Please enter a valid email address');
+      return;
+    }
+
+    setIsSubscribing(true);
+
+    // Store newsletter subscription in localStorage
+    const subscriptions = JSON.parse(localStorage.getItem('homiebites_newsletter') || '[]');
+    const emailExists = subscriptions.some((sub) => sub.email === newsletterEmail.toLowerCase());
+
+    if (emailExists) {
+      showError(t('footer.newsletterAlreadySubscribed') || 'This email is already subscribed');
+      setIsSubscribing(false);
+      return;
+    }
+
+    const subscription = {
+      email: newsletterEmail.toLowerCase(),
+      subscribedAt: new Date().toISOString(),
+    };
+
+    subscriptions.push(subscription);
+    localStorage.setItem('homiebites_newsletter', JSON.stringify(subscriptions));
+
+    setNewsletterEmail('');
+    success(
+      t('footer.newsletterSuccess') ||
+        'Thank you for subscribing! You will receive special offers via email.'
+    );
+    setIsSubscribing(false);
   };
 
   return (
@@ -123,10 +163,39 @@ const Footer = ({ onOrderClick }) => {
             <li className='footer-note'>{t('footer.emergencyDelivery')}</li>
           </ul>
         </div>
+
+        <div className='footer-column footer-newsletter'>
+          <h4>{t('footer.newsletterTitle') || 'Newsletter'}</h4>
+          <p className='footer-newsletter-desc'>
+            {t('footer.newsletterDesc') || 'Subscribe to get special offers and updates'}
+          </p>
+          <form className='footer-newsletter-form' onSubmit={handleNewsletterSubmit}>
+            <input
+              type='email'
+              placeholder={t('footer.newsletterPlaceholder') || 'Enter your email'}
+              value={newsletterEmail}
+              onChange={(e) => setNewsletterEmail(e.target.value)}
+              required
+              disabled={isSubscribing}
+            />
+            <button type='submit' className='btn btn-primary' disabled={isSubscribing}>
+              {isSubscribing
+                ? t('footer.newsletterSubscribing') || 'Subscribing...'
+                : t('footer.newsletterSubscribe') || 'Subscribe'}
+            </button>
+          </form>
+        </div>
       </div>
 
       <div className='footer-bottom'>
         <p>{t('footer.copyright')}</p>
+        <div className='footer-legal-links'>
+          <Link to='/privacy'>Privacy Policy</Link>
+          <span className='footer-separator'>|</span>
+          <Link to='/terms'>Terms of Service</Link>
+          <span className='footer-separator'>|</span>
+          <Link to='/disclaimer'>Legal Disclaimer</Link>
+        </div>
       </div>
     </footer>
   );

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
+import api from '../lib/api';
 import '../styles/login.css';
 
 export default function LoginPage() {
@@ -31,16 +32,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: loginForm.email,
-          password: loginForm.password,
-        }),
-      });
-
-      const data = await response.json();
+      const data = await api.login(loginForm.email, loginForm.password);
 
       if (data.success) {
         localStorage.setItem('homiebites_token', data.token);
@@ -53,7 +45,7 @@ export default function LoginPage() {
         showError(errorMsg);
       }
     } catch (err) {
-      const errorMsg = 'Connection error. Please try again.';
+      const errorMsg = err.message || 'Connection error. Please try again.';
       setError(errorMsg);
       showError(errorMsg);
     }
@@ -82,18 +74,12 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: registerForm.name,
-          email: registerForm.email,
-          phone: registerForm.phone,
-          password: registerForm.password,
-        }),
+      const data = await api.register({
+        name: registerForm.name,
+        email: registerForm.email,
+        phone: registerForm.phone,
+        password: registerForm.password,
       });
-
-      const data = await response.json();
 
       if (data.success) {
         localStorage.setItem('homiebites_token', data.token);
@@ -106,7 +92,7 @@ export default function LoginPage() {
         showError(errorMsg);
       }
     } catch (err) {
-      const errorMsg = 'Connection error. Please try again.';
+      const errorMsg = err.message || 'Connection error. Please try again.';
       setError(errorMsg);
       showError(errorMsg);
     }

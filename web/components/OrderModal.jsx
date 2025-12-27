@@ -1,9 +1,7 @@
-'use client';
-
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
-import { getMenuData } from '../lib/menuData';
+import { getMenuData, getMenuDataSync } from '../lib/menuData';
 
 const OrderModal = ({ isOpen, onClose }) => {
   const { t } = useLanguage();
@@ -39,19 +37,36 @@ const OrderModal = ({ isOpen, onClose }) => {
     };
   }, []);
 
-  const loadMenuItems = () => {
-    const menuData = getMenuData();
-    const flatItems = [];
-    menuData.forEach((category) => {
-      category.items.forEach((item) => {
-        flatItems.push({
-          id: `${category.id}-${item.id}`,
-          name: item.name,
-          price: item.price,
+  const loadMenuItems = async () => {
+    try {
+      const menuData = await getMenuData();
+      const flatItems = [];
+      menuData.forEach((category) => {
+        category.items.forEach((item) => {
+          flatItems.push({
+            id: `${category.id}-${item.id}`,
+            name: item.name,
+            price: item.price,
+          });
         });
       });
-    });
-    setMenuItems(flatItems);
+      setMenuItems(flatItems);
+    } catch (error) {
+      console.error('Error loading menu items:', error);
+      // Fallback to sync version
+      const menuData = getMenuDataSync();
+      const flatItems = [];
+      menuData.forEach((category) => {
+        category.items.forEach((item) => {
+          flatItems.push({
+            id: `${category.id}-${item.id}`,
+            name: item.name,
+            price: item.price,
+          });
+        });
+      });
+      setMenuItems(flatItems);
+    }
   };
 
   useEffect(() => {
@@ -71,7 +86,8 @@ const OrderModal = ({ isOpen, onClose }) => {
       if (newQuantity < 0) return prev;
       const item = menuItems.find((i) => i.id === itemId);
       if (newQuantity === 0) {
-        const { [itemId]: removed, ...rest } = prev;
+        // eslint-disable-next-line no-unused-vars
+        const { [itemId]: _removed, ...rest } = prev;
         if (item) info(`${item.name} removed from order`);
         return rest;
       }

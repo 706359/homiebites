@@ -1,14 +1,14 @@
 // Centralized API configuration and utilities
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export const api = {
   baseURL: API_BASE_URL,
-  
+
   async request(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
     const token = typeof window !== 'undefined' ? localStorage.getItem('homiebites_token') : null;
-    
+
     const config = {
       ...options,
       headers: {
@@ -20,15 +20,34 @@ export const api = {
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
-      
+
+      // Handle non-JSON responses
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          throw new Error(`Invalid JSON response: ${jsonError.message}`);
+        }
+      } else {
+        const text = await response.text();
+        throw new Error(`Expected JSON but got: ${text.substring(0, 100)}`);
+      }
+
       if (!response.ok) {
         throw new Error(data.error || `HTTP error! status: ${response.status}`);
       }
-      
+
       return data;
     } catch (error) {
       console.error('API request failed:', error);
+      // Re-throw with more context
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error(
+          'Network error: Unable to connect to server. Please check your connection.'
+        );
+      }
       throw error;
     }
   },
@@ -72,6 +91,30 @@ export const api = {
     return this.request('/api/orders/my-orders');
   },
 
+  // Admin order endpoints
+  async getAllOrders(filters = {}) {
+    const params = new URLSearchParams();
+    if (filters.status) params.append('status', filters.status);
+    if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+    if (filters.dateTo) params.append('dateTo', filters.dateTo);
+    if (filters.search) params.append('search', filters.search);
+    const queryString = params.toString();
+    return this.request(`/api/orders${queryString ? '?' + queryString : ''}`);
+  },
+
+  async updateOrder(orderId, orderData) {
+    return this.request(`/api/orders/${orderId}`, {
+      method: 'PUT',
+      body: JSON.stringify(orderData),
+    });
+  },
+
+  async deleteOrder(orderId) {
+    return this.request(`/api/orders/${orderId}`, {
+      method: 'DELETE',
+    });
+  },
+
   // Review endpoints
   async createReview(reviewData) {
     return this.request('/api/reviews', {
@@ -86,7 +129,52 @@ export const api = {
     if (limit) params.append('limit', limit.toString());
     return this.request(`/api/reviews?${params.toString()}`);
   },
+
+  // Offers endpoints
+  async getOffers() {
+    return this.request('/api/offers');
+  },
+
+  async updateOffers(offersData) {
+    return this.request('/api/offers', {
+      method: 'PUT',
+      body: JSON.stringify({ offers: offersData }),
+    });
+  },
+
+  // Password recovery endpoints
+  async forgotPassword(email) {
+    return this.request('/api/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  async verifyOTP(email, otp) {
+    return this.request('/api/auth/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    });
+  },
+
+  async verifyIdentity(email, verificationToken, panCard, adminId) {
+    return this.request('/api/auth/verify-identity', {
+      method: 'POST',
+      body: JSON.stringify({ email, verificationToken, panCard, adminId }),
+    });
+  },
+
+  async resetPassword(email, resetToken, newPassword) {
+    return this.request('/api/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ email, resetToken, newPassword }),
+    });
+  },
+
+  // Admin user endpoints
+  async getAllUsers() {
+    return this.request('/api/auth/users');
+  },
 };
 
 export default api;
-

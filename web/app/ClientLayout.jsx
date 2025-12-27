@@ -6,6 +6,23 @@ import NotificationWrapper from '../components/NotificationWrapper';
 import { LanguageProvider, useLanguage } from '../contexts/LanguageContext';
 import { NotificationProvider } from '../contexts/NotificationContext';
 
+function ScrollToTop() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    // Scroll to top on route change, unless there's a hash
+    const hash = window.location.hash;
+    if (!hash || hash === '#') {
+      window.scrollTo({
+        top: 0,
+        behavior: 'instant',
+      });
+    }
+  }, [pathname]);
+
+  return null;
+}
+
 function HashScrollHandler() {
   const pathname = usePathname();
 
@@ -61,6 +78,7 @@ function ClientLayoutContent({ children }) {
   return (
     <NotificationProvider>
       <LanguageHandler />
+      <ScrollToTop />
       <HashScrollHandler />
       {children}
       <NotificationWrapper />

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import { getOffersDataSync } from '../lib/offersData';
 import { getCurrentUser, isUserLoggedIn } from '../lib/userAuth';
 import LanguageSwitcher from './LanguageSwitcher';
 
@@ -11,6 +12,7 @@ const Header = ({ onOrderClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [location, setLocation] = useState('Panchsheel Greens');
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [hasActiveOffers, setHasActiveOffers] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
@@ -27,7 +29,7 @@ const Header = ({ onOrderClick }) => {
       setTimeout(() => {
         const targetElement = document.querySelector(hash);
         if (targetElement) {
-          const headerOffset = 70;
+          const headerOffset = 60;
           const elementPosition = targetElement.getBoundingClientRect().top;
           const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
           window.scrollTo({
@@ -42,7 +44,7 @@ const Header = ({ onOrderClick }) => {
       setTimeout(() => {
         const targetElement = document.querySelector(hash);
         if (targetElement) {
-          const headerOffset = 70;
+          const headerOffset = 60;
           const elementPosition = targetElement.getBoundingClientRect().top;
           const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
           window.scrollTo({
@@ -58,6 +60,24 @@ const Header = ({ onOrderClick }) => {
     if (isUserLoggedIn()) {
       setUser(getCurrentUser());
     }
+
+    // Check if there are active offers
+    const checkOffers = () => {
+      const offers = getOffersDataSync();
+      setHasActiveOffers(offers.length > 0);
+    };
+
+    checkOffers();
+
+    // Listen for offers updates
+    const handleOffersUpdate = () => {
+      checkOffers();
+    };
+
+    window.addEventListener('offersDataUpdated', handleOffersUpdate);
+    return () => {
+      window.removeEventListener('offersDataUpdated', handleOffersUpdate);
+    };
   }, []);
 
   useEffect(() => {
@@ -274,6 +294,11 @@ const Header = ({ onOrderClick }) => {
         <Link to='/search' onClick={handleNavClick}>
           {t('header.search')}
         </Link>
+        {hasActiveOffers && (
+          <Link to='/offers' onClick={handleNavClick}>
+            {t('header.offers') || 'Offers'}
+          </Link>
+        )}
         <Link to='/support' onClick={handleNavClick}>
           {t('header.support')}
         </Link>

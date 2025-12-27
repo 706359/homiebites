@@ -15,7 +15,6 @@ export default function MenuPage() {
   const { t } = useLanguage();
   const { success, error, info } = useNotification();
   const router = useRouter();
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [menuData, setMenuData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [cart, setCart] = useState({});
@@ -145,7 +144,7 @@ export default function MenuPage() {
       return;
     }
 
-    const items = Object.entries(cart).map(([key, item]) => ({
+    const items = Object.entries(cart).map(([_key, item]) => ({
       name: item.name,
       quantity: item.quantity,
       price: item.price,
@@ -199,8 +198,9 @@ Please confirm this order. Thank you!`;
     success(t('order.orderPlaced') || 'Order sent to WhatsApp! Our team will confirm shortly.');
   };
 
-  const openOrderModal = () => setIsOrderModalOpen(true);
-  const closeOrderModal = () => setIsOrderModalOpen(false);
+  const openOrderModal = () => {
+    // Order modal functionality can be added here if needed
+  };
 
   return (
     <>

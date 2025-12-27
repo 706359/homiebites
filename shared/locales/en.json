@@ -44,7 +44,8 @@
     "menu": "Menu",
     "search": "Search",
     "support": "Support",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "offers": "Offers"
   },
   "hero": {
     "title": "Authentic Desi Home Food",
@@ -57,13 +58,18 @@
     "title": "Our Features",
     "subtitle": "Discover what makes HomieBites the perfect choice for your daily meals",
     "pureVeg": "100% Pure Vegetarian",
-    "pureVegDesc": "Fresh, wholesome ingredients prepared with care",
+    "pureVegDesc": "Fresh, wholesome ingredients prepared with care and love",
     "lessOil": "Less Oil & Healthy",
-    "lessOilDesc": "Healthy, balanced meals with minimal oil",
+    "lessOilDesc": "Healthy, balanced meals with minimal oil and maximum nutrition",
     "homeTaste": "Home-like Taste",
-    "homeTasteDesc": "Authentic desi flavors that remind you of home",
+    "homeTasteDesc": "Authentic desi flavors that remind you of home-cooked meals",
     "onTime": "Fresh Daily Delivery",
-    "onTimeDesc": "Meals delivered fresh to your doorstep every day"
+    "onTimeDesc": "Meals delivered fresh to your doorstep every single day",
+    "freshDaily": "Cooked Fresh Daily",
+    "freshDailyDesc": "Every meal is prepared fresh daily, never frozen or reheated",
+    "madeWithLove": "Made with Love",
+    "madeWithLoveDesc": "Every dish is prepared with care, passion, and traditional recipes",
+    "ctaText": "Ready to experience the difference? Order your first meal today!"
   },
   "rates": {
     "title": "Rate List",
@@ -84,16 +90,16 @@
     "title": "Customer Reviews",
     "review1": "The food tastes just like home! I've been ordering their tiffin for 3 months now and never been disappointed. Great quality and always on time.",
     "review2": "As a working professional, HomieBites has been a lifesaver. The food is healthy, tasty and reminds me of my mother's cooking. Highly recommended!",
-    "review3": "I love their khichdi tiffin! Perfect balance of spices and always delivered hot. The weekly subscription offer is a great deal too."
+    "review3": "I love their khichdi tiffin! Perfect balance of spices and always delivered hot. The monthly subscription offer is a great deal too."
   },
   "specialOffer": {
     "intro": "Perfect for busy professionals and families",
-    "title": "Weekly Subscription Offer",
-    "text": "Subscribe for a full week (7 days) and get",
-    "discount": "10% OFF",
+    "title": "Monthly Subscription Offer",
+    "text": "Subscribe for a full month (30 days) and get",
+    "discount": "7% OFF",
     "onTotal": "on your total bill! Perfect for busy professionals and families.",
     "getDeal": "Get This Deal",
-    "whatsappMessage": "I'm interested in the weekly subscription offer"
+    "whatsappMessage": "I'm interested in the monthly subscription offer"
   },
   "about": {
     "title": "About HomieBites",
@@ -145,7 +151,7 @@
     },
     "benefit1": "Hygienic kitchen with strict quality control",
     "benefit2": "Affordable pricing for daily meals",
-    "benefit3": "Flexible ordering - daily or weekly subscription",
+    "benefit3": "Flexible ordering - daily or monthly subscription",
     "benefit4": "Traditional recipes passed down through generations"
   },
   "contact": {
@@ -193,6 +199,14 @@
     "serviceAreas": "Service Areas",
     "panchsheelGreens1": "Panchsheel Greens-1",
     "emergencyDelivery": "Only for some emergency, we can hand over order at main gate for other societies",
+    "newsletterTitle": "Newsletter",
+    "newsletterDesc": "Subscribe to get special offers and updates",
+    "newsletterPlaceholder": "Enter your email",
+    "newsletterSubscribe": "Subscribe",
+    "newsletterSubscribing": "Subscribing...",
+    "newsletterSuccess": "Thank you for subscribing! You will receive special offers via email.",
+    "newsletterInvalidEmail": "Please enter a valid email address",
+    "newsletterAlreadySubscribed": "This email is already subscribed",
     "copyright": "© 2024 HomieBites. All rights reserved. | Home-cooked meals delivered with love ❤️"
   },
   "menu": {
@@ -214,8 +228,19 @@
     "freeDeliveryMessage": "Add ₹{amount} more for free delivery",
     "grandTotal": "Grand Total",
     "emptyCart": "Your cart is empty",
+    "emptyCartTitle": "Your cart is empty",
+    "emptyCartMessage": "Add some delicious and healthy food to get started!",
     "viewMenu": "View Menu",
-    "noItems": "No menu items available"
+    "noItems": "No menu items available",
+    "selectSavedAddress": "Select Saved Address",
+    "useCurrentLocation": "Use Current Location",
+    "fetchingLocation": "Fetching...",
+    "locationFetched": "Location fetched successfully",
+    "locationFetchError": "Failed to fetch location. Please enter manually.",
+    "locationPermissionDenied": "Location permission denied. Please enter address manually.",
+    "locationNotSupported": "Location services not available",
+    "saveAddressForFuture": "Save Address for Future",
+    "addressRequired": "Please enter an address"
   },
   "login": {
     "title": "Welcome Back",
@@ -252,7 +277,14 @@
     "landmark": "Landmark",
     "pincode": "Pincode",
     "saveAddress": "Save Address",
-    "removeAddress": "Remove"
+    "removeAddress": "Remove",
+    "welcome": "Welcome back",
+    "confirmLogout": "Are you sure you want to logout?",
+    "loggedOut": "Logged out successfully",
+    "savedAddress": "saved address(es)",
+    "profilePicture": "Profile Picture",
+    "changeProfilePicture": "Change Profile Picture",
+    "uploadProfilePicture": "Upload Profile Picture"
   },
   "order": {
     "customerName": "Customer Name",
@@ -322,7 +354,7 @@
       "item2": "Pricing information",
       "answer2": "Our prices start from ₹100. Full tiffin meals range from ₹100-₹150. Prices are updated regularly and displayed on our Menu page.",
       "item3": "Special offers and discounts",
-      "answer3": "We offer weekly subscription discounts (10% off for 7 days). Check our Special Offers section for current promotions and deals.",
+      "answer3": "We offer monthly subscription discounts (7% off for 30 days). Check our Special Offers section for current promotions and deals.",
       "item4": "Can I customize my meal?",
       "answer4": "Yes! Our Mix & Match Tiffin option allows you to customize your meal. Contact us via WhatsApp to discuss your preferences."
     },
@@ -334,6 +366,7 @@
   },
   "reviews": {
     "writeReview": "Write a Review",
+    "noReviewsTitle": "Be the First to Share Your Experience!",
     "noReviews": "No reviews yet. Be the first to review!",
     "submitReview": "Submit Your Review",
     "submitSuccess": "Thank you! Your review has been submitted and will be published after admin approval.",
@@ -390,7 +423,7 @@
     "vegetarian": "✅ Yes! All our food is 100% pure vegetarian. We use fresh, quality ingredients and prepare everything in a clean, hygienic kitchen. No meat, eggs, or animal products.",
     "quality": "✨ Quality & Freshness:\n\n• Cooked fresh daily\n• 100% pure vegetarian\n• Less oil & balanced spices\n• Home-like taste\n• Clean & hygienic kitchen\n• Quality ingredients\n\nWe take pride in serving fresh, home-style meals!",
     "oilSpices": "We use less oil and balanced spices in our cooking to ensure healthy, home-style meals. Our food is not too oily or too spicy - perfect for everyone!",
-    "subscription": "🎁 Special Offers:\n\n• Weekly Subscription: 10% OFF for 7 days\n• Perfect for busy professionals\n• Contact us for monthly plans\n\nSay \"order\" to start, or contact +91-9958983578 for subscription details!",
+    "subscription": "🎁 Special Offers:\n\n• Monthly Subscription: 7% OFF for 30 days\n• Perfect for busy professionals and families\n• Contact us for more details\n\nSay \"order\" to start, or contact +91-9958983578 for subscription details!",
     "help": "I'm here to help! I can assist with:\n\n• Placing orders\n• Menu & pricing\n• Delivery information\n• Account management\n• Payment methods\n• Special offers\n\nWhat would you like to know? Or contact us: +91-9958983578",
     "about": "🍛 About HomieBites:\n\nWe serve fresh, home-cooked vegetarian meals prepared with care. Based at A1-405, Panchsheel Greens, we deliver daily tiffins throughout the neighborhood.\n\nFounded in Feb 2024, our mission is to provide convenient access to healthy, home-style meals at affordable prices.\n\n📱 Learn more: /#about\n📸 Gallery: /#gallery",
     "orderCancelled": "Order cancelled. How else can I help you?",
@@ -402,6 +435,15 @@
     "openingGallery": "Opening gallery...",
     "openingContact": "Opening contact section...",
     "openingHome": "Going to homepage..."
+  },
+  "offers": {
+    "title": "Special Offers & Discounts",
+    "subtitle": "Discover our latest deals and special offers",
+    "noOffers": "No active offers at the moment. Check back soon for exciting deals!",
+    "getDeal": "Get This Deal",
+    "terms": "Terms & Conditions",
+    "starts": "Starts",
+    "ends": "Ends"
   },
   "error": {
     "title": "Something went wrong!",

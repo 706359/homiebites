@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Chatbot from '../components/Chatbot';
+import ConfirmModal from '../components/ConfirmModal';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import OrderModal from '../components/OrderModal';
@@ -19,9 +20,11 @@ export default function AccountPage() {
   const { t } = useLanguage();
   const { success, error: showError } = useNotification();
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
   const [orders, setOrders] = useState([]);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
 
   const openOrderModal = () => setIsOrderModalOpen(true);
@@ -31,6 +34,7 @@ export default function AccountPage() {
     name: '',
     email: '',
     phone: '',
+    profilePicture: null,
   });
 
   const [addressForm, setAddressForm] = useState({
@@ -42,22 +46,60 @@ export default function AccountPage() {
   });
 
   useEffect(() => {
-    const currentUser = getCurrentUser();
-    if (!currentUser) {
-      navigate('/login');
-      return;
-    }
+    const checkAuth = () => {
+      const currentUser = getCurrentUser();
+      if (!currentUser) {
+        navigate('/login');
+        return;
+      }
 
-    setUser(currentUser);
-    setProfileForm({
-      name: currentUser.name || '',
-      email: currentUser.email || '',
-      phone: currentUser.phone || '',
-    });
+      setUser(currentUser);
+      setProfileForm({
+        name: currentUser.name || '',
+        email: currentUser.email || '',
+        phone: currentUser.phone || '',
+        profilePicture: currentUser.profilePicture || null,
+      });
 
-    const userOrders = getUserOrders();
-    setOrders(userOrders);
+      // Load orders (async - API first, localStorage fallback)
+      getUserOrders()
+        .then((userOrders) => {
+          setOrders(userOrders);
+        })
+        .catch((err) => {
+          console.error('Error loading orders:', err);
+          // Fallback to empty array
+          setOrders([]);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    };
+
+    checkAuth();
   }, [navigate]);
+
+  const handleProfilePictureChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        showError('Please select an image file');
+        return;
+      }
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        showError('Image size should be less than 2MB');
+        return;
+      }
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileForm({ ...profileForm, profilePicture: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleProfileUpdate = (e) => {
     e.preventDefault();
@@ -92,9 +134,33 @@ export default function AccountPage() {
   };
 
   const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
     logoutUser();
+    success(t('account.loggedOut') || 'Logged out successfully');
     navigate('/');
   };
+
+  if (loading) {
+    return (
+      <>
+        <Header onOrderClick={openOrderModal} />
+        <div className='account-page'>
+          <div className='account-header'>
+            <h1>{t('account.title')}</h1>
+          </div>
+          <div className='account-container'>
+            <div style={{ padding: '4rem', textAlign: 'center' }}>
+              <p>{t('common.loading') || 'Loading...'}</p>
+            </div>
+          </div>
+        </div>
+        <Footer onOrderClick={openOrderModal} />
+      </>
+    );
+  }
 
   if (!user) {
     return null;
@@ -105,15 +171,41 @@ export default function AccountPage() {
       <Header onOrderClick={openOrderModal} />
       <div className='account-page'>
         <div className='account-header'>
-          <h1>{t('account.title')}</h1>
+          <div>
+            <h1>{t('account.title')}</h1>
+            <p className='account-welcome'>
+              {t('account.welcome') || 'Welcome back'}, <strong>{user.name}</strong>!
+            </p>
+          </div>
         </div>
 
         <div className='account-container'>
           <div className='account-sidebar'>
             <div className='account-user-info'>
-              <div className='user-avatar'>{user.name?.charAt(0).toUpperCase() || 'U'}</div>
+              <div className='user-avatar-wrapper'>
+                {user.profilePicture ? (
+                  <img src={user.profilePicture} alt={user.name} className='user-avatar-img' />
+                ) : (
+                  <div className='user-avatar'>{user.name?.charAt(0).toUpperCase() || 'U'}</div>
+                )}
+                <label className='profile-picture-upload'>
+                  <input
+                    type='file'
+                    accept='image/*'
+                    onChange={handleProfilePictureChange}
+                    style={{ display: 'none' }}
+                  />
+                  <i className='fa-solid fa-camera'></i>
+                </label>
+              </div>
               <h3>{user.name}</h3>
               <p>{user.email}</p>
+              {user.phone && <p className='user-phone'>{user.phone}</p>}
+              {user.addresses && user.addresses.length > 0 && (
+                <p className='user-address-count'>
+                  {user.addresses.length} {t('account.savedAddress') || 'saved address(es)'}
+                </p>
+              )}
             </div>
 
             <div className='account-tabs'>
@@ -344,6 +436,19 @@ export default function AccountPage() {
       <Footer onOrderClick={openOrderModal} />
       <Chatbot />
       <OrderModal isOpen={isOrderModalOpen} onClose={closeOrderModal} />
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+        title={t('account.confirmLogout') || 'Confirm Logout'}
+        message={
+          t('account.confirmLogoutMessage') ||
+          'Are you sure you want to logout? You will need to login again to access your account.'
+        }
+        confirmText={t('account.logout') || 'Logout'}
+        cancelText={t('common.cancel') || 'Cancel'}
+        type='warning'
+      />
     </>
   );
 }

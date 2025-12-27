@@ -21,6 +21,11 @@
       "version": "detect"
     }
   },
+  "ignorePatterns": [
+    "dist/**",
+    "node_modules/**",
+    "build/**"
+  ],
   "rules": {
     "react/prop-types": "off",
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]

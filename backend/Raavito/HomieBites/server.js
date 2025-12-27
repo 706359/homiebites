@@ -70,6 +70,7 @@ app.listen(PORT, () => {
   console.log(`✅ API endpoints ready!`);
   console.log(`   - POST /api/auth/register`);
   console.log(`   - POST /api/auth/login`);
+  console.log(`   - GET  /api/auth/users (admin)`);
   console.log(`   - GET  /api/menu`);
   console.log(`   - PUT  /api/menu (admin)`);
   console.log(`   - GET  /api/orders`);

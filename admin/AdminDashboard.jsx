@@ -1,17 +1,46 @@
 import { useEffect, useState } from 'react';
 import { adminFeatures, orderStatuses } from '../shared/utils/adminConfig.js';
 import { triggerDataSync } from '../shared/utils/menuData.js';
+import api from '../web/lib/api.js';
 import { logout } from '../web/lib/auth.js';
-import { getMenuData, resetMenuData, saveMenuData } from '../web/lib/menuData.js';
+import { getMenuData, getMenuDataSync, resetMenuData, saveMenuData } from '../web/lib/menuData.js';
+import {
+  getOffersData,
+  getOffersDataSync,
+  saveOffersData,
+  triggerOffersDataSync,
+} from '../web/lib/offersData.js';
+import ConfirmModal from './ConfirmModal';
+import NotificationSystem, { showNotification } from './NotificationSystem';
 
 import './AdminDashboard.css';
 
 const AdminDashboard = ({ onLogout }) => {
   const [menuData, setMenuData] = useState([]);
-  const [activeTab, setActiveTab] = useState('menu');
+  const [offersData, setOffersData] = useState([]);
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [saved, setSaved] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [showAddOfferModal, setShowAddOfferModal] = useState(false);
+  const [editingOffer, setEditingOffer] = useState(null);
+  const [newOffer, setNewOffer] = useState({
+    title: '',
+    description: '',
+    discount: '',
+    badge: '',
+    terms: [],
+    startDate: '',
+    endDate: '',
+    whatsappMessage: '',
+    ctaText: 'Get This Deal',
+    isActive: true,
+  });
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
+  const [newsletterSubscriptions, setNewsletterSubscriptions] = useState([]);
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [editingOrder, setEditingOrder] = useState(null);
   const [settings, setSettings] = useState({
     whatsappNumber: '919958983578',
     deliveryTimings: '7:30 PM - 8:30 PM',
@@ -28,6 +57,12 @@ const AdminDashboard = ({ onLogout }) => {
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [showAddOrderModal, setShowAddOrderModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [showDeleteOrderModal, setShowDeleteOrderModal] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState(null);
+  const [showRemoveItemModal, setShowRemoveItemModal] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState(null);
   const [newOrder, setNewOrder] = useState({
     date: new Date().toISOString().split('T')[0],
     deliveryAddress: '',
@@ -40,22 +75,91 @@ const AdminDashboard = ({ onLogout }) => {
     referenceMonth: '',
     elapsedDays: '',
   });
+  const [sidebarOpen, setSidebarOpen] = useState(false); // For mobile overlay
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // For desktop collapse
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    loadMenuData();
-    loadOrders();
-    loadUsers();
-    loadSettings();
-    loadNotifications();
+    // Wrap all async operations to prevent unhandled promise rejections
+    const loadAllData = async () => {
+      try {
+        await Promise.allSettled([loadMenuData(), loadOffersData(), loadOrders(), loadUsers()]);
+        // These are synchronous, safe to call
+        loadSettings();
+        loadNotifications();
+        loadNewsletterSubscriptions();
+        loadCurrentUser();
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        // Still try to load sync data
+        loadSettings();
+        loadNotifications();
+        loadNewsletterSubscriptions();
+        loadCurrentUser();
+      }
+    };
+
+    loadAllData();
   }, []);
 
-  const loadMenuData = () => {
-    const data = getMenuData();
-    setMenuData(data);
+  const loadCurrentUser = () => {
+    try {
+      const userStr = localStorage.getItem('homiebites_user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        setCurrentUser(user);
+      }
+    } catch (error) {
+      console.error('Error loading current user:', error);
+    }
   };
 
-  const loadOrders = () => {
+  const loadMenuData = async () => {
     try {
+      const data = await getMenuData();
+      setMenuData(data);
+    } catch (error) {
+      console.error('Error loading menu:', error);
+      const data = getMenuDataSync();
+      setMenuData(data);
+    }
+  };
+
+  const loadOffersData = async () => {
+    try {
+      const data = await getOffersData();
+      setOffersData(data);
+    } catch (error) {
+      console.error('Error loading offers:', error);
+      const data = getOffersDataSync();
+      setOffersData(data);
+    }
+  };
+
+  const loadOrders = async () => {
+    try {
+      // Try API first
+      const token = localStorage.getItem('homiebites_token');
+      if (token) {
+        try {
+          const response = await api.getAllOrders({
+            status: orderFilter !== 'all' ? orderFilter : undefined,
+            dateFrom: dateRange === 'custom' && customStartDate ? customStartDate : undefined,
+            dateTo: dateRange === 'custom' && customEndDate ? customEndDate : undefined,
+            search: searchQuery || undefined,
+          });
+          if (response.success && response.data) {
+            setOrders(response.data);
+            // Cache in localStorage for offline access
+            localStorage.setItem('homiebites_orders', JSON.stringify(response.data));
+            return;
+          }
+        } catch (apiError) {
+          console.warn('Failed to load orders from API, using cached data:', apiError.message);
+        }
+      }
+
+      // Fallback to localStorage
       const stored = localStorage.getItem('homiebites_orders');
       if (stored) {
         setOrders(JSON.parse(stored));
@@ -65,11 +169,32 @@ const AdminDashboard = ({ onLogout }) => {
     }
   };
 
-  const loadUsers = () => {
+  const loadUsers = async () => {
     try {
-      const stored = localStorage.getItem('homiebites_users_data');
+      // Try API first
+      const token = localStorage.getItem('homiebites_token');
+      if (token) {
+        try {
+          const response = await api.getAllUsers();
+          if (response.success && response.data) {
+            setUsers(response.data);
+            // Cache in localStorage for offline access
+            localStorage.setItem('homiebites_users', JSON.stringify(response.data));
+            return;
+          }
+        } catch (apiError) {
+          console.warn('Failed to load users from API, using cached data:', apiError.message);
+        }
+      }
+
+      // Fallback to localStorage
+      const stored =
+        localStorage.getItem('homiebites_users') || localStorage.getItem('homiebites_users_data');
       if (stored) {
-        setUsers(JSON.parse(stored));
+        const usersData = JSON.parse(stored);
+        // Handle both array and object formats
+        const usersArray = Array.isArray(usersData) ? usersData : Object.values(usersData);
+        setUsers(usersArray);
       }
     } catch (e) {
       console.error('Error loading users:', e);
@@ -98,16 +223,134 @@ const AdminDashboard = ({ onLogout }) => {
     }
   };
 
-  const handleSave = async () => {
-    saveMenuData(menuData);
-    triggerDataSync();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const loadNewsletterSubscriptions = () => {
+    try {
+      const stored = localStorage.getItem('homiebites_newsletter');
+      if (stored) {
+        setNewsletterSubscriptions(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error('Error loading newsletter subscriptions:', e);
+    }
+  };
 
-    alert('✅ Menu updated successfully! Changes will sync to website and app.');
+  const handleSave = async () => {
+    setSyncing(true);
+    try {
+      await saveMenuData(menuData);
+      triggerDataSync();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      showNotification(
+        'Menu updated successfully! Changes will sync to website and app.',
+        'success'
+      );
+    } catch (error) {
+      console.error('Error saving menu:', error);
+      showNotification('Menu saved locally (API unavailable)', 'warning');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleSaveOffers = async () => {
+    setSyncing(true);
+    try {
+      await saveOffersData(offersData);
+      triggerOffersDataSync();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      showNotification('Offers updated successfully! Changes will sync to website.', 'success');
+      await loadOffersData();
+    } catch (error) {
+      console.error('Error saving offers:', error);
+      showNotification('Offers saved locally (API unavailable)', 'warning');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleAddOffer = () => {
+    setEditingOffer(null);
+    setNewOffer({
+      title: '',
+      description: '',
+      discount: '',
+      badge: '',
+      terms: [],
+      startDate: '',
+      endDate: '',
+      whatsappMessage: '',
+      ctaText: 'Get This Deal',
+      isActive: true,
+    });
+    setShowAddOfferModal(true);
+  };
+
+  const handleSaveNewOffer = () => {
+    if (!newOffer.title || !newOffer.description) {
+      showNotification('Please fill in Title and Description', 'warning');
+      return;
+    }
+
+    if (editingOffer) {
+      // Update existing offer
+      setOffersData((prev) =>
+        prev.map((offer) =>
+          offer.id === editingOffer.id ? { ...newOffer, id: editingOffer.id } : offer
+        )
+      );
+      showNotification('Offer updated successfully!', 'success');
+    } else {
+      // Add new offer
+      const offer = {
+        ...newOffer,
+        id: Date.now(),
+        createdAt: new Date().toISOString(),
+      };
+      setOffersData((prev) => [...prev, offer]);
+      showNotification('Offer added successfully!', 'success');
+    }
+
+    setShowAddOfferModal(false);
+    setEditingOffer(null);
+  };
+
+  const handleEditOffer = (offer) => {
+    setEditingOffer(offer);
+    setNewOffer(offer);
+    setShowAddOfferModal(true);
+  };
+
+  const handleDeleteOffer = (offerId) => {
+    setOffersData((prev) => prev.filter((offer) => offer.id !== offerId));
+    showNotification('Offer deleted successfully!', 'success');
+  };
+
+  const addTerm = () => {
+    setNewOffer((prev) => ({
+      ...prev,
+      terms: [...prev.terms, ''],
+    }));
+  };
+
+  const updateTerm = (index, value) => {
+    setNewOffer((prev) => {
+      const newTerms = [...prev.terms];
+      newTerms[index] = value;
+      return { ...prev, terms: newTerms };
+    });
+  };
+
+  const removeTerm = (index) => {
+    setNewOffer((prev) => ({
+      ...prev,
+      terms: prev.terms.filter((_, i) => i !== index),
+    }));
   };
 
   const handleAddOrder = () => {
+    setEditingOrder(null);
     setShowAddOrderModal(true);
     // Set default date to today
     const today = new Date();
@@ -152,13 +395,71 @@ const AdminDashboard = ({ onLogout }) => {
 
   const handleSaveNewOrder = async () => {
     if (!newOrder.deliveryAddress || !newOrder.date) {
-      alert('Please fill in Delivery Address and Date');
+      showNotification('Please fill in Delivery Address and Date', 'warning');
       return;
     }
 
     // Calculate total if not provided
     const total = newOrder.totalAmount || newOrder.quantity * newOrder.unitPrice;
 
+    if (editingOrder) {
+      // Update existing order
+      await handleSaveEditedOrder();
+      return;
+    }
+
+    // Try to save to API first
+    const token = localStorage.getItem('homiebites_token');
+    if (token) {
+      try {
+        const apiOrder = {
+          date: newOrder.date,
+          deliveryAddress: newOrder.deliveryAddress,
+          quantity: parseInt(newOrder.quantity) || 1,
+          unitPrice: parseFloat(newOrder.unitPrice) || 0,
+          totalAmount: total,
+          status: newOrder.status,
+          paymentMode: newOrder.paymentMode,
+          billingMonth: newOrder.billingMonth,
+          referenceMonth: newOrder.referenceMonth,
+          elapsedDays: newOrder.elapsedDays || '0',
+          year: newOrder.year || new Date().getFullYear().toString(),
+          items: [
+            {
+              name: `Order #${orders.length + 1}`,
+              quantity: parseInt(newOrder.quantity) || 1,
+              price: parseFloat(newOrder.unitPrice) || 0,
+            },
+          ],
+        };
+
+        const response = await api.createOrder(apiOrder);
+        if (response.success) {
+          // Reload orders from API
+          await loadOrders();
+          showNotification('Order added successfully!', 'success');
+          setShowAddOrderModal(false);
+          setNewOrder({
+            date: new Date().toISOString().split('T')[0],
+            deliveryAddress: '',
+            quantity: 1,
+            unitPrice: 0,
+            totalAmount: 0,
+            status: 'Paid',
+            paymentMode: 'Online',
+            billingMonth: '',
+            referenceMonth: '',
+            elapsedDays: '',
+          });
+          return;
+        }
+      } catch (apiError) {
+        console.warn('Failed to save order to API, saving locally:', apiError.message);
+        showNotification('Order saved locally (API unavailable)', 'warning');
+      }
+    }
+
+    // Fallback to localStorage
     const order = {
       id: Date.now().toString(),
       sNo: (orders.length + 1).toString(),
@@ -173,7 +474,6 @@ const AdminDashboard = ({ onLogout }) => {
       referenceMonth: newOrder.referenceMonth,
       elapsedDays: newOrder.elapsedDays || '0',
       year: newOrder.year || new Date().getFullYear().toString(),
-      // Backward compatibility
       customerAddress: newOrder.deliveryAddress,
       total: total,
       createdAt: new Date().toISOString(),
@@ -190,7 +490,7 @@ const AdminDashboard = ({ onLogout }) => {
     setOrders(updatedOrders);
     localStorage.setItem('homiebites_orders', JSON.stringify(updatedOrders));
 
-    alert('✅ Order added!');
+    showNotification('Order added successfully!', 'success');
 
     setShowAddOrderModal(false);
     setNewOrder({
@@ -230,10 +530,13 @@ const AdminDashboard = ({ onLogout }) => {
   };
 
   const handleReset = () => {
-    if (window.confirm('Are you sure you want to reset all menu data to defaults?')) {
-      const defaultData = resetMenuData();
-      setMenuData(defaultData);
-    }
+    setShowResetModal(true);
+  };
+
+  const confirmReset = async () => {
+    const defaultData = await resetMenuData();
+    setMenuData(defaultData);
+    showNotification('Default menu loaded. Click "Save Changes" to apply to website.', 'info');
   };
 
   const updateOrderStatus = (orderId, newStatus) => {
@@ -242,6 +545,113 @@ const AdminDashboard = ({ onLogout }) => {
     );
     setOrders(updatedOrders);
     localStorage.setItem('homiebites_orders', JSON.stringify(updatedOrders));
+  };
+
+  const handleDeleteOrder = (orderId) => {
+    setOrderToDelete(orderId);
+    setShowDeleteOrderModal(true);
+  };
+
+  const confirmDeleteOrder = async () => {
+    if (orderToDelete) {
+      // Try API first
+      const token = localStorage.getItem('homiebites_token');
+      const order = orders.find((o) => o.id === orderToDelete);
+      const orderId = order?._id || order?.id;
+
+      if (token && orderId) {
+        try {
+          const response = await api.deleteOrder(orderId);
+          if (response.success) {
+            await loadOrders();
+            showNotification('Order deleted successfully!', 'success');
+            setOrderToDelete(null);
+            return;
+          }
+        } catch (apiError) {
+          console.warn('Failed to delete order from API:', apiError.message);
+          showNotification('Order deleted locally (API unavailable)', 'warning');
+        }
+      }
+
+      // Fallback to localStorage
+      const updatedOrders = orders.filter((order) => order.id !== orderToDelete);
+      setOrders(updatedOrders);
+      localStorage.setItem('homiebites_orders', JSON.stringify(updatedOrders));
+      showNotification('Order deleted successfully!', 'success');
+      setOrderToDelete(null);
+    }
+  };
+
+  const handleEditOrder = (order) => {
+    setEditingOrder({ ...order });
+    setShowAddOrderModal(true);
+  };
+
+  const handleSaveEditedOrder = async () => {
+    try {
+      if (!editingOrder.deliveryAddress || !editingOrder.date) {
+        showNotification('Please fill in Delivery Address and Date', 'warning');
+        return;
+      }
+
+      // Try API first
+      const token = localStorage.getItem('homiebites_token');
+      const orderId = editingOrder._id || editingOrder.id;
+
+      if (token && orderId) {
+        try {
+          const apiOrder = {
+            date: editingOrder.date,
+            deliveryAddress: editingOrder.deliveryAddress,
+            quantity: parseInt(editingOrder.quantity) || 1,
+            unitPrice: parseFloat(editingOrder.unitPrice) || 0,
+            totalAmount: editingOrder.totalAmount || editingOrder.quantity * editingOrder.unitPrice,
+            status: editingOrder.status,
+            paymentMode: editingOrder.paymentMode,
+            billingMonth: editingOrder.billingMonth,
+            referenceMonth: editingOrder.referenceMonth,
+            elapsedDays: editingOrder.elapsedDays || '0',
+            year: editingOrder.year || new Date().getFullYear().toString(),
+          };
+
+          const response = await api.updateOrder(orderId, apiOrder);
+          if (response.success) {
+            await loadOrders();
+            showNotification('Order updated successfully!', 'success');
+            setShowAddOrderModal(false);
+            setEditingOrder(null);
+            return;
+          }
+        } catch (apiError) {
+          console.warn('Failed to update order via API, updating locally:', apiError.message);
+        }
+      }
+
+      // Fallback to localStorage
+      const updatedOrders = orders.map((order) =>
+        order.id === editingOrder.id ? editingOrder : order
+      );
+      setOrders(updatedOrders);
+      localStorage.setItem('homiebites_orders', JSON.stringify(updatedOrders));
+      showNotification('Order updated successfully!', 'success');
+      setShowAddOrderModal(false);
+      setEditingOrder(null);
+    } catch (error) {
+      console.error('Error updating order:', error);
+      showNotification('Error updating order. Please try again.', 'error');
+    }
+  };
+
+  const getFilteredUsers = () => {
+    if (!userSearchQuery) return users;
+    const query = userSearchQuery.toLowerCase();
+    return users.filter(
+      (user) =>
+        (user.name || '').toLowerCase().includes(query) ||
+        (user.email || '').toLowerCase().includes(query) ||
+        (user.phone || '').includes(query)
+    );
   };
 
   const addNotification = () => {
@@ -298,21 +708,49 @@ const AdminDashboard = ({ onLogout }) => {
   };
 
   const removeItem = (categoryId, itemId) => {
-    if (window.confirm('Are you sure you want to remove this item?')) {
+    setItemToRemove({ categoryId, itemId });
+    setShowRemoveItemModal(true);
+  };
+
+  const confirmRemoveItem = () => {
+    if (itemToRemove) {
       setMenuData((prev) =>
         prev.map((cat) => {
-          if (cat.id === categoryId) {
-            return { ...cat, items: cat.items.filter((item) => item.id !== itemId) };
+          if (cat.id === itemToRemove.categoryId) {
+            return { ...cat, items: cat.items.filter((item) => item.id !== itemToRemove.itemId) };
           }
           return cat;
         })
       );
+      showNotification('Item removed successfully!', 'success');
+      setItemToRemove(null);
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    onLogout();
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
+  };
+
+  const handleLogoutConfirm = () => {
+    try {
+      // Clear all admin-related data
+      logout();
+      localStorage.removeItem('homiebites_admin');
+      localStorage.removeItem('homiebites_user');
+      localStorage.removeItem('homiebites_token');
+
+      // Call the onLogout callback if provided
+      if (onLogout && typeof onLogout === 'function') {
+        onLogout();
+      } else {
+        // Fallback: redirect to admin login page
+        window.location.href = '/admin';
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still try to redirect even if there's an error
+      window.location.href = '/admin';
+    }
   };
 
   const getTotalRevenue = (ordersList = orders) => {
@@ -416,20 +854,51 @@ const AdminDashboard = ({ onLogout }) => {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       try {
         const importedData = JSON.parse(event.target.result);
         if (Array.isArray(importedData)) {
           const existingOrders = orders;
+          // Try to save imported orders to API
+          const token = localStorage.getItem('homiebites_token');
+          if (token) {
+            try {
+              // Import orders one by one to API
+              let importedCount = 0;
+              for (const orderData of importedData) {
+                try {
+                  await api.createOrder(orderData);
+                  importedCount++;
+                } catch (err) {
+                  console.warn('Failed to import order:', err);
+                }
+              }
+              if (importedCount > 0) {
+                await loadOrders();
+                showNotification(
+                  `Successfully imported ${importedCount} orders to API!`,
+                  'success'
+                );
+                return;
+              }
+            } catch (apiError) {
+              console.warn('Failed to import orders to API:', apiError.message);
+            }
+          }
+
+          // Fallback to localStorage
           const mergedOrders = [...importedData, ...existingOrders];
           setOrders(mergedOrders);
           localStorage.setItem('homiebites_orders', JSON.stringify(mergedOrders));
-          alert(`✅ Successfully imported ${importedData.length} orders!`);
+          showNotification(`Successfully imported ${importedData.length} orders!`, 'success');
         } else {
-          alert('❌ Invalid file format. Please upload a valid JSON array of orders.');
+          showNotification(
+            'Invalid file format. Please upload a valid JSON array of orders.',
+            'error'
+          );
         }
       } catch (error) {
-        alert('❌ Error reading file: ' + error.message);
+        showNotification('Error reading file: ' + error.message, 'error');
       }
     };
     reader.readAsText(file);
@@ -482,8 +951,6 @@ const AdminDashboard = ({ onLogout }) => {
 
     return filtered;
   };
-
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const getOrderTrends = () => {
     const last7Days = [];
@@ -721,14 +1188,24 @@ const AdminDashboard = ({ onLogout }) => {
   return (
     <div className='admin-dashboard'>
       {/* Sidebar */}
-      <div className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
+      <div
+        className={`admin-sidebar ${sidebarOpen ? 'open' : ''} ${sidebarCollapsed ? 'collapsed' : ''}`}
+      >
         <div className='sidebar-header'>
-          <h2>
-            <i className='fa-solid fa-shield-halved'></i> Admin
-          </h2>
-          <button className='sidebar-close' onClick={() => setSidebarOpen(false)}>
-            <i className='fa-solid fa-times'></i>
-          </button>
+          <div className='sidebar-logo'>
+            <img
+              src='/logo.png'
+              alt='HomieBites'
+              className='sidebar-logo-img'
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+            <div className='sidebar-logo-fallback' style={{ display: 'none' }}>
+              <i className='fa-solid fa-shield-halved'></i>
+            </div>
+          </div>
         </div>
 
         <nav className='sidebar-nav'>
@@ -740,23 +1217,56 @@ const AdminDashboard = ({ onLogout }) => {
                 setActiveTab(key);
                 setSidebarOpen(false);
               }}
+              title={sidebarCollapsed ? feature.name : ''}
             >
               <i className={`fa-solid ${feature.icon}`}></i>
-              <span>{feature.name}</span>
+              {!sidebarCollapsed && <span>{feature.name}</span>}
             </button>
           ))}
         </nav>
 
         <div className='sidebar-footer'>
-          <button className='sidebar-item logout-btn' onClick={handleLogout}>
+          <button
+            className='sidebar-toggle-btn sidebar-item'
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <i
+              className={`fa-solid ${sidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'}`}
+            ></i>
+            {!sidebarCollapsed && <span>Collapse</span>}
+          </button>
+
+          {/* Profile Section */}
+          {currentUser && (
+            <div className={`sidebar-profile ${sidebarCollapsed ? 'collapsed' : ''}`}>
+              <div className='profile-avatar'>
+                <i className='fa-solid fa-user'></i>
+              </div>
+              {!sidebarCollapsed && (
+                <div className='profile-info'>
+                  <div className='profile-name'>{currentUser.name || 'Admin User'}</div>
+                  <div className='profile-role'>
+                    {currentUser.role === 'admin' ? 'Super Admin' : 'Admin'}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <button
+            className='sidebar-item logout-btn'
+            onClick={handleLogoutClick}
+            title={sidebarCollapsed ? 'Logout' : ''}
+          >
             <i className='fa-solid fa-sign-out-alt'></i>
-            <span>Logout</span>
+            {!sidebarCollapsed && <span>Logout</span>}
           </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className='admin-main'>
+      <div className={`admin-main ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         {/* Top Header */}
         <div className='admin-header'>
           <div className='header-left'>
@@ -823,6 +1333,87 @@ const AdminDashboard = ({ onLogout }) => {
           </div>
         </div>
 
+        {activeTab === 'dashboard' && (
+          <div className='admin-content'>
+            <h2>Dashboard Overview</h2>
+            <div className='dashboard-grid'>
+              <div className='dashboard-card'>
+                <h3>Today's Summary</h3>
+                <div className='dashboard-stats'>
+                  <div className='stat-item'>
+                    <span className='stat-label'>Orders</span>
+                    <span className='stat-value'>{getTodayStats().orders}</span>
+                  </div>
+                  <div className='stat-item'>
+                    <span className='stat-label'>Revenue</span>
+                    <span className='stat-value'>₹{getTodayStats().revenue.toLocaleString()}</span>
+                  </div>
+                  <div className='stat-item'>
+                    <span className='stat-label'>Pending</span>
+                    <span className='stat-value'>{getTodayStats().pending}</span>
+                  </div>
+                </div>
+              </div>
+              <div className='dashboard-card'>
+                <h3>Weekly Summary</h3>
+                <div className='dashboard-stats'>
+                  <div className='stat-item'>
+                    <span className='stat-label'>Orders</span>
+                    <span className='stat-value'>{getWeeklyStats().orders}</span>
+                  </div>
+                  <div className='stat-item'>
+                    <span className='stat-label'>Revenue</span>
+                    <span className='stat-value'>₹{getWeeklyStats().revenue.toLocaleString()}</span>
+                  </div>
+                  <div className='stat-item'>
+                    <span className='stat-label'>Avg Order</span>
+                    <span className='stat-value'>₹{getWeeklyStats().avgOrderValue}</span>
+                  </div>
+                </div>
+              </div>
+              <div className='dashboard-card'>
+                <h3>Quick Actions</h3>
+                <div className='quick-actions'>
+                  <button className='btn btn-primary' onClick={() => setActiveTab('orders')}>
+                    <i className='fa-solid fa-shopping-cart'></i> Manage Orders
+                  </button>
+                  <button className='btn btn-secondary' onClick={() => setActiveTab('menu')}>
+                    <i className='fa-solid fa-utensils'></i> Edit Menu
+                  </button>
+                  <button className='btn btn-secondary' onClick={() => setActiveTab('analytics')}>
+                    <i className='fa-solid fa-chart-line'></i> View Analytics
+                  </button>
+                </div>
+              </div>
+              <div className='dashboard-card'>
+                <h3>Recent Orders</h3>
+                <div className='recent-orders-list'>
+                  {orders
+                    .sort(
+                      (a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date)
+                    )
+                    .slice(0, 5)
+                    .map((order) => (
+                      <div key={order.id} className='recent-order-item'>
+                        <div>
+                          <strong>#{order.id.toString().slice(-6)}</strong>
+                          <span>{order.customerName || order.name || 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span>₹{order.total || 0}</span>
+                          <span className={`status-badge status-${order.status || 'pending'}`}>
+                            {order.status || 'pending'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  {orders.length === 0 && <p className='no-data'>No orders yet</p>}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'menu' && (
           <div className='admin-content'>
             <div className='admin-actions'>
@@ -832,6 +1423,20 @@ const AdminDashboard = ({ onLogout }) => {
               <button className='btn btn-ghost' onClick={handleReset} disabled={syncing}>
                 <i className='fa-solid fa-undo'></i> Reset to Defaults
               </button>
+              <a
+                href='/menu'
+                target='_blank'
+                rel='noopener noreferrer'
+                className='btn btn-secondary'
+                style={{
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                }}
+              >
+                <i className='fa-solid fa-external-link'></i> View Menu Page
+              </a>
               {saved && <span className='save-indicator'>✓ Saved successfully!</span>}
             </div>
 
@@ -897,21 +1502,111 @@ const AdminDashboard = ({ onLogout }) => {
                             min='0'
                           />
                         </div>
-                        <button
-                          className='btn-remove'
-                          onClick={() => removeItem(category.id, item.id)}
-                          title='Remove item'
-                        >
-                          <i className='fa-solid fa-trash'></i>
-                        </button>
+                        <div className='menu-item-actions'>
+                          <span className='item-preview-price'>₹{item.price || 0}</span>
+                          <button
+                            className='btn-remove'
+                            onClick={() => removeItem(category.id, item.id)}
+                            title='Remove item'
+                          >
+                            <i className='fa-solid fa-trash'></i>
+                          </button>
+                        </div>
                       </div>
                     ))}
                     <button className='btn-add-item' onClick={() => addItem(category.id)}>
-                      <i className='fa-solid fa-plus'></i> Add Item
+                      <i className='fa-solid fa-plus'></i>
+                      <span>Add Item</span>
                     </button>
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'offers' && (
+          <div className='admin-content'>
+            <div className='admin-actions'>
+              <button className='btn btn-primary' onClick={handleAddOffer}>
+                <i className='fa-solid fa-plus'></i> Add Offer
+              </button>
+              <button className='btn btn-primary' onClick={handleSaveOffers} disabled={syncing}>
+                <i className='fa-solid fa-save'></i> Save Changes
+              </button>
+              <a
+                href='/offers'
+                target='_blank'
+                rel='noopener noreferrer'
+                className='btn btn-secondary'
+                style={{
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                }}
+              >
+                <i className='fa-solid fa-external-link'></i> View Offers Page
+              </a>
+              {saved && <span className='save-indicator'>✓ Saved successfully!</span>}
+            </div>
+
+            <div className='offers-list'>
+              {offersData.length === 0 ? (
+                <div className='no-data' style={{ padding: '3rem', textAlign: 'center' }}>
+                  <p>No offers created yet. Click "Add Offer" to create your first offer!</p>
+                </div>
+              ) : (
+                offersData.map((offer) => (
+                  <div key={offer.id} className='offer-card-admin'>
+                    <div className='offer-card-header-admin'>
+                      <div>
+                        <h3>{offer.title}</h3>
+                        {offer.discount && (
+                          <span className='offer-discount-badge'>{offer.discount}</span>
+                        )}
+                        {offer.badge && <span className='offer-badge-admin'>{offer.badge}</span>}
+                      </div>
+                      <div className='offer-actions-admin'>
+                        <label className='toggle-switch'>
+                          <input
+                            type='checkbox'
+                            checked={offer.isActive}
+                            onChange={(e) => {
+                              setOffersData((prev) =>
+                                prev.map((o) =>
+                                  o.id === offer.id ? { ...o, isActive: e.target.checked } : o
+                                )
+                              );
+                            }}
+                          />
+                          <span className='toggle-slider'></span>
+                          <span className='toggle-label'>
+                            {offer.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </label>
+                        <button className='btn-edit' onClick={() => handleEditOffer(offer)}>
+                          <i className='fa-solid fa-edit'></i> Edit
+                        </button>
+                        <button className='btn-delete' onClick={() => handleDeleteOffer(offer.id)}>
+                          <i className='fa-solid fa-trash'></i> Delete
+                        </button>
+                      </div>
+                    </div>
+                    <p className='offer-description-admin'>{offer.description}</p>
+                    {offer.startDate || offer.endDate ? (
+                      <div className='offer-dates-admin'>
+                        {offer.startDate && (
+                          <span>Starts: {new Date(offer.startDate).toLocaleDateString()}</span>
+                        )}
+                        {offer.endDate && (
+                          <span>Ends: {new Date(offer.endDate).toLocaleDateString()}</span>
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
@@ -1085,26 +1780,32 @@ const AdminDashboard = ({ onLogout }) => {
                           </select>
                         </td>
                         <td className='order-actions-cell'>
-                          <button
-                            className='btn-view-details'
-                            onClick={() => {
-                              const details = `
-Order ID: ${order.id}
-Date: ${new Date(order.createdAt || order.date).toLocaleString()}
-Customer: ${order.customerName || order.name}
-Phone: ${order.customerPhone || order.phone}
-Address: ${order.customerAddress || order.address}
-Items:
-${(order.items || []).map((item) => `  - ${item.name} x${item.quantity} = ₹${item.price * item.quantity}`).join('\n')}
-Total: ₹${order.total}
-Status: ${order.status || 'pending'}
-                            `;
-                              alert(details);
-                            }}
-                            title='View Details'
-                          >
-                            <i className='fa-solid fa-eye'></i>
-                          </button>
+                          <div className='order-actions-group'>
+                            <button
+                              className='btn-view-details'
+                              onClick={() => {
+                                const details = `Order ID: ${order.id} | Date: ${new Date(order.createdAt || order.date).toLocaleString()} | Customer: ${order.customerName || order.name} | Total: ₹${order.total} | Status: ${order.status || 'pending'}`;
+                                showNotification(details, 'info', 8000);
+                              }}
+                              title='View Details'
+                            >
+                              <i className='fa-solid fa-eye'></i>
+                            </button>
+                            <button
+                              className='btn-edit-order'
+                              onClick={() => handleEditOrder(order)}
+                              title='Edit Order'
+                            >
+                              <i className='fa-solid fa-edit'></i>
+                            </button>
+                            <button
+                              className='btn-delete-order'
+                              onClick={() => handleDeleteOrder(order.id)}
+                              title='Delete Order'
+                            >
+                              <i className='fa-solid fa-trash'></i>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1130,25 +1831,123 @@ Status: ${order.status || 'pending'}
 
         {activeTab === 'users' && (
           <div className='admin-content'>
-            <h2>User Management</h2>
+            <div className='users-header'>
+              <h2>User Management</h2>
+              <div className='users-search'>
+                <i className='fa-solid fa-search'></i>
+                <input
+                  type='text'
+                  placeholder='Search users by name, email, or phone...'
+                  value={userSearchQuery}
+                  onChange={(e) => setUserSearchQuery(e.target.value)}
+                  className='search-input'
+                />
+              </div>
+            </div>
+            <div className='users-summary'>
+              <span>Total Users: {users.length}</span>
+              <span>Showing: {getFilteredUsers().length}</span>
+            </div>
             <div className='users-list'>
-              {users.length === 0 ? (
-                <p className='no-data'>No registered users yet</p>
+              {getFilteredUsers().length === 0 ? (
+                <p className='no-data'>
+                  {userSearchQuery
+                    ? 'No users found matching your search'
+                    : 'No registered users yet'}
+                </p>
               ) : (
-                users.map((user) => (
-                  <div key={user.id} className='user-card'>
+                getFilteredUsers().map((user) => (
+                  <div
+                    key={user.id}
+                    className={`user-card ${selectedUser?.id === user.id ? 'selected' : ''}`}
+                    onClick={() => setSelectedUser(selectedUser?.id === user.id ? null : user)}
+                  >
                     <div className='user-info'>
-                      <h3>{user.name}</h3>
-                      <p>{user.email}</p>
-                      <p>{user.phone}</p>
-                      <p className='user-meta'>
-                        Registered: {new Date(user.createdAt || Date.now()).toLocaleDateString()}
-                      </p>
+                      {user.profilePicture && (
+                        <img
+                          src={user.profilePicture}
+                          alt={user.name}
+                          className='user-avatar-img'
+                        />
+                      )}
+                      {!user.profilePicture && (
+                        <div className='user-avatar-initial'>
+                          {user.name?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                      )}
+                      <div>
+                        <h3>{user.name}</h3>
+                        <p>{user.email}</p>
+                        <p>{user.phone}</p>
+                        <p className='user-meta'>
+                          Registered: {new Date(user.createdAt || Date.now()).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
                     <div className='user-stats'>
-                      <p>Orders: {orders.filter((o) => o.userId === user.id).length}</p>
-                      <p>Addresses: {(user.addresses || []).length}</p>
+                      <div className='stat-box'>
+                        <strong>{orders.filter((o) => o.userId === user.id).length}</strong>
+                        <span>Orders</span>
+                      </div>
+                      <div className='stat-box'>
+                        <strong>
+                          ₹
+                          {orders
+                            .filter((o) => o.userId === user.id)
+                            .reduce((sum, o) => sum + (o.total || 0), 0)}
+                        </strong>
+                        <span>Total Spent</span>
+                      </div>
+                      <div className='stat-box'>
+                        <strong>{(user.addresses || []).length}</strong>
+                        <span>Addresses</span>
+                      </div>
                     </div>
+                    {selectedUser?.id === user.id && (
+                      <div className='user-details-expanded'>
+                        <div className='user-detail-section'>
+                          <h4>Addresses</h4>
+                          {user.addresses && user.addresses.length > 0 ? (
+                            <ul>
+                              {user.addresses.map((addr, idx) => (
+                                <li key={idx}>
+                                  <strong>{addr.name}</strong> - {addr.address}
+                                  {addr.landmark && ` (${addr.landmark})`}
+                                  {addr.pincode && ` - ${addr.pincode}`}
+                                  {addr.isDefault && <span className='default-badge'>Default</span>}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p>No saved addresses</p>
+                          )}
+                        </div>
+                        <div className='user-detail-section'>
+                          <h4>Recent Orders</h4>
+                          {orders.filter((o) => o.userId === user.id).length > 0 ? (
+                            <ul>
+                              {orders
+                                .filter((o) => o.userId === user.id)
+                                .sort(
+                                  (a, b) =>
+                                    new Date(b.createdAt || b.date) -
+                                    new Date(a.createdAt || a.date)
+                                )
+                                .slice(0, 5)
+                                .map((order) => (
+                                  <li key={order.id}>
+                                    Order #{order.id.toString().slice(-6)} - ₹{order.total || 0} -{' '}
+                                    {order.status || 'pending'} -{' '}
+                                    {new Date(order.createdAt || order.date).toLocaleDateString()}
+                                  </li>
+                                ))}
+                            </ul>
+                          ) : (
+                            <p>No orders yet</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))
               )}
@@ -1166,6 +1965,7 @@ Status: ${order.status || 'pending'}
                   type='text'
                   value={settings.whatsappNumber}
                   onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })}
+                  placeholder='+91 1234567890'
                 />
               </div>
               <div className='form-group'>
@@ -1174,6 +1974,7 @@ Status: ${order.status || 'pending'}
                   type='text'
                   value={settings.deliveryTimings}
                   onChange={(e) => setSettings({ ...settings, deliveryTimings: e.target.value })}
+                  placeholder='9:00 AM - 9:00 PM'
                 />
               </div>
               <div className='form-group'>
@@ -1184,6 +1985,7 @@ Status: ${order.status || 'pending'}
                   onChange={(e) =>
                     setSettings({ ...settings, minOrderValue: parseInt(e.target.value) || 0 })
                   }
+                  placeholder='0'
                 />
               </div>
               <div className='form-group'>
@@ -1194,14 +1996,16 @@ Status: ${order.status || 'pending'}
                   onChange={(e) =>
                     setSettings({ ...settings, deliveryCharge: parseInt(e.target.value) || 0 })
                   }
+                  placeholder='0'
                 />
               </div>
-              <div className='form-group'>
+              <div className='form-group' style={{ gridColumn: '1 / -1' }}>
                 <label>Top Announcement Bar Text</label>
                 <input
                   type='text'
                   value={settings.announcement}
                   onChange={(e) => setSettings({ ...settings, announcement: e.target.value })}
+                  placeholder='Enter announcement text...'
                 />
               </div>
               <button className='btn btn-primary' onClick={handleSaveSettings}>
@@ -1809,16 +2613,82 @@ Status: ${order.status || 'pending'}
             <button className='btn btn-primary' onClick={saveNotifications}>
               <i className='fa-solid fa-save'></i> Save Notifications
             </button>
+
+            <div className='newsletter-section'>
+              <h3>Newsletter Subscriptions</h3>
+              <div className='newsletter-stats'>
+                <span>Total Subscriptions: {newsletterSubscriptions.length}</span>
+                <button
+                  className='btn btn-ghost'
+                  onClick={() => {
+                    const csv = [
+                      ['Email', 'Subscribed At'],
+                      ...newsletterSubscriptions.map((sub) => [
+                        sub.email,
+                        new Date(sub.subscribedAt).toLocaleString(),
+                      ]),
+                    ]
+                      .map((row) => row.join(','))
+                      .join('\n');
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `newsletter-subscriptions-${new Date().toISOString().split('T')[0]}.csv`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  <i className='fa-solid fa-download'></i> Export CSV
+                </button>
+              </div>
+              <div className='newsletter-list'>
+                {newsletterSubscriptions.length === 0 ? (
+                  <p className='no-data'>No newsletter subscriptions yet</p>
+                ) : (
+                  <table className='newsletter-table'>
+                    <thead>
+                      <tr>
+                        <th>Email</th>
+                        <th>Subscribed At</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {newsletterSubscriptions
+                        .sort((a, b) => new Date(b.subscribedAt) - new Date(a.subscribedAt))
+                        .map((sub, idx) => (
+                          <tr key={idx}>
+                            <td>{sub.email}</td>
+                            <td>{new Date(sub.subscribedAt).toLocaleString()}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Add Order Modal */}
+        {/* Add/Edit Order Modal */}
         {showAddOrderModal && (
-          <div className='modal-overlay' onClick={() => setShowAddOrderModal(false)}>
+          <div
+            className='modal-overlay'
+            onClick={() => {
+              setShowAddOrderModal(false);
+              setEditingOrder(null);
+            }}
+          >
             <div className='modal-content' onClick={(e) => e.stopPropagation()}>
               <div className='modal-header'>
-                <h2>Add New Order</h2>
-                <button className='modal-close' onClick={() => setShowAddOrderModal(false)}>
+                <h2>{editingOrder ? 'Edit Order' : 'Add New Order'}</h2>
+                <button
+                  className='modal-close'
+                  onClick={() => {
+                    setShowAddOrderModal(false);
+                    setEditingOrder(null);
+                  }}
+                >
                   <i className='fa-solid fa-times'></i>
                 </button>
               </div>
@@ -1827,8 +2697,12 @@ Status: ${order.status || 'pending'}
                   <label>Date (DD/MM/YYYY):</label>
                   <input
                     type='text'
-                    value={newOrder.date}
-                    onChange={(e) => handleNewOrderChange('date', e.target.value)}
+                    value={editingOrder ? editingOrder.date : newOrder.date}
+                    onChange={(e) =>
+                      editingOrder
+                        ? setEditingOrder({ ...editingOrder, date: e.target.value })
+                        : handleNewOrderChange('date', e.target.value)
+                    }
                     placeholder='01/01/2025'
                   />
                 </div>
@@ -1836,8 +2710,12 @@ Status: ${order.status || 'pending'}
                   <label>Delivery Address *:</label>
                   <input
                     type='text'
-                    value={newOrder.deliveryAddress}
-                    onChange={(e) => handleNewOrderChange('deliveryAddress', e.target.value)}
+                    value={editingOrder ? editingOrder.deliveryAddress : newOrder.deliveryAddress}
+                    onChange={(e) =>
+                      editingOrder
+                        ? setEditingOrder({ ...editingOrder, deliveryAddress: e.target.value })
+                        : handleNewOrderChange('deliveryAddress', e.target.value)
+                    }
                     placeholder='A1-407 Shriti'
                     required
                   />
@@ -1847,8 +2725,15 @@ Status: ${order.status || 'pending'}
                     <label>Qty.:</label>
                     <input
                       type='number'
-                      value={newOrder.quantity}
-                      onChange={(e) => handleNewOrderChange('quantity', e.target.value)}
+                      value={editingOrder ? editingOrder.quantity : newOrder.quantity}
+                      onChange={(e) =>
+                        editingOrder
+                          ? setEditingOrder({
+                              ...editingOrder,
+                              quantity: parseInt(e.target.value) || 1,
+                            })
+                          : handleNewOrderChange('quantity', e.target.value)
+                      }
                       min='1'
                     />
                   </div>
@@ -1856,8 +2741,15 @@ Status: ${order.status || 'pending'}
                     <label>Unit Price (₹):</label>
                     <input
                       type='number'
-                      value={newOrder.unitPrice}
-                      onChange={(e) => handleNewOrderChange('unitPrice', e.target.value)}
+                      value={editingOrder ? editingOrder.unitPrice : newOrder.unitPrice}
+                      onChange={(e) =>
+                        editingOrder
+                          ? setEditingOrder({
+                              ...editingOrder,
+                              unitPrice: parseFloat(e.target.value) || 0,
+                            })
+                          : handleNewOrderChange('unitPrice', e.target.value)
+                      }
                       min='0'
                       step='0.01'
                     />
@@ -1866,8 +2758,20 @@ Status: ${order.status || 'pending'}
                     <label>Total Amount (₹):</label>
                     <input
                       type='number'
-                      value={newOrder.totalAmount}
-                      onChange={(e) => handleNewOrderChange('totalAmount', e.target.value)}
+                      value={
+                        editingOrder
+                          ? editingOrder.totalAmount || editingOrder.total
+                          : newOrder.totalAmount
+                      }
+                      onChange={(e) =>
+                        editingOrder
+                          ? setEditingOrder({
+                              ...editingOrder,
+                              totalAmount: parseFloat(e.target.value) || 0,
+                              total: parseFloat(e.target.value) || 0,
+                            })
+                          : handleNewOrderChange('totalAmount', e.target.value)
+                      }
                       min='0'
                       step='0.01'
                     />
@@ -1877,8 +2781,12 @@ Status: ${order.status || 'pending'}
                   <div className='form-group'>
                     <label>Status:</label>
                     <select
-                      value={newOrder.status}
-                      onChange={(e) => handleNewOrderChange('status', e.target.value)}
+                      value={editingOrder ? editingOrder.status : newOrder.status}
+                      onChange={(e) =>
+                        editingOrder
+                          ? setEditingOrder({ ...editingOrder, status: e.target.value })
+                          : handleNewOrderChange('status', e.target.value)
+                      }
                     >
                       <option value='Paid'>Paid</option>
                       <option value='Pending'>Pending</option>
@@ -1889,8 +2797,12 @@ Status: ${order.status || 'pending'}
                   <div className='form-group'>
                     <label>Payment Mode:</label>
                     <select
-                      value={newOrder.paymentMode}
-                      onChange={(e) => handleNewOrderChange('paymentMode', e.target.value)}
+                      value={editingOrder ? editingOrder.paymentMode : newOrder.paymentMode}
+                      onChange={(e) =>
+                        editingOrder
+                          ? setEditingOrder({ ...editingOrder, paymentMode: e.target.value })
+                          : handleNewOrderChange('paymentMode', e.target.value)
+                      }
                     >
                       <option value='Online'>Online</option>
                       <option value='Cash'>Cash</option>
@@ -1904,8 +2816,12 @@ Status: ${order.status || 'pending'}
                     <label>Billing Month:</label>
                     <input
                       type='text'
-                      value={newOrder.billingMonth}
-                      onChange={(e) => handleNewOrderChange('billingMonth', e.target.value)}
+                      value={editingOrder ? editingOrder.billingMonth : newOrder.billingMonth}
+                      onChange={(e) =>
+                        editingOrder
+                          ? setEditingOrder({ ...editingOrder, billingMonth: e.target.value })
+                          : handleNewOrderChange('billingMonth', e.target.value)
+                      }
                       placeholder='January'
                     />
                   </div>
@@ -1913,8 +2829,12 @@ Status: ${order.status || 'pending'}
                     <label>Reference Month:</label>
                     <input
                       type='text'
-                      value={newOrder.referenceMonth}
-                      onChange={(e) => handleNewOrderChange('referenceMonth', e.target.value)}
+                      value={editingOrder ? editingOrder.referenceMonth : newOrder.referenceMonth}
+                      onChange={(e) =>
+                        editingOrder
+                          ? setEditingOrder({ ...editingOrder, referenceMonth: e.target.value })
+                          : handleNewOrderChange('referenceMonth', e.target.value)
+                      }
                       placeholder="01 - Jan'25"
                     />
                   </div>
@@ -1922,25 +2842,249 @@ Status: ${order.status || 'pending'}
                     <label>Elapsed Days:</label>
                     <input
                       type='number'
-                      value={newOrder.elapsedDays}
-                      onChange={(e) => handleNewOrderChange('elapsedDays', e.target.value)}
+                      value={editingOrder ? editingOrder.elapsedDays : newOrder.elapsedDays}
+                      onChange={(e) =>
+                        editingOrder
+                          ? setEditingOrder({ ...editingOrder, elapsedDays: e.target.value })
+                          : handleNewOrderChange('elapsedDays', e.target.value)
+                      }
                       min='0'
                     />
                   </div>
                 </div>
               </div>
               <div className='modal-footer'>
-                <button className='btn btn-ghost' onClick={() => setShowAddOrderModal(false)}>
+                <button
+                  className='btn btn-ghost'
+                  onClick={() => {
+                    setShowAddOrderModal(false);
+                    setEditingOrder(null);
+                  }}
+                >
                   Cancel
                 </button>
                 <button className='btn btn-primary' onClick={handleSaveNewOrder}>
-                  <i className='fa-solid fa-save'></i> Save Order
+                  <i className='fa-solid fa-save'></i>{' '}
+                  {editingOrder ? 'Update Order' : 'Save Order'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add/Edit Offer Modal */}
+        {showAddOfferModal && (
+          <div
+            className='modal-overlay'
+            onClick={() => {
+              setShowAddOfferModal(false);
+              setEditingOffer(null);
+            }}
+          >
+            <div
+              className='modal-content'
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: '600px' }}
+            >
+              <div className='modal-header'>
+                <h2>{editingOffer ? 'Edit Offer' : 'Add New Offer'}</h2>
+                <button
+                  className='modal-close'
+                  onClick={() => {
+                    setShowAddOfferModal(false);
+                    setEditingOffer(null);
+                  }}
+                >
+                  &times;
+                </button>
+              </div>
+              <div className='modal-body'>
+                <div className='form-group'>
+                  <label>Title *</label>
+                  <input
+                    type='text'
+                    value={newOffer.title}
+                    onChange={(e) => setNewOffer({ ...newOffer, title: e.target.value })}
+                    placeholder='e.g., Monthly Subscription Offer'
+                  />
+                </div>
+                <div className='form-group'>
+                  <label>Description *</label>
+                  <textarea
+                    value={newOffer.description}
+                    onChange={(e) => setNewOffer({ ...newOffer, description: e.target.value })}
+                    placeholder='Describe your offer...'
+                    rows={3}
+                  />
+                </div>
+                <div className='form-row'>
+                  <div className='form-group'>
+                    <label>Discount</label>
+                    <input
+                      type='text'
+                      value={newOffer.discount}
+                      onChange={(e) => setNewOffer({ ...newOffer, discount: e.target.value })}
+                      placeholder='e.g., 7% OFF'
+                    />
+                  </div>
+                  <div className='form-group'>
+                    <label>Badge</label>
+                    <input
+                      type='text'
+                      value={newOffer.badge}
+                      onChange={(e) => setNewOffer({ ...newOffer, badge: e.target.value })}
+                      placeholder='e.g., Limited Time'
+                    />
+                  </div>
+                </div>
+                <div className='form-row'>
+                  <div className='form-group'>
+                    <label>Start Date</label>
+                    <input
+                      type='date'
+                      value={newOffer.startDate}
+                      onChange={(e) => setNewOffer({ ...newOffer, startDate: e.target.value })}
+                    />
+                  </div>
+                  <div className='form-group'>
+                    <label>End Date</label>
+                    <input
+                      type='date'
+                      value={newOffer.endDate}
+                      onChange={(e) => setNewOffer({ ...newOffer, endDate: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className='form-group'>
+                  <label>WhatsApp Message</label>
+                  <input
+                    type='text'
+                    value={newOffer.whatsappMessage}
+                    onChange={(e) => setNewOffer({ ...newOffer, whatsappMessage: e.target.value })}
+                    placeholder='Message sent when user clicks "Get Deal"'
+                  />
+                </div>
+                <div className='form-group'>
+                  <label>CTA Button Text</label>
+                  <input
+                    type='text'
+                    value={newOffer.ctaText}
+                    onChange={(e) => setNewOffer({ ...newOffer, ctaText: e.target.value })}
+                    placeholder='Get This Deal'
+                  />
+                </div>
+                <div className='form-group'>
+                  <label>
+                    Terms & Conditions{' '}
+                    <button
+                      type='button'
+                      className='btn btn-small'
+                      onClick={addTerm}
+                      style={{ marginLeft: '0.5rem', padding: '0.25rem 0.5rem' }}
+                    >
+                      <i className='fa-solid fa-plus'></i> Add Term
+                    </button>
+                  </label>
+                  {newOffer.terms.map((term, index) => (
+                    <div
+                      key={index}
+                      style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}
+                    >
+                      <input
+                        type='text'
+                        value={term}
+                        onChange={(e) => updateTerm(index, e.target.value)}
+                        placeholder={`Term ${index + 1}`}
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        type='button'
+                        className='btn btn-small'
+                        onClick={() => removeTerm(index)}
+                        style={{ padding: '0.25rem 0.5rem' }}
+                      >
+                        <i className='fa-solid fa-trash'></i>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className='form-group'>
+                  <label>
+                    <input
+                      type='checkbox'
+                      checked={newOffer.isActive}
+                      onChange={(e) => setNewOffer({ ...newOffer, isActive: e.target.checked })}
+                    />{' '}
+                    Active (Show on website)
+                  </label>
+                </div>
+              </div>
+              <div className='modal-footer'>
+                <button
+                  className='btn btn-ghost'
+                  onClick={() => {
+                    setShowAddOfferModal(false);
+                    setEditingOffer(null);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button className='btn btn-primary' onClick={handleSaveNewOffer}>
+                  <i className='fa-solid fa-save'></i>{' '}
+                  {editingOffer ? 'Update Offer' : 'Save Offer'}
                 </button>
               </div>
             </div>
           </div>
         )}
       </div>
+      <NotificationSystem />
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogoutConfirm}
+        title='Confirm Logout'
+        message='Are you sure you want to logout? You will need to login again to access the admin dashboard.'
+        confirmText='Logout'
+        cancelText='Cancel'
+        type='warning'
+      />
+      <ConfirmModal
+        isOpen={showResetModal}
+        onClose={() => setShowResetModal(false)}
+        onConfirm={confirmReset}
+        title='Reset Menu Data'
+        message='Are you sure you want to reset all menu data to defaults? This action cannot be undone.'
+        confirmText='Reset'
+        cancelText='Cancel'
+        type='danger'
+      />
+      <ConfirmModal
+        isOpen={showDeleteOrderModal}
+        onClose={() => {
+          setShowDeleteOrderModal(false);
+          setOrderToDelete(null);
+        }}
+        onConfirm={confirmDeleteOrder}
+        title='Delete Order'
+        message='Are you sure you want to delete this order? This action cannot be undone.'
+        confirmText='Delete'
+        cancelText='Cancel'
+        type='danger'
+      />
+      <ConfirmModal
+        isOpen={showRemoveItemModal}
+        onClose={() => {
+          setShowRemoveItemModal(false);
+          setItemToRemove(null);
+        }}
+        onConfirm={confirmRemoveItem}
+        title='Remove Item'
+        message='Are you sure you want to remove this item from the menu?'
+        confirmText='Remove'
+        cancelText='Cancel'
+        type='warning'
+      />
     </div>
   );
 };

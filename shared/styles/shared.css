@@ -80,10 +80,11 @@ body {
   pointer-events: none;
 }
 
-/* Focus (Accessibility) */
+/* Focus (Accessibility) - Base for all buttons */
 .btn:focus-visible {
-  outline: 2px solid var(--primary-orange);
-  outline-offset: 2px;
+  outline: 3px solid var(--primary-orange);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 2px rgba(196, 92, 45, 0.3);
 }
 
 /* Active (Press feedback) */
@@ -94,88 +95,126 @@ body {
 
 /* ================= VARIANTS ================= */
 
-/* Primary */
+/* Primary - Green */
 .btn-primary {
-  background: var(--primary-orange);
-  color: var(--white);
-  border-radius: 0;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: var(--orange-hover);
-  box-shadow: 0 6px 16px var(--shadow-orange);
-  transform: skewX(-8deg) translateY(-1px);
-}
-
-/* Secondary */
-.btn-secondary {
   background: var(--primary-green);
   color: var(--white);
   border-radius: 0;
 }
 
-.btn-secondary:hover:not(:disabled) {
-  background: var(--green-hover);
-  box-shadow: 0 6px 16px var(--shadow-green);
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-orange);
+  color: var(--white);
+  box-shadow: 0 6px 16px var(--shadow-orange);
   transform: skewX(-8deg) translateY(-1px);
 }
 
-/* Outline */
-.btn-outline {
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+.btn-primary:focus-visible {
+  outline: 3px solid var(--primary-green);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 2px rgba(68, 144, 49, 0.3),
+    0 6px 16px var(--shadow-green);
+}
+
+/* Secondary - Orange */
+.btn-secondary {
+  background: var(--primary-orange);
   color: var(--white);
-  border: 1px solid var(--glass-border);
+  border-radius: 0;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--orange-hover);
+  color: var(--white);
+  box-shadow: 0 6px 16px var(--shadow-orange);
+  transform: skewX(-8deg) translateY(-1px);
+}
+
+.btn-secondary:focus-visible {
+  outline: 3px solid var(--primary-orange);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 2px rgba(196, 92, 45, 0.3),
+    0 6px 16px var(--shadow-orange);
+}
+
+/* Outline - Transparent with border, filled on hover */
+.btn-outline {
+  background: transparent;
+  color: var(--primary-orange);
+  border: 2px solid var(--primary-orange);
   border-radius: 0;
 }
 
 .btn-outline:hover:not(:disabled) {
-  background: rgba(54, 54, 54, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--primary-orange);
   color: var(--white);
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--primary-orange);
+  box-shadow: 0 4px 12px rgba(196, 92, 45, 0.3);
   transform: skewX(-8deg) translateY(-1px);
 }
 
-/* Ghost */
+.btn-outline:focus-visible {
+  outline: 3px solid var(--primary-orange);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 2px rgba(196, 92, 45, 0.3),
+    0 4px 12px rgba(196, 92, 45, 0.3);
+  border-color: var(--primary-orange);
+}
+
+/* Ghost - Transparent with border, solid on hover */
 .btn-ghost {
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: var(--white);
-  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: var(--primary-orange);
+  border: 2px solid var(--primary-orange);
   border-radius: 0;
 }
 
 .btn-ghost:hover:not(:disabled) {
-  background: rgba(54, 54, 54, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--primary-orange);
   color: var(--white);
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--primary-orange);
+  box-shadow: 0 6px 16px rgba(196, 92, 45, 0.3);
   transform: skewX(-8deg) translateY(-1px);
+}
+
+.btn-ghost:focus-visible {
+  outline: 3px solid var(--primary-orange);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 2px rgba(196, 92, 45, 0.3),
+    0 6px 16px rgba(196, 92, 45, 0.3);
+  border-color: var(--primary-orange);
 }
 
 /* Text */
 .btn-text {
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--primary-orange);
   color: var(--white);
   padding: 0.5rem 1rem;
   border-radius: 0;
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--primary-orange);
 }
 
 .btn-text:hover:not(:disabled) {
-  background: rgba(54, 54, 54, 0.8);
+  background: rgba(196, 92, 45, 0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: var(--white);
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(196, 92, 45, 0.3);
+  box-shadow: 0 4px 12px rgba(196, 92, 45, 0.15);
   transform: skewX(-8deg) translateY(-1px);
+}
+
+.btn-text:focus-visible {
+  outline: 3px solid var(--primary-orange);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 2px rgba(196, 92, 45, 0.3),
+    0 2px 8px rgba(196, 92, 45, 0.15);
+  text-decoration: none;
 }
 
 /* ================= SIZES ================= */
@@ -206,8 +245,15 @@ body {
 }
 
 .btn-icon:hover:not(:disabled) {
-  opacity: 0.8;
+  background: rgba(196, 92, 45, 0.1);
+  color: var(--primary-orange);
   transform: skewX(-8deg) translateY(-1px);
+}
+
+.btn-icon:focus-visible {
+  outline: 3px solid var(--primary-orange);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 2px rgba(196, 92, 45, 0.3);
 }
 
 /* ================= QTY BUTTON ================= */
@@ -237,9 +283,15 @@ body {
 }
 
 .btn-qty:hover:not(:disabled) {
-  background: var(--primary-orange);
+  background: var(--primary-green);
   color: var(--white);
   transform: translateY(-1px);
+}
+
+.btn-qty:focus-visible {
+  outline: 3px solid var(--primary-green);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 2px rgba(68, 144, 49, 0.3);
 }
 
 /* ================= WHATSAPP ================= */
@@ -251,8 +303,18 @@ body {
 }
 
 .btn-whatsapp:hover:not(:disabled) {
+  background: #20ba5a;
+  color: var(--white);
   box-shadow: 0 6px 16px rgba(37, 211, 102, 0.35);
   transform: skewX(-8deg) translateY(-1px);
+}
+
+.btn-whatsapp:focus-visible {
+  outline: 3px solid var(--whatsapp-green);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 2px rgba(37, 211, 102, 0.3),
+    0 6px 16px rgba(37, 211, 102, 0.35);
 }
 
 /* =========================================================

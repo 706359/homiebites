@@ -1,6 +1,8 @@
-// Menu data management with localStorage persistence
+// Menu data management with API integration and localStorage fallback
 
-const MENU_DATA_KEY = 'homiebites_menu_data'
+import api from './api.js';
+
+const MENU_DATA_KEY = 'homiebites_menu_data';
 
 const defaultMenuData = [
   {
@@ -8,8 +10,12 @@ const defaultMenuData = [
     category: 'Full Tiffin',
     icon: 'fa-star',
     tag: 'Best Seller',
-    description: 'Gravy Sabji + Dry Sabji + 4 Rotis + Rice (4 Rotis with Rice / 6 Rotis without Rice)',
-    items: [{ id: 1, name: '1 Full Tiffin', price: 120 }],
+    description:
+      'Gravy Sabji + Dry Sabji + 4 Rotis + Rice (4 Rotis with Rice / 6 Rotis without Rice)',
+    items: [
+      { id: 1, name: 'Thali Plastic (Classic)', price: 120 },
+      { id: 10, name: 'Tiffin Steel (Zambo)', price: 150 },
+    ],
   },
   {
     id: 2,
@@ -60,42 +66,106 @@ const defaultMenuData = [
     items: [{ id: 1, name: 'Self-Pickup (A1 Tower)', price: 100 }],
     description: 'Thali & Tiffin both available',
   },
-]
+];
 
-export const getMenuData = () => {
+export const getMenuData = async () => {
   // Check if we're in browser environment
   if (typeof window === 'undefined') {
-    return defaultMenuData
+    return [];
   }
 
   try {
-    const stored = localStorage.getItem(MENU_DATA_KEY)
+    // Try to fetch from API first
+    try {
+      const response = await api.getMenu();
+      if (
+        response.success &&
+        response.data &&
+        Array.isArray(response.data) &&
+        response.data.length > 0
+      ) {
+        // Cache in localStorage for offline access
+        localStorage.setItem(MENU_DATA_KEY, JSON.stringify(response.data));
+        localStorage.setItem('homiebites_menu_version', 'api');
+        return response.data;
+      }
+    } catch (apiError) {
+      console.warn('API fetch failed, using cached data:', apiError.message);
+    }
+
+    // Fallback to localStorage - only return what's saved from admin
+    const stored = localStorage.getItem(MENU_DATA_KEY);
     if (stored) {
       try {
-        const parsed = JSON.parse(stored)
-        // Validate that parsed data is an array with items
+        const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed
+          return parsed;
         }
       } catch (e) {
-        console.warn('Error parsing menu data from localStorage:', e)
+        console.warn('Error parsing menu data from localStorage:', e);
       }
     }
-    // Initialize with default data
-    localStorage.setItem(MENU_DATA_KEY, JSON.stringify(defaultMenuData))
-    return defaultMenuData
+
+    // Return empty array if no menu data exists (admin must add items first)
+    return [];
   } catch (error) {
-    console.error('Error accessing localStorage:', error)
-    return defaultMenuData
+    console.error('Error accessing menu data:', error);
+    return [];
   }
-}
+};
 
-export const saveMenuData = (data) => {
-  localStorage.setItem(MENU_DATA_KEY, JSON.stringify(data))
-}
+// Synchronous version for backward compatibility (uses cached data)
+export const getMenuDataSync = () => {
+  if (typeof window === 'undefined') {
+    return [];
+  }
 
-export const resetMenuData = () => {
-  localStorage.setItem(MENU_DATA_KEY, JSON.stringify(defaultMenuData))
-  return defaultMenuData
-}
+  try {
+    const stored = localStorage.getItem(MENU_DATA_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch (e) {
+        console.warn('Error parsing menu data from localStorage:', e);
+      }
+    }
+    // Return empty array if no menu data exists (admin must add items first)
+    return [];
+  } catch (error) {
+    console.error('Error accessing localStorage:', error);
+    return [];
+  }
+};
 
+export const saveMenuData = async (data) => {
+  // Save to localStorage immediately for instant UI update
+  localStorage.setItem(MENU_DATA_KEY, JSON.stringify(data));
+
+  // Try to sync to API (admin only)
+  try {
+    const token = localStorage.getItem('homiebites_token');
+    if (token) {
+      await api.updateMenu(data);
+      localStorage.setItem('homiebites_menu_version', 'api');
+    }
+  } catch (error) {
+    console.warn('Failed to sync menu to API, saved locally:', error.message);
+    // Data is already saved to localStorage, so it's not lost
+  }
+};
+
+export const resetMenuData = async () => {
+  // Return default data for editing in admin dashboard
+  // DO NOT save to localStorage - admin must click "Save Changes" to actually save
+  return defaultMenuData;
+};
+
+// Trigger data sync (used by admin dashboard)
+export const triggerDataSync = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('menuDataUpdated'));
+  }
+};

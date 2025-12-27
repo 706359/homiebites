@@ -67,6 +67,7 @@ export const loginUser = (emailOrPhone, password) => {
 // Logout user
 export const logoutUser = () => {
   localStorage.removeItem(USER_KEY);
+  localStorage.removeItem('homiebites_token');
 };
 
 // Check if user is logged in
@@ -127,11 +128,45 @@ export const updateProfile = (updates) => {
   return { success: true, user: userWithoutPassword };
 };
 
-// Save order
-export const saveOrder = (orderData) => {
+// Save order - API first, localStorage fallback
+export const saveOrder = async (orderData) => {
+  const user = getCurrentUser();
+  const now = new Date();
+  
+  // Try to save to API first if user is logged in
+  if (user && localStorage.getItem('homiebites_token')) {
+    try {
+      const api = (await import('./api.js')).default;
+      const orderPayload = {
+        items: orderData.items || [],
+        customerName: orderData.name || user.name,
+        customerPhone: orderData.phone || user.phone,
+        deliveryAddress: orderData.address || '',
+        totalAmount: orderData.total || 0,
+        date: now.toISOString(),
+        status: 'pending',
+      };
+      
+      const response = await api.createOrder(orderPayload);
+      if (response.success) {
+        // Also save to localStorage for offline access
+        const localResult = saveOrderToLocalStorage(orderData, user);
+        return { success: true, order: response.data, localOrder: localResult.order };
+      }
+    } catch (error) {
+      console.warn('Failed to save order to API, saving locally:', error.message);
+      // Fall through to localStorage save
+    }
+  }
+  
+  // Fallback to localStorage
+  return saveOrderToLocalStorage(orderData, user);
+};
+
+// Internal function to save order to localStorage
+const saveOrderToLocalStorage = (orderData, user) => {
   // Format order to match Google Sheets structure
   const orders = getOrders();
-  const user = getCurrentUser();
   const now = new Date();
 
   // Calculate quantity and unit price from items
@@ -191,18 +226,42 @@ export const saveOrder = (orderData) => {
   orders.push(order);
   localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
 
-  
-
   return { success: true, order };
 };
 
-// Get user orders
-export const getUserOrders = () => {
+// Get user orders - API first, localStorage fallback
+export const getUserOrders = async () => {
   const user = getCurrentUser();
   if (!user) return [];
 
+  // Try API first if user has token
+  if (localStorage.getItem('homiebites_token')) {
+    try {
+      const api = (await import('./api.js')).default;
+      const response = await api.getMyOrders();
+      if (response.success && response.data) {
+        // Also cache in localStorage
+        const orders = getOrders();
+        const updatedOrders = [...orders];
+        response.data.forEach((apiOrder) => {
+          const existingIndex = updatedOrders.findIndex((o) => o.id === apiOrder._id || o.id === apiOrder.id);
+          if (existingIndex >= 0) {
+            updatedOrders[existingIndex] = { ...updatedOrders[existingIndex], ...apiOrder };
+          } else {
+            updatedOrders.push(apiOrder);
+          }
+        });
+        localStorage.setItem(ORDERS_KEY, JSON.stringify(updatedOrders));
+        return response.data.reverse();
+      }
+    } catch (error) {
+      console.warn('Failed to fetch orders from API, using cached data:', error.message);
+    }
+  }
+
+  // Fallback to localStorage
   const orders = getOrders();
-  return orders.filter((o) => o.userId === user.id).reverse();
+  return orders.filter((o) => o.userId === user.id || o.customerId === user.id).reverse();
 };
 
 // Get all orders (for admin)

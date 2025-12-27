@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const Chatbot = () => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [userInfo, setUserInfo] = useState({
@@ -43,8 +43,7 @@ const Chatbot = () => {
         }, 1000);
       }, 500);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]); // Only depend on isOpen, not t or language
+  }, [isOpen, t]); // Include t for translation
 
   const addBotMessage = (text) => {
     setMessages((prev) => [...prev, { type: 'bot', text, timestamp: new Date() }]);

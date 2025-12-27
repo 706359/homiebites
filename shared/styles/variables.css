@@ -1,20 +1,20 @@
 /* Shared CSS Variables for Web and App */
 :root {
-  /* Primary Brand Colors (Orange & Green from Logo) */
-  --primary-orange: #ff6b35;
-  --primary-green: #39b86f;
+  /* Primary Brand Colors (Green Primary & Orange Secondary from Logo) */
+  --primary-green: #449031; /* Primary color from "Bites" text */
+  --primary-orange: #c45c2d; /* Secondary color from "Homie" text */
 
-  /* Orange Variations */
-  --orange: #ff6b35;
-  --orange-light: #ff8c5a;
-  --orange-dark: #e55a2b;
-  --orange-hover: #ff8550;
+  /* Green Variations (Primary) */
+  --green: #449031;
+  --green-light: #5ba84a;
+  --green-dark: #357825;
+  --green-hover: #3d8329;
 
-  /* Green Variations */
-  --green: #39b86f;
-  --green-light: #5bc88a;
-  --green-dark: #2a9d5a;
-  --green-hover: #4ac77e;
+  /* Orange Variations (Secondary) */
+  --orange: #c45c2d;
+  --orange-light: #d87045;
+  --orange-dark: #a84a1f;
+  --orange-hover: #c65a35;
 
   /* Neutral Colors */
   --black: #000000;
@@ -35,7 +35,7 @@
   --error-red: #cc3333;
   --error-red-light: #ffe5e5;
   --warning-orange: #ff9800;
-  --success-green: #39b86f;
+  --success-green: #449031;
   --info-blue: #2196f3;
 
   /* Background Colors */
@@ -64,8 +64,8 @@
 
   /* Shadow Colors */
   --shadow-color: rgba(0, 0, 0, 0.1);
-  --shadow-orange: rgba(255, 107, 53, 0.2);
-  --shadow-green: rgba(57, 184, 111, 0.2);
+  --shadow-orange: rgba(196, 92, 45, 0.2);
+  --shadow-green: rgba(68, 144, 49, 0.2);
   --shadow-dark: rgba(0, 0, 0, 0.15);
 
   /* Font Family */

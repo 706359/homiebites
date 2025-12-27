@@ -1,6 +1,12 @@
 // Admin Configuration - Shared settings for admin dashboard
 
 export const adminFeatures = {
+  dashboard: {
+    enabled: true,
+    name: 'Dashboard',
+    icon: 'fa-home',
+    description: 'Overview of orders, revenue, and key metrics'
+  },
   menu: {
     enabled: true,
     name: 'Menu Management',
@@ -36,6 +42,12 @@ export const adminFeatures = {
     name: 'Notifications',
     icon: 'fa-bell',
     description: 'Manage announcements and notifications'
+  },
+  offers: {
+    enabled: true,
+    name: 'Offers & Discounts',
+    icon: 'fa-tag',
+    description: 'Create and manage special offers and discounts'
   }
 }
 

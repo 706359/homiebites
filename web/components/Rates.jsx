@@ -1,15 +1,13 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { getMenuData } from '../lib/menuData';
+import { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { getMenuDataSync } from '../lib/menuData';
 
 const Rates = ({ onOrderClick }) => {
   const { t } = useLanguage();
   const [rateCards, setRateCards] = useState([]);
 
   useEffect(() => {
-    const menuData = getMenuData();
+    const menuData = getMenuDataSync();
     const formattedCards = menuData.map((category) => ({
       id: category.id,
       title: category.category,
@@ -26,7 +24,7 @@ const Rates = ({ onOrderClick }) => {
 
   useEffect(() => {
     const handleMenuUpdate = () => {
-      const menuData = getMenuData();
+      const menuData = getMenuDataSync();
       const formattedCards = menuData.map((category) => ({
         id: category.id,
         title: category.category,
@@ -46,7 +44,7 @@ const Rates = ({ onOrderClick }) => {
         handleMenuUpdate();
       }
     };
-    
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('menuDataUpdated', handleMenuUpdate);
 
@@ -57,20 +55,20 @@ const Rates = ({ onOrderClick }) => {
   }, []);
 
   return (
-    <section id="rates" className="rates-section">
-      <div className="section-container">
-        <h2 className="section-heading">{t('rates.title')}</h2>
-        
-        <div className="products-grid">
+    <section id='rates' className='rates-section'>
+      <div className='section-container'>
+        <h2 className='section-heading'>{t('rates.title')}</h2>
+
+        <div className='products-grid'>
           {rateCards.map((card) => (
-            <div key={card.id} className="product-card">
-              <h3 className="product-title">{card.title}</h3>
-              {card.description && <p className="product-desc">{card.description}</p>}
-              <ul className="product-items">
+            <div key={card.id} className='product-card'>
+              <h3 className='product-title'>{card.title}</h3>
+              {card.description && <p className='product-desc'>{card.description}</p>}
+              <ul className='product-items'>
                 {card.items.map((item, idx) => (
-                  <li key={idx} className="product-item">
+                  <li key={idx} className='product-item'>
                     <span>{item.name}</span>
-                    <span className="product-price">{item.price}</span>
+                    <span className='product-price'>{item.price}</span>
                   </li>
                 ))}
               </ul>
@@ -78,9 +76,14 @@ const Rates = ({ onOrderClick }) => {
           ))}
         </div>
 
-        <div className="order-cta">
-          <p>{t('rates.readyToOrder')} <a href="tel:+919958983578">+91-9958983578</a> {t('rates.orWhatsApp')}</p>
-          <button className="btn btn-primary btn-large" onClick={onOrderClick}>{t('rates.orderNow')}</button>
+        <div className='order-cta'>
+          <p>
+            {t('rates.readyToOrder')} <a href='tel:+919958983578'>+91-9958983578</a>{' '}
+            {t('rates.orWhatsApp')}
+          </p>
+          <button className='btn btn-primary btn-large' onClick={onOrderClick}>
+            {t('rates.orderNow')}
+          </button>
         </div>
       </div>
     </section>

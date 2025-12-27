@@ -1,4 +1,3 @@
-import { Metadata } from 'next';
 import '../../shared/styles/shared.css';
 import '../styles/globals.css';
 import ClientLayout from './ClientLayout';
@@ -8,8 +7,17 @@ export const metadata = {
     default: 'HomieBites - Premium Tiffin Service',
     template: '%s | HomieBites',
   },
-  description: 'Delicious home-cooked vegetarian meals delivered to your doorstep. Daily, weekly, and monthly tiffin subscriptions available in Panchsheel Greens and nearby areas.',
-  keywords: ['tiffin service', 'home cooked meals', 'vegetarian food', 'food delivery', 'Panchsheel Greens', 'daily meals', 'subscription meals'],
+  description:
+    'Delicious home-cooked vegetarian meals delivered to your doorstep. Daily and monthly tiffin subscriptions available in Panchsheel Greens and nearby areas.',
+  keywords: [
+    'tiffin service',
+    'home cooked meals',
+    'vegetarian food',
+    'food delivery',
+    'Panchsheel Greens',
+    'daily meals',
+    'subscription meals',
+  ],
   authors: [{ name: 'HomieBites' }],
   creator: 'HomieBites',
   publisher: 'HomieBites',
@@ -28,7 +36,8 @@ export const metadata = {
     url: process.env.NEXT_PUBLIC_SITE_URL || 'https://homiebites.com',
     siteName: 'HomieBites',
     title: 'HomieBites - Premium Tiffin Service',
-    description: 'Delicious home-cooked vegetarian meals delivered to your doorstep. Daily, weekly, and monthly tiffin subscriptions available.',
+    description:
+      'Delicious home-cooked vegetarian meals delivered to your doorstep. Daily and monthly tiffin subscriptions available.',
     images: [
       {
         url: '/logo.png',
@@ -61,11 +70,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang='en'>
       <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/logo.png" />
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#FF6B35" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <link rel='icon' type='image/png' href='/logo.png' />
+        <link rel='apple-touch-icon' href='/logo.png' />
+        <link rel='manifest' href='/manifest.json' />
+        <meta name='theme-color' content='#FF6B35' />
+        <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=5' />
         <link
           href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap'
           rel='stylesheet'

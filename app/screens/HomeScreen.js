@@ -1,10 +1,10 @@
-import React from 'react'
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
-import { useNavigation } from '@react-navigation/native'
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import React from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
-  const navigation = useNavigation()
+  const navigation = useNavigation();
 
   return (
     <ScrollView style={styles.container}>
@@ -18,41 +18,38 @@ export default function HomeScreen() {
         <Text style={styles.heroSubtitle}>
           Authentic Indian Vegetarian Meals, Freshly Prepared Daily
         </Text>
-        <TouchableOpacity 
-          style={styles.ctaButton}
-          onPress={() => navigation.navigate('Menu')}
-        >
+        <TouchableOpacity style={styles.ctaButton} onPress={() => navigation.navigate('Menu')}>
           <Text style={styles.ctaButtonText}>Order Now</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.features}>
         <View style={styles.featureCard}>
-          <Ionicons name="leaf" size={32} color="#39b86f" />
+          <Ionicons name='leaf' size={32} color='#39b86f' />
           <Text style={styles.featureTitle}>Pure Vegetarian</Text>
           <Text style={styles.featureText}>Fresh, wholesome ingredients</Text>
         </View>
         <View style={styles.featureCard}>
-          <Ionicons name="water" size={32} color="#FF6B35" />
+          <Ionicons name='water' size={32} color='#FF6B35' />
           <Text style={styles.featureTitle}>Less Oil & Spices</Text>
           <Text style={styles.featureText}>Healthy, balanced meals</Text>
         </View>
         <View style={styles.featureCard}>
-          <Ionicons name="restaurant" size={32} color="#FF6B35" />
+          <Ionicons name='restaurant' size={32} color='#FF6B35' />
           <Text style={styles.featureTitle}>Home-like Taste</Text>
           <Text style={styles.featureText}>Authentic desi flavors</Text>
         </View>
         <View style={styles.featureCard}>
-          <Ionicons name="bicycle" size={32} color="#39b86f" />
+          <Ionicons name='bicycle' size={32} color='#39b86f' />
           <Text style={styles.featureTitle}>On-time Delivery</Text>
           <Text style={styles.featureText}>Meals delivered fresh</Text>
         </View>
       </View>
 
       <View style={styles.offerSection}>
-        <Text style={styles.offerTitle}>Weekly Subscription Offer</Text>
+        <Text style={styles.offerTitle}>Monthly Subscription Offer</Text>
         <Text style={styles.offerText}>
-          Subscribe for a full week (7 days) and get 10% OFF on your total bill!
+          Subscribe for a full month (30 days) and get 7% OFF on your total bill!
         </Text>
         <TouchableOpacity style={styles.offerButton}>
           <Text style={styles.offerButtonText}>Get This Deal</Text>
@@ -62,20 +59,20 @@ export default function HomeScreen() {
       <View style={styles.contactSection}>
         <Text style={styles.sectionTitle}>Contact Us</Text>
         <View style={styles.contactItem}>
-          <Ionicons name="call" size={24} color="#FF6B35" />
+          <Ionicons name='call' size={24} color='#FF6B35' />
           <Text style={styles.contactText}>+91-9958983578</Text>
         </View>
         <View style={styles.contactItem}>
-          <Ionicons name="location" size={24} color="#FF6B35" />
+          <Ionicons name='location' size={24} color='#FF6B35' />
           <Text style={styles.contactText}>A1-405, Panchsheel Greens</Text>
         </View>
         <View style={styles.contactItem}>
-          <Ionicons name="time" size={24} color="#FF6B35" />
+          <Ionicons name='time' size={24} color='#FF6B35' />
           <Text style={styles.contactText}>Last order 7:30 PM • Delivery by 8:30 PM</Text>
         </View>
       </View>
     </ScrollView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -211,5 +208,4 @@ const styles = StyleSheet.create({
     color: '#666',
     marginLeft: 15,
   },
-})
-
+});

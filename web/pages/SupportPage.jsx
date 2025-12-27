@@ -6,11 +6,11 @@ import '../styles/globals.css';
 
 export default function SupportPage() {
   const { t } = useLanguage();
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  const openOrderModal = () => setIsOrderModalOpen(true);
-  const closeOrderModal = () => setIsOrderModalOpen(false);
+  const openOrderModal = () => {
+    // Order modal functionality can be added here if needed
+  };
 
   const supportCategories = [
     {
@@ -132,7 +132,7 @@ export default function SupportPage() {
           question: t('support.menu.item3') || 'Special offers and discounts',
           answer:
             t('support.menu.answer3') ||
-            'We offer weekly subscription discounts (10% off for 7 days). Check our Special Offers section for current promotions and deals.',
+            'We offer monthly subscription discounts (7% off for 30 days). Check our Special Offers section for current promotions and deals.',
         },
         {
           question: t('support.menu.item4') || 'Can I customize my meal?',
