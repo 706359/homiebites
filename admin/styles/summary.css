@@ -1,0 +1,118 @@
+/* Summary Report Styles */
+
+.summary-info {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 16px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.summary-table-container {
+  overflow-x: auto;
+}
+
+/* Summary table extends base orders-table */
+.summary-table {
+  width: 100%;
+  min-width: 800px;
+  /* Inherits all base styles from .orders-table */
+}
+
+.summary-table th {
+  background: var(--admin-accent-light);
+  padding: var(--admin-table-header-padding);
+  text-align: center;
+  font-weight: var(--admin-table-header-weight);
+  white-space: nowrap;
+  border: 1px solid var(--admin-border);
+  font-size: var(--admin-table-header-font-size);
+  font-family: var(--admin-font-family);
+}
+
+.summary-table th:first-child {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--admin-accent-light);
+}
+
+.summary-table td {
+  padding: var(--admin-table-cell-padding);
+  text-align: center;
+  border-bottom: 1px solid var(--admin-border);
+  border-right: 1px solid var(--admin-border);
+  font-size: var(--admin-table-font-size);
+  font-family: var(--admin-font-family);
+}
+
+.summary-table td:first-child {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-weight: 500;
+}
+
+.address-cell {
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.amount-cell {
+  min-width: 100px;
+  color: var(--admin-text);
+}
+
+.grand-total-cell {
+  font-weight: 600;
+  color: var(--admin-accent);
+  background: var(--admin-accent-light);
+}
+
+.summary-total-row {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-weight: 600;
+}
+
+.summary-total-row td {
+  border-top: 2px solid var(--admin-accent);
+  padding: 1rem 0.75rem;
+}
+
+.month-total-cell {
+  color: var(--admin-accent);
+  font-weight: 600;
+}
+
+/* tbody tr styles handled by hover state */
+
+.summary-table tbody tr:hover {
+  background: var(--admin-accent-light);
+  cursor: pointer;
+  /* transform effects removed */
+}
+
+.summary-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.summary-table tbody tr:nth-child(even):hover {
+  background: var(--admin-accent-light);
+  cursor: pointer;
+  /* transform effects removed */
+}

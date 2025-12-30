@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { adminFeatures, orderStatuses } from '../shared/utils/adminConfig.js';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import errorTracker from '../shared/utils/errorTracker.js';
 import { triggerDataSync } from '../shared/utils/menuData.js';
 import api from '../web/lib/api.js';
 import { logout } from '../web/lib/auth.js';
@@ -12,8 +12,68 @@ import {
 } from '../web/lib/offersData.js';
 import ConfirmModal from './ConfirmModal';
 import NotificationSystem, { showNotification } from './NotificationSystem';
+import { useAdminData } from './hooks/useAdminData.js';
+import { createMenuFromList } from './utils/updateMenuFromList.js';
 
-import './AdminDashboard.css';
+// Import utilities
+import {
+  getFilteredOrdersByDate,
+  getPendingOrders,
+  getTodayStats,
+  getWeeklyStats,
+} from './utils/calculations.js';
+import { convertExcelToOrders } from './utils/excelUtils.js';
+import {
+  calculateTotalAmount,
+  ensureAllOrdersHaveUniqueIds,
+  extractBillingMonth,
+  extractBillingYear,
+  findOrderByKey,
+  formatBillingMonth,
+  formatReferenceMonth,
+  getLastUnitPriceForAddress,
+  getUniqueAddresses,
+} from './utils/orderUtils.js';
+
+// Import tab components
+import AllAddressesTab from './components/AllAddressesTab.jsx';
+import AllOrdersDataTab from './components/AllOrdersDataTab.jsx';
+import AnalyticsTab from './components/AnalyticsTab.jsx';
+import CurrentMonthOrdersTab from './components/CurrentMonthOrdersTab.jsx';
+import DashboardTab from './components/DashboardTab.jsx';
+import MenuTab from './components/MenuTab.jsx';
+import NotificationsTab from './components/NotificationsTab.jsx';
+import OffersTab from './components/OffersTab.jsx';
+import OrderModal from './components/OrderModal.jsx';
+import PendingAmountsTab from './components/PendingAmountsTab.jsx';
+import SettingsTab from './components/SettingsTab.jsx';
+import Sidebar from './components/Sidebar.jsx';
+import SummaryTab from './components/SummaryTab.jsx';
+
+import './styles/index.css';
+
+// Helper: format date as DD-MMM-YYYY (e.g., 31-Dec-2025)
+const formatDateDDMMM = (input) => {
+  if (!input) return '';
+  const d = new Date(input);
+  if (isNaN(d.getTime())) return String(input);
+  const day = String(d.getDate()).padStart(2, '0');
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  return `${day}-${months[d.getMonth()]}-${d.getFullYear()}`;
+};
 
 const AdminDashboard = ({ onLogout }) => {
   const [menuData, setMenuData] = useState([]);
@@ -25,8 +85,10 @@ const AdminDashboard = ({ onLogout }) => {
   const [editingOffer, setEditingOffer] = useState(null);
   const [newOffer, setNewOffer] = useState({
     title: '',
+    type: 'Flat', // 'Flat' or 'Percentage'
+    value: 0, // Numeric value
     description: '',
-    discount: '',
+    discount: '', // Legacy field for display
     badge: '',
     terms: [],
     startDate: '',
@@ -52,11 +114,13 @@ const AdminDashboard = ({ onLogout }) => {
   const [orderFilter, setOrderFilter] = useState('all'); // all, pending, delivered, etc.
   const [orderSort, setOrderSort] = useState('newest'); // newest, oldest, amount
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
   const [dateRange, setDateRange] = useState('all'); // all, today, week, month, custom
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [showAddOrderModal, setShowAddOrderModal] = useState(false);
+  const autoOpenAddOrderRef = useRef(false);
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(() => {
@@ -75,21 +139,43 @@ const AdminDashboard = ({ onLogout }) => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showRemoveItemModal, setShowRemoveItemModal] = useState(false);
   const [itemToRemove, setItemToRemove] = useState(null);
+  // Master Orders Model: Only store source fields, derive the rest
   const [newOrder, setNewOrder] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split('T')[0], // ISO format: YYYY-MM-DD
     deliveryAddress: '',
     quantity: 1,
     unitPrice: 0,
-    totalAmount: 0,
-    status: 'Paid',
-    paymentMode: 'Online',
-    billingMonth: '',
-    referenceMonth: '',
-    elapsedDays: '',
+    status: 'Unpaid',
+    paymentMode: '',
+    source: 'manual', // 'excel' or 'manual'
   });
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // For mobile overlay
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // For desktop collapse
   const [currentUser, setCurrentUser] = useState(null);
+  // Excel Viewer state
+  const [excelData, setExcelData] = useState(null);
+  const [excelFileName, setExcelFileName] = useState('');
+  const [selectedSheet, setSelectedSheet] = useState('');
+  const [excelSheets, setExcelSheets] = useState([]);
+  const [editingCell, setEditingCell] = useState(null); // {row: number, col: number}
+  const [showAddRowModal, setShowAddRowModal] = useState(false);
+  const [newRowData, setNewRowData] = useState({});
+  const [columnTypes, setColumnTypes] = useState({}); // {sheetName: {colIdx: 'date'|'number'|'text'}}
+  // Filters for All Orders Data tab
+  const [allOrdersFilterMonth, setAllOrdersFilterMonth] = useState('');
+  const [allOrdersFilterAddress, setAllOrdersFilterAddress] = useState('');
+  const [allOrdersFilterPaymentStatus, setAllOrdersFilterPaymentStatus] = useState('');
+
+  // Debounce search query for performance (300ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -103,90 +189,87 @@ const AdminDashboard = ({ onLogout }) => {
     dateRange,
     customStartDate,
     customEndDate,
-    searchQuery,
+    debouncedSearchQuery,
     orderSort,
     customerSearchQuery,
     customerSort,
   ]);
+  // Use centralized `useAdminData` hook for loading and storing dashboard data
+  const adminData = useAdminData();
+
+  // Extract hook functions and data FIRST before using them
+  const {
+    menuData: menuDataHook,
+    setMenuData: setMenuDataHook,
+    offersData: offersDataHook,
+    setOffersData: setOffersDataHook,
+    orders: ordersHook,
+    setOrders: setOrdersHook,
+    users: usersHook,
+    setUsers: setUsersHook,
+    newsletterSubscriptions: newsletterSubsHook,
+    setNewsletterSubscriptions: setNewsletterSubscriptionsHook,
+    settings: settingsHook,
+    setSettings: setSettingsHook,
+    notifications: notificationsHook,
+    setNotifications: setNotificationsHook,
+    currentUser: currentUserHook,
+    setCurrentUser: setCurrentUserHook,
+    loadMenuData: hookLoadMenuData,
+    loadOffersData: hookLoadOffersData,
+    loadOrders: hookLoadOrders,
+    loadUsers: hookLoadUsers,
+    loadSettings: hookLoadSettings,
+    loadNotifications: hookLoadNotifications,
+    loadNewsletterSubscriptions: hookLoadNewsletterSubscriptions,
+    loadCurrentUser: hookLoadCurrentUser,
+    loading: loadingHook,
+  } = adminData;
+
+  // Load orders from backend on mount using hook's loadOrders
+  useEffect(() => {
+    const token = localStorage.getItem('homiebites_token');
+    if (token && hookLoadOrders) {
+      // Use hook's loadOrders which will sync to both hook and local state
+      // This will be called by useAdminData on mount, but we ensure it's called here too
+      hookLoadOrders().catch((err) => {
+        console.error('Error loading orders on mount:', err);
+      });
+    }
+  }, [hookLoadOrders]); // Include hookLoadOrders in deps
+
+  // Sync hook-provided data into local component state
+  // Use ordersHook directly if available (even if empty array), otherwise use local orders state
+  const displayOrders = Array.isArray(ordersHook) ? ordersHook : orders;
 
   useEffect(() => {
-    // Wrap all async operations to prevent unhandled promise rejections
-    const loadAllData = async () => {
-      try {
-        // Use Promise.allSettled to ensure all promises complete, even if some fail
-        const results = await Promise.allSettled([
-          loadMenuData().catch((err) => {
-            console.error('loadMenuData failed:', err);
-            return null;
-          }),
-          loadOffersData().catch((err) => {
-            console.error('loadOffersData failed:', err);
-            return null;
-          }),
-          loadOrders().catch((err) => {
-            console.error('loadOrders failed:', err);
-            return null;
-          }),
-          loadUsers().catch((err) => {
-            console.error('loadUsers failed:', err);
-            return null;
-          }),
-        ]);
-
-        // Log any failures but continue
-        results.forEach((result, index) => {
-          if (result.status === 'rejected') {
-            console.error(`Data load ${index} failed:`, result.reason);
-          }
-        });
-
-        // These are synchronous, safe to call
-        try {
-          loadSettings();
-        } catch (err) {
-          console.error('loadSettings failed:', err);
-        }
-
-        try {
-          loadNotifications();
-        } catch (err) {
-          console.error('loadNotifications failed:', err);
-        }
-
-        try {
-          loadNewsletterSubscriptions();
-        } catch (err) {
-          console.error('loadNewsletterSubscriptions failed:', err);
-        }
-
-        try {
-          loadCurrentUser();
-        } catch (err) {
-          console.error('loadCurrentUser failed:', err);
-        }
-      } catch (error) {
-        console.error('Critical error loading dashboard data:', error);
-        // Still try to load sync data as fallback
-        try {
-          loadSettings();
-          loadNotifications();
-          loadNewsletterSubscriptions();
-          loadCurrentUser();
-        } catch (fallbackError) {
-          console.error('Fallback data load also failed:', fallbackError);
-        }
-      }
-    };
-
-    // Wrap in try-catch to prevent any unhandled errors
     try {
-      loadAllData().catch((err) => {
-        console.error('loadAllData promise rejected:', err);
-      });
-    } catch (err) {
-      console.error('loadAllData threw synchronously:', err);
+      if (Array.isArray(menuDataHook)) setMenuData(menuDataHook);
+      if (Array.isArray(offersDataHook)) setOffersData(offersDataHook);
+      // Sync orders from hook to local state
+      if (Array.isArray(ordersHook)) {
+        const ordersWithIds = ensureAllOrdersHaveUniqueIds(ordersHook);
+        setOrders(ordersWithIds);
+        lastSyncedOrdersRef.current = ordersWithIds;
+      }
+      if (Array.isArray(usersHook)) setUsers(usersHook);
+      if (Array.isArray(newsletterSubsHook)) setNewsletterSubscriptions(newsletterSubsHook);
+      if (settingsHook && typeof settingsHook === 'object') setSettings(settingsHook);
+      if (Array.isArray(notificationsHook)) setNotifications(notificationsHook);
+      if (currentUserHook) setCurrentUser(currentUserHook);
+    } catch (e) {
+      console.error('Error syncing admin hook data:', e);
     }
-  }, []);
+  }, [
+    menuDataHook,
+    offersDataHook,
+    ordersHook,
+    usersHook,
+    newsletterSubsHook,
+    settingsHook,
+    notificationsHook,
+    currentUserHook,
+  ]);
 
   const loadCurrentUser = () => {
     try {
@@ -199,6 +282,401 @@ const AdminDashboard = ({ onLogout }) => {
       console.error('Error loading current user:', error);
     }
   };
+
+  // Convert Excel data to orders format (use Excel as source of truth)
+  // Using utility function from utils/excelUtils.js with MASTER ORDERS MODEL
+  // Use ordersRef to avoid dependency on orders state (prevents infinite loops)
+  const convertExcelToOrdersWrapper = useCallback((excelDataObj, sheetName = null) => {
+    try {
+      if (!excelDataObj || typeof excelDataObj !== 'object') {
+        console.warn('Invalid excelDataObj passed to convertExcelToOrdersWrapper');
+        return [];
+      }
+      const existingOrders = ordersRef.current || [];
+      if (!Array.isArray(existingOrders)) {
+        console.warn('ordersRef.current is not an array, using empty array');
+        return convertExcelToOrders(excelDataObj, sheetName, []);
+      }
+      return convertExcelToOrders(excelDataObj, sheetName, existingOrders);
+    } catch (error) {
+      console.error('Error in convertExcelToOrdersWrapper:', error);
+      return [];
+    }
+  }, []); // Empty deps - uses ref instead
+
+  // Clear all orders from backend and localStorage
+  const clearAllOrders = useCallback(async () => {
+    const clearOpId = errorTracker.addToQueue('clear-all-orders', 'Clear All Orders', {
+      source: 'admin_dashboard',
+    });
+
+    try {
+      showNotification('Starting to clear all orders...', 'info');
+
+      // Clear from state
+      setOrders([]);
+      // Orders are stored in backend only, not localStorage
+      lastSyncedOrdersRef.current = []; // Update ref
+
+      // Try to delete all orders from backend
+      const token = localStorage.getItem('homiebites_token');
+      if (token) {
+        try {
+          // Get all orders first (with no filters to get everything)
+          showNotification('Fetching orders from backend...', 'info');
+          const response = await api.getAllOrders({});
+
+          if (response.success && response.data && Array.isArray(response.data)) {
+            const ordersToDelete = response.data;
+            const totalOrders = ordersToDelete.length;
+
+            if (totalOrders === 0) {
+              showNotification('No orders found in backend', 'info');
+              errorTracker.completeOperation(clearOpId, { deletedCount: 0 });
+              return;
+            }
+
+            showNotification(`Deleting ${totalOrders} orders from backend...`, 'info');
+
+            // Delete orders in batches to avoid overwhelming the server
+            const batchSize = 10;
+            let deletedCount = 0;
+            let failedCount = 0;
+
+            for (let i = 0; i < ordersToDelete.length; i += batchSize) {
+              const batch = ordersToDelete.slice(i, i + batchSize);
+              const batchPromises = batch.map((order) => {
+                const orderId = order.orderId || order.id || order._id;
+                if (!orderId) {
+                  console.warn('Order missing ID:', order);
+                  return Promise.resolve({ success: false, skipped: true });
+                }
+
+                return api
+                  .deleteOrder(orderId)
+                  .then(() => {
+                    deletedCount++;
+                    return { success: true, orderId };
+                  })
+                  .catch((err) => {
+                    failedCount++;
+                    console.warn(`Failed to delete order ${orderId}:`, err);
+                    errorTracker.captureError({
+                      type: 'order_delete_failed',
+                      orderId,
+                      error: err,
+                    });
+                    return { success: false, orderId, error: err };
+                  });
+              });
+
+              await Promise.allSettled(batchPromises);
+
+              // Show progress
+              if (i + batchSize < totalOrders) {
+                showNotification(
+                  `Deleting orders... ${Math.min(i + batchSize, totalOrders)}/${totalOrders}`,
+                  'info'
+                );
+              }
+            }
+
+            errorTracker.completeOperation(clearOpId, {
+              deletedCount,
+              failedCount,
+              totalOrders,
+            });
+
+            if (failedCount > 0) {
+              showNotification(
+                `Cleared ${deletedCount} orders. ${failedCount} failed to delete.`,
+                'warning'
+              );
+            } else {
+              showNotification(
+                `Successfully deleted all ${deletedCount} orders from backend!`,
+                'success'
+              );
+            }
+          } else {
+            showNotification('No orders found in backend response', 'info');
+            errorTracker.completeOperation(clearOpId, { deletedCount: 0 });
+          }
+        } catch (apiError) {
+          errorTracker.failOperation(clearOpId, apiError);
+          console.error('Failed to delete orders from backend:', apiError);
+          showNotification(
+            'Failed to delete orders from backend: ' +
+              (apiError.message || 'Unknown error') +
+              '. Local data cleared.',
+            'warning'
+          );
+          // Continue anyway - localStorage is cleared
+        }
+      } else {
+        showNotification('No authentication token. Cleared local orders only.', 'warning');
+        errorTracker.completeOperation(clearOpId, { localOnly: true });
+      }
+    } catch (error) {
+      errorTracker.failOperation(clearOpId, error);
+      console.error('Error clearing orders:', error);
+      showNotification('Error clearing orders: ' + error.message, 'error');
+    }
+  }, []);
+
+  // Load saved Excel file data (persist across refreshes)
+  const loadExcelFileData = useCallback(() => {
+    try {
+      const savedExcelData = localStorage.getItem('homiebites_excel_data');
+      const savedFileName = localStorage.getItem('homiebites_excel_filename');
+      const savedSheets = localStorage.getItem('homiebites_excel_sheets');
+      const savedSelectedSheet = localStorage.getItem('homiebites_excel_selected_sheet');
+      const savedColumnTypes = localStorage.getItem('homiebites_excel_column_types');
+
+      if (savedExcelData && savedFileName) {
+        try {
+          const parsedData = JSON.parse(savedExcelData);
+          const parsedSheets = savedSheets ? JSON.parse(savedSheets) : [];
+          const parsedColumnTypes = savedColumnTypes ? JSON.parse(savedColumnTypes) : {};
+
+          setExcelData(parsedData);
+          setExcelFileName(savedFileName);
+
+          if (parsedSheets.length > 0) {
+            setExcelSheets(parsedSheets);
+            if (savedSelectedSheet && parsedSheets.includes(savedSelectedSheet)) {
+              setSelectedSheet(savedSelectedSheet);
+            } else {
+              setSelectedSheet(parsedSheets[0]);
+            }
+          }
+
+          if (Object.keys(parsedColumnTypes).length > 0) {
+            setColumnTypes(parsedColumnTypes);
+          }
+
+          // Note: Excel data is only for viewing/editing, not for syncing to orders
+          // Orders are loaded from backend only
+          // Excel upload is handled separately in handleLoadExcelFile
+        } catch (parseError) {
+          console.error('Error parsing saved Excel data:', parseError);
+          // Clear corrupted data
+          localStorage.removeItem('homiebites_excel_data');
+          localStorage.removeItem('homiebites_excel_filename');
+          localStorage.removeItem('homiebites_excel_sheets');
+          localStorage.removeItem('homiebites_excel_selected_sheet');
+          localStorage.removeItem('homiebites_excel_column_types');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading Excel file data:', error);
+    }
+  }, [convertExcelToOrdersWrapper]);
+
+  // Auto-sync Excel data to orders (Excel is source of truth)
+  // Use refs to prevent infinite loops and debounce sync operations
+  const syncTimeoutRef = useRef(null);
+  const isSyncingRef = useRef(false);
+  const lastSyncedDataRef = useRef(null);
+  const syncOpIdRef = useRef(null);
+  const lastSyncedOrdersRef = useRef(null); // Track last synced orders to prevent loops
+  const ordersRef = useRef(orders); // Keep ref in sync with orders state
+
+  // Keep ordersRef in sync with orders state
+  useEffect(() => {
+    ordersRef.current = orders;
+  }, [orders]);
+
+  useEffect(() => {
+    // Clear any pending sync
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+    }
+
+    // Skip if already syncing or no Excel data
+    if (!excelData || typeof excelData !== 'object' || !excelFileName || isSyncingRef.current) {
+      return;
+    }
+
+    // Validate excelData structure
+    try {
+      const sheetKeys = Object.keys(excelData);
+      if (sheetKeys.length === 0) {
+        return; // No sheets to process
+      }
+    } catch (validationError) {
+      console.error('Invalid excelData structure:', validationError);
+      return;
+    }
+
+    // Prevent syncing the same data multiple times
+    // Use a lightweight hash instead of full JSON.stringify for large data
+    let dataKey;
+    try {
+      // Create a simple hash from data length and first/last sheet names
+      const sheetNames = Object.keys(excelData || {});
+      const firstSheet = sheetNames[0] || '';
+      const lastSheet = sheetNames[sheetNames.length - 1] || '';
+      const totalRows = sheetNames.reduce((sum, name) => {
+        const sheet = excelData[name];
+        return sum + (Array.isArray(sheet) ? sheet.length : 0);
+      }, 0);
+      dataKey = `${excelFileName}-${sheetNames.length}-${totalRows}-${firstSheet}-${lastSheet}`;
+    } catch (keyError) {
+      console.warn('Error creating data key, using fallback:', keyError);
+      dataKey = `${excelFileName}-${Date.now()}`;
+    }
+
+    if (lastSyncedDataRef.current === dataKey) {
+      return;
+    }
+
+    // Debounce sync to prevent excessive updates (500ms delay)
+    syncTimeoutRef.current = setTimeout(() => {
+      // Prevent sync if already syncing
+      if (isSyncingRef.current) {
+        console.warn('Sync already in progress, skipping...');
+        return;
+      }
+
+      const syncOpId = errorTracker.addToQueue('sync-excel-to-orders', 'Sync Excel to Orders', {
+        fileName: excelFileName,
+        sheetCount: Object.keys(excelData).length,
+      });
+      syncOpIdRef.current = syncOpId;
+
+      try {
+        // Double-check sync lock before proceeding
+        if (isSyncingRef.current) {
+          console.warn('Sync already in progress (double-check), skipping...');
+          return;
+        }
+
+        isSyncingRef.current = true;
+        // Use wrapper which captures latest orders state
+        try {
+          const convertedOrders = convertExcelToOrdersWrapper(excelData, null);
+
+          // Validate converted orders before proceeding
+          if (!convertedOrders) {
+            console.warn('convertExcelToOrdersWrapper returned null/undefined');
+            errorTracker.failOperation(syncOpId, new Error('Conversion returned null'));
+            return;
+          }
+
+          if (!Array.isArray(convertedOrders)) {
+            console.warn('convertExcelToOrdersWrapper returned non-array:', typeof convertedOrders);
+            errorTracker.failOperation(syncOpId, new Error('Conversion returned non-array'));
+            return;
+          }
+
+          if (convertedOrders.length > 0) {
+            // Prevent infinite loop: only update if orders actually changed
+            // Compare with last synced orders from ref (avoids dependency on orders state)
+            const lastSynced = lastSyncedOrdersRef.current || [];
+            const currentCount = lastSynced.length;
+            const newCount = convertedOrders.length;
+
+            // Quick comparison: if counts differ, definitely changed
+            // If counts same, compare first and last IDs
+            let hasChanged = currentCount !== newCount;
+
+            if (!hasChanged && currentCount > 0) {
+              try {
+                const currentFirstId = lastSynced[0]?.id || '';
+                const newFirstId = convertedOrders[0]?.id || '';
+                const currentLastId = lastSynced[currentCount - 1]?.id || '';
+                const newLastId = convertedOrders[newCount - 1]?.id || '';
+                hasChanged = currentFirstId !== newFirstId || currentLastId !== newLastId;
+              } catch (compareError) {
+                console.warn('Error comparing orders:', compareError);
+                // If comparison fails, assume changed to be safe
+                hasChanged = true;
+              }
+            }
+
+            if (hasChanged) {
+              try {
+                // Limit orders array size to prevent memory issues (max 50,000 orders)
+                const maxOrders = 50000;
+                const ordersToSet =
+                  convertedOrders.length > maxOrders
+                    ? convertedOrders.slice(0, maxOrders)
+                    : convertedOrders;
+
+                if (convertedOrders.length > maxOrders) {
+                  console.warn(
+                    `Orders array truncated from ${convertedOrders.length} to ${maxOrders} to prevent memory issues`
+                  );
+                }
+
+                setOrders(ordersToSet);
+                try {
+                  setOrdersHook && setOrdersHook(ordersToSet);
+                } catch (e) {}
+                // Orders are loaded from backend only, not synced from Excel
+                // Excel sync is disabled - use Excel upload feature instead
+                lastSyncedDataRef.current = dataKey;
+                lastSyncedOrdersRef.current = ordersToSet; // Update ref to prevent loops
+                errorTracker.completeOperation(syncOpId, { orderCount: ordersToSet.length });
+              } catch (updateError) {
+                console.error('Error updating orders state:', updateError);
+                errorTracker.failOperation(syncOpId, updateError);
+              }
+            } else {
+              // Orders haven't changed, just update the sync ref
+              lastSyncedDataRef.current = dataKey;
+              errorTracker.completeOperation(syncOpId, {
+                orderCount: convertedOrders.length,
+                note: 'No changes detected',
+              });
+            }
+          }
+        } catch (conversionError) {
+          console.error('Error converting Excel to orders:', conversionError);
+          errorTracker.failOperation(syncOpId, conversionError);
+          // Don't re-throw - let outer catch handle it gracefully
+        }
+      } catch (error) {
+        errorTracker.failOperation(syncOpId, error);
+        console.error('Error syncing Excel data to orders:', error);
+        // Don't update lastSyncedDataRef on error so it can retry
+      } finally {
+        isSyncingRef.current = false;
+        syncOpIdRef.current = null;
+      }
+    }, 500);
+
+    // Cleanup timeout on unmount or dependency change
+    return () => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+      if (syncOpIdRef.current) {
+        errorTracker.failOperation(syncOpIdRef.current, new Error('Sync cancelled'));
+        syncOpIdRef.current = null;
+      }
+    };
+  }, [excelData, excelFileName, convertExcelToOrdersWrapper]);
+
+  // Save Excel file data to localStorage (auto-save on changes)
+  useEffect(() => {
+    if (excelData && excelFileName) {
+      try {
+        localStorage.setItem('homiebites_excel_data', JSON.stringify(excelData));
+        localStorage.setItem('homiebites_excel_filename', excelFileName);
+        localStorage.setItem('homiebites_excel_sheets', JSON.stringify(excelSheets));
+        if (selectedSheet) {
+          localStorage.setItem('homiebites_excel_selected_sheet', selectedSheet);
+        }
+        if (Object.keys(columnTypes).length > 0) {
+          localStorage.setItem('homiebites_excel_column_types', JSON.stringify(columnTypes));
+        }
+      } catch (error) {
+        console.error('Error saving Excel file data:', error);
+      }
+    }
+  }, [excelData, excelFileName, excelSheets, selectedSheet, columnTypes]);
 
   const loadMenuData = async () => {
     try {
@@ -222,38 +700,18 @@ const AdminDashboard = ({ onLogout }) => {
     }
   };
 
-  const loadOrders = async () => {
+  // Local loadOrders function - delegates to hook's loadOrders for consistency
+  const loadOrders = useCallback(async () => {
     try {
-      // Try API first
-      const token = localStorage.getItem('homiebites_token');
-      if (token) {
-        try {
-          const response = await api.getAllOrders({
-            status: orderFilter !== 'all' ? orderFilter : undefined,
-            dateFrom: dateRange === 'custom' && customStartDate ? customStartDate : undefined,
-            dateTo: dateRange === 'custom' && customEndDate ? customEndDate : undefined,
-            search: searchQuery || undefined,
-          });
-          if (response.success && response.data) {
-            setOrders(response.data);
-            // Cache in localStorage for offline access
-            localStorage.setItem('homiebites_orders', JSON.stringify(response.data));
-            return;
-          }
-        } catch (apiError) {
-          console.warn('Failed to load orders from API, using cached data:', apiError.message);
-        }
-      }
-
-      // Fallback to localStorage
-      const stored = localStorage.getItem('homiebites_orders');
-      if (stored) {
-        setOrders(JSON.parse(stored));
-      }
+      // Use hook's loadOrders which handles backend loading and state sync
+      // The hook will update ordersHook, which will then sync to local orders via useEffect
+      await hookLoadOrders();
+      console.log('[AdminDashboard] Orders loaded via hook');
     } catch (e) {
       console.error('Error loading orders:', e);
+      showNotification('Error loading orders from backend: ' + e.message, 'error');
     }
-  };
+  }, [hookLoadOrders, showNotification]);
 
   const loadUsers = async () => {
     try {
@@ -324,6 +782,9 @@ const AdminDashboard = ({ onLogout }) => {
     setSyncing(true);
     try {
       await saveMenuData(menuData);
+      try {
+        setMenuDataHook && setMenuDataHook(menuData);
+      } catch (e) {}
       triggerDataSync();
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -343,6 +804,9 @@ const AdminDashboard = ({ onLogout }) => {
     setSyncing(true);
     try {
       await saveOffersData(offersData);
+      try {
+        setOffersDataHook && setOffersDataHook(offersData);
+      } catch (e) {}
       triggerOffersDataSync();
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -381,11 +845,15 @@ const AdminDashboard = ({ onLogout }) => {
 
     if (editingOffer) {
       // Update existing offer
-      setOffersData((prev) =>
-        prev.map((offer) =>
+      setOffersData((prev) => {
+        const next = prev.map((offer) =>
           offer.id === editingOffer.id ? { ...newOffer, id: editingOffer.id } : offer
-        )
-      );
+        );
+        try {
+          setOffersDataHook && setOffersDataHook(next);
+        } catch (e) {}
+        return next;
+      });
       showNotification('Offer updated successfully!', 'success');
     } else {
       // Add new offer
@@ -394,7 +862,13 @@ const AdminDashboard = ({ onLogout }) => {
         id: Date.now(),
         createdAt: new Date().toISOString(),
       };
-      setOffersData((prev) => [...prev, offer]);
+      setOffersData((prev) => {
+        const next = [...prev, offer];
+        try {
+          setOffersDataHook && setOffersDataHook(next);
+        } catch (e) {}
+        return next;
+      });
       showNotification('Offer added successfully!', 'success');
     }
 
@@ -409,7 +883,13 @@ const AdminDashboard = ({ onLogout }) => {
   };
 
   const handleDeleteOffer = (offerId) => {
-    setOffersData((prev) => prev.filter((offer) => offer.id !== offerId));
+    setOffersData((prev) => {
+      const next = prev.filter((offer) => offer.id !== offerId);
+      try {
+        setOffersDataHook && setOffersDataHook(next);
+      } catch (e) {}
+      return next;
+    });
     showNotification('Offer deleted successfully!', 'success');
   };
 
@@ -438,45 +918,22 @@ const AdminDashboard = ({ onLogout }) => {
   const handleAddOrder = () => {
     setEditingOrder(null);
     setShowAddOrderModal(true);
-    // Set default date to today
-    const today = new Date();
-    const day = String(today.getDate()).padStart(2, '0');
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const year = today.getFullYear();
-    const formattedDate = `${day}/${month}/${year}`;
-
-    // Calculate billing month and reference month
-    const monthNames = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    const monthIndex = today.getMonth();
-    const billingMonth = monthNames[monthIndex];
-    const referenceMonth = `${String(monthIndex + 1).padStart(2, '0')} - ${monthNames[monthIndex].substring(0, 3)}'${year.toString().slice(-2)}`;
+    // Set default date to today (ISO format: YYYY-MM-DD)
+    const today = new Date().toISOString().split('T')[0];
 
     setNewOrder({
-      date: formattedDate,
+      date: today,
       deliveryAddress: '',
       quantity: 1,
       unitPrice: 0,
-      totalAmount: 0,
       status: 'Paid',
       paymentMode: 'Online',
-      billingMonth: billingMonth,
-      referenceMonth: referenceMonth,
-      elapsedDays: '0',
-      year: year.toString(),
+      source: 'manual',
     });
+
+    // Load address suggestions
+    const uniqueAddresses = getUniqueAddresses(orders);
+    setAddressSuggestions(uniqueAddresses);
   };
 
   const handleSaveNewOrder = async () => {
@@ -485,127 +942,225 @@ const AdminDashboard = ({ onLogout }) => {
       return;
     }
 
-    // Calculate total if not provided
-    const total = newOrder.totalAmount || newOrder.quantity * newOrder.unitPrice;
+    // MASTER ORDERS MODEL: Auto-calculate derived fields (NEVER store manually)
+    const quantity = parseInt(newOrder.quantity) || 1;
+    const unitPrice = parseFloat(newOrder.unitPrice) || 0;
+    const totalAmount = calculateTotalAmount(quantity, unitPrice);
+    const orderDate = new Date(newOrder.date);
+    const billingMonth = extractBillingMonth(orderDate);
+    const billingYear = extractBillingYear(orderDate);
 
     if (editingOrder) {
-      // Update existing order
+      // Update existing order (no duplicates)
       await handleSaveEditedOrder();
       return;
     }
 
-    // Try to save to API first
-    const token = localStorage.getItem('homiebites_token');
-    if (token) {
-      try {
-        const apiOrder = {
-          date: newOrder.date,
-          deliveryAddress: newOrder.deliveryAddress,
-          quantity: parseInt(newOrder.quantity) || 1,
-          unitPrice: parseFloat(newOrder.unitPrice) || 0,
-          totalAmount: total,
-          status: newOrder.status,
-          paymentMode: newOrder.paymentMode,
-          billingMonth: newOrder.billingMonth,
-          referenceMonth: newOrder.referenceMonth,
-          elapsedDays: newOrder.elapsedDays || '0',
-          year: newOrder.year || new Date().getFullYear().toString(),
-          items: [
-            {
-              name: `Order #${orders.length + 1}`,
-              quantity: parseInt(newOrder.quantity) || 1,
-              price: parseFloat(newOrder.unitPrice) || 0,
-            },
-          ],
-        };
+    // Smart update/insert logic: Check if order with same (date + address) exists
+    const existingOrder = findOrderByKey(orders, newOrder.date, newOrder.deliveryAddress);
+    const isUpdate = !!existingOrder;
 
-        const response = await api.createOrder(apiOrder);
-        if (response.success) {
-          // Reload orders from API
-          await loadOrders();
-          showNotification('Order added successfully!', 'success');
-          setShowAddOrderModal(false);
-          setNewOrder({
-            date: new Date().toISOString().split('T')[0],
-            deliveryAddress: '',
-            quantity: 1,
-            unitPrice: 0,
-            totalAmount: 0,
-            status: 'Paid',
-            paymentMode: 'Online',
-            billingMonth: '',
-            referenceMonth: '',
-            elapsedDays: '',
-          });
-          return;
+    // If Excel file is loaded, use smart update/insert logic
+    if (excelData && excelFileName && selectedSheet && excelData[selectedSheet]) {
+      try {
+        const sheetData = [...excelData[selectedSheet]];
+        const headers = sheetData[0] || [];
+
+        // Check if order with same (date + address) exists in Excel
+        const existingRowIndex = sheetData.findIndex((row, idx) => {
+          if (idx === 0) return false; // Skip header
+          const rowDate =
+            row[
+              headers.findIndex((h) =>
+                String(h || '')
+                  .toLowerCase()
+                  .includes('date')
+              )
+            ];
+          const rowAddress =
+            row[
+              headers.findIndex((h) =>
+                String(h || '')
+                  .toLowerCase()
+                  .includes('address')
+              )
+            ];
+          return (
+            String(rowDate || '').trim() === String(newOrder.date).trim() &&
+            String(rowAddress || '')
+              .trim()
+              .toLowerCase() === String(newOrder.deliveryAddress).trim().toLowerCase()
+          );
+        });
+
+        // Create row data (only source fields + auto-calculated total)
+        const newRow = headers.map((header) => {
+          const headerStr = String(header || '')
+            .toLowerCase()
+            .trim();
+          if (headerStr.includes('s no') || headerStr.includes('serial')) {
+            return existingRowIndex > 0 ? existingRowIndex : sheetData.length; // Keep S No. or next
+          } else if (headerStr.includes('date') && !headerStr.includes('delivery')) {
+            return newOrder.date;
+          } else if (headerStr.includes('delivery address') || headerStr.includes('address')) {
+            return newOrder.deliveryAddress;
+          } else if (headerStr.includes('quantity') || headerStr.includes('qty')) {
+            return quantity;
+          } else if (headerStr.includes('unit price') || headerStr.includes('price')) {
+            return unitPrice;
+          } else if (headerStr.includes('total amount') || headerStr.includes('total')) {
+            return totalAmount; // Auto-calculated
+          } else if (headerStr.includes('status')) {
+            return newOrder.status;
+          } else if (headerStr.includes('payment') || headerStr.includes('mode')) {
+            return newOrder.paymentMode;
+          } else if (headerStr.includes('billing month')) {
+            // Auto-calculated for display (never stored)
+            return billingMonth && billingYear ? formatBillingMonth(billingMonth, billingYear) : '';
+          } else if (headerStr.includes('reference month')) {
+            // Auto-calculated for display (never stored)
+            return billingMonth && billingYear
+              ? formatReferenceMonth(billingMonth, billingYear)
+              : '';
+          } else if (headerStr.includes('year')) {
+            return billingYear || '';
+          }
+          return '';
+        });
+
+        if (existingRowIndex > 0) {
+          // UPDATE existing row
+          sheetData[existingRowIndex] = newRow;
+          showNotification(
+            'Order updated in Excel file. Dashboard will refresh automatically.',
+            'success'
+          );
+        } else {
+          // INSERT new row
+          sheetData.push(newRow);
+          showNotification(
+            'Order added to Excel file. Dashboard will refresh automatically.',
+            'success'
+          );
         }
-      } catch (apiError) {
-        console.warn('Failed to save order to API, saving locally:', apiError.message);
-        showNotification('Order saved locally (API unavailable)', 'warning');
+
+        const updatedData = { ...excelData };
+        updatedData[selectedSheet] = sheetData;
+        setExcelData(updatedData);
+
+        // Save Excel data to localStorage for persistence
+        try {
+          localStorage.setItem('homiebites_excel_data', JSON.stringify(updatedData));
+        } catch (storageError) {
+          console.warn('Error saving Excel data to localStorage:', storageError);
+        }
+
+        // Excel data change will auto-sync to orders via useEffect
+        setShowAddOrderModal(false);
+        setShowAddressSuggestions(false);
+        setNewOrder({
+          date: new Date().toISOString().split('T')[0],
+          deliveryAddress: '',
+          quantity: 1,
+          unitPrice: 0,
+          status: 'Paid',
+          paymentMode: 'Online',
+          source: 'manual',
+        });
+        return; // Don't save to API/localStorage if Excel is source of truth
+      } catch (excelError) {
+        console.error('Error adding order to Excel:', excelError);
+        showNotification('Error adding to Excel, saving to orders instead', 'warning');
+        // Fall through to normal save
       }
     }
 
-    // Fallback to localStorage
-    const order = {
-      id: Date.now().toString(),
-      sNo: (orders.length + 1).toString(),
-      date: newOrder.date,
-      deliveryAddress: newOrder.deliveryAddress,
-      quantity: parseInt(newOrder.quantity) || 1,
-      unitPrice: parseFloat(newOrder.unitPrice) || 0,
-      totalAmount: total,
-      status: newOrder.status,
-      paymentMode: newOrder.paymentMode,
-      billingMonth: newOrder.billingMonth,
-      referenceMonth: newOrder.referenceMonth,
-      elapsedDays: newOrder.elapsedDays || '0',
-      year: newOrder.year || new Date().getFullYear().toString(),
-      customerAddress: newOrder.deliveryAddress,
-      total: total,
-      createdAt: new Date().toISOString(),
-      items: [
-        {
-          name: `Order #${orders.length + 1}`,
-          quantity: parseInt(newOrder.quantity) || 1,
-          price: parseFloat(newOrder.unitPrice) || 0,
-        },
-      ],
-    };
+    // Save to backend API only (no localStorage fallback)
+    const token = localStorage.getItem('homiebites_token');
+    if (!token) {
+      showNotification('Please login to save orders', 'error');
+      return;
+    }
 
-    const updatedOrders = [...orders, order];
-    setOrders(updatedOrders);
-    localStorage.setItem('homiebites_orders', JSON.stringify(updatedOrders));
+    try {
+      // MASTER ORDERS MODEL: Only send source fields + auto-calculated fields
+      // Backend will generate orderId automatically (never generate in frontend)
+      const apiOrder = {
+        // orderId is NOT sent - backend generates it
+        date: newOrder.date,
+        deliveryAddress: newOrder.deliveryAddress,
+        quantity: quantity,
+        unitPrice: unitPrice,
+        // totalAmount is NOT sent - backend calculates it
+        status: newOrder.status,
+        paymentMode: newOrder.paymentMode,
+        billingMonth: billingMonth, // Auto-calculated (INT)
+        billingYear: billingYear, // Auto-calculated (INT)
+        source: newOrder.source || 'manual',
+        items: [
+          {
+            name: `Order for ${newOrder.deliveryAddress}`,
+            quantity: quantity,
+            price: unitPrice,
+          },
+        ],
+      };
 
-    showNotification('Order added successfully!', 'success');
-
-    setShowAddOrderModal(false);
+      const response = await api.createOrder(apiOrder);
+      if (response.success) {
+        // Reload orders from backend
+        await loadOrders();
+        showNotification('Order added successfully!', 'success');
+        setShowAddOrderModal(false);
+        setShowAddressSuggestions(false);
+        setNewOrder({
+          date: new Date().toISOString().split('T')[0],
+          deliveryAddress: '',
+          quantity: 1,
+          unitPrice: 0,
+          status: 'Paid',
+          paymentMode: 'Online',
+          source: 'manual',
+        });
+        return;
+      } else {
+        throw new Error(response.error || 'Failed to create order');
+      }
+    } catch (apiError) {
+      console.error('Failed to save order to backend:', apiError);
+      showNotification('Error saving order to backend: ' + apiError.message, 'error');
+    }
+    setShowAddressSuggestions(false);
     setNewOrder({
       date: new Date().toISOString().split('T')[0],
       deliveryAddress: '',
       quantity: 1,
       unitPrice: 0,
-      totalAmount: 0,
-      status: 'Paid',
-      paymentMode: 'Online',
-      billingMonth: '',
-      referenceMonth: '',
-      elapsedDays: '',
+      status: 'Unpaid',
+      paymentMode: '',
+      source: 'manual',
     });
   };
 
   const handleNewOrderChange = (field, value) => {
     setNewOrder((prev) => {
       const updated = { ...prev, [field]: value };
-      // Auto-calculate total if quantity or unit price changes
-      if (field === 'quantity' || field === 'unitPrice') {
-        updated.totalAmount =
-          (parseInt(updated.quantity) || 0) * (parseFloat(updated.unitPrice) || 0);
+
+      // Auto-fill unit price when address changes (smart suggestion)
+      if (field === 'deliveryAddress' && value) {
+        const lastPrice = getLastUnitPriceForAddress(orders, value);
+        if (lastPrice && !prev.unitPrice) {
+          updated.unitPrice = lastPrice;
+        }
+        // Update address suggestions
+        const query = String(value).toLowerCase();
+        const filtered = getUniqueAddresses(orders).filter((addr) =>
+          addr.toLowerCase().includes(query)
+        );
+        setAddressSuggestions(filtered);
+        setShowAddressSuggestions(filtered.length > 0 && query.length > 0);
       }
-      // Auto-calculate unit price if total and quantity change
-      if (field === 'totalAmount' && updated.quantity) {
-        updated.unitPrice =
-          (parseFloat(updated.totalAmount) || 0) / (parseInt(updated.quantity) || 1);
-      }
+
       return updated;
     });
   };
@@ -620,56 +1175,239 @@ const AdminDashboard = ({ onLogout }) => {
   };
 
   const confirmReset = async () => {
-    const defaultData = await resetMenuData();
-    setMenuData(defaultData);
-    showNotification('Default menu loaded. Click "Save Changes" to apply to website.', 'info');
+    try {
+      const defaultData = await resetMenuData();
+      setMenuData(defaultData);
+      try {
+        setMenuDataHook && setMenuDataHook(defaultData);
+      } catch (e) {}
+
+      // Automatically save to backend
+      await saveMenuData(defaultData);
+      showNotification('Menu data reset and saved successfully!', 'success');
+    } catch (error) {
+      console.error('Error resetting menu data:', error);
+      showNotification('Failed to save menu data. Please try again.', 'error');
+    }
   };
 
-  const updateOrderStatus = (orderId, newStatus) => {
-    const updatedOrders = orders.map((order) =>
-      order.id === orderId ? { ...order, status: newStatus } : order
-    );
-    setOrders(updatedOrders);
-    localStorage.setItem('homiebites_orders', JSON.stringify(updatedOrders));
+  // Update menu with new items list from provided data
+  const updateMenuFromList = useCallback(async () => {
+    try {
+      setSyncing(true);
+      const newMenuData = createMenuFromList();
+      setMenuData(newMenuData);
+      try {
+        setMenuDataHook && setMenuDataHook(newMenuData);
+      } catch (e) {}
+
+      // Automatically save to backend
+      await saveMenuData(newMenuData);
+      showNotification('Menu updated and saved successfully to backend!', 'success');
+      triggerDataSync();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (error) {
+      console.error('Error updating menu data:', error);
+      showNotification('Failed to save menu data. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
+    }
+  }, [setMenuDataHook]);
+
+  // Expose updateMenuFromList globally for browser console access
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.updateMenuFromList = updateMenuFromList;
+      // Auto-trigger on first load if flag is set
+      const shouldUpdate = sessionStorage.getItem('homiebites_trigger_menu_update');
+      if (shouldUpdate === 'true') {
+        sessionStorage.removeItem('homiebites_trigger_menu_update');
+        updateMenuFromList();
+      }
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete window.updateMenuFromList;
+      }
+    };
+  }, [updateMenuFromList]);
+
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const token = localStorage.getItem('homiebites_token');
+      if (!token) {
+        showNotification('Please login to update order status', 'error');
+        return;
+      }
+
+      // Find the order to update
+      const orderToUpdate = orders.find(
+        (o) => o.orderId === orderId || o.id === orderId || o._id === orderId
+      );
+
+      if (!orderToUpdate) {
+        showNotification('Order not found', 'error');
+        return;
+      }
+
+      // Prefer _id (MongoDB ObjectId) if available, otherwise use orderId or id
+      const orderIdToUpdate =
+        orderToUpdate._id || orderToUpdate.id || orderToUpdate.orderId || orderId;
+
+      // Update order status via API
+      await api.updateOrder(orderIdToUpdate, {
+        ...orderToUpdate,
+        status: newStatus,
+        paymentStatus:
+          newStatus === 'Paid' ? 'Paid' : newStatus === 'Unpaid' ? 'Unpaid' : 'Pending',
+      });
+
+      // Reload orders from backend to get updated data
+      if (hookLoadOrders) {
+        await hookLoadOrders();
+      }
+
+      showNotification('Order status updated successfully', 'success');
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      showNotification('Failed to update order status: ' + error.message, 'error');
+    }
   };
 
   // Mark all orders as delivered
-  const markAllOrdersAsDelivered = () => {
+  const markAllOrdersAsDelivered = async () => {
     try {
-      if (!Array.isArray(orders) || orders.length === 0) {
+      if (!Array.isArray(orders) || orders.filter((o) => o && o.orderId).length === 0) {
         showNotification('No orders to update', 'info');
+        return;
+      }
+
+      const token = localStorage.getItem('homiebites_token');
+      if (!token) {
+        showNotification('Please login to update orders', 'error');
+        return;
+      }
+
+      const ordersToUpdate = orders.filter((o) => o && (o._id || o.id));
+      if (ordersToUpdate.length === 0) {
+        showNotification('No orders with valid IDs to update', 'warning');
         return;
       }
 
       if (
         window.confirm(
-          `Are you sure you want to mark ALL ${orders.length} orders as delivered? This action cannot be undone.`
+          `Are you sure you want to mark ALL ${ordersToUpdate.length} orders as delivered? This will update the backend.`
         )
       ) {
         try {
-          const updatedOrders = orders.map((order) => {
+          showNotification('Updating orders in backend...', 'info');
+
+          // Update each order via API
+          const updatePromises = ordersToUpdate.map(async (order) => {
             try {
-              if (!order) return order;
-              return {
+              const orderId = order._id || order.id;
+              if (!orderId) return null;
+
+              await api.updateOrder(orderId, {
                 ...order,
                 status: 'delivered',
-              };
-            } catch (orderError) {
-              console.warn('Error processing order in markAllDelivered:', orderError, order);
-              return order; // Return original order if error
+              });
+              return orderId;
+            } catch (err) {
+              console.warn(`Failed to update order ${order.orderId}:`, err);
+              return null;
             }
           });
-          setOrders(updatedOrders);
-          localStorage.setItem('homiebites_orders', JSON.stringify(updatedOrders));
-          showNotification(`Successfully marked ${updatedOrders.length} orders as delivered!`, 'success');
+
+          const results = await Promise.all(updatePromises);
+          const successCount = results.filter((r) => r !== null).length;
+
+          // Reload orders from backend
+          await loadOrders();
+
+          showNotification(
+            `Successfully marked ${successCount} of ${ordersToUpdate.length} orders as delivered!`,
+            successCount === ordersToUpdate.length ? 'success' : 'warning'
+          );
         } catch (error) {
           console.error('Error marking all orders as delivered:', error);
-          showNotification('Error marking orders as delivered', 'error');
+          showNotification('Error marking orders as delivered: ' + error.message, 'error');
         }
       }
     } catch (error) {
       console.error('Error in markAllOrdersAsDelivered:', error);
       showNotification('Error: Unable to mark orders as delivered', 'error');
+    }
+  };
+
+  // Mark all orders as paid
+  const markAllOrdersAsPaid = async (ordersToMark = null) => {
+    try {
+      const ordersToUpdate = ordersToMark || orders.filter((o) => o && (o._id || o.id));
+
+      if (!Array.isArray(ordersToUpdate) || ordersToUpdate.length === 0) {
+        showNotification('No orders to update', 'info');
+        return;
+      }
+
+      const token = localStorage.getItem('homiebites_token');
+      if (!token) {
+        showNotification('Please login to update orders', 'error');
+        return;
+      }
+
+      if (
+        window.confirm(
+          `Are you sure you want to mark ${ordersToUpdate.length} order(s) as paid? This will update the backend.`
+        )
+      ) {
+        try {
+          showNotification(`Updating ${ordersToUpdate.length} orders in backend...`, 'info');
+
+          // Update each order via API
+          const updatePromises = ordersToUpdate.map(async (order) => {
+            try {
+              const orderId = order._id || order.id;
+              if (!orderId) return null;
+
+              // Set both status fields - backend normalizes paymentStatus to 'Paid', 'Unpaid', or 'Pending'
+              // Status should be capitalized to match dropdown options ('Paid', 'Unpaid')
+              // Filter will still work because it uses .toLowerCase() for comparison
+              await api.updateOrder(orderId, {
+                ...order,
+                status: 'Paid', // Capitalized to match dropdown options
+                paymentStatus: 'Paid', // Backend expects capitalized paymentStatus
+              });
+              return orderId;
+            } catch (err) {
+              console.warn(`Failed to update order ${order.orderId || orderId}:`, err);
+              return null;
+            }
+          });
+
+          const results = await Promise.all(updatePromises);
+          const successCount = results.filter((r) => r !== null).length;
+
+          // Reload orders from backend after a short delay to ensure backend has processed updates
+          if (hookLoadOrders) {
+            // Small delay to ensure backend has processed all updates
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            await hookLoadOrders();
+          }
+
+          showNotification(
+            `Successfully marked ${successCount} of ${ordersToUpdate.length} order(s) as paid!`,
+            successCount === ordersToUpdate.length ? 'success' : 'warning'
+          );
+        } catch (error) {
+          console.error('Error marking orders as paid:', error);
+          showNotification('Error marking orders as paid: ' + error.message, 'error');
+        }
+      }
+    } catch (error) {
+      console.error('Error in markAllOrdersAsPaid:', error);
+      showNotification('Error: Unable to mark orders as paid', 'error');
     }
   };
 
@@ -682,8 +1420,10 @@ const AdminDashboard = ({ onLogout }) => {
     if (orderToDelete) {
       // Try API first
       const token = localStorage.getItem('homiebites_token');
-      const order = orders.find((o) => o.id === orderToDelete);
-      const orderId = order?._id || order?.id;
+      const order = orders.find(
+        (o) => o.orderId === orderToDelete || o.id === orderToDelete || o._id === orderToDelete
+      );
+      const orderId = order?.orderId || order?.id || order?._id;
 
       if (token && orderId) {
         try {
@@ -695,17 +1435,14 @@ const AdminDashboard = ({ onLogout }) => {
             return;
           }
         } catch (apiError) {
-          console.warn('Failed to delete order from API:', apiError.message);
-          showNotification('Order deleted locally (API unavailable)', 'warning');
+          console.error('Failed to delete order from API:', apiError);
+          showNotification('Error deleting order: ' + apiError.message, 'error');
         }
+      } else {
+        showNotification('Please login to delete orders', 'error');
       }
-
-      // Fallback to localStorage
-      const updatedOrders = orders.filter((order) => order.id !== orderToDelete);
-      setOrders(updatedOrders);
-      localStorage.setItem('homiebites_orders', JSON.stringify(updatedOrders));
-      showNotification('Order deleted successfully!', 'success');
       setOrderToDelete(null);
+      setShowDeleteOrderModal(false);
     }
   };
 
@@ -721,24 +1458,37 @@ const AdminDashboard = ({ onLogout }) => {
         return;
       }
 
+      // MASTER ORDERS MODEL: Auto-calculate derived fields
+      const quantity = parseInt(editingOrder.quantity) || 1;
+      const unitPrice = parseFloat(editingOrder.unitPrice) || 0;
+      const totalAmount = calculateTotalAmount(quantity, unitPrice);
+      const orderDate = new Date(editingOrder.date);
+      const billingMonth = extractBillingMonth(orderDate);
+      const billingYear = extractBillingYear(orderDate);
+
+      // Preserve existing orderId when editing (should not change) - declare once at top
+      const existingOrderId = editingOrder.orderId || editingOrder.order_id || editingOrder.id;
+
       // Try API first
       const token = localStorage.getItem('homiebites_token');
       const orderId = editingOrder._id || editingOrder.id;
 
       if (token && orderId) {
         try {
+          // MASTER ORDERS MODEL: Only send source fields + auto-calculated fields
+          // Preserve orderId when editing - it should never change
           const apiOrder = {
+            orderId: existingOrderId, // Preserve existing Order ID
             date: editingOrder.date,
             deliveryAddress: editingOrder.deliveryAddress,
-            quantity: parseInt(editingOrder.quantity) || 1,
-            unitPrice: parseFloat(editingOrder.unitPrice) || 0,
-            totalAmount: editingOrder.totalAmount || editingOrder.quantity * editingOrder.unitPrice,
+            quantity: quantity,
+            unitPrice: unitPrice,
+            totalAmount: totalAmount, // Auto-calculated
             status: editingOrder.status,
             paymentMode: editingOrder.paymentMode,
-            billingMonth: editingOrder.billingMonth,
-            referenceMonth: editingOrder.referenceMonth,
-            elapsedDays: editingOrder.elapsedDays || '0',
-            year: editingOrder.year || new Date().getFullYear().toString(),
+            billingMonth: billingMonth, // Auto-calculated (INT)
+            billingYear: billingYear, // Auto-calculated (INT)
+            source: editingOrder.source || 'manual',
           };
 
           const response = await api.updateOrder(orderId, apiOrder);
@@ -747,22 +1497,18 @@ const AdminDashboard = ({ onLogout }) => {
             showNotification('Order updated successfully!', 'success');
             setShowAddOrderModal(false);
             setEditingOrder(null);
+            setShowAddressSuggestions(false);
             return;
+          } else {
+            throw new Error(response.error || 'Failed to update order');
           }
         } catch (apiError) {
-          console.warn('Failed to update order via API, updating locally:', apiError.message);
+          console.error('Failed to update order via API:', apiError);
+          showNotification('Error updating order: ' + apiError.message, 'error');
         }
+      } else {
+        showNotification('Please login to update orders', 'error');
       }
-
-      // Fallback to localStorage
-      const updatedOrders = orders.map((order) =>
-        order.id === editingOrder.id ? editingOrder : order
-      );
-      setOrders(updatedOrders);
-      localStorage.setItem('homiebites_orders', JSON.stringify(updatedOrders));
-      showNotification('Order updated successfully!', 'success');
-      setShowAddOrderModal(false);
-      setEditingOrder(null);
     } catch (error) {
       console.error('Error updating order:', error);
       showNotification('Error updating order. Please try again.', 'error');
@@ -783,10 +1529,12 @@ const AdminDashboard = ({ onLogout }) => {
   const addNotification = () => {
     const newNotification = {
       id: Date.now(),
+      type: 'payment_reminder', // payment_reminder, offer_announcement, service_update
       title: '',
       message: '',
-      type: 'info',
-      active: true,
+      channels: [], // website_banner, whatsapp
+      whatsappMessage: '',
+      active: false,
       createdAt: new Date().toISOString(),
     };
     setNotifications([...notifications, newNotification]);
@@ -798,14 +1546,18 @@ const AdminDashboard = ({ onLogout }) => {
   };
 
   const updateCategory = (categoryId, field, value) => {
-    setMenuData((prev) =>
-      prev.map((cat) => (cat.id === categoryId ? { ...cat, [field]: value } : cat))
-    );
+    setMenuData((prev) => {
+      const next = prev.map((cat) => (cat.id === categoryId ? { ...cat, [field]: value } : cat));
+      try {
+        setMenuDataHook && setMenuDataHook(next);
+      } catch (e) {}
+      return next;
+    });
   };
 
   const updateItem = (categoryId, itemId, field, value) => {
-    setMenuData((prev) =>
-      prev.map((cat) => {
+    setMenuData((prev) => {
+      const next = prev.map((cat) => {
         if (cat.id === categoryId) {
           const updatedItems = cat.items.map((item) =>
             item.id === itemId ? { ...item, [field]: value } : item
@@ -813,13 +1565,17 @@ const AdminDashboard = ({ onLogout }) => {
           return { ...cat, items: updatedItems };
         }
         return cat;
-      })
-    );
+      });
+      try {
+        setMenuDataHook && setMenuDataHook(next);
+      } catch (e) {}
+      return next;
+    });
   };
 
   const addItem = (categoryId) => {
-    setMenuData((prev) =>
-      prev.map((cat) => {
+    setMenuData((prev) => {
+      const next = prev.map((cat) => {
         if (cat.id === categoryId) {
           const newItem = {
             id: Date.now(),
@@ -829,8 +1585,12 @@ const AdminDashboard = ({ onLogout }) => {
           return { ...cat, items: [...cat.items, newItem] };
         }
         return cat;
-      })
-    );
+      });
+      try {
+        setMenuDataHook && setMenuDataHook(next);
+      } catch (e) {}
+      return next;
+    });
   };
 
   const removeItem = (categoryId, itemId) => {
@@ -840,14 +1600,18 @@ const AdminDashboard = ({ onLogout }) => {
 
   const confirmRemoveItem = () => {
     if (itemToRemove) {
-      setMenuData((prev) =>
-        prev.map((cat) => {
+      setMenuData((prev) => {
+        const next = prev.map((cat) => {
           if (cat.id === itemToRemove.categoryId) {
             return { ...cat, items: cat.items.filter((item) => item.id !== itemToRemove.itemId) };
           }
           return cat;
-        })
-      );
+        });
+        try {
+          setMenuDataHook && setMenuDataHook(next);
+        } catch (e) {}
+        return next;
+      });
       showNotification('Item removed successfully!', 'success');
       setItemToRemove(null);
     }
@@ -879,179 +1643,44 @@ const AdminDashboard = ({ onLogout }) => {
     }
   };
 
-  // Format currency with 2 decimal places
-  const formatCurrency = (amount) => {
-    try {
-      const num = parseFloat(amount) || 0;
-      return num.toLocaleString('en-IN', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-    } catch (error) {
-      console.error('Error formatting currency:', error);
-      return '0.00';
-    }
+  // Wrapper functions for utility functions (for backward compatibility)
+  // Note: These functions are now imported from utils/orderUtils.js and utils/calculations.js
+  const getPendingOrdersWrapper = () => {
+    return getPendingOrders(orders);
   };
 
-  // Get total revenue - ALL orders (matches Excel format)
-  const getTotalRevenue = (ordersList = orders) => {
+  const getFilteredOrdersByDateWrapper = (ordersList) => {
+    return getFilteredOrdersByDate(ordersList, dateRange, customStartDate, customEndDate);
+  };
+
+  const getTodayStatsWrapper = () => {
+    return getTodayStats(orders);
+  };
+
+  const getWeeklyStatsWrapper = () => {
+    return getWeeklyStats(orders);
+  };
+
+  // When viewing current month orders tab, default to current month
+  useEffect(() => {
     try {
-      if (!Array.isArray(ordersList)) {
-        return 0;
+      if (activeTab === 'currentMonthOrders') {
+        setDateRange('month'); // Default to current month
+        setCustomStartDate('');
+        setCustomEndDate('');
+        setSearchQuery('');
+        // Do NOT auto-open Add Order modal
+      } else if (activeTab === 'allOrdersData') {
+        setDateRange('all'); // Default to all for master data
+        setCustomStartDate('');
+        setCustomEndDate('');
+        setSearchQuery('');
+        setCurrentPage(1); // Reset pagination when switching to All Orders Data tab
       }
-      return ordersList.reduce((total, order) => {
-        try {
-          if (!order) return total;
-          const amount = parseFloat(order.total || order.totalAmount || 0);
-          return total + (isNaN(amount) ? 0 : amount);
-        } catch (error) {
-          return total;
-        }
-      }, 0);
-    } catch (error) {
-      console.error('Error calculating total revenue:', error);
-      return 0;
+    } catch (e) {
+      console.error('Error setting default tab filters:', e);
     }
-  };
-
-  // Get delivered revenue only (for stats)
-  const getDeliveredRevenue = (ordersList = orders) => {
-    try {
-      if (!Array.isArray(ordersList)) {
-        return 0;
-      }
-      return ordersList.reduce((total, order) => {
-        try {
-          if (!order || order.status !== 'delivered') return total;
-          const amount = parseFloat(order.total || order.totalAmount || 0);
-          return total + (isNaN(amount) ? 0 : amount);
-        } catch (error) {
-          return total;
-        }
-      }, 0);
-    } catch (error) {
-      console.error('Error calculating delivered revenue:', error);
-      return 0;
-    }
-  };
-
-  const getPendingOrders = () => {
-    return orders.filter((o) => ['pending', 'confirmed', 'preparing'].includes(o.status)).length;
-  };
-
-  const getFilteredOrdersByDate = (ordersList) => {
-    try {
-      if (!Array.isArray(ordersList)) {
-        return [];
-      }
-
-      if (dateRange === 'all') return ordersList;
-
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-      return ordersList.filter((order) => {
-        try {
-          if (!order) return false;
-
-          const dateValue = order.createdAt || order.date;
-          if (!dateValue) return true; // Include orders without dates
-
-          const orderDate = new Date(dateValue);
-          if (isNaN(orderDate.getTime())) {
-            return true; // Include invalid dates rather than crash
-          }
-
-          const orderDateOnly = new Date(
-            orderDate.getFullYear(),
-            orderDate.getMonth(),
-            orderDate.getDate()
-          );
-
-          if (dateRange === 'today') {
-            return orderDateOnly.getTime() === today.getTime();
-          }
-
-          if (dateRange === 'week') {
-            const weekAgo = new Date(today);
-            weekAgo.setDate(weekAgo.getDate() - 7);
-            return orderDateOnly >= weekAgo;
-          }
-
-          if (dateRange === 'month') {
-            return (
-              orderDate.getMonth() === now.getMonth() &&
-              orderDate.getFullYear() === now.getFullYear()
-            );
-          }
-
-          if (dateRange === 'custom' && customStartDate && customEndDate) {
-            const start = new Date(customStartDate);
-            const end = new Date(customEndDate);
-
-            if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-              return true; // Include if dates are invalid
-            }
-
-            end.setHours(23, 59, 59, 999);
-            return orderDate >= start && orderDate <= end;
-          }
-
-          return true;
-        } catch (filterError) {
-          console.warn('Error filtering order by date:', filterError, order);
-          return true; // Include order on error
-        }
-      });
-    } catch (error) {
-      console.error('Critical error in getFilteredOrdersByDate:', error);
-      return ordersList || []; // Return original list on error
-    }
-  };
-
-  const getTodayStats = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const todayOrders = orders.filter((order) => {
-      const orderDate = new Date(order.createdAt || order.date || Date.now());
-      return orderDate >= today && orderDate < tomorrow;
-    });
-
-    return {
-      orders: todayOrders.length,
-      pending: todayOrders.filter((o) => ['pending', 'confirmed', 'preparing'].includes(o.status))
-        .length,
-      revenue: getDeliveredRevenue(todayOrders), // Only delivered for stats
-      totalRevenue: getTotalRevenue(todayOrders), // All orders for total
-    };
-  };
-
-  const getWeeklyStats = () => {
-    const now = new Date();
-    const weekAgo = new Date(now);
-    weekAgo.setDate(weekAgo.getDate() - 7);
-
-    const weekOrders = orders.filter((order) => {
-      const orderDate = new Date(order.createdAt || order.date || Date.now());
-      return orderDate >= weekAgo;
-    });
-
-    const deliveredWeekOrders = weekOrders.filter((o) => o.status === 'delivered');
-    const revenue = getDeliveredRevenue(weekOrders); // Only delivered for stats
-    const totalRevenue = getTotalRevenue(weekOrders); // All orders for total
-
-    return {
-      orders: weekOrders.length,
-      revenue: revenue,
-      totalRevenue: totalRevenue,
-      avgOrderValue:
-        deliveredWeekOrders.length > 0 ? Math.round(revenue / deliveredWeekOrders.length) : 0,
-      avgOrderValueAll: weekOrders.length > 0 ? Math.round(totalRevenue / weekOrders.length) : 0,
-    };
-  };
+  }, [activeTab]);
 
   const handleImportOrders = async (e) => {
     const file = e.target.files[0];
@@ -1073,518 +1702,47 @@ const AdminDashboard = ({ onLogout }) => {
       let importedData = [];
 
       if (isExcel) {
-        // Import SheetJS library - Use CDN to avoid Vite module resolution issues
-        let XLSX;
+        // Upload Excel file to backend; backend will parse the 'All Data' tab and insert orders
+        const token = localStorage.getItem('homiebites_token');
+        if (!token) {
+          showNotification('Please login as admin to import Excel files.', 'error');
+          return;
+        }
 
-        // Check if already loaded
-        if (typeof window !== 'undefined' && window.XLSX) {
-          XLSX = window.XLSX;
-        } else {
-          // Load from CDN (most reliable for admin folder)
-          await new Promise((resolve, reject) => {
-            // Check if script already exists
-            const existingScript = document.querySelector('script[src*="xlsx"]');
-            if (existingScript) {
-              if (window.XLSX) {
-                XLSX = window.XLSX;
-                resolve();
-                return;
-              }
-              // Wait for existing script to load
-              existingScript.addEventListener('load', () => {
-                XLSX = window.XLSX;
-                resolve();
-              });
-              existingScript.addEventListener('error', reject);
-              return;
-            }
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
 
-            // Create and load script
-            const script = document.createElement('script');
-            script.src = 'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
-            script.async = true;
-            script.onload = () => {
-              XLSX = window.XLSX;
-              if (!XLSX) {
-                reject(new Error('XLSX not available after script load'));
-              } else {
-                resolve();
-              }
-            };
-            script.onerror = () => reject(new Error('Failed to load Excel library from CDN'));
-            document.head.appendChild(script);
+          const base = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+          const resp = await fetch(`${base}/api/orders/upload-excel`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: formData,
           });
 
-          if (!XLSX && window.XLSX) {
-            XLSX = window.XLSX;
+          const respJson = await resp.json().catch(() => null);
+          if (!resp.ok) {
+            const msg =
+              (respJson && (respJson.error || (respJson.data && respJson.data.error))) ||
+              `Upload failed (${resp.status})`;
+            showNotification(msg, 'error');
+            return;
           }
 
-          if (!XLSX) {
-            throw new Error('Failed to load Excel library. Please check your internet connection.');
-          }
-        }
-
-        // Read Excel file as array buffer
-        const reader = new FileReader();
-        const fileData = await new Promise((resolve, reject) => {
-          reader.onload = (e) => resolve(e.target.result);
-          reader.onerror = reject;
-          reader.readAsArrayBuffer(file);
-        });
-
-        // Parse Excel file
-        let workbook;
-        try {
-          workbook = XLSX.read(fileData, { type: 'array' });
-        } catch (parseError) {
-          throw new Error(`Failed to parse Excel file: ${parseError.message}`);
-        }
-
-        if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
-          throw new Error('Excel file has no sheets');
-        }
-
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-
-        if (!worksheet) {
-          throw new Error(`Sheet "${firstSheetName}" is empty or invalid`);
-        }
-
-        // Convert to JSON array
-        let jsonData;
-        try {
-          jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
-        } catch (convertError) {
-          throw new Error(`Failed to convert sheet to JSON: ${convertError.message}`);
-        }
-
-        // Convert to order objects (assuming first row is headers)
-        if (!jsonData || jsonData.length === 0) {
-          throw new Error('Excel file is empty');
-        }
-
-        if (jsonData.length < 2) {
-          throw new Error(
-            'Excel file must have at least a header row and one data row. Found only headers.'
+          const importedCount = respJson?.data?.imported || 0;
+          const errorCount = respJson?.data?.errors || 0;
+          await loadOrders();
+          showNotification(
+            `Imported ${importedCount} orders${errorCount ? ` (${errorCount} errors)` : ''}`,
+            'success'
           );
-        }
-
-        // Detect pivot/summary format (HomieBites.com.xlsx format)
-        // Format: Row 0 has "FY-YYYY/YY", Row 1 has "Address" + month columns, Row 2+ has data
-        const row0 = jsonData[0] || [];
-        const row1 = jsonData[1] || [];
-        const hasFYHeader = row0.some((cell) => String(cell || '').includes('FY-'));
-        const hasAddressHeader =
-          String(row1[0] || '')
-            .toLowerCase()
-            .trim() === 'address';
-        const hasMonthColumns = row1.some((cell, idx) => {
-          if (idx === 0) return false; // Skip address column
-          const cellStr = String(cell || '').trim();
-          // Check for month format like "02'24", "03'24", etc.
-          return /^\d{2}'?\d{2}$/.test(cellStr) || /^\d{1,2}'?\d{2}$/.test(cellStr);
-        });
-
-        let usePivotFormat = hasFYHeader && hasAddressHeader && hasMonthColumns;
-
-        if (usePivotFormat) {
-          try {
-            // Parse pivot/summary format
-            const fyMatch = String(
-              row0.find((cell) => String(cell || '').includes('FY-')) || ''
-            ).match(/FY-(\d{4})\/(\d{2})/);
-            const baseYear = fyMatch ? parseInt(fyMatch[1]) : new Date().getFullYear();
-
-            // Parse each data row (starting from row 2)
-            importedData = [];
-            for (let rowIndex = 2; rowIndex < jsonData.length; rowIndex++) {
-              try {
-                const row = jsonData[rowIndex] || [];
-                if (!row || row.length === 0) continue;
-
-                const address = String(row[0] || '').trim();
-
-                if (!address || address.toLowerCase() === 'grand total' || address === '') {
-                  continue; // Skip empty rows and totals
-                }
-
-                // Extract customer name from address
-                let customerName = address;
-                try {
-                  const addressParts = address.split(/\s+/);
-                  if (addressParts.length > 1) {
-                    const possibleName = addressParts[addressParts.length - 1];
-                    if (possibleName && !/^\d+/.test(possibleName)) {
-                      customerName = possibleName;
-                    }
-                  }
-                } catch (nameError) {
-                  console.warn('Error extracting customer name:', nameError);
-                  // Keep default customerName = address
-                }
-
-                // Process each column starting from index 1 (skip address column)
-                let orderCounter = 0;
-                const maxCols = Math.min(row1.length, row.length);
-                for (let colIndex = 1; colIndex < maxCols; colIndex++) {
-                  try {
-                    const headerStr = String(row1[colIndex] || '').trim();
-
-                    // Stop at Grand Total column
-                    if (headerStr.toLowerCase() === 'grand total') {
-                      break;
-                    }
-
-                    // Check if this is a month column (format: "02'24", "03'24", etc.)
-                    const monthMatch = headerStr.match(/^(\d{1,2})'?(\d{2})$/);
-                    if (monthMatch) {
-                      const amount = row[colIndex];
-                      const numAmount =
-                        typeof amount === 'number'
-                          ? amount
-                          : parseFloat(String(amount || '').replace(/[₹,]/g, ''));
-
-                      // Only create order if amount is valid and > 0
-                      if (!isNaN(numAmount) && numAmount > 0) {
-                        let month = parseInt(monthMatch[1]) - 1; // 0-indexed (0-11)
-                        let year = parseInt(monthMatch[2]);
-
-                        // Validate month
-                        if (isNaN(month) || month < 0 || month > 11) {
-                          console.warn(`Invalid month: ${monthMatch[1]}`, headerStr);
-                          continue;
-                        }
-
-                        // Handle 2-digit year: assume 20xx
-                        if (year < 100) {
-                          year = 2000 + year;
-                        }
-
-                        // Validate year
-                        if (isNaN(year) || year < 2000 || year > 2100) {
-                          console.warn(`Invalid year: ${monthMatch[2]}`, headerStr);
-                          continue;
-                        }
-
-                        // Use the year from the month header directly (e.g., "02'24" = February 2024)
-                        // The year in the header is the calendar year, not FY year
-
-                        const orderDate = new Date(year, month, 15); // Use 15th as default day
-
-                        // Validate date
-                        if (isNaN(orderDate.getTime())) {
-                          console.warn(
-                            `Invalid date created: year=${year}, month=${month}`,
-                            headerStr
-                          );
-                          continue;
-                        }
-
-                        orderCounter++;
-
-                        // Create order
-                        const order = {
-                          id: `ORD-${address.replace(/[^a-zA-Z0-9]/g, '-')}-${year}-${String(month + 1).padStart(2, '0')}-${orderCounter}`,
-                          deliveryAddress: address,
-                          customerName: customerName,
-                          total: numAmount,
-                          totalAmount: numAmount,
-                          date: orderDate.toISOString(),
-                          createdAt: orderDate.toISOString(),
-                          status: 'delivered', // Historical data assumed delivered
-                          quantity: 1,
-                          unitPrice: numAmount,
-                          items: [
-                            {
-                              name: `Order for ${address}`,
-                              quantity: 1,
-                              price: numAmount,
-                            },
-                          ],
-                          billingMonth: headerStr,
-                          year: String(year),
-                        };
-
-                        importedData.push(order);
-                      }
-                    }
-                  } catch (colError) {
-                    console.warn(`Error processing column ${colIndex}:`, colError);
-                    // Continue to next column
-                  }
-                }
-              } catch (rowError) {
-                console.warn(`Error processing row ${rowIndex}:`, rowError);
-                // Continue to next row
-              }
-            }
-
-            // If no orders were imported, fall back to standard format
-            if (importedData.length === 0) {
-              console.warn(
-                'No valid orders found in pivot format, falling back to standard format'
-              );
-              usePivotFormat = false;
-            }
-          } catch (pivotError) {
-            console.error(
-              'Error parsing pivot format, falling back to standard format:',
-              pivotError
-            );
-            usePivotFormat = false;
-          }
-        }
-
-        if (!usePivotFormat) {
-          // Standard format - parse as before
-          const headers = jsonData[0].map((h) => String(h || '').trim());
-          importedData = jsonData
-            .slice(1)
-            .map((row, rowIndex) => {
-              const order = {};
-              headers.forEach((header, index) => {
-                if (header && row[index] !== undefined) {
-                  const value = row[index];
-                  const headerLower = header.toLowerCase().trim();
-
-                  // Map specific Excel columns to order fields (exact matches first, then partial)
-                  if (
-                    headerLower.includes('s no') ||
-                    headerLower.includes('serial') ||
-                    headerLower === 'id' ||
-                    headerLower.startsWith('s no')
-                  ) {
-                    // Use S No. as order ID, but format it properly
-                    const sno = String(value || '').trim();
-                    order.id = sno || `ORD-${rowIndex + 1}`;
-                    // Remove #- prefix if present
-                    if (order.id.startsWith('#-')) {
-                      order.id = order.id.substring(2);
-                    }
-                  } else if (headerLower === 'date' || headerLower.includes('order date')) {
-                    // Handle date conversion - support M/D/YY format
-                    try {
-                      if (value instanceof Date) {
-                        order.date = value.toISOString();
-                        order.createdAt = value.toISOString();
-                      } else if (value === null || value === undefined || value === '') {
-                        // Skip empty dates - will use default later
-                      } else if (typeof value === 'number') {
-                        // Excel date serial number
-                        const excelEpoch = new Date(1899, 11, 30);
-                        const dateValue = new Date(
-                          excelEpoch.getTime() + value * 24 * 60 * 60 * 1000
-                        );
-                        if (!isNaN(dateValue.getTime())) {
-                          order.date = dateValue.toISOString();
-                          order.createdAt = dateValue.toISOString();
-                        }
-                      } else if (typeof value === 'string') {
-                        const dateStr = String(value).trim();
-                        if (dateStr) {
-                          // Try M/D/YY format first (e.g., "2/5/24", "12/23/25")
-                          const mdyMatch = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-                          if (mdyMatch) {
-                            let month = parseInt(mdyMatch[1]) - 1; // JS months are 0-indexed
-                            let day = parseInt(mdyMatch[2]);
-                            let year = parseInt(mdyMatch[3]);
-
-                            // Handle 2-digit years: assume 20xx for 00-50, 19xx for 51-99
-                            if (year < 100) {
-                              year = year <= 50 ? 2000 + year : 1900 + year;
-                            }
-
-                            const parsedDate = new Date(year, month, day);
-                            if (!isNaN(parsedDate.getTime())) {
-                              order.date = parsedDate.toISOString();
-                              order.createdAt = parsedDate.toISOString();
-                            }
-                          } else {
-                            // Try standard Date parsing
-                            const parsedDate = new Date(dateStr);
-                            if (!isNaN(parsedDate.getTime())) {
-                              order.date = parsedDate.toISOString();
-                              order.createdAt = parsedDate.toISOString();
-                            }
-                          }
-                        }
-                      }
-                    } catch (dateError) {
-                      console.warn('Date parsing error:', dateError, 'Value:', value);
-                    }
-                  } else if (
-                    headerLower.includes('delivery address') ||
-                    (headerLower.includes('address') && !headerLower.includes('billing'))
-                  ) {
-                    const address = String(value || '').trim();
-                    order.deliveryAddress = address;
-                    // If no customer name, use address as customer name
-                    if (!order.customerName && address) {
-                      // Try to extract name from address (e.g., "C1-604 Haritima" -> "Haritima")
-                      const addressParts = address.split(/\s+/);
-                      if (addressParts.length > 1) {
-                        // Last part might be name
-                        const possibleName = addressParts[addressParts.length - 1];
-                        if (possibleName && !/^\d+/.test(possibleName)) {
-                          order.customerName = possibleName;
-                        } else {
-                          order.customerName = address;
-                        }
-                      } else {
-                        order.customerName = address;
-                      }
-                    }
-                  } else if (headerLower === 'quantity' || headerLower.includes('qty')) {
-                    order.quantity = parseInt(value) || 1;
-                  } else if (headerLower.includes('unit price') || headerLower === 'unit price') {
-                    order.unitPrice = parseFloat(value) || 0;
-                  } else if (
-                    headerLower.includes('total amount') ||
-                    (headerLower.includes('total') && !headerLower.includes('quantity'))
-                  ) {
-                    // Parse total amount - handle both numbers and strings
-                    const totalValue =
-                      typeof value === 'string'
-                        ? parseFloat(value.replace(/[₹,]/g, ''))
-                        : parseFloat(value);
-                    order.total = !isNaN(totalValue) && totalValue > 0 ? totalValue : 0;
-                    order.totalAmount = order.total; // Also set totalAmount for compatibility
-                  } else if (headerLower === 'status' || headerLower.includes('order status')) {
-                    const statusStr = String(value || '')
-                      .trim()
-                      .toLowerCase();
-                    // Map status values
-                    if (statusStr === 'paid') {
-                      order.status = 'delivered'; // Map Paid to delivered
-                    } else if (statusStr === 'unpaid') {
-                      order.status = 'pending'; // Map Unpaid to pending
-                    } else if (statusStr) {
-                      // Use status as-is if it matches known statuses
-                      const validStatuses = [
-                        'pending',
-                        'confirmed',
-                        'preparing',
-                        'delivered',
-                        'cancelled',
-                      ];
-                      order.status = validStatuses.includes(statusStr) ? statusStr : 'pending';
-                    }
-                  } else if (
-                    headerLower.includes('payment mode') ||
-                    headerLower.includes('payment method') ||
-                    headerLower === 'payment'
-                  ) {
-                    order.paymentMode = String(value || '');
-                  } else if (headerLower.includes('billing month')) {
-                    order.billingMonth = String(value || '');
-                  } else if (headerLower.includes('reference month')) {
-                    order.referenceMonth = String(value || '');
-                  } else if (headerLower === 'year') {
-                    order.year = String(value || '');
-                  } else if (
-                    headerLower.includes('name') &&
-                    (headerLower.includes('customer') || headerLower.includes('client'))
-                  ) {
-                    order.customerName = String(value || '');
-                  } else if (
-                    headerLower.includes('phone') ||
-                    headerLower.includes('mobile') ||
-                    headerLower.includes('contact')
-                  ) {
-                    order.customerPhone = String(value || '');
-                  } else {
-                    // Store other fields as-is (with sanitized key)
-                    const sanitizedKey = headerLower.replace(/[^a-z0-9]/g, '_');
-                    if (sanitizedKey) {
-                      order[sanitizedKey] = value;
-                    }
-                  }
-                }
-              });
-
-              // Ensure required fields have defaults
-              if (!order.id) {
-                order.id = `ORD-${rowIndex + 1}`;
-              }
-
-              // Remove #- prefix from ID if present
-              if (order.id && String(order.id).startsWith('#-')) {
-                order.id = String(order.id).substring(2);
-              }
-
-              // Date handling - use parsed date or default
-              if (!order.date || !order.createdAt) {
-                // Try to infer date from billing month/year if available
-                if (order.billingMonth && order.year) {
-                  // Parse billing month (e.g., "February'24" or "2(Feb'24)")
-                  const monthMatch = order.billingMonth.match(/(\d+)/);
-                  if (monthMatch) {
-                    const month = parseInt(monthMatch[1]) - 1; // 0-indexed
-                    const year = parseInt(order.year);
-                    if (!isNaN(month) && !isNaN(year)) {
-                      const inferredDate = new Date(year, month, 1);
-                      order.date = inferredDate.toISOString();
-                      order.createdAt = inferredDate.toISOString();
-                    }
-                  }
-                }
-
-                // If still no date, use a reasonable default (start of the year from data)
-                if (!order.date) {
-                  const defaultYear = order.year ? parseInt(order.year) : new Date().getFullYear();
-                  const defaultDate = new Date(defaultYear, 0, 1); // Jan 1 of the year
-                  order.date = defaultDate.toISOString();
-                  order.createdAt = defaultDate.toISOString();
-                }
-              }
-
-              // Status default
-              if (!order.status) {
-                order.status = 'pending';
-              }
-
-              // Calculate total if not provided but unitPrice and quantity are available
-              if (!order.total || order.total === 0) {
-                if (order.unitPrice && order.quantity) {
-                  order.total = order.unitPrice * order.quantity;
-                  order.totalAmount = order.total;
-                } else {
-                  order.total = 0;
-                  order.totalAmount = 0;
-                }
-              } else {
-                // Ensure totalAmount is set
-                order.totalAmount = order.total;
-              }
-
-              // Ensure customer name from delivery address if missing
-              if (!order.customerName && order.deliveryAddress) {
-                const addrParts = order.deliveryAddress.split(/\s+/);
-                if (addrParts.length > 1) {
-                  const possibleName = addrParts[addrParts.length - 1];
-                  order.customerName = /^\d+/.test(possibleName)
-                    ? order.deliveryAddress
-                    : possibleName;
-                } else {
-                  order.customerName = order.deliveryAddress;
-                }
-              }
-
-              // Create items array if missing (for display)
-              if (!order.items || !Array.isArray(order.items) || order.items.length === 0) {
-                order.items = [
-                  {
-                    name: `Order #${order.id}`,
-                    quantity: order.quantity || 1,
-                    price: order.unitPrice || order.total || 0,
-                  },
-                ];
-              }
-
-              return order;
-            })
-            .filter((order) => order.deliveryAddress || order.id); // Filter out empty rows
+          return;
+        } catch (uploadErr) {
+          console.warn('Excel upload failed:', uploadErr);
+          showNotification('Excel upload failed. See console for details.', 'error');
+          return;
         }
       } else {
         // Handle JSON file
@@ -1627,9 +1785,9 @@ const AdminDashboard = ({ onLogout }) => {
             }
           }
 
-          // Ensure order has valid ID
+          // Ensure order has valid ID (use temporary ID - backend will generate proper HB format ID on sync)
           if (!order.id) {
-            order.id = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            order.id = `TEMP-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
           }
 
           // Ensure order has valid status
@@ -1656,34 +1814,54 @@ const AdminDashboard = ({ onLogout }) => {
       }
 
       const existingOrders = orders;
-      // Try to save imported orders to API
+      // Try to save imported orders to API using bulk import
       const token = localStorage.getItem('homiebites_token');
       if (token) {
         try {
-          // Import orders one by one to API
-          let importedCount = 0;
-          for (const orderData of importedData) {
-            try {
-              await api.createOrder(orderData);
-              importedCount++;
-            } catch (err) {
-              console.warn('Failed to import order:', err);
-            }
-          }
-          if (importedCount > 0) {
+          // Use bulk import API for better performance and reliability
+          const response = await api.bulkImportOrders(importedData);
+          if (response.success && response.data.imported > 0) {
             await loadOrders();
-            showNotification(`Successfully imported ${importedCount} orders to API!`, 'success');
+            const importedCount = response.data.imported;
+            const errorCount = response.data.errors;
+            showNotification(
+              `Successfully imported ${importedCount} orders to backend!${errorCount > 0 ? ` (${errorCount} errors)` : ''}`,
+              'success'
+            );
             return;
           }
         } catch (apiError) {
-          console.warn('Failed to import orders to API:', apiError.message);
+          console.warn('Bulk import failed, falling back to individual imports:', apiError.message);
+          // Fall back to individual imports if bulk import fails
+          try {
+            let importedCount = 0;
+            for (const orderData of importedData) {
+              try {
+                await api.createOrder(orderData);
+                importedCount++;
+              } catch (err) {
+                console.warn('Failed to import order:', err);
+              }
+            }
+            if (importedCount > 0) {
+              await loadOrders();
+              showNotification(`Successfully imported ${importedCount} orders to API!`, 'success');
+              return;
+            }
+          } catch (fallbackError) {
+            console.warn('Individual imports also failed:', fallbackError.message);
+          }
         }
       }
 
       // Fallback to localStorage
       const mergedOrders = [...importedData, ...existingOrders];
       setOrders(mergedOrders);
-      localStorage.setItem('homiebites_orders', JSON.stringify(mergedOrders));
+      try {
+        setOrdersHook && setOrdersHook(mergedOrders);
+      } catch (e) {}
+      // Orders are saved to backend only, not localStorage
+      lastSyncedOrdersRef.current = mergedOrders; // Update ref
       showNotification(`Successfully imported ${importedData.length} orders!`, 'success');
     } catch (error) {
       console.error('Error importing file:', error);
@@ -1721,6 +1899,316 @@ const AdminDashboard = ({ onLogout }) => {
     URL.revokeObjectURL(url);
   };
 
+  // Handle Excel file upload for viewer
+  const handleLoadExcelFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const excelOpId = errorTracker.addToQueue('load-excel-file', 'Load Excel File', {
+      fileName: file.name,
+      fileSize: file.size,
+    });
+
+    const fileName = file.name.toLowerCase();
+    const isExcel = fileName.endsWith('.xlsx') || fileName.endsWith('.xls');
+
+    if (!isExcel) {
+      showNotification('Please upload an Excel file (.xlsx or .xls)', 'error');
+      return;
+    }
+
+    try {
+      // Load SheetJS library
+      let XLSX;
+      if (typeof window !== 'undefined' && window.XLSX) {
+        XLSX = window.XLSX;
+      } else {
+        await new Promise((resolve, reject) => {
+          const existingScript = document.querySelector('script[src*="xlsx"]');
+          if (existingScript && window.XLSX) {
+            XLSX = window.XLSX;
+            resolve();
+            return;
+          }
+
+          const script = document.createElement('script');
+          script.src = 'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
+          script.onload = () => {
+            XLSX = window.XLSX;
+            if (!XLSX) {
+              reject(new Error('XLSX not available after script load'));
+            } else {
+              resolve();
+            }
+          };
+          script.onerror = () => reject(new Error('Failed to load Excel library from CDN'));
+          document.head.appendChild(script);
+        });
+      }
+
+      // Read file
+      const fileData = await file.arrayBuffer();
+      const workbook = XLSX.read(fileData, { type: 'array' });
+
+      if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+        showNotification('Excel file has no sheets', 'error');
+        return;
+      }
+
+      // Parse all sheets
+      const sheetsData = {};
+      const detectedColumnTypes = {};
+
+      workbook.SheetNames.forEach((sheetName) => {
+        const worksheet = workbook.Sheets[sheetName];
+        if (worksheet) {
+          // Convert to JSON array (first row as headers)
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+            header: 1,
+            defval: '',
+            raw: false,
+          });
+          sheetsData[sheetName] = jsonData;
+
+          // Detect column types based on headers and sample data
+          if (jsonData.length > 1) {
+            const headers = jsonData[0] || [];
+            const columnTypeMap = {};
+
+            headers.forEach((header, colIdx) => {
+              const headerStr = String(header || '').toLowerCase();
+
+              // Check header names for type hints
+              if (
+                headerStr.includes('date') ||
+                headerStr.includes('time') ||
+                headerStr.includes('created') ||
+                headerStr.includes('delivered')
+              ) {
+                columnTypeMap[colIdx] = 'date';
+              } else if (
+                headerStr.includes('amount') ||
+                headerStr.includes('price') ||
+                headerStr.includes('total') ||
+                headerStr.includes('revenue') ||
+                headerStr.includes('cost') ||
+                headerStr.includes('₹') ||
+                headerStr.includes('rs') ||
+                headerStr.includes('rupee')
+              ) {
+                columnTypeMap[colIdx] = 'number';
+              } else if (
+                headerStr.includes('quantity') ||
+                headerStr.includes('qty') ||
+                headerStr.includes('count')
+              ) {
+                columnTypeMap[colIdx] = 'number';
+              } else {
+                // Check sample data (first 5 rows)
+                let hasNumber = false;
+                let hasDate = false;
+
+                for (let i = 1; i < Math.min(6, jsonData.length); i++) {
+                  const cellValue = jsonData[i][colIdx];
+                  if (cellValue !== '' && cellValue !== null && cellValue !== undefined) {
+                    // Check if it's a number
+                    if (!isNaN(parseFloat(cellValue)) && isFinite(cellValue)) {
+                      hasNumber = true;
+                    }
+                    // Check if it's a date string
+                    const dateStr = String(cellValue);
+                    if (
+                      dateStr.match(/\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}/) ||
+                      dateStr.match(/\d{4}[-\/]\d{1,2}[-\/]\d{1,2}/)
+                    ) {
+                      hasDate = true;
+                    }
+                  }
+                }
+
+                if (hasDate) {
+                  columnTypeMap[colIdx] = 'date';
+                } else if (hasNumber) {
+                  columnTypeMap[colIdx] = 'number';
+                } else {
+                  columnTypeMap[colIdx] = 'text';
+                }
+              }
+            });
+
+            detectedColumnTypes[sheetName] = columnTypeMap;
+          }
+        }
+      });
+
+      // Convert Excel to orders format (ALL records, not just new ones)
+      const convertedOrders = convertExcelToOrdersWrapper(sheetsData, null);
+      if (!convertedOrders || !Array.isArray(convertedOrders) || convertedOrders.length === 0) {
+        showNotification(
+          'Excel file loaded, but no orders found. Please check the file format.',
+          'warning'
+        );
+        errorTracker.failOperation(excelOpId, new Error('No orders found in Excel file'));
+        return;
+      }
+
+      // Ask user if they want to replace old data with Excel data
+      const token = localStorage.getItem('homiebites_token');
+      if (!token) {
+        showNotification('Please login to upload Excel file', 'error');
+        return;
+      }
+
+      // Always ask for confirmation when uploading Excel (it will replace backend data)
+      const existingCount = orders && orders.length > 0 ? orders.length : 0;
+      const message =
+        existingCount > 0
+          ? `You have ${existingCount} existing orders in the backend.\n\nUploading this Excel file will REMOVE all existing orders and replace them with ${convertedOrders.length} orders from the Excel file.\n\nClick "Yes" to proceed with replacement, or "No" to cancel.`
+          : `Uploading this Excel file will add ${convertedOrders.length} orders to the backend.\n\nClick "Yes" to proceed, or "No" to cancel.`;
+
+      const shouldReplaceOldData = window.confirm(message);
+
+      if (!shouldReplaceOldData) {
+        showNotification('Excel upload cancelled.', 'info');
+        errorTracker.completeOperation(excelOpId, { fileName: file.name, cancelled: true });
+        return;
+      }
+
+      // Always clear backend first before uploading Excel data
+      if (existingCount > 0) {
+        try {
+          showNotification('Clearing old data from backend...', 'info');
+
+          // Fetch all orders from backend first (to ensure we have all IDs)
+          const allOrdersResponse = await api.getAllOrders({});
+          if (
+            allOrdersResponse.success &&
+            allOrdersResponse.data &&
+            Array.isArray(allOrdersResponse.data)
+          ) {
+            const allOrders = allOrdersResponse.data;
+
+            // Delete all existing orders from backend one by one
+            const deletePromises = allOrders.map((order) => {
+              const orderId = order._id || order.id;
+              if (orderId) {
+                return api.deleteOrder(orderId).catch((err) => {
+                  console.warn(`Failed to delete order ${orderId}:`, err);
+                  return null;
+                });
+              }
+              return Promise.resolve(null);
+            });
+
+            const deleteResults = await Promise.all(deletePromises);
+            const successCount = deleteResults.filter((r) => r !== null).length;
+            showNotification(
+              `Cleared ${successCount} of ${allOrders.length} orders from backend.`,
+              'success'
+            );
+          } else {
+            showNotification(
+              'Warning: Could not fetch all orders to clear. Continuing with upload...',
+              'warning'
+            );
+          }
+        } catch (clearError) {
+          console.error('Error clearing old data from backend:', clearError);
+          showNotification(
+            'Warning: Could not clear all old data from backend. Continuing with upload...',
+            'warning'
+          );
+        }
+      }
+
+      // Upload ALL Excel records to backend
+      try {
+        showNotification(`Uploading ${convertedOrders.length} orders to backend...`, 'info');
+
+        // Use bulk import API to upload all orders at once
+        const response = await api.bulkImportOrders(convertedOrders);
+
+        if (response.success) {
+          const importedCount = response.data?.imported || convertedOrders.length;
+          const errorCount = response.data?.errors || 0;
+
+          // Reload orders from backend
+          await loadOrders();
+
+          // Clear Excel data from localStorage (Excel is just for bulk upload, not for storage)
+          setExcelData(null);
+          setExcelFileName('');
+          setExcelSheets([]);
+          setSelectedSheet('');
+          setColumnTypes({});
+          localStorage.removeItem('homiebites_excel_data');
+          localStorage.removeItem('homiebites_excel_filename');
+          localStorage.removeItem('homiebites_excel_sheets');
+          localStorage.removeItem('homiebites_excel_selected_sheet');
+          localStorage.removeItem('homiebites_excel_column_types');
+
+          showNotification(
+            `Successfully uploaded ${importedCount} orders to backend!${errorCount > 0 ? ` (${errorCount} errors)` : ''}`,
+            'success'
+          );
+          errorTracker.completeOperation(excelOpId, {
+            fileName: file.name,
+            imported: importedCount,
+          });
+        } else {
+          throw new Error(response.error || 'Bulk import failed');
+        }
+      } catch (uploadError) {
+        console.error('Error uploading orders to backend:', uploadError);
+
+        // Fallback: Try individual uploads
+        try {
+          showNotification('Bulk upload failed, trying individual uploads...', 'warning');
+          let importedCount = 0;
+          let errorCount = 0;
+
+          for (const orderData of convertedOrders) {
+            try {
+              await api.createOrder(orderData);
+              importedCount++;
+            } catch (err) {
+              console.warn('Failed to import order:', err);
+              errorCount++;
+            }
+          }
+
+          if (importedCount > 0) {
+            await loadOrders();
+            showNotification(
+              `Uploaded ${importedCount} orders to backend${errorCount > 0 ? ` (${errorCount} failed)` : ''}`,
+              importedCount === convertedOrders.length ? 'success' : 'warning'
+            );
+            errorTracker.completeOperation(excelOpId, {
+              fileName: file.name,
+              imported: importedCount,
+              errors: errorCount,
+            });
+          } else {
+            throw new Error('All orders failed to upload');
+          }
+        } catch (fallbackError) {
+          console.error('Individual uploads also failed:', fallbackError);
+          showNotification(`Error uploading orders to backend: ${uploadError.message}`, 'error');
+          errorTracker.failOperation(excelOpId, uploadError);
+        }
+      }
+    } catch (error) {
+      errorTracker.failOperation(excelOpId, error);
+      console.error('Error loading Excel file:', error);
+      showNotification(`Error loading Excel file: ${error.message}`, 'error');
+    } finally {
+      // Reset file input
+      if (e.target) {
+        e.target.value = '';
+      }
+    }
+  };
+
   const getFilteredOrders = () => {
     try {
       // Ensure orders is an array
@@ -1744,49 +2232,65 @@ const AdminDashboard = ({ onLogout }) => {
 
       // Filter by date range
       try {
-        filtered = getFilteredOrdersByDate(filtered);
+        filtered = getFilteredOrdersByDateWrapper(filtered);
       } catch (dateError) {
         console.error('Error filtering by date:', dateError);
         // Continue with unfiltered data
       }
 
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        filtered = filtered.filter((o) => {
-          try {
-            if (!o) return false;
-            return (
-              (o.customerName || o.name || '').toLowerCase().includes(query) ||
-              (o.customerPhone || o.phone || '').includes(query) ||
-              (o.id || '').toString().includes(query) ||
-              (o.deliveryAddress || o.customerAddress || o.address || '')
-                .toLowerCase()
-                .includes(query)
-            );
-          } catch (e) {
-            return false;
-          }
-        });
+      // Search filter (using debounced query for performance)
+      if (debouncedSearchQuery) {
+        const query = debouncedSearchQuery.toLowerCase().trim();
+        if (query.length > 0) {
+          filtered = filtered.filter((o) => {
+            try {
+              if (!o) return false;
+              // Early return optimizations
+              const idStr = String(o.id || '');
+              if (idStr.includes(query)) return true;
+
+              const nameStr = (o.customerName || o.name || '').toLowerCase();
+              if (nameStr.includes(query)) return true;
+
+              const phoneStr = String(o.customerPhone || o.phone || '');
+              if (phoneStr.includes(query)) return true;
+
+              const addrStr = (
+                o.deliveryAddress ||
+                o.customerAddress ||
+                o.address ||
+                ''
+              ).toLowerCase();
+              if (addrStr.includes(query)) return true;
+
+              return false;
+            } catch (e) {
+              return false;
+            }
+          });
+        }
       }
 
-      // Sort
+      // Sort (create new array to avoid mutation)
       try {
-        filtered.sort((a, b) => {
+        filtered = [...filtered].sort((a, b) => {
           try {
+            if (orderSort === 'amount') {
+              const amountA = parseFloat(a?.total || a?.totalAmount || 0);
+              const amountB = parseFloat(b?.total || b?.totalAmount || 0);
+              return amountB - amountA;
+            }
+
             const dateA = new Date(a?.createdAt || a?.date || 0);
             const dateB = new Date(b?.createdAt || b?.date || 0);
 
             if (orderSort === 'newest') {
-              const diff = dateB - dateA;
+              const diff = dateB.getTime() - dateA.getTime();
               return isNaN(diff) ? 0 : diff;
             }
             if (orderSort === 'oldest') {
-              const diff = dateA - dateB;
+              const diff = dateA.getTime() - dateB.getTime();
               return isNaN(diff) ? 0 : diff;
-            }
-            if (orderSort === 'amount') {
-              return (b?.total || 0) - (a?.total || 0);
             }
             return 0;
           } catch (sortError) {
@@ -1813,12 +2317,29 @@ const AdminDashboard = ({ onLogout }) => {
       console.error('Error getting filtered orders:', error);
       return [];
     }
-  }, [orders, orderFilter, dateRange, customStartDate, customEndDate, searchQuery, orderSort]);
+  }, [
+    orders,
+    orderFilter,
+    dateRange,
+    customStartDate,
+    customEndDate,
+    debouncedSearchQuery,
+    orderSort,
+  ]);
+
+  // Always use ALL orders data for calculations (not filtered by tab)
+  // This ensures stats/charts always reflect complete data from "All Orders Data" tab
+  const statsOrders = orders;
+
+  // All Orders Data tab filtering logic moved to AllOrdersDataTab component
 
   // Pagination functions (using memoized filteredOrders)
   const paginatedOrders = useMemo(() => {
     try {
-      if (!Array.isArray(filteredOrders) || filteredOrders.length === 0) {
+      if (
+        !Array.isArray(filteredOrders) ||
+        filteredOrders.filter((o) => o && o.orderId).length === 0
+      ) {
         return [];
       }
       const startIndex = (currentPage - 1) * recordsPerPage;
@@ -1836,13 +2357,16 @@ const AdminDashboard = ({ onLogout }) => {
     try {
       if (
         !Array.isArray(filteredOrders) ||
-        filteredOrders.length === 0 ||
+        filteredOrders.filter((o) => o && o.orderId).length === 0 ||
         !recordsPerPage ||
         recordsPerPage <= 0
       ) {
         return 1;
       }
-      return Math.max(1, Math.ceil(filteredOrders.length / recordsPerPage));
+      return Math.max(
+        1,
+        Math.ceil(filteredOrders.filter((o) => o && o.orderId).length / recordsPerPage)
+      );
     } catch (error) {
       console.error('Error in getTotalPages:', error);
       return 1;
@@ -1877,10 +2401,11 @@ const AdminDashboard = ({ onLogout }) => {
   };
 
   // Summary Report - Excel-style format (memoized with size limit)
+  // Always use ALL orders data from "All Orders Data" tab
   const summaryReport = useMemo(() => {
     return (() => {
       try {
-        const filtered = filteredOrders;
+        const filtered = orders; // Use ALL orders, not filteredOrders
 
         if (!Array.isArray(filtered) || filtered.length === 0) {
           return {
@@ -1918,23 +2443,37 @@ const AdminDashboard = ({ onLogout }) => {
 
             const addressData = addressMap.get(address);
 
-            // Safely parse date
-            let orderDate;
-            try {
-              const dateValue = order.createdAt || order.date;
-              if (!dateValue) return;
+            // MASTER ORDERS MODEL: Use billingMonth/billingYear (INT) from backend, fallback to date parsing
+            let month, year;
 
-              orderDate = new Date(dateValue);
-              if (isNaN(orderDate.getTime())) {
-                return; // Skip invalid dates
+            if (
+              order.billingMonth &&
+              order.billingYear &&
+              typeof order.billingMonth === 'number' &&
+              typeof order.billingYear === 'number'
+            ) {
+              // Use backend values (INT)
+              month = String(order.billingMonth).padStart(2, '0');
+              year = String(order.billingYear).slice(-2);
+            } else {
+              // Fallback: Parse from date
+              let orderDate;
+              try {
+                const dateValue = order.date || order.createdAt;
+                if (!dateValue) return;
+
+                orderDate = new Date(dateValue);
+                if (isNaN(orderDate.getTime())) {
+                  return; // Skip invalid dates
+                }
+                month = String(orderDate.getMonth() + 1).padStart(2, '0');
+                year = String(orderDate.getFullYear()).slice(-2);
+              } catch (dateError) {
+                console.warn('Invalid date in order:', order.id, dateError);
+                return;
               }
-            } catch (dateError) {
-              console.warn('Invalid date in order:', order.id, dateError);
-              return;
             }
 
-            const month = String(orderDate.getMonth() + 1).padStart(2, '0');
-            const year = String(orderDate.getFullYear()).slice(-2);
             const monthKey = `${month}'${year}`;
 
             if (!addressData.monthlyTotals[monthKey]) {
@@ -2013,7 +2552,7 @@ const AdminDashboard = ({ onLogout }) => {
         };
       }
     })();
-  }, [filteredOrders]);
+  }, [orders]); // Use orders dependency instead of filteredOrders
 
   // Wrapper function for backward compatibility
   const getSummaryReport = () => summaryReport;
@@ -2218,14 +2757,18 @@ const AdminDashboard = ({ onLogout }) => {
   // Wrapper function for backward compatibility
   const getCustomerTotalPages = () => customerTotalPages;
 
-  // Helper function to get date-only (no time) from order
-  const getOrderDateOnly = (order) => {
+  // Helper function to get date-only (no time) from order (simple, no caching to avoid dependency issues)
+  const getOrderDateOnly = useCallback((order) => {
     try {
+      if (!order) return null;
+
       const dateValue = order.createdAt || order.date;
       if (!dateValue) return null;
 
       const orderDate = new Date(dateValue);
-      if (isNaN(orderDate.getTime())) return null;
+      if (isNaN(orderDate.getTime())) {
+        return null;
+      }
 
       // Return date-only string (YYYY-MM-DD format)
       const year = orderDate.getFullYear();
@@ -2233,10 +2776,9 @@ const AdminDashboard = ({ onLogout }) => {
       const day = String(orderDate.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     } catch (error) {
-      console.warn('Error parsing order date:', error, order);
       return null;
     }
-  };
+  }, []);
 
   // Helper function to get year from order date
   const getOrderYear = (order) => {
@@ -2254,11 +2796,53 @@ const AdminDashboard = ({ onLogout }) => {
     }
   };
 
-  const getOrderTrends = () => {
+  // Memoize order trends calculation (simplified to prevent infinite loops)
+  const getOrderTrends = useMemo(() => {
     try {
+      if (!Array.isArray(statsOrders) || statsOrders.filter((o) => o && o.orderId).length === 0) {
+        return [];
+      }
+
       const last7Days = [];
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+
+      // Limit processing for performance
+      const maxOrders = 5000;
+      const validStatsOrders = statsOrders.filter((o) => o && o.orderId);
+      const ordersToProcess =
+        validStatsOrders.length > maxOrders
+          ? validStatsOrders.slice(0, maxOrders)
+          : validStatsOrders;
+
+      // Pre-calculate date keys for all orders once (performance optimization)
+      const orderDateMap = new Map();
+
+      for (let i = 0; i < ordersToProcess.length; i++) {
+        try {
+          const order = ordersToProcess[i];
+          if (!order) continue;
+
+          const dateValue = order.createdAt || order.date;
+          if (!dateValue) continue;
+
+          const orderDate = new Date(dateValue);
+          if (isNaN(orderDate.getTime())) continue;
+
+          const year = orderDate.getFullYear();
+          const month = String(orderDate.getMonth() + 1).padStart(2, '0');
+          const day = String(orderDate.getDate()).padStart(2, '0');
+          const dateKey = `${year}-${month}-${day}`;
+
+          if (!orderDateMap.has(dateKey)) {
+            orderDateMap.set(dateKey, []);
+          }
+          orderDateMap.get(dateKey).push(order);
+        } catch (error) {
+          // Skip invalid orders
+          continue;
+        }
+      }
 
       for (let i = 6; i >= 0; i--) {
         const date = new Date(today);
@@ -2267,18 +2851,17 @@ const AdminDashboard = ({ onLogout }) => {
 
         const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
-        const dayOrders = orders.filter((order) => {
-          const orderDateKey = getOrderDateOnly(order);
-          return orderDateKey === dateKey;
-        });
-
-        const deliveredOrders = dayOrders.filter((o) => o.status === 'delivered');
-        const revenue = deliveredOrders.reduce((sum, o) => sum + (parseFloat(o.total || o.totalAmount || 0)), 0);
+        const dayOrders = orderDateMap.get(dateKey) || [];
+        const deliveredOrders = dayOrders.filter((o) => o && o.status === 'delivered');
+        const revenue = deliveredOrders.reduce((sum, o) => {
+          const amount = parseFloat(o.total || o.totalAmount || 0);
+          return sum + (isNaN(amount) ? 0 : amount);
+        }, 0);
 
         last7Days.push({
-          date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+          date: formatDateDDMMM(date),
           dateKey: dateKey,
-          orders: dayOrders.length,
+          orders: dayOrders.filter((o) => o && o.orderId).length,
           revenue: revenue,
         });
       }
@@ -2287,47 +2870,80 @@ const AdminDashboard = ({ onLogout }) => {
       console.error('Error in getOrderTrends:', error);
       return [];
     }
-  };
+  }, [statsOrders]);
 
-  const getTopItems = () => {
-    const itemCounts = {};
-    orders.forEach((order) => {
-      if (order.items && Array.isArray(order.items)) {
-        order.items.forEach((item) => {
-          const itemName = item.name || item.item || 'Unknown';
-          itemCounts[itemName] = (itemCounts[itemName] || 0) + (item.quantity || 1);
-        });
-      }
-    });
-
-    return Object.entries(itemCounts)
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-  };
-
-  const getAnalyticsData = () => {
+  // Memoize top items calculation
+  const getTopItems = useMemo(() => {
     try {
+      const itemCounts = {};
+      const maxOrders = 5000; // Limit processing for performance
+      const validStatsOrders2 = statsOrders.filter((o) => o && o.orderId);
+      const ordersToProcess =
+        validStatsOrders2.length > maxOrders
+          ? validStatsOrders2.slice(0, maxOrders)
+          : validStatsOrders2;
+
+      ordersToProcess.forEach((order) => {
+        try {
+          if (order.items && Array.isArray(order.items)) {
+            order.items.forEach((item) => {
+              const itemName = item.name || item.item || 'Unknown';
+              itemCounts[itemName] = (itemCounts[itemName] || 0) + (item.quantity || 1);
+            });
+          }
+        } catch (itemError) {
+          // Skip invalid items
+        }
+      });
+
+      return Object.entries(itemCounts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+    } catch (error) {
+      console.error('Error in getTopItems:', error);
+      return [];
+    }
+  }, [statsOrders]);
+
+  // Memoize analytics data calculation (simplified to prevent infinite loops)
+  const getAnalyticsData = useMemo(() => {
+    try {
+      if (!Array.isArray(statsOrders) || statsOrders.length === 0) {
+        return { monthlyData: {}, statusCounts: {}, dailyRevenue: {}, yearlyData: {} };
+      }
+
       const monthlyData = {};
       const statusCounts = {};
       const dailyRevenue = {};
       const yearlyData = {};
 
-      orders.forEach((order) => {
+      // Limit processing for performance (max 10000 orders to prevent crashes)
+      const maxOrders = 10000;
+      const ordersToProcess =
+        statsOrders.length > maxOrders ? statsOrders.slice(0, maxOrders) : statsOrders;
+
+      // Process orders directly without calling getOrderDateOnly to avoid dependency issues
+      for (let i = 0; i < ordersToProcess.length; i++) {
         try {
-          if (!order) return;
+          const order = ordersToProcess[i];
+          if (!order) continue;
 
-          // Get date-only (no time) from order
-          const dateKey = getOrderDateOnly(order);
-          if (!dateKey) return;
+          const dateValue = order.createdAt || order.date;
+          if (!dateValue) continue;
 
-          const orderDate = new Date(dateKey + 'T00:00:00');
-          if (isNaN(orderDate.getTime())) return;
+          const orderDate = new Date(dateValue);
+          if (isNaN(orderDate.getTime())) continue;
 
           const year = orderDate.getFullYear();
-          const monthKey = `${year}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`;
+          const month = orderDate.getMonth() + 1;
+          const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+          const day = String(orderDate.getDate()).padStart(2, '0');
+          const dateKey = `${year}-${String(month).padStart(2, '0')}-${day}`;
+
           const status = order.status || 'pending';
           const orderAmount = parseFloat(order.total || order.totalAmount || 0);
+          const amount = isNaN(orderAmount) ? 0 : orderAmount;
 
           // Yearly data
           if (!yearlyData[year]) {
@@ -2335,7 +2951,7 @@ const AdminDashboard = ({ onLogout }) => {
           }
           yearlyData[year].orders++;
           if (status === 'delivered') {
-            yearlyData[year].revenue += orderAmount;
+            yearlyData[year].revenue += amount;
           }
 
           // Monthly data (grouped by year-month)
@@ -2344,7 +2960,7 @@ const AdminDashboard = ({ onLogout }) => {
           }
           monthlyData[monthKey].orders++;
           if (status === 'delivered') {
-            monthlyData[monthKey].revenue += orderAmount;
+            monthlyData[monthKey].revenue += amount;
           }
 
           // Status counts
@@ -2355,19 +2971,20 @@ const AdminDashboard = ({ onLogout }) => {
             if (!dailyRevenue[dateKey]) {
               dailyRevenue[dateKey] = 0;
             }
-            dailyRevenue[dateKey] += orderAmount;
+            dailyRevenue[dateKey] += amount;
           }
         } catch (orderError) {
-          console.warn('Error processing order in getAnalyticsData:', orderError, order);
+          // Skip invalid orders silently for performance
+          continue;
         }
-      });
+      }
 
       return { monthlyData, statusCounts, dailyRevenue, yearlyData };
     } catch (error) {
       console.error('Error in getAnalyticsData:', error);
       return { monthlyData: {}, statusCounts: {}, dailyRevenue: {}, yearlyData: {} };
     }
-  };
+  }, [orders]);
 
   // Get monthly breakdown by address
   const getMonthlyBreakdownByAddress = () => {
@@ -2397,13 +3014,20 @@ const AdminDashboard = ({ onLogout }) => {
         addressData[address]['Grand Total'] = 0;
       }
 
-      // Parse billing month or reference month to get month number
-      const billingMonth = order.billingMonth || order.referenceMonth || '';
+      // MASTER ORDERS MODEL: Use billingMonth (INT) from backend, fallback to date parsing
       let monthKey = null;
 
-      if (billingMonth) {
-        // Try to extract month from "01 - Jan'25" or "2(Feb'24)" format
-        const monthMatch = billingMonth.match(/(\d{1,2})/);
+      // First try: Use billingMonth (INT) from backend
+      if (
+        order.billingMonth &&
+        typeof order.billingMonth === 'number' &&
+        order.billingMonth >= 1 &&
+        order.billingMonth <= 12
+      ) {
+        monthKey = monthNames[order.billingMonth - 1];
+      } else if (order.billingMonth) {
+        // Backward compatibility: Try to parse string format
+        const monthMatch = String(order.billingMonth).match(/(\d{1,2})/);
         if (monthMatch) {
           const monthNum = parseInt(monthMatch[1]);
           if (monthNum >= 1 && monthNum <= 12) {
@@ -2412,12 +3036,12 @@ const AdminDashboard = ({ onLogout }) => {
         }
       }
 
-      // If no month found, try to parse from date
+      // Fallback: Parse from date
       if (!monthKey && order.date) {
         try {
-          const [day, month, year] = order.date.split('/');
-          if (month) {
-            const monthNum = parseInt(month);
+          const orderDate = new Date(order.date);
+          if (!isNaN(orderDate.getTime())) {
+            const monthNum = orderDate.getMonth() + 1;
             if (monthNum >= 1 && monthNum <= 12) {
               monthKey = monthNames[monthNum - 1];
             }
@@ -2427,11 +3051,11 @@ const AdminDashboard = ({ onLogout }) => {
         }
       }
 
-      const amount = order.totalAmount || order.total || 0;
+      const amount = parseFloat(order.totalAmount || order.total || 0);
       if (monthKey && addressData[address][monthKey] !== undefined) {
-        addressData[address][monthKey] += amount;
+        addressData[address][monthKey] += isNaN(amount) ? 0 : amount;
       }
-      addressData[address]['Grand Total'] += amount;
+      addressData[address]['Grand Total'] += isNaN(amount) ? 0 : amount;
     });
 
     return addressData;
@@ -2459,33 +3083,62 @@ const AdminDashboard = ({ onLogout }) => {
   // Get unpaid amounts by address
   const getUnpaidByAddress = () => {
     const unpaidData = {};
+    // Use displayOrders which has the most up-to-date data
+    const ordersToProcess = Array.isArray(displayOrders)
+      ? displayOrders
+      : Array.isArray(orders)
+        ? orders
+        : [];
 
-    orders.forEach((order) => {
-      const status = (order.status || '').toLowerCase();
-      if (status !== 'paid' && status !== 'delivered') {
-        const address =
-          order.deliveryAddress || order.customerAddress || order.address || 'Unknown';
-        const amount = order.totalAmount || order.total || 0;
+    if (ordersToProcess.length === 0) {
+      console.log('[PendingAmountsTab] No orders to process');
+      return [];
+    }
 
-        if (!unpaidData[address]) {
-          unpaidData[address] = { unpaid: 0, grandTotal: 0 };
-        }
-        unpaidData[address].unpaid += amount;
-      }
+    ordersToProcess.forEach((order) => {
+      // Check both status and paymentStatus fields
+      const status = (order.status || order.paymentStatus || '').toLowerCase().trim();
+      const isPaid = status === 'paid' || status === 'delivered';
 
-      // Also calculate grand total for each address
       const address = order.deliveryAddress || order.customerAddress || order.address || 'Unknown';
-      const amount = order.totalAmount || order.total || 0;
+      const amount = parseFloat(order.totalAmount || order.total || 0);
+
+      // Initialize address data if not exists
       if (!unpaidData[address]) {
         unpaidData[address] = { unpaid: 0, grandTotal: 0 };
       }
-      unpaidData[address].grandTotal += amount;
+
+      // Add to grand total for all orders
+      unpaidData[address].grandTotal += isNaN(amount) ? 0 : amount;
+
+      // Add to unpaid total only if not paid
+      if (!isPaid && !isNaN(amount)) {
+        unpaidData[address].unpaid += amount;
+      }
     });
 
-    return Object.entries(unpaidData)
+    const result = Object.entries(unpaidData)
       .map(([address, data]) => ({ address, ...data }))
       .filter((item) => item.unpaid > 0)
       .sort((a, b) => b.unpaid - a.unpaid);
+
+    // Debug log
+    if (result.length === 0 && ordersToProcess.length > 0) {
+      console.log(
+        '[PendingAmountsTab] No unpaid orders found. Total orders:',
+        ordersToProcess.length
+      );
+      console.log(
+        '[PendingAmountsTab] Sample order statuses:',
+        ordersToProcess.slice(0, 5).map((o) => ({
+          status: o.status,
+          paymentStatus: o.paymentStatus,
+          amount: o.totalAmount || o.total,
+        }))
+      );
+    }
+
+    return result;
   };
 
   // Get yearly comparison with trends
@@ -2529,82 +3182,16 @@ const AdminDashboard = ({ onLogout }) => {
   return (
     <div className='admin-dashboard'>
       {/* Sidebar */}
-      <div
-        className={`admin-sidebar ${sidebarOpen ? 'open' : ''} ${sidebarCollapsed ? 'collapsed' : ''}`}
-      >
-        <div className='sidebar-header'>
-          <div className='sidebar-logo'>
-            <img
-              src='/logo.png'
-              alt='HomieBites'
-              className='sidebar-logo-img'
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'flex';
-              }}
-            />
-            <div className='sidebar-logo-fallback' style={{ display: 'none' }}>
-              <i className='fa-solid fa-shield-halved'></i>
-            </div>
-          </div>
-        </div>
-
-        <nav className='sidebar-nav'>
-          {Object.entries(adminFeatures).map(([key, feature]) => (
-            <button
-              key={key}
-              className={`sidebar-item ${activeTab === key ? 'active' : ''}`}
-              onClick={() => {
-                setActiveTab(key);
-                setSidebarOpen(false);
-              }}
-              title={sidebarCollapsed ? feature.name : ''}
-            >
-              <i className={`fa-solid ${feature.icon}`}></i>
-              {!sidebarCollapsed && <span>{feature.name}</span>}
-            </button>
-          ))}
-        </nav>
-
-        <div className='sidebar-footer'>
-          <button
-            className='sidebar-toggle-btn sidebar-item'
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            <i
-              className={`fa-solid ${sidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'}`}
-            ></i>
-            {!sidebarCollapsed && <span>Collapse</span>}
-          </button>
-
-          {/* Profile Section */}
-          {currentUser && (
-            <div className={`sidebar-profile ${sidebarCollapsed ? 'collapsed' : ''}`}>
-              <div className='profile-avatar'>
-                <i className='fa-solid fa-user'></i>
-              </div>
-              {!sidebarCollapsed && (
-                <div className='profile-info'>
-                  <div className='profile-name'>{currentUser.name || 'Admin User'}</div>
-                  <div className='profile-role'>
-                    {currentUser.role === 'admin' ? 'Super Admin' : 'Admin'}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          <button
-            className='sidebar-item logout-btn'
-            onClick={handleLogoutClick}
-            title={sidebarCollapsed ? 'Logout' : ''}
-          >
-            <i className='fa-solid fa-sign-out-alt'></i>
-            {!sidebarCollapsed && <span>Logout</span>}
-          </button>
-        </div>
-      </div>
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        sidebarCollapsed={sidebarCollapsed}
+        setSidebarCollapsed={setSidebarCollapsed}
+        currentUser={currentUser}
+        onLogout={handleLogoutClick}
+      />
 
       {/* Main Content */}
       <div className={`admin-main ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
@@ -2620,2669 +3207,304 @@ const AdminDashboard = ({ onLogout }) => {
             </div>
           </div>
           <div className='header-right'>
-            <div className='admin-stats-compact'>
-              <div className='stat-mini'>
-                <i className='fa-solid fa-shopping-cart'></i>
-                <span>{orders.length}</span>
-              </div>
-              <div className='stat-mini'>
-                <i className='fa-solid fa-rupee-sign'></i>
-                <span>₹{getTotalRevenue()}</span>
-              </div>
-            </div>
+            {/* Compact stats removed - Dashboard tab now shows Today/Current Month stats only */}
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className='admin-stats'>
-          <div className='stat-card'>
-            <i className='fa-solid fa-shopping-cart'></i>
-            <div>
-              <h3>{orders.length}</h3>
-              <p>Total Orders</p>
-              <span className='stat-change positive'>
-                <i className='fa-solid fa-arrow-up'></i> {getTodayStats().orders} today
-              </span>
-            </div>
-          </div>
-          <div className='stat-card'>
-            <i className='fa-solid fa-clock'></i>
-            <div>
-              <h3>{getPendingOrders()}</h3>
-              <p>Pending Orders</p>
-              <span className='stat-change'>{getTodayStats().pending} new today</span>
-            </div>
-          </div>
-          <div className='stat-card'>
-            <i className='fa-solid fa-rupee-sign'></i>
-            <div>
-              <h3>₹{formatCurrency(getTotalRevenue())}</h3>
-              <p>Total Revenue</p>
-              <span className='stat-change positive'>
-                <i className='fa-solid fa-arrow-up'></i> ₹{formatCurrency(getTodayStats().revenue)}{' '}
-                today
-              </span>
-            </div>
-          </div>
-          <div className='stat-card'>
-            <i className='fa-solid fa-users'></i>
-            <div>
-              <h3>{users.length}</h3>
-              <p>Registered Users</p>
-              <span className='stat-change'>{getWeeklyStats().orders} orders this week</span>
-            </div>
-          </div>
-        </div>
+        {/* Stats Cards - Removed lifetime stats (moved to Summary tab per MASTER_RULES.md) */}
 
         {activeTab === 'dashboard' && (
-          <div className='admin-content'>
-            <h2>Dashboard Overview</h2>
-            <div className='dashboard-grid'>
-              <div className='dashboard-card'>
-                <h3>Today's Summary</h3>
-                <div className='dashboard-stats'>
-                  <div className='stat-item'>
-                    <span className='stat-label'>Orders</span>
-                    <span className='stat-value'>{getTodayStats().orders}</span>
-                  </div>
-                  <div className='stat-item'>
-                    <span className='stat-label'>Revenue</span>
-                    <span className='stat-value'>₹{formatCurrency(getTodayStats().revenue)}</span>
-                  </div>
-                  <div className='stat-item'>
-                    <span className='stat-label'>Pending</span>
-                    <span className='stat-value'>{getTodayStats().pending}</span>
-                  </div>
-                </div>
-              </div>
-              <div className='dashboard-card'>
-                <h3>Weekly Summary</h3>
-                <div className='dashboard-stats'>
-                  <div className='stat-item'>
-                    <span className='stat-label'>Orders</span>
-                    <span className='stat-value'>{getWeeklyStats().orders}</span>
-                  </div>
-                  <div className='stat-item'>
-                    <span className='stat-label'>Revenue</span>
-                    <span className='stat-value'>₹{formatCurrency(getWeeklyStats().revenue)}</span>
-                  </div>
-                  <div className='stat-item'>
-                    <span className='stat-label'>Avg Order</span>
-                    <span className='stat-value'>₹{getWeeklyStats().avgOrderValue}</span>
-                  </div>
-                </div>
-              </div>
-              <div className='dashboard-card'>
-                <h3>Quick Actions</h3>
-                <div className='quick-actions'>
-                  <button className='btn btn-primary' onClick={() => setActiveTab('orders')}>
-                    <i className='fa-solid fa-shopping-cart'></i> Manage Orders
-                  </button>
-                  <button className='btn btn-secondary' onClick={() => setActiveTab('menu')}>
-                    <i className='fa-solid fa-utensils'></i> Edit Menu
-                  </button>
-                  <button className='btn btn-secondary' onClick={() => setActiveTab('analytics')}>
-                    <i className='fa-solid fa-chart-line'></i> View Analytics
-                  </button>
-                </div>
-              </div>
-              <div className='dashboard-card'>
-                <h3>Recent Orders</h3>
-                <div className='recent-orders-list'>
-                  {orders
-                    .sort(
-                      (a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date)
-                    )
-                    .slice(0, 5)
-                    .map((order) => (
-                      <div key={order.id} className='recent-order-item'>
-                        <div>
-                          <strong>#{order.id.toString().slice(-6)}</strong>
-                          <span>{order.customerName || order.name || 'N/A'}</span>
-                        </div>
-                        <div>
-                          <span>₹{formatCurrency(order.total || 0)}</span>
-                          <span className={`status-badge status-${order.status || 'pending'}`}>
-                            {order.status || 'pending'}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  {orders.length === 0 && <p className='no-data'>No orders yet</p>}
-                </div>
-              </div>
-            </div>
-          </div>
+          <DashboardTab
+            orders={displayOrders}
+            setActiveTab={setActiveTab}
+            settings={settings}
+            loading={loadingHook}
+          />
         )}
 
         {activeTab === 'menu' && (
-          <div className='admin-content'>
-            <div className='admin-actions'>
-              <button className='btn btn-primary' onClick={handleSave} disabled={syncing}>
-                <i className='fa-solid fa-save'></i> Save Changes
-              </button>
-              <button className='btn btn-ghost' onClick={handleReset} disabled={syncing}>
-                <i className='fa-solid fa-undo'></i> Reset to Defaults
-              </button>
-              <a
-                href='/menu'
-                target='_blank'
-                rel='noopener noreferrer'
-                className='btn btn-secondary'
-                style={{
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                }}
-              >
-                <i className='fa-solid fa-external-link'></i> View Menu Page
-              </a>
-              {saved && <span className='save-indicator'>✓ Saved successfully!</span>}
-            </div>
-
-            <div className='menu-editor'>
-              {menuData.map((category) => (
-                <div key={category.id} className='menu-category-card'>
-                  <div className='category-header'>
-                    <div className='category-title-input'>
-                      <i className={`fa-solid ${category.icon}`}></i>
-                      <input
-                        type='text'
-                        value={category.category}
-                        onChange={(e) => updateCategory(category.id, 'category', e.target.value)}
-                        className='category-name-input'
-                      />
-                    </div>
-                    {category.tag && (
-                      <input
-                        type='text'
-                        value={category.tag}
-                        onChange={(e) => updateCategory(category.id, 'tag', e.target.value)}
-                        className='category-tag-input'
-                        placeholder='Tag (e.g., Best Seller)'
-                      />
-                    )}
-                  </div>
-
-                  {category.description && (
-                    <textarea
-                      value={category.description}
-                      onChange={(e) => updateCategory(category.id, 'description', e.target.value)}
-                      className='category-description'
-                      placeholder='Description'
-                      rows='2'
-                    />
-                  )}
-
-                  <div className='menu-items-list'>
-                    {category.items.map((item) => (
-                      <div key={item.id} className='menu-item-row'>
-                        <input
-                          type='text'
-                          value={item.name}
-                          onChange={(e) => updateItem(category.id, item.id, 'name', e.target.value)}
-                          className='item-name-input'
-                          placeholder='Item name'
-                        />
-                        <div className='item-price-input-group'>
-                          <span className='currency'>₹</span>
-                          <input
-                            type='number'
-                            value={item.price}
-                            onChange={(e) =>
-                              updateItem(
-                                category.id,
-                                item.id,
-                                'price',
-                                parseInt(e.target.value) || 0
-                              )
-                            }
-                            className='item-price-input'
-                            placeholder='0'
-                            min='0'
-                          />
-                        </div>
-                        <div className='menu-item-actions'>
-                          <span className='item-preview-price'>
-                            ₹{formatCurrency(item.price || 0)}
-                          </span>
-                          <button
-                            className='btn btn-special danger'
-                            onClick={() => removeItem(category.id, item.id)}
-                            title='Remove item'
-                          >
-                            <i className='fa-solid fa-trash'></i>
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                    <button className='btn btn-primary' onClick={() => addItem(category.id)}>
-                      <i className='fa-solid fa-plus'></i>
-                      <span>Add Item</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <MenuTab
+            menuData={menuData}
+            updateCategory={updateCategory}
+            updateItem={updateItem}
+            addItem={addItem}
+            removeItem={removeItem}
+          />
         )}
 
         {activeTab === 'offers' && (
-          <div className='admin-content'>
-            <div className='admin-actions'>
-              <button className='btn btn-primary' onClick={handleAddOffer}>
-                <i className='fa-solid fa-plus'></i> Add Offer
-              </button>
-              <button className='btn btn-primary' onClick={handleSaveOffers} disabled={syncing}>
-                <i className='fa-solid fa-save'></i> Save Changes
-              </button>
-              <a
-                href='/offers'
-                target='_blank'
-                rel='noopener noreferrer'
-                className='btn btn-secondary'
-                style={{
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                }}
-              >
-                <i className='fa-solid fa-external-link'></i> View Offers Page
-              </a>
-              {saved && <span className='save-indicator'>✓ Saved successfully!</span>}
-            </div>
-
-            <div className='offers-list'>
-              {offersData.length === 0 ? (
-                <div className='no-data' style={{ padding: '3rem', textAlign: 'center' }}>
-                  <p>No offers created yet. Click "Add Offer" to create your first offer!</p>
-                </div>
-              ) : (
-                offersData.map((offer) => (
-                  <div key={offer.id} className='offer-card-admin'>
-                    <div className='offer-card-header-admin'>
-                      <div>
-                        <h3>{offer.title}</h3>
-                        {offer.discount && (
-                          <span className='offer-discount-badge'>{offer.discount}</span>
-                        )}
-                        {offer.badge && <span className='offer-badge-admin'>{offer.badge}</span>}
-                      </div>
-                      <div className='offer-actions-admin'>
-                        <label className='toggle-switch'>
-                          <input
-                            type='checkbox'
-                            checked={offer.isActive}
-                            onChange={(e) => {
-                              setOffersData((prev) =>
-                                prev.map((o) =>
-                                  o.id === offer.id ? { ...o, isActive: e.target.checked } : o
-                                )
-                              );
-                            }}
-                          />
-                          <span className='toggle-slider'></span>
-                          <span className='toggle-label'>
-                            {offer.isActive ? 'Active' : 'Inactive'}
-                          </span>
-                        </label>
-                        <button
-                          className='btn btn-secondary'
-                          onClick={() => handleEditOffer(offer)}
-                        >
-                          <i className='fa-solid fa-edit'></i> Edit
-                        </button>
-                        <button
-                          className='btn btn-special danger'
-                          onClick={() => handleDeleteOffer(offer.id)}
-                        >
-                          <i className='fa-solid fa-trash'></i> Delete
-                        </button>
-                      </div>
-                    </div>
-                    <p className='offer-description-admin'>{offer.description}</p>
-                    {offer.startDate || offer.endDate ? (
-                      <div className='offer-dates-admin'>
-                        {offer.startDate && (
-                          <span>Starts: {new Date(offer.startDate).toLocaleDateString()}</span>
-                        )}
-                        {offer.endDate && (
-                          <span>Ends: {new Date(offer.endDate).toLocaleDateString()}</span>
-                        )}
-                      </div>
-                    ) : null}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+          <OffersTab
+            offersData={offersData}
+            syncing={syncing}
+            saved={saved}
+            handleAddOffer={handleAddOffer}
+            handleSaveOffers={handleSaveOffers}
+            handleEditOffer={handleEditOffer}
+            handleDeleteOffer={handleDeleteOffer}
+            setOffersData={setOffersData}
+          />
         )}
 
-        {activeTab === 'orders' && (
-          <div className='admin-content'>
-            <div className='orders-header'>
-              <h2>All Orders</h2>
-              <div className='orders-actions'>
-                <button className='btn btn-primary' onClick={handleAddOrder}>
-                  <i className='fa-solid fa-plus'></i> Add Order
-                </button>
-                <button
-                  className='btn btn-secondary'
-                  onClick={markAllOrdersAsDelivered}
-                  title='Mark all orders as delivered'
-                >
-                  <i className='fa-solid fa-check-double'></i> Mark All Delivered
-                </button>
-                <label className='btn btn-ghost import-btn'>
-                  <i className='fa-solid fa-upload'></i> Import Orders
-                  <input
-                    type='file'
-                    accept='.json,.xlsx,.xls'
-                    onChange={handleImportOrders}
-                    style={{ display: 'none' }}
-                  />
-                </label>
-                <button className='btn btn-ghost' onClick={handleExportOrders}>
-                  <i className='fa-solid fa-download'></i> Export Orders
-                </button>
-              </div>
-            </div>
-
-            <div className='orders-filters'>
-              <div className='filter-group'>
-                <label>Date Range:</label>
-                <select
-                  value={dateRange}
-                  onChange={(e) => setDateRange(e.target.value)}
-                  className='filter-select'
-                >
-                  <option value='all'>All Time</option>
-                  <option value='today'>Today</option>
-                  <option value='week'>Last 7 Days</option>
-                  <option value='month'>This Month</option>
-                  <option value='custom'>Custom Range</option>
-                </select>
-              </div>
-              {dateRange === 'custom' && (
-                <>
-                  <div className='filter-group'>
-                    <label>Start Date:</label>
-                    <input
-                      type='date'
-                      value={customStartDate}
-                      onChange={(e) => setCustomStartDate(e.target.value)}
-                      className='filter-select'
-                    />
-                  </div>
-                  <div className='filter-group'>
-                    <label>End Date:</label>
-                    <input
-                      type='date'
-                      value={customEndDate}
-                      onChange={(e) => setCustomEndDate(e.target.value)}
-                      className='filter-select'
-                    />
-                  </div>
-                </>
-              )}
-              <div className='filter-group'>
-                <label>Status:</label>
-                <select
-                  value={orderFilter}
-                  onChange={(e) => setOrderFilter(e.target.value)}
-                  className='filter-select'
-                >
-                  <option value='all'>All Orders</option>
-                  {orderStatuses.map((status) => (
-                    <option key={status} value={status}>
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className='filter-group'>
-                <label>Sort by:</label>
-                <select
-                  value={orderSort}
-                  onChange={(e) => setOrderSort(e.target.value)}
-                  className='filter-select'
-                >
-                  <option value='newest'>Newest First</option>
-                  <option value='oldest'>Oldest First</option>
-                  <option value='amount'>Highest Amount</option>
-                </select>
-              </div>
-              <div className='filter-group search-group'>
-                <i className='fa-solid fa-search'></i>
-                <input
-                  type='text'
-                  placeholder='Search by name, phone, address, or order ID...'
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className='search-input'
-                />
-              </div>
-            </div>
-
-            {filteredOrders.length > 0 && (
-              <div className='orders-summary'>
-                <span>Total: {filteredOrders.length} orders</span>
-                <span>Total Revenue: ₹{formatCurrency(getTotalRevenue(filteredOrders))}</span>
-              </div>
-            )}
-
-            {/* Pagination Controls */}
-            {filteredOrders.length > 0 && (
-              <div className='pagination-controls'>
-                <div className='pagination-info'>
-                  <label>Show:</label>
-                  <select
-                    value={recordsPerPage}
-                    onChange={(e) => handleRecordsPerPageChange(Number(e.target.value))}
-                    className='records-per-page-select'
-                  >
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                    <option value={200}>200</option>
-                  </select>
-                  <span>records per page</span>
-                </div>
-                <div className='pagination-info'>
-                  Showing {(currentPage - 1) * recordsPerPage + 1} to{' '}
-                  {Math.min(currentPage * recordsPerPage, filteredOrders.length)} of{' '}
-                  {filteredOrders.length} orders
-                </div>
-              </div>
-            )}
-
-            <div className='orders-table-container'>
-              {filteredOrders.length === 0 ? (
-                <p className='no-data'>No orders found</p>
-              ) : (
-                <table className='orders-table'>
-                  <thead>
-                    <tr>
-                      <th>S No.</th>
-                      <th>Order ID</th>
-                      <th>Date</th>
-                      <th>Delivery Address</th>
-                      <th>Customer</th>
-                      <th>Phone</th>
-                      <th>Quantity</th>
-                      <th>Unit Price</th>
-                      <th>Total Amount</th>
-                      <th>Status</th>
-                      <th>Payment Mode</th>
-                      <th>Billing Month</th>
-                      <th>Reference Month</th>
-                      <th>Year</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(() => {
-                      try {
-                        const paginatedOrdersList = getPaginatedOrders();
-                        if (!Array.isArray(paginatedOrdersList)) {
-                          return (
-                            <tr>
-                              <td colSpan='15' className='no-data'>
-                                No orders available
-                              </td>
-                            </tr>
-                          );
-                        }
-                        return paginatedOrdersList.map((order, index) => {
-                          try {
-                            if (!order) {
-                              return null;
-                            }
-
-                            // Safely parse date
-                            let orderDate;
-                            let year = new Date().getFullYear();
-                            let month = new Date().getMonth() + 1;
-                            try {
-                              const dateValue = order.createdAt || order.date;
-                              if (dateValue) {
-                                orderDate = new Date(dateValue);
-                                if (isNaN(orderDate.getTime())) {
-                                  orderDate = new Date(); // Fallback to current date
-                                }
-                                year = orderDate.getFullYear();
-                                month = orderDate.getMonth() + 1;
-                              } else {
-                                orderDate = new Date(); // Fallback to current date
-                              }
-                            } catch (dateError) {
-                              console.warn('Invalid date in order:', order.id, dateError);
-                              orderDate = new Date(); // Fallback to current date
-                            }
-
-                            const monthNames = [
-                              'Jan',
-                              'Feb',
-                              'Mar',
-                              'Apr',
-                              'May',
-                              'Jun',
-                              'Jul',
-                              'Aug',
-                              'Sep',
-                              'Oct',
-                              'Nov',
-                              'Dec',
-                            ];
-
-                            // Safely calculate billing month
-                            let billingMonth = order.billingMonth || '';
-                            if (!billingMonth && month >= 1 && month <= 12) {
-                              billingMonth = `${monthNames[month - 1]}'${String(year).slice(-2)}`;
-                            }
-
-                            // Safely calculate reference month
-                            let referenceMonth = order.referenceMonth || '';
-                            if (!referenceMonth && month >= 1 && month <= 12) {
-                              referenceMonth = `${String(month).padStart(2, '0')} - ${monthNames[month - 1]}'${String(year).slice(-2)}`;
-                            }
-
-                            // Safely calculate quantity
-                            let quantity = 1;
-                            try {
-                              if (order.quantity && !isNaN(parseInt(order.quantity))) {
-                                quantity = parseInt(order.quantity);
-                              } else if (Array.isArray(order.items) && order.items.length > 0) {
-                                quantity = order.items.reduce((sum, item) => {
-                                  const qty = parseInt(item.quantity || 1);
-                                  return sum + (isNaN(qty) ? 1 : qty);
-                                }, 0);
-                              }
-                              if (quantity <= 0) quantity = 1;
-                            } catch (qtyError) {
-                              console.warn('Error calculating quantity for order:', order.id, qtyError);
-                              quantity = 1;
-                            }
-
-                            // Safely calculate unit price
-                            let unitPrice = 0;
-                            try {
-                              if (order.unitPrice && !isNaN(parseFloat(order.unitPrice))) {
-                                unitPrice = parseFloat(order.unitPrice);
-                              } else {
-                                const totalAmount = parseFloat(order.total || order.totalAmount || 0);
-                                if (!isNaN(totalAmount) && quantity > 0) {
-                                  unitPrice = totalAmount / quantity;
-                                }
-                              }
-                              if (isNaN(unitPrice) || unitPrice < 0) unitPrice = 0;
-                            } catch (priceError) {
-                              console.warn('Error calculating unit price for order:', order.id, priceError);
-                              unitPrice = 0;
-                            }
-
-                            // Safely format date string
-                            let dateString = 'N/A';
-                            try {
-                              if (orderDate && !isNaN(orderDate.getTime())) {
-                                dateString = orderDate.toLocaleDateString('en-IN', {
-                                  day: '2-digit',
-                                  month: '2-digit',
-                                  year: 'numeric',
-                                });
-                              }
-                            } catch (dateFormatError) {
-                              console.warn('Error formatting date for order:', order.id, dateFormatError);
-                            }
-
-                            return (
-                              <tr key={order.id || index}>
-                                <td className='order-sno-cell'>
-                                  {(currentPage - 1) * recordsPerPage + index + 1}
-                                </td>
-                                <td className='order-id-cell'>
-                                  <strong>
-                                    #{String(order.id || index).replace(/^#-?/, '').slice(-6)}
-                                  </strong>
-                                </td>
-                                <td className='order-date-cell'>{dateString}</td>
-                                <td className='order-address-cell'>
-                                  {order.deliveryAddress ||
-                                    order.customerAddress ||
-                                    order.address ||
-                                    'N/A'}
-                                </td>
-                                <td className='order-customer-cell'>
-                                  {order.customerName || order.name || 'N/A'}
-                                </td>
-                                <td className='order-phone-cell'>
-                                  {order.customerPhone || order.phone || 'N/A'}
-                                </td>
-                                <td className='order-quantity-cell'>{quantity}</td>
-                                <td className='order-unit-price-cell'>
-                                  ₹{formatCurrency(unitPrice)}
-                                </td>
-                                <td className='order-amount-cell'>
-                                  <strong>
-                                    ₹{formatCurrency(order.total || order.totalAmount || 0)}
-                                  </strong>
-                                </td>
-                                <td className='order-status-cell'>
-                                  <select
-                                    value={order.status || 'pending'}
-                                    onChange={(e) => {
-                                      try {
-                                        updateOrderStatus(order.id, e.target.value);
-                                      } catch (statusError) {
-                                        console.error('Error updating order status:', statusError);
-                                      }
-                                    }}
-                                    className={`status-select status-${order.status || 'pending'}`}
-                                  >
-                                    {orderStatuses.map((status) => (
-                                      <option key={status} value={status}>
-                                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </td>
-                                <td className='order-payment-cell'>
-                                  {order.paymentMode || 'N/A'}
-                                </td>
-                                <td className='order-billing-month-cell'>{billingMonth || 'N/A'}</td>
-                                <td className='order-reference-month-cell'>
-                                  {referenceMonth || 'N/A'}
-                                </td>
-                                <td className='order-year-cell'>{year}</td>
-                                <td className='order-actions-cell'>
-                                  <div className='order-actions-group'>
-                                    <button
-                                      className='btn btn-secondary'
-                                      onClick={() => {
-                                        try {
-                                          const details = `Order ID: ${order.id || 'N/A'} | Date: ${orderDate ? orderDate.toLocaleString() : 'N/A'} | Customer: ${order.customerName || order.name || 'N/A'} | Total: ₹${formatCurrency(order.total || order.totalAmount || 0)} | Status: ${order.status || 'pending'}`;
-                                          showNotification(details, 'info', 8000);
-                                        } catch (detailsError) {
-                                          console.error('Error showing order details:', detailsError);
-                                        }
-                                      }}
-                                      title='View Details'
-                                    >
-                                      <i className='fa-solid fa-eye'></i>
-                                    </button>
-                                    <button
-                                      className='btn btn-secondary'
-                                      onClick={() => {
-                                        try {
-                                          handleEditOrder(order);
-                                        } catch (editError) {
-                                          console.error('Error editing order:', editError);
-                                        }
-                                      }}
-                                      title='Edit Order'
-                                    >
-                                      <i className='fa-solid fa-edit'></i>
-                                    </button>
-                                    <button
-                                      className='btn btn-special danger'
-                                      onClick={() => {
-                                        try {
-                                          handleDeleteOrder(order.id);
-                                        } catch (deleteError) {
-                                          console.error('Error deleting order:', deleteError);
-                                        }
-                                      }}
-                                      title='Delete Order'
-                                    >
-                                      <i className='fa-solid fa-trash'></i>
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          } catch (orderError) {
-                            console.error('Error rendering order row:', orderError, order);
-                            return (
-                              <tr key={order?.id || index}>
-                                <td colSpan='15' className='error-cell'>
-                                  Error loading order #{order?.id || index}
-                                </td>
-                              </tr>
-                            );
-                          }
-                        });
-                      } catch (mapError) {
-                        console.error('Error mapping orders:', mapError);
-                        return (
-                          <tr>
-                            <td colSpan='15' className='no-data'>
-                              Error loading orders. Please refresh the page.
-                            </td>
-                          </tr>
-                        );
-                      }
-                    })()}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td colSpan='15' className='table-footer'>
-                        <strong>
-                          Page {currentPage} of {totalPages} | Total: {filteredOrders.length} orders
-                          | Total Amount: ₹{formatCurrency(getTotalRevenue(filteredOrders))}
-                        </strong>
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              )}
-            </div>
-
-            {/* Pagination Navigation */}
-            {filteredOrders.length > 0 && totalPages > 1 && (
-              <div className='pagination-navigation'>
-                <button
-                  className='btn btn-ghost'
-                  onClick={() => handlePageChange(1)}
-                  disabled={currentPage === 1}
-                  title='First Page'
-                >
-                  <i className='fa-solid fa-angle-double-left'></i>
-                </button>
-                <button
-                  className='btn btn-ghost'
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  title='Previous Page'
-                >
-                  <i className='fa-solid fa-angle-left'></i>
-                </button>
-
-                {/* Page Numbers */}
-                <div className='page-numbers'>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-                    if (
-                      pageNum === 1 ||
-                      pageNum === totalPages ||
-                      (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)
-                    ) {
-                      return (
-                        <button
-                          key={pageNum}
-                          className={`btn btn-ghost ${currentPage === pageNum ? 'active' : ''}`}
-                          onClick={() => handlePageChange(pageNum)}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    } else if (pageNum === currentPage - 3 || pageNum === currentPage + 3) {
-                      return (
-                        <span key={pageNum} className='page-ellipsis'>
-                          ...
-                        </span>
-                      );
-                    }
-                    return null;
-                  })}
-                </div>
-
-                <button
-                  className='btn btn-ghost'
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  title='Next Page'
-                >
-                  <i className='fa-solid fa-angle-right'></i>
-                </button>
-                <button
-                  className='btn btn-ghost'
-                  onClick={() => handlePageChange(totalPages)}
-                  disabled={currentPage === totalPages}
-                  title='Last Page'
-                >
-                  <i className='fa-solid fa-angle-double-right'></i>
-                </button>
-              </div>
-            )}
-          </div>
+        {/* Order Management tab removed - orders are added via Excel upload or manual entry */}
+        {activeTab === 'currentMonthOrders' && (
+          <CurrentMonthOrdersTab
+            orders={Array.isArray(orders) ? orders : []}
+            onAddOrder={handleAddOrder}
+            onEditOrder={handleEditOrder}
+            onDeleteOrder={handleDeleteOrder}
+            onUpdateOrderStatus={updateOrderStatus}
+            currentPage={currentPage || 1}
+            recordsPerPage={recordsPerPage || 20}
+            onPageChange={handlePageChange}
+            onRecordsPerPageChange={handleRecordsPerPageChange}
+            loading={loadingHook}
+          />
         )}
 
-        {/* Summary Report Tab - Excel Style */}
+        {/* Summary Tab - Address-wise Monthly Totals */}
         {activeTab === 'summary' && (
-          <div className='admin-content'>
-            <div className='orders-header'>
-              <h2>Summary Report (Excel Format)</h2>
-              <div className='orders-actions'>
-                <button className='btn btn-ghost' onClick={() => setActiveTab('orders')}>
-                  <i className='fa-solid fa-list'></i> View Detailed Orders
-                </button>
-              </div>
-            </div>
-
-            {(() => {
-              try {
-                const summary = getSummaryReport();
-                if (!summary || !summary.data) {
-                  return <p className='no-data'>Error loading summary data. Please try again.</p>;
-                }
-
-                // Safety check: prevent rendering if data is too large
-                if (summary.data.length > 5000) {
-                  return (
-                    <div className='error-message'>
-                      <p>Summary report contains too many addresses ({summary.data.length}).</p>
-                      <p>Please use filters to reduce the dataset size.</p>
-                      <button
-                        className='btn btn-primary'
-                        onClick={() => {
-                          setDateRange('month');
-                          setOrderFilter('all');
-                          setSearchQuery('');
-                        }}
-                      >
-                        Filter to Current Month
-                      </button>
-                    </div>
-                  );
-                }
-
-                return (
-                  <>
-                    <div className='summary-info'>
-                      <span>Total Addresses: {summary.data.length}</span>
-                      <span>Grand Total: ₹{formatCurrency(summary.grandTotal)}</span>
-                    </div>
-
-                    {/* Pagination Controls for Summary */}
-                    {summary.data.length > 0 && (
-                      <div className='pagination-controls'>
-                        <div className='pagination-info'>
-                          <label>Show:</label>
-                          <select
-                            value={recordsPerPage}
-                            onChange={(e) => handleRecordsPerPageChange(Number(e.target.value))}
-                            className='records-per-page-select'
-                          >
-                            <option value={20}>20</option>
-                            <option value={50}>50</option>
-                            <option value={200}>200</option>
-                          </select>
-                          <span>records per page</span>
-                        </div>
-                        <div className='pagination-info'>
-                          Showing {(currentPage - 1) * recordsPerPage + 1} to{' '}
-                          {Math.min(currentPage * recordsPerPage, summary.data.length)} of{' '}
-                          {summary.data.length} addresses
-                        </div>
-                      </div>
-                    )}
-
-                    <div className='orders-table-container summary-table-container'>
-                      {summary.data.length === 0 ? (
-                        <p className='no-data'>No data available</p>
-                      ) : (
-                        <table className='orders-table summary-table'>
-                          <thead>
-                            <tr>
-                              <th>Address</th>
-                              {summary.months.map((month) => (
-                                <th key={month}>{month}</th>
-                              ))}
-                              <th>Grand Total</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {summary.data
-                              .slice(
-                                (currentPage - 1) * recordsPerPage,
-                                currentPage * recordsPerPage
-                              )
-                              .map((row, index) => (
-                                <tr key={index}>
-                                  <td className='address-cell'>{row.address}</td>
-                                  {summary.months.map((month) => (
-                                    <td key={month} className='amount-cell'>
-                                      {row.monthlyTotals[month]
-                                        ? `₹${formatCurrency(row.monthlyTotals[month])}`
-                                        : '-'}
-                                    </td>
-                                  ))}
-                                  <td className='grand-total-cell'>
-                                    <strong>₹{formatCurrency(row.grandTotal)}</strong>
-                                  </td>
-                                </tr>
-                              ))}
-                          </tbody>
-                          <tfoot>
-                            <tr className='summary-total-row'>
-                              <td>
-                                <strong>Total</strong>
-                              </td>
-                              {summary.months.map((month) => {
-                                const monthTotal = summary.data.reduce(
-                                  (sum, row) => sum + (row.monthlyTotals[month] || 0),
-                                  0
-                                );
-                                return (
-                                  <td key={month} className='month-total-cell'>
-                                    <strong>₹{formatCurrency(monthTotal)}</strong>
-                                  </td>
-                                );
-                              })}
-                              <td className='grand-total-cell'>
-                                <strong>₹{formatCurrency(summary.grandTotal)}</strong>
-                              </td>
-                            </tr>
-                          </tfoot>
-                        </table>
-                      )}
-                    </div>
-
-                    {/* Pagination Navigation for Summary */}
-                    {summary.data.length > 0 &&
-                      Math.ceil(summary.data.length / recordsPerPage) > 1 && (
-                        <div className='pagination-navigation'>
-                          <button
-                            className='btn btn-ghost'
-                            onClick={() => handlePageChange(1)}
-                            disabled={currentPage === 1}
-                            title='First Page'
-                          >
-                            <i className='fa-solid fa-angle-double-left'></i>
-                          </button>
-                          <button
-                            className='btn btn-ghost'
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            title='Previous Page'
-                          >
-                            <i className='fa-solid fa-angle-left'></i>
-                          </button>
-
-                          <div className='page-numbers'>
-                            {Array.from(
-                              { length: Math.ceil(summary.data.length / recordsPerPage) },
-                              (_, i) => i + 1
-                            ).map((pageNum) => {
-                              const totalPages = Math.ceil(summary.data.length / recordsPerPage);
-                              if (
-                                pageNum === 1 ||
-                                pageNum === totalPages ||
-                                (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)
-                              ) {
-                                return (
-                                  <button
-                                    key={pageNum}
-                                    className={`btn btn-ghost ${currentPage === pageNum ? 'active' : ''}`}
-                                    onClick={() => handlePageChange(pageNum)}
-                                  >
-                                    {pageNum}
-                                  </button>
-                                );
-                              } else if (
-                                pageNum === currentPage - 3 ||
-                                pageNum === currentPage + 3
-                              ) {
-                                return (
-                                  <span key={pageNum} className='page-ellipsis'>
-                                    ...
-                                  </span>
-                                );
-                              }
-                              return null;
-                            })}
-                          </div>
-
-                          <button
-                            className='btn btn-ghost'
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={
-                              currentPage === Math.ceil(summary.data.length / recordsPerPage)
-                            }
-                            title='Next Page'
-                          >
-                            <i className='fa-solid fa-angle-right'></i>
-                          </button>
-                          <button
-                            className='btn btn-ghost'
-                            onClick={() =>
-                              handlePageChange(Math.ceil(summary.data.length / recordsPerPage))
-                            }
-                            disabled={
-                              currentPage === Math.ceil(summary.data.length / recordsPerPage)
-                            }
-                            title='Last Page'
-                          >
-                            <i className='fa-solid fa-angle-double-right'></i>
-                          </button>
-                        </div>
-                      )}
-                  </>
-                );
-              } catch (summaryError) {
-                console.error('Error rendering summary report:', summaryError);
-                return (
-                  <div className='error-message'>
-                    <p>Error loading summary report. Please refresh the page or try again later.</p>
-                    <button className='btn btn-primary' onClick={() => window.location.reload()}>
-                      Refresh Page
-                    </button>
-                  </div>
-                );
-              }
-            })()}
-          </div>
+          <SummaryTab
+            orders={displayOrders}
+            summaryReport={summaryReport}
+            currentPage={currentPage}
+            recordsPerPage={recordsPerPage}
+            onPageChange={handlePageChange}
+            onRecordsPerPageChange={handleRecordsPerPageChange}
+          />
         )}
 
-        {/* Customers/Addresses Tab */}
+        {/* All Address Tab */}
         {activeTab === 'customers' && (
-          <div className='admin-content'>
-            <div className='orders-header'>
-              <h2>Customers & Addresses</h2>
-              <div className='orders-actions'>
-                <button className='btn btn-ghost' onClick={() => setActiveTab('summary')}>
-                  <i className='fa-solid fa-table'></i> View Summary Report
-                </button>
-              </div>
-            </div>
-
-            <div className='orders-filters'>
-              <div className='filter-group search-group'>
-                <i className='fa-solid fa-search'></i>
-                <input
-                  type='text'
-                  placeholder='Search by address, name, or phone...'
-                  value={customerSearchQuery}
-                  onChange={(e) => {
-                    setCustomerSearchQuery(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className='search-input'
-                />
-              </div>
-              <div className='filter-group'>
-                <label>Sort by:</label>
-                <select
-                  value={customerSort}
-                  onChange={(e) => {
-                    setCustomerSort(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className='filter-select'
-                >
-                  <option value='totalAmount'>Total Amount (High to Low)</option>
-                  <option value='totalOrders'>Total Orders (High to Low)</option>
-                  <option value='lastOrder'>Last Order (Recent First)</option>
-                </select>
-              </div>
-            </div>
-
-            {filteredCustomers.length > 0 && (
-              <div className='orders-summary'>
-                <span>Total Customers: {filteredCustomers.length}</span>
-                <span>
-                  Total Revenue: ₹
-                  {formatCurrency(
-                    filteredCustomers.reduce((sum, c) => sum + (c.totalAmount || 0), 0)
-                  )}
-                </span>
-              </div>
-            )}
-
-            {/* Pagination Controls */}
-            {filteredCustomers.length > 0 && (
-              <div className='pagination-controls'>
-                <div className='pagination-info'>
-                  <label>Show:</label>
-                  <select
-                    value={recordsPerPage}
-                    onChange={(e) => handleRecordsPerPageChange(Number(e.target.value))}
-                    className='records-per-page-select'
-                  >
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                    <option value={200}>200</option>
-                  </select>
-                  <span>records per page</span>
-                </div>
-                <div className='pagination-info'>
-                  Showing {(currentPage - 1) * recordsPerPage + 1} to{' '}
-                  {Math.min(currentPage * recordsPerPage, filteredCustomers.length)} of{' '}
-                  {filteredCustomers.length} customers
-                </div>
-              </div>
-            )}
-
-            <div className='orders-table-container'>
-              {filteredCustomers.length === 0 ? (
-                <p className='no-data'>No customers found</p>
-              ) : (
-                <table className='orders-table'>
-                  <thead>
-                    <tr>
-                      <th>Address</th>
-                      <th>Customer Name</th>
-                      <th>Phone</th>
-                      <th>Total Orders</th>
-                      <th>Total Amount</th>
-                      <th>Avg Order Value</th>
-                      <th>Last Order</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedCustomers.map((customer, index) => {
-                      try {
-                        if (!customer) return null;
-
-                        const avgOrderValue =
-                          customer.totalOrders > 0 && customer.totalAmount
-                            ? Math.round(customer.totalAmount / customer.totalOrders)
-                            : 0;
-
-                        let daysSinceLastOrder = null;
-                        let lastOrderDateStr = 'N/A';
-                        try {
-                          if (customer.lastOrderDate) {
-                            const lastDate =
-                              customer.lastOrderDate instanceof Date
-                                ? customer.lastOrderDate
-                                : new Date(customer.lastOrderDate);
-                            if (!isNaN(lastDate.getTime())) {
-                              lastOrderDateStr = lastDate.toLocaleDateString();
-                              daysSinceLastOrder = Math.floor(
-                                (new Date().getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
-                              );
-                            }
-                          }
-                        } catch (dateError) {
-                          console.warn('Error calculating days since last order:', dateError);
-                        }
-
-                        const isActive = daysSinceLastOrder !== null && daysSinceLastOrder <= 90;
-
-                        return (
-                          <tr
-                            key={customer.address || index}
-                            className={
-                              selectedCustomer?.address === customer.address ? 'selected' : ''
-                            }
-                          >
-                            <td className='address-cell'>
-                              <strong>{customer.address || 'Unknown'}</strong>
-                            </td>
-                            <td className='order-customer-cell'>
-                              {customer.customerName || 'N/A'}
-                            </td>
-                            <td className='order-phone-cell'>{customer.phone || 'N/A'}</td>
-                            <td className='order-amount-cell'>{customer.totalOrders || 0}</td>
-                            <td className='order-amount-cell'>
-                              <strong>₹{formatCurrency(customer.totalAmount || 0)}</strong>
-                            </td>
-                            <td className='order-amount-cell'>₹{formatCurrency(avgOrderValue)}</td>
-                            <td className='order-date-cell'>
-                              {lastOrderDateStr}
-                              {daysSinceLastOrder !== null && daysSinceLastOrder > 0 && (
-                                <span className='days-ago'>({daysSinceLastOrder}d ago)</span>
-                              )}
-                            </td>
-                            <td className='order-status-cell'>
-                              <span
-                                className={`status-badge status-${isActive ? 'active' : 'inactive'}`}
-                              >
-                                {isActive ? 'Active' : 'Inactive'}
-                              </span>
-                            </td>
-                            <td className='order-actions-cell'>
-                              <div className='order-actions-group'>
-                                <button
-                                  className='btn btn-secondary'
-                                  onClick={() => {
-                                    try {
-                                      setSelectedCustomer(
-                                        selectedCustomer?.address === customer.address
-                                          ? null
-                                          : customer
-                                      );
-                                    } catch (error) {
-                                      console.error('Error selecting customer:', error);
-                                    }
-                                  }}
-                                  title='View Details'
-                                >
-                                  <i className='fa-solid fa-eye'></i>
-                                </button>
-                                <button
-                                  className='btn btn-secondary'
-                                  onClick={() => {
-                                    try {
-                                      setSearchQuery(customer.address || '');
-                                      setActiveTab('orders');
-                                    } catch (error) {
-                                      console.error('Error navigating to orders:', error);
-                                    }
-                                  }}
-                                  title='View Orders'
-                                >
-                                  <i className='fa-solid fa-shopping-cart'></i>
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      } catch (rowError) {
-                        console.error('Error rendering customer row:', rowError, customer);
-                        return null;
-                      }
-                    })}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td colSpan='9' className='table-footer'>
-                        <strong>
-                          Page {currentPage} of {customerTotalPages} | Total:{' '}
-                          {filteredCustomers.length} customers | Total Revenue: ₹
-                          {formatCurrency(
-                            filteredCustomers.reduce((sum, c) => sum + (c.totalAmount || 0), 0)
-                          )}
-                        </strong>
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              )}
-            </div>
-
-            {/* Customer Details Modal */}
-            {selectedCustomer &&
-              (() => {
-                try {
-                  // Safely get customer data
-                  const customer = selectedCustomer;
-                  const ordersList = Array.isArray(customer.orders) ? customer.orders : [];
-                  const totalOrders = customer.totalOrders || 0;
-                  const totalAmount = customer.totalAmount || 0;
-                  const avgOrderValue = totalOrders > 0 ? Math.round(totalAmount / totalOrders) : 0;
-
-                  return (
-                    <div className='modal-overlay' onClick={() => setSelectedCustomer(null)}>
-                      <div
-                        className='modal-content customer-details-modal'
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className='modal-header'>
-                          <h3>Customer Details</h3>
-                          <button className='modal-close' onClick={() => setSelectedCustomer(null)}>
-                            <i className='fa-solid fa-times'></i>
-                          </button>
-                        </div>
-                        <div className='modal-body'>
-                          <div className='customer-details-section'>
-                            <h4>Customer Information</h4>
-                            <div className='detail-row'>
-                              <span className='detail-label'>Address:</span>
-                              <span className='detail-value'>{customer.address || 'N/A'}</span>
-                            </div>
-                            <div className='detail-row'>
-                              <span className='detail-label'>Customer Name:</span>
-                              <span className='detail-value'>{customer.customerName || 'N/A'}</span>
-                            </div>
-                            {customer.phone && (
-                              <div className='detail-row'>
-                                <span className='detail-label'>Phone:</span>
-                                <span className='detail-value'>{customer.phone}</span>
-                              </div>
-                            )}
-                            <div className='detail-row'>
-                              <span className='detail-label'>Total Orders:</span>
-                              <span className='detail-value'>{totalOrders}</span>
-                            </div>
-                            <div className='detail-row'>
-                              <span className='detail-label'>Total Amount:</span>
-                              <span className='detail-value'>₹{formatCurrency(totalAmount)}</span>
-                            </div>
-                            <div className='detail-row'>
-                              <span className='detail-label'>Average Order Value:</span>
-                              <span className='detail-value'>₹{formatCurrency(avgOrderValue)}</span>
-                            </div>
-                            {customer.firstOrderDate && (
-                              <div className='detail-row'>
-                                <span className='detail-label'>First Order:</span>
-                                <span className='detail-value'>
-                                  {customer.firstOrderDate instanceof Date
-                                    ? customer.firstOrderDate.toLocaleDateString()
-                                    : new Date(customer.firstOrderDate).toLocaleDateString()}
-                                </span>
-                              </div>
-                            )}
-                            {customer.lastOrderDate && (
-                              <div className='detail-row'>
-                                <span className='detail-label'>Last Order:</span>
-                                <span className='detail-value'>
-                                  {customer.lastOrderDate instanceof Date
-                                    ? customer.lastOrderDate.toLocaleDateString()
-                                    : new Date(customer.lastOrderDate).toLocaleDateString()}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className='customer-orders-section'>
-                            <h4>Order History ({ordersList.length} orders)</h4>
-                            <div className='customer-orders-list'>
-                              {ordersList.length > 0 ? (
-                                <>
-                                  {ordersList
-                                    .filter((order) => order && order.id)
-                                    .sort((a, b) => {
-                                      try {
-                                        const dateA = new Date(a.createdAt || a.date || 0);
-                                        const dateB = new Date(b.createdAt || b.date || 0);
-                                        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-                                          return 0;
-                                        }
-                                        return dateB - dateA;
-                                      } catch (sortError) {
-                                        return 0;
-                                      }
-                                    })
-                                    .slice(0, 10)
-                                    .map((order) => {
-                                      try {
-                                        const orderDate = new Date(
-                                          order.createdAt || order.date || Date.now()
-                                        );
-                                        const orderAmount = order.total || order.totalAmount || 0;
-                                        const orderStatus = order.status || 'pending';
-                                        const orderId = String(order.id || '')
-                                          .replace(/^#-?/, '')
-                                          .slice(-6);
-
-                                        return (
-                                          <div
-                                            key={order.id || Math.random()}
-                                            className='customer-order-item'
-                                          >
-                                            <div>
-                                              <strong>#{orderId}</strong>
-                                              <span>
-                                                {!isNaN(orderDate.getTime())
-                                                  ? orderDate.toLocaleDateString()
-                                                  : 'N/A'}
-                                              </span>
-                                            </div>
-                                            <div>
-                                              <span>₹{formatCurrency(orderAmount)}</span>
-                                              <span
-                                                className={`status-badge status-${orderStatus}`}
-                                              >
-                                                {orderStatus}
-                                              </span>
-                                            </div>
-                                          </div>
-                                        );
-                                      } catch (orderError) {
-                                        console.warn('Error rendering order in modal:', orderError);
-                                        return null;
-                                      }
-                                    })}
-                                  {ordersList.length > 10 && (
-                                    <button
-                                      className='btn btn-ghost'
-                                      onClick={() => {
-                                        try {
-                                          setSearchQuery(customer.address || '');
-                                          setActiveTab('orders');
-                                          setSelectedCustomer(null);
-                                        } catch (error) {
-                                          console.error('Error navigating to orders:', error);
-                                        }
-                                      }}
-                                    >
-                                      View All {ordersList.length} Orders
-                                    </button>
-                                  )}
-                                </>
-                              ) : (
-                                <p className='no-data'>No orders found for this customer</p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        <div className='modal-footer'>
-                          <button
-                            className='btn btn-primary'
-                            onClick={() => {
-                              try {
-                                setSearchQuery(customer.address || '');
-                                setActiveTab('orders');
-                                setSelectedCustomer(null);
-                              } catch (error) {
-                                console.error('Error navigating to orders:', error);
-                              }
-                            }}
-                          >
-                            View All Orders
-                          </button>
-                          <button
-                            className='btn btn-ghost'
-                            onClick={() => setSelectedCustomer(null)}
-                          >
-                            Close
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                } catch (modalError) {
-                  console.error('Error rendering customer modal:', modalError);
-                  return (
-                    <div className='modal-overlay' onClick={() => setSelectedCustomer(null)}>
-                      <div
-                        className='modal-content customer-details-modal'
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className='modal-header'>
-                          <h3>Error</h3>
-                          <button className='modal-close' onClick={() => setSelectedCustomer(null)}>
-                            <i className='fa-solid fa-times'></i>
-                          </button>
-                        </div>
-                        <div className='modal-body'>
-                          <p>Error loading customer details. Please try again.</p>
-                        </div>
-                        <div className='modal-footer'>
-                          <button
-                            className='btn btn-ghost'
-                            onClick={() => setSelectedCustomer(null)}
-                          >
-                            Close
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-              })()}
-
-            {/* Pagination Navigation */}
-            {filteredCustomers.length > 0 && customerTotalPages > 1 && (
-              <div className='pagination-navigation'>
-                <button
-                  className='btn btn-ghost'
-                  onClick={() => handlePageChange(1)}
-                  disabled={currentPage === 1}
-                  title='First Page'
-                >
-                  <i className='fa-solid fa-angle-double-left'></i>
-                </button>
-                <button
-                  className='btn btn-ghost'
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  title='Previous Page'
-                >
-                  <i className='fa-solid fa-angle-left'></i>
-                </button>
-
-                <div className='page-numbers'>
-                  {Array.from({ length: customerTotalPages }, (_, i) => i + 1).map((pageNum) => {
-                    if (
-                      pageNum === 1 ||
-                      pageNum === customerTotalPages ||
-                      (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)
-                    ) {
-                      return (
-                        <button
-                          key={pageNum}
-                          className={`btn btn-ghost ${currentPage === pageNum ? 'active' : ''}`}
-                          onClick={() => handlePageChange(pageNum)}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    } else if (pageNum === currentPage - 3 || pageNum === currentPage + 3) {
-                      return (
-                        <span key={pageNum} className='page-ellipsis'>
-                          ...
-                        </span>
-                      );
-                    }
-                    return null;
-                  })}
-                </div>
-
-                <button
-                  className='btn btn-ghost'
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === customerTotalPages}
-                  title='Next Page'
-                >
-                  <i className='fa-solid fa-angle-right'></i>
-                </button>
-                <button
-                  className='btn btn-ghost'
-                  onClick={() => handlePageChange(customerTotalPages)}
-                  disabled={currentPage === customerTotalPages}
-                  title='Last Page'
-                >
-                  <i className='fa-solid fa-angle-double-right'></i>
-                </button>
-              </div>
-            )}
-          </div>
+          <AllAddressesTab
+            orders={displayOrders}
+            filteredCustomers={filteredCustomers}
+            paginatedCustomers={paginatedCustomers}
+            currentPage={currentPage}
+            recordsPerPage={recordsPerPage}
+            customerSearchQuery={customerSearchQuery}
+            customerSort={customerSort}
+            customerTotalPages={customerTotalPages}
+            onSearchChange={setCustomerSearchQuery}
+            onSortChange={setCustomerSort}
+            onPageChange={handlePageChange}
+            onRecordsPerPageChange={handleRecordsPerPageChange}
+          />
         )}
 
         {activeTab === 'users' && (
-          <div className='admin-content'>
-            <div className='users-header'>
-              <h2>User Management</h2>
-              <div className='users-search'>
-                <i className='fa-solid fa-search'></i>
-                <input
-                  type='text'
-                  placeholder='Search users by name, email, or phone...'
-                  value={userSearchQuery}
-                  onChange={(e) => setUserSearchQuery(e.target.value)}
-                  className='search-input'
-                />
-              </div>
-            </div>
-            <div className='users-summary'>
-              <span>Total Users: {users.length}</span>
-              <span>Showing: {getFilteredUsers().length}</span>
-            </div>
-            <div className='users-list'>
-              {getFilteredUsers().length === 0 ? (
-                <p className='no-data'>
-                  {userSearchQuery
-                    ? 'No users found matching your search'
-                    : 'No registered users yet'}
-                </p>
-              ) : (
-                getFilteredUsers().map((user) => (
-                  <div
-                    key={user.id}
-                    className={`user-card ${selectedUser?.id === user.id ? 'selected' : ''}`}
-                    onClick={() => setSelectedUser(selectedUser?.id === user.id ? null : user)}
-                  >
-                    <div className='user-info'>
-                      {user.profilePicture && (
-                        <img
-                          src={user.profilePicture}
-                          alt={user.name}
-                          className='user-avatar-img'
-                        />
-                      )}
-                      {!user.profilePicture && (
-                        <div className='user-avatar-initial'>
-                          {user.name?.charAt(0).toUpperCase() || 'U'}
-                        </div>
-                      )}
-                      <div>
-                        <h3>{user.name}</h3>
-                        <p>{user.email}</p>
-                        <p>{user.phone}</p>
-                        <p className='user-meta'>
-                          Registered: {new Date(user.createdAt || Date.now()).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className='user-stats'>
-                      <div className='stat-box'>
-                        <strong>{orders.filter((o) => o.userId === user.id).length}</strong>
-                        <span>Orders</span>
-                      </div>
-                      <div className='stat-box'>
-                        <strong>
-                          ₹
-                          {orders
-                            .filter((o) => o.userId === user.id)
-                            .reduce((sum, o) => sum + (o.total || 0), 0)}
-                        </strong>
-                        <span>Total Spent</span>
-                      </div>
-                      <div className='stat-box'>
-                        <strong>{(user.addresses || []).length}</strong>
-                        <span>Addresses</span>
-                      </div>
-                    </div>
-                    {selectedUser?.id === user.id && (
-                      <div className='user-details-expanded'>
-                        <div className='user-detail-section'>
-                          <h4>Addresses</h4>
-                          {user.addresses && user.addresses.length > 0 ? (
-                            <ul>
-                              {user.addresses.map((addr, idx) => (
-                                <li key={idx}>
-                                  <strong>{addr.name}</strong> - {addr.address}
-                                  {addr.landmark && ` (${addr.landmark})`}
-                                  {addr.pincode && ` - ${addr.pincode}`}
-                                  {addr.isDefault && <span className='default-badge'>Default</span>}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p>No saved addresses</p>
-                          )}
-                        </div>
-                        <div className='user-detail-section'>
-                          <h4>Recent Orders</h4>
-                          {orders.filter((o) => o.userId === user.id).length > 0 ? (
-                            <ul>
-                              {orders
-                                .filter((o) => o.userId === user.id)
-                                .sort(
-                                  (a, b) =>
-                                    new Date(b.createdAt || b.date) -
-                                    new Date(a.createdAt || a.date)
-                                )
-                                .slice(0, 5)
-                                .map((order) => (
-                                  <li key={order.id}>
-                                    Order #{order.id.toString().slice(-6)} - ₹
-                                    {formatCurrency(order.total || 0)} - {order.status || 'pending'}{' '}
-                                    - {new Date(order.createdAt || order.date).toLocaleDateString()}
-                                  </li>
-                                ))}
-                            </ul>
-                          ) : (
-                            <p>No orders yet</p>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+          <PendingAmountsTab
+            orders={displayOrders}
+            getUnpaidByAddress={getUnpaidByAddress}
+            onUpdateOrderStatus={updateOrderStatus}
+            onViewOrders={(address) => {
+              setSearchQuery(address);
+              setActiveTab('allOrdersData');
+            }}
+            showNotification={showNotification}
+          />
         )}
 
         {activeTab === 'settings' && (
-          <div className='admin-content'>
-            <h2>Settings</h2>
-            <div className='settings-form'>
-              <div className='form-group'>
-                <label>WhatsApp Number</label>
-                <input
-                  type='text'
-                  value={settings.whatsappNumber}
-                  onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })}
-                  placeholder='+91 1234567890'
-                />
-              </div>
-              <div className='form-group'>
-                <label>Delivery Timings</label>
-                <input
-                  type='text'
-                  value={settings.deliveryTimings}
-                  onChange={(e) => setSettings({ ...settings, deliveryTimings: e.target.value })}
-                  placeholder='9:00 AM - 9:00 PM'
-                />
-              </div>
-              <div className='form-group'>
-                <label>Minimum Order Value (₹)</label>
-                <input
-                  type='number'
-                  value={settings.minOrderValue}
-                  onChange={(e) =>
-                    setSettings({ ...settings, minOrderValue: parseInt(e.target.value) || 0 })
-                  }
-                  placeholder='0'
-                />
-              </div>
-              <div className='form-group'>
-                <label>Delivery Charge (₹)</label>
-                <input
-                  type='number'
-                  value={settings.deliveryCharge}
-                  onChange={(e) =>
-                    setSettings({ ...settings, deliveryCharge: parseInt(e.target.value) || 0 })
-                  }
-                  placeholder='0'
-                />
-              </div>
-              <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-                <label>Top Announcement Bar Text</label>
-                <input
-                  type='text'
-                  value={settings.announcement}
-                  onChange={(e) => setSettings({ ...settings, announcement: e.target.value })}
-                  placeholder='Enter announcement text...'
-                />
-              </div>
-              <button className='btn btn-primary' onClick={handleSaveSettings}>
-                <i className='fa-solid fa-save'></i> Save Settings
-              </button>
-            </div>
-          </div>
+          <SettingsTab
+            settings={settings}
+            onSettingsChange={setSettings}
+            onSaveSettings={handleSaveSettings}
+          />
         )}
 
-        {activeTab === 'analytics' && (
-          <div className='admin-content'>
-            <div className='analytics-header'>
-              <h2>Analytics & Reports</h2>
-              <button className='btn btn-primary' onClick={handleExportOrders}>
-                <i className='fa-solid fa-file-export'></i> Export Report
-              </button>
-            </div>
-
-            <div className='analytics-overview'>
-              <div className='analytics-grid'>
-                <div className='analytics-card'>
-                  <div className='analytics-icon revenue'>
-                    <i className='fa-solid fa-rupee-sign'></i>
-                  </div>
-                  <div className='analytics-info'>
-                    <h3>Total Revenue</h3>
-                    <p className='analytics-value'>₹{formatCurrency(getTotalRevenue())}</p>
-                    <span className='analytics-label'>From delivered orders</span>
-                    <div className='analytics-trend'>
-                      <span className='trend-up'>
-                        <i className='fa-solid fa-arrow-up'></i> ₹
-                        {formatCurrency(getWeeklyStats().revenue)} this week
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className='analytics-card'>
-                  <div className='analytics-icon orders'>
-                    <i className='fa-solid fa-shopping-cart'></i>
-                  </div>
-                  <div className='analytics-info'>
-                    <h3>Total Orders</h3>
-                    <p className='analytics-value'>{orders.length}</p>
-                    <span className='analytics-label'>All time</span>
-                    <div className='analytics-trend'>
-                      <span className='trend-up'>
-                        <i className='fa-solid fa-arrow-up'></i> {getWeeklyStats().orders} this week
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className='analytics-card'>
-                  <div className='analytics-icon average'>
-                    <i className='fa-solid fa-chart-line'></i>
-                  </div>
-                  <div className='analytics-info'>
-                    <h3>Average Order Value</h3>
-                    <p className='analytics-value'>
-                      ₹
-                      {orders.length > 0
-                        ? Math.round(
-                            getTotalRevenue() /
-                              (orders.filter((o) => o.status === 'delivered').length || 1)
-                          )
-                        : 0}
-                    </p>
-                    <span className='analytics-label'>Per delivered order</span>
-                    <div className='analytics-trend'>
-                      <span>Weekly avg: ₹{getWeeklyStats().avgOrderValue}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className='analytics-card'>
-                  <div className='analytics-icon completed'>
-                    <i className='fa-solid fa-check-circle'></i>
-                  </div>
-                  <div className='analytics-info'>
-                    <h3>Completed Orders</h3>
-                    <p className='analytics-value'>
-                      {orders.filter((o) => o.status === 'delivered').length}
-                    </p>
-                    <span className='analytics-label'>
-                      {orders.length > 0
-                        ? Math.round(
-                            (orders.filter((o) => o.status === 'delivered').length /
-                              orders.length) *
-                              100
-                          )
-                        : 0}
-                      % completion rate
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Order Trends Chart */}
-            <div className='analytics-chart-section'>
-              <h3>Order Trends (Last 7 Days)</h3>
-              <div className='trend-chart'>
-                {getOrderTrends().map((day, index) => {
-                  const maxOrders = Math.max(...getOrderTrends().map((d) => d.orders), 1);
-                  const height = (day.orders / maxOrders) * 100;
-                  return (
-                    <div key={index} className='trend-bar-container'>
-                      <div className='trend-bar' style={{ height: `${height}%` }}>
-                        <span className='trend-value'>{day.orders}</span>
-                      </div>
-                      <span className='trend-label'>{day.date}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Revenue Trends */}
-            <div className='analytics-chart-section'>
-              <h3>Revenue Trends (Last 7 Days)</h3>
-              <div className='revenue-chart'>
-                {getOrderTrends().map((day, index) => {
-                  const maxRevenue = Math.max(...getOrderTrends().map((d) => d.revenue), 1);
-                  const height = (day.revenue / maxRevenue) * 100;
-                  return (
-                    <div key={index} className='revenue-bar-container'>
-                      <div className='revenue-bar' style={{ height: `${height}%` }}>
-                        <span className='revenue-value'>₹{formatCurrency(day.revenue)}</span>
-                      </div>
-                      <span className='revenue-label'>{day.date}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Top Items */}
-            <div className='analytics-section'>
-              <h3 className='section-title'>
-                <i className='fa-solid fa-fire'></i> Top Selling Items
-              </h3>
-              <div className='top-items-list'>
-                {getTopItems().length > 0 ? (
-                  getTopItems().map((item, index) => (
-                    <div key={index} className='top-item-card'>
-                      <div className='item-rank'>#{index + 1}</div>
-                      <div className='item-info'>
-                        <h4>{item.name}</h4>
-                        <p>{item.count} orders</p>
-                      </div>
-                      <div className='item-badge'>
-                        <i className='fa-solid fa-fire'></i>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className='no-data'>No order data available</p>
-                )}
-              </div>
-            </div>
-
-            <div className='analytics-sections'>
-              <div className='analytics-section'>
-                <h3 className='section-title'>
-                  <i className='fa-solid fa-chart-pie'></i> Orders by Status
-                </h3>
-                <div className='status-breakdown'>
-                  {Object.entries(getAnalyticsData().statusCounts).map(([status, count]) => (
-                    <div key={status} className='status-item'>
-                      <div className='status-info'>
-                        <span className='status-name'>
-                          {status.charAt(0).toUpperCase() + status.slice(1)}
-                        </span>
-                        <span className='status-count'>{count} orders</span>
-                      </div>
-                      <div className='status-bar'>
-                        <div
-                          className='status-bar-fill'
-                          style={{
-                            width: `${orders.length > 0 ? (count / orders.length) * 100 : 0}%`,
-                            backgroundColor:
-                              status === 'delivered'
-                                ? 'var(--admin-success)'
-                                : status === 'pending'
-                                  ? 'var(--admin-warning)'
-                                  : status === 'cancelled'
-                                    ? 'var(--admin-danger)'
-                                    : 'var(--admin-accent)',
-                          }}
-                        ></div>
-                      </div>
-                      <span className='status-percentage'>
-                        {orders.length > 0 ? Math.round((count / orders.length) * 100) : 0}%
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className='analytics-section'>
-                <h3 className='section-title'>
-                  <i className='fa-solid fa-calendar-alt'></i> Yearly Revenue Summary
-                </h3>
-                <div className='yearly-revenue-table'>
-                  {Object.keys(getAnalyticsData().yearlyData || {}).length > 0 ? (
-                    <table className='analytics-table'>
-                      <thead>
-                        <tr>
-                          <th>Year</th>
-                          <th>Orders</th>
-                          <th>Revenue</th>
-                          <th>Average</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.entries(getAnalyticsData().yearlyData || {})
-                          .sort((a, b) => parseInt(b[0]) - parseInt(a[0]))
-                          .map(([year, data]) => {
-                            try {
-                              return (
-                                <tr key={year}>
-                                  <td>
-                                    <strong>{year}</strong>
-                                  </td>
-                                  <td>{data.orders || 0}</td>
-                                  <td>
-                                    <strong>₹{formatCurrency(data.revenue || 0)}</strong>
-                                  </td>
-                                  <td>
-                                    ₹{formatCurrency(data.orders > 0 ? (data.revenue || 0) / data.orders : 0)}
-                                  </td>
-                                </tr>
-                              );
-                            } catch (error) {
-                              console.warn('Error rendering yearly data row:', error, year);
-                              return null;
-                            }
-                          })}
-                      </tbody>
-                    </table>
-                  ) : (
-                    <p className='no-data'>No yearly data available</p>
-                  )}
-                </div>
-              </div>
-
-              <div className='analytics-section'>
-                <h3 className='section-title'>
-                  <i className='fa-solid fa-calendar-alt'></i> Monthly Revenue (by Year)
-                </h3>
-                <div className='monthly-revenue-table'>
-                  {Object.keys(getAnalyticsData().monthlyData).length > 0 ? (
-                    <table className='analytics-table'>
-                      <thead>
-                        <tr>
-                          <th>Year-Month</th>
-                          <th>Orders</th>
-                          <th>Revenue</th>
-                          <th>Average</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.entries(getAnalyticsData().monthlyData)
-                          .sort((a, b) => b[0].localeCompare(a[0]))
-                          .slice(0, 12)
-                          .map(([monthKey, data]) => {
-                            try {
-                              const [year, month] = monthKey.split('-');
-                              const monthDate = new Date(parseInt(year), parseInt(month) - 1, 1);
-                              return (
-                                <tr key={monthKey}>
-                                  <td>
-                                    {monthDate.toLocaleDateString('en-US', {
-                                      month: 'long',
-                                      year: 'numeric',
-                                    })}
-                                  </td>
-                                  <td>{data.orders || 0}</td>
-                                  <td>
-                                    <strong>₹{formatCurrency(data.revenue || 0)}</strong>
-                                  </td>
-                                  <td>
-                                    ₹{formatCurrency(data.orders > 0 ? (data.revenue || 0) / data.orders : 0)}
-                                  </td>
-                                </tr>
-                              );
-                            } catch (error) {
-                              console.warn('Error rendering monthly data row:', error, monthKey);
-                              return null;
-                            }
-                          })}
-                      </tbody>
-                    </table>
-                  ) : (
-                    <p className='no-data'>No monthly data available</p>
-                  )}
-                </div>
-              </div>
-
-              <div className='analytics-section'>
-                <h3 className='section-title'>
-                  <i className='fa-solid fa-chart-bar'></i> Recent Daily Revenue (Last 30 Days)
-                </h3>
-                <div className='daily-revenue-chart'>
-                  {(() => {
-                    const dailyData = getAnalyticsData().dailyRevenue;
-                    const dailyEntries = Object.entries(dailyData);
-                    const maxRevenue =
-                      dailyEntries.length > 0
-                        ? Math.max(...dailyEntries.map(([_, rev]) => rev))
-                        : 1;
-
-                    return dailyEntries
-                      .sort((a, b) => b[0].localeCompare(a[0]))
-                      .slice(0, 30)
-                      .map(([dateKey, revenue]) => {
-                        try {
-                          const dateObj = new Date(dateKey + 'T00:00:00');
-                          if (isNaN(dateObj.getTime())) return null;
-
-                          return (
-                            <div key={dateKey} className='daily-bar'>
-                              <div className='bar-label'>
-                                {dateObj.toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                })}
-                              </div>
-                              <div className='bar-container'>
-                                <div
-                                  className='bar-fill'
-                                  style={{
-                                    width: `${(revenue / maxRevenue) * 100}%`,
-                                    backgroundColor: 'var(--admin-success)',
-                                  }}
-                                >
-                                  <span className='bar-value'>₹{formatCurrency(revenue)}</span>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        } catch (error) {
-                          console.warn('Error rendering daily revenue bar:', error, dateKey);
-                          return null;
-                        }
-                      });
-                  })()}
-                  {Object.keys(getAnalyticsData().dailyRevenue).length === 0 && (
-                    <p className='no-data'>No revenue data available</p>
-                  )}
-                </div>
-              </div>
-
-              <div className='analytics-section'>
-                <h3 className='section-title'>
-                  <i className='fa-solid fa-list'></i> Top Orders by Amount
-                </h3>
-                <div className='top-orders-table'>
-                  {orders.length > 0 ? (
-                    <table className='analytics-table'>
-                      <thead>
-                        <tr>
-                          <th>Order ID</th>
-                          <th>Date</th>
-                          <th>Customer</th>
-                          <th>Items</th>
-                          <th>Amount</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {[...orders]
-                          .sort((a, b) => (b.total || 0) - (a.total || 0))
-                          .slice(0, 10)
-                          .map((order) => (
-                            <tr key={order.id}>
-                              <td>#{order.id.toString().slice(-6)}</td>
-                              <td>
-                                {new Date(order.createdAt || order.date).toLocaleDateString()}
-                              </td>
-                              <td>{order.customerName || order.name}</td>
-                              <td>{(order.items || []).length} items</td>
-                              <td>
-                                <strong>₹{formatCurrency(order.total || 0)}</strong>
-                              </td>
-                              <td>
-                                <span
-                                  className={`status-badge status-${order.status || 'pending'}`}
-                                >
-                                  {order.status || 'pending'}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  ) : (
-                    <p className='no-data'>No orders available</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Monthly Breakdown by Address */}
-              <div className='analytics-section'>
-                <h3 className='section-title'>
-                  <i className='fa-solid fa-calendar-alt'></i> Monthly Breakdown by Address
-                </h3>
-                <div className='monthly-breakdown-table-container' style={{ overflowX: 'auto' }}>
-                  <table className='analytics-table monthly-breakdown-table'>
-                    <thead>
-                      <tr>
-                        <th>Delivery Address</th>
-                        <th>01-Jan'25</th>
-                        <th>02-Feb'25</th>
-                        <th>03-Mar'25</th>
-                        <th>04-Apr'25</th>
-                        <th>05-May'25</th>
-                        <th>06-Jun'25</th>
-                        <th>07-Jul'25</th>
-                        <th>08-Aug'25</th>
-                        <th>09-Sep'25</th>
-                        <th>10-Oct'25</th>
-                        <th>11-Nov'25</th>
-                        <th>12-Dec'25</th>
-                        <th>
-                          <strong>Grand Total</strong>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(getMonthlyBreakdownByAddress())
-                        .sort((a, b) => b[1]['Grand Total'] - a[1]['Grand Total'])
-                        .map(([address, data]) => (
-                          <tr key={address}>
-                            <td>
-                              <strong>{address}</strong>
-                            </td>
-                            <td>{data['01-Jan'] ? `₹${formatCurrency(data['01-Jan'])}` : ''}</td>
-                            <td>{data['02-Feb'] ? `₹${formatCurrency(data['02-Feb'])}` : ''}</td>
-                            <td>{data['03-Mar'] ? `₹${formatCurrency(data['03-Mar'])}` : ''}</td>
-                            <td>{data['04-Apr'] ? `₹${formatCurrency(data['04-Apr'])}` : ''}</td>
-                            <td>{data['05-May'] ? `₹${formatCurrency(data['05-May'])}` : ''}</td>
-                            <td>{data['06-Jun'] ? `₹${formatCurrency(data['06-Jun'])}` : ''}</td>
-                            <td>{data['07-Jul'] ? `₹${formatCurrency(data['07-Jul'])}` : ''}</td>
-                            <td>{data['08-Aug'] ? `₹${formatCurrency(data['08-Aug'])}` : ''}</td>
-                            <td>{data['09-Sep'] ? `₹${formatCurrency(data['09-Sep'])}` : ''}</td>
-                            <td>{data['10-Oct'] ? `₹${formatCurrency(data['10-Oct'])}` : ''}</td>
-                            <td>{data['11-Nov'] ? `₹${formatCurrency(data['11-Nov'])}` : ''}</td>
-                            <td>{data['12-Dec'] ? `₹${formatCurrency(data['12-Dec'])}` : ''}</td>
-                            <td>
-                              <strong>₹{formatCurrency(data['Grand Total'])}</strong>
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Top 25 Addresses */}
-              <div className='analytics-section'>
-                <h3 className='section-title'>
-                  <i className='fa-solid fa-trophy'></i> Top 25 Addresses
-                </h3>
-                <div className='top-addresses-table'>
-                  <table className='analytics-table'>
-                    <thead>
-                      <tr>
-                        <th>Rank</th>
-                        <th>Delivery Address</th>
-                        <th>Grand Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {getTop25Addresses().map((item, index) => (
-                        <tr key={item.address}>
-                          <td>
-                            <strong>#{index + 1}</strong>
-                          </td>
-                          <td>{item.address}</td>
-                          <td>
-                            <strong>₹{formatCurrency(item.total)}</strong>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Unpaid Amounts */}
-              <div className='analytics-section'>
-                <h3 className='section-title'>
-                  <i className='fa-solid fa-exclamation-triangle'></i> Unpaid Amounts by Address
-                </h3>
-                <div className='unpaid-table'>
-                  <table className='analytics-table'>
-                    <thead>
-                      <tr>
-                        <th>Delivery Address</th>
-                        <th>Unpaid</th>
-                        <th>Grand Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {getUnpaidByAddress().map((item) => (
-                        <tr key={item.address}>
-                          <td>{item.address}</td>
-                          <td>
-                            <strong style={{ color: 'var(--admin-danger)' }}>
-                              ₹{formatCurrency(item.unpaid)}
-                            </strong>
-                          </td>
-                          <td>₹{formatCurrency(item.grandTotal)}</td>
-                        </tr>
-                      ))}
-                      {getUnpaidByAddress().length > 0 && (
-                        <tr
-                          className='grand-total-row'
-                          style={{ borderTop: '2px solid var(--border-color)', fontWeight: 'bold' }}
-                        >
-                          <td>
-                            <strong>Grand Total</strong>
-                          </td>
-                          <td>
-                            <strong style={{ color: 'var(--admin-danger)' }}>
-                              ₹
-                              {formatCurrency(
-                                getUnpaidByAddress().reduce((sum, item) => sum + item.unpaid, 0)
-                              )}
-                            </strong>
-                          </td>
-                          <td>
-                            <strong>
-                              ₹
-                              {formatCurrency(
-                                getUnpaidByAddress().reduce((sum, item) => sum + item.grandTotal, 0)
-                              )}
-                            </strong>
-                          </td>
-                        </tr>
-                      )}
-                      {getUnpaidByAddress().length === 0 && (
-                        <tr>
-                          <td
-                            colSpan='3'
-                            style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray)' }}
-                          >
-                            No unpaid orders
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Yearly Comparison */}
-              <div className='analytics-section'>
-                <h3 className='section-title'>
-                  <i className='fa-solid fa-chart-line'></i> Yearly Comparison (2024 vs 2025)
-                </h3>
-                <div className='yearly-comparison-table'>
-                  <table className='analytics-table'>
-                    <thead>
-                      <tr>
-                        <th>Delivery Address</th>
-                        <th>2024</th>
-                        <th>2025</th>
-                        <th>Grand Total</th>
-                        <th>Trend</th>
-                        <th>Gap</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {getYearlyComparison().map((item) => (
-                        <tr key={item.address}>
-                          <td>{item.address}</td>
-                          <td>{item['2024'] ? `₹${formatCurrency(item['2024'])}` : ''}</td>
-                          <td>{item['2025'] ? `₹${formatCurrency(item['2025'])}` : ''}</td>
-                          <td>
-                            <strong>₹{formatCurrency(item.grandTotal)}</strong>
-                          </td>
-                          <td>
-                            {item.trend === 'up' && (
-                              <span className='trend-up' style={{ color: 'var(--admin-success)' }}>
-                                <i className='fa-solid fa-arrow-up'></i>
-                              </span>
-                            )}
-                            {item.trend === 'down' && (
-                              <span className='trend-down' style={{ color: 'var(--admin-danger)' }}>
-                                <i className='fa-solid fa-arrow-down'></i>
-                              </span>
-                            )}
-                            {item.trend === 'same' && <span className='trend-same'>-</span>}
-                          </td>
-                          <td
-                            style={{
-                              color: item.gap >= 0 ? 'var(--admin-success)' : 'var(--admin-danger)',
-                            }}
-                          >
-                            {item.gap >= 0 ? '+' : ''}₹{formatCurrency(item.gap)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {activeTab === 'analytics' && <AnalyticsTab orders={displayOrders} />}
 
         {activeTab === 'notifications' && (
-          <div className='admin-content'>
-            <h2>Notifications & Announcements</h2>
-            <button className='btn btn-primary' onClick={addNotification}>
-              <i className='fa-solid fa-plus'></i> Add Notification
-            </button>
-            <div className='notifications-list'>
-              {notifications.map((notif) => (
-                <div key={notif.id} className='notification-card'>
-                  <input
-                    type='text'
-                    value={notif.title}
-                    onChange={(e) => {
-                      const updated = notifications.map((n) =>
-                        n.id === notif.id ? { ...n, title: e.target.value } : n
-                      );
-                      setNotifications(updated);
-                    }}
-                    placeholder='Notification Title'
-                    className='notification-title'
-                  />
-                  <textarea
-                    value={notif.message}
-                    onChange={(e) => {
-                      const updated = notifications.map((n) =>
-                        n.id === notif.id ? { ...n, message: e.target.value } : n
-                      );
-                      setNotifications(updated);
-                    }}
-                    placeholder='Notification Message'
-                    className='notification-message'
-                    rows='3'
-                  />
-                  <div className='notification-actions'>
-                    <label>
-                      <input
-                        type='checkbox'
-                        checked={notif.active}
-                        onChange={(e) => {
-                          const updated = notifications.map((n) =>
-                            n.id === notif.id ? { ...n, active: e.target.checked } : n
-                          );
-                          setNotifications(updated);
-                        }}
-                      />
-                      Active
-                    </label>
-                    <button
-                      className='btn btn-special danger btn-small'
-                      onClick={() => {
-                        setNotifications(notifications.filter((n) => n.id !== notif.id));
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button className='btn btn-primary' onClick={saveNotifications}>
-              <i className='fa-solid fa-save'></i> Save Notifications
-            </button>
-
-            <div className='newsletter-section'>
-              <h3>Newsletter Subscriptions</h3>
-              <div className='newsletter-stats'>
-                <span>Total Subscriptions: {newsletterSubscriptions.length}</span>
-                <button
-                  className='btn btn-ghost'
-                  onClick={() => {
-                    const csv = [
-                      ['Email', 'Subscribed At'],
-                      ...newsletterSubscriptions.map((sub) => [
-                        sub.email,
-                        new Date(sub.subscribedAt).toLocaleString(),
-                      ]),
-                    ]
-                      .map((row) => row.join(','))
-                      .join('\n');
-                    const blob = new Blob([csv], { type: 'text/csv' });
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `newsletter-subscriptions-${new Date().toISOString().split('T')[0]}.csv`;
-                    link.click();
-                    URL.revokeObjectURL(url);
-                  }}
-                >
-                  <i className='fa-solid fa-download'></i> Export CSV
-                </button>
-              </div>
-              <div className='newsletter-list'>
-                {newsletterSubscriptions.length === 0 ? (
-                  <p className='no-data'>No newsletter subscriptions yet</p>
-                ) : (
-                  <table className='newsletter-table'>
-                    <thead>
-                      <tr>
-                        <th>Email</th>
-                        <th>Subscribed At</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {newsletterSubscriptions
-                        .sort((a, b) => new Date(b.subscribedAt) - new Date(a.subscribedAt))
-                        .map((sub, idx) => (
-                          <tr key={idx}>
-                            <td>{sub.email}</td>
-                            <td>{new Date(sub.subscribedAt).toLocaleString()}</td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            </div>
-          </div>
+          <NotificationsTab notifications={notifications} setNotifications={setNotifications} />
         )}
 
-        {/* Add/Edit Order Modal */}
-        {showAddOrderModal && (
+        {/* All Orders Data Tab - Master Table */}
+        {activeTab === 'allOrdersData' && (
+          <AllOrdersDataTab
+            orders={displayOrders}
+            settings={settings}
+            excelFileName={excelFileName}
+            allOrdersFilterMonth={allOrdersFilterMonth}
+            setAllOrdersFilterMonth={setAllOrdersFilterMonth}
+            allOrdersFilterAddress={allOrdersFilterAddress}
+            setAllOrdersFilterAddress={setAllOrdersFilterAddress}
+            allOrdersFilterPaymentStatus={allOrdersFilterPaymentStatus}
+            setAllOrdersFilterPaymentStatus={setAllOrdersFilterPaymentStatus}
+            onLoadExcelFile={handleLoadExcelFile}
+            onUpdateOrderStatus={updateOrderStatus}
+            loading={loadingHook || false}
+            currentPage={currentPage}
+            recordsPerPage={recordsPerPage >= 50 ? recordsPerPage : 50} // Default to 50 for All Orders Data tab
+            onPageChange={(page) => {
+              setCurrentPage(page);
+            }}
+            onRecordsPerPageChange={(perPage) => {
+              setRecordsPerPage(perPage);
+              localStorage.setItem('homiebites_records_per_page', String(perPage));
+              setCurrentPage(1); // Reset to first page when changing page size
+            }}
+            onClearExcelData={async () => {
+              if (
+                window.confirm(
+                  'Clear saved Excel file data? This will remove the file from memory and clear all orders from dashboard and backend.'
+                )
+              ) {
+                try {
+                  setExcelData(null);
+                  setExcelFileName('');
+                  setExcelSheets([]);
+                  setSelectedSheet('');
+                  setColumnTypes({});
+                  localStorage.removeItem('homiebites_excel_data');
+                  localStorage.removeItem('homiebites_excel_filename');
+                  localStorage.removeItem('homiebites_excel_sheets');
+                  localStorage.removeItem('homiebites_excel_selected_sheet');
+                  localStorage.removeItem('homiebites_excel_column_types');
+                  await clearAllOrders();
+                  lastSyncedDataRef.current = null;
+                  showNotification('Excel file data and all orders cleared', 'success');
+                } catch (error) {
+                  console.error('Error clearing Excel data:', error);
+                  showNotification('Error clearing data: ' + error.message, 'error');
+                }
+              }
+            }}
+            onEditOrder={handleEditOrder}
+            onDeleteOrder={handleDeleteOrder}
+            showNotification={showNotification}
+          />
+        )}
+
+        {/* Add New Row Modal for Excel */}
+        {showAddRowModal && excelData && selectedSheet && (
           <div
             className='modal-overlay'
             onClick={() => {
-              setShowAddOrderModal(false);
-              setEditingOrder(null);
+              setShowAddRowModal(false);
+              setNewRowData({});
             }}
           >
-            <div className='modal-content' onClick={(e) => e.stopPropagation()}>
+            <div className='modal-content modal-content-wide' onClick={(e) => e.stopPropagation()}>
               <div className='modal-header'>
-                <h2>{editingOrder ? 'Edit Order' : 'Add New Order'}</h2>
+                <h2>Add New Row to {selectedSheet}</h2>
                 <button
                   className='modal-close'
                   onClick={() => {
-                    setShowAddOrderModal(false);
-                    setEditingOrder(null);
+                    setShowAddRowModal(false);
+                    setNewRowData({});
                   }}
                 >
                   <i className='fa-solid fa-times'></i>
                 </button>
               </div>
               <div className='modal-body'>
-                <div className='form-group'>
-                  <label>Date (DD/MM/YYYY):</label>
-                  <input
-                    type='text'
-                    value={editingOrder ? editingOrder.date : newOrder.date}
-                    onChange={(e) =>
-                      editingOrder
-                        ? setEditingOrder({ ...editingOrder, date: e.target.value })
-                        : handleNewOrderChange('date', e.target.value)
-                    }
-                    placeholder='01/01/2025'
-                  />
-                </div>
-                <div className='form-group'>
-                  <label>Delivery Address *:</label>
-                  <input
-                    type='text'
-                    value={editingOrder ? editingOrder.deliveryAddress : newOrder.deliveryAddress}
-                    onChange={(e) =>
-                      editingOrder
-                        ? setEditingOrder({ ...editingOrder, deliveryAddress: e.target.value })
-                        : handleNewOrderChange('deliveryAddress', e.target.value)
-                    }
-                    placeholder='A1-407 Shriti'
-                    required
-                  />
-                </div>
-                <div className='form-row'>
-                  <div className='form-group'>
-                    <label>Qty.:</label>
-                    <input
-                      type='number'
-                      value={editingOrder ? editingOrder.quantity : newOrder.quantity}
-                      onChange={(e) =>
-                        editingOrder
-                          ? setEditingOrder({
-                              ...editingOrder,
-                              quantity: parseInt(e.target.value) || 1,
-                            })
-                          : handleNewOrderChange('quantity', e.target.value)
-                      }
-                      min='1'
-                    />
+                {excelData[selectedSheet][0] && (
+                  <div className='form-grid'>
+                    {excelData[selectedSheet][0].map((header, colIdx) => {
+                      const headerStr = String(header || '').toLowerCase();
+                      const colType = columnTypes[selectedSheet]?.[colIdx] || 'text';
+                      const isNumber = colType === 'number';
+                      const isDate = colType === 'date';
+
+                      return (
+                        <div key={colIdx} className='form-group'>
+                          <label>{String(header || `Column ${colIdx + 1}`)}</label>
+                          {isDate ? (
+                            <input
+                              type='date'
+                              value={newRowData[colIdx] || ''}
+                              onChange={(e) =>
+                                setNewRowData({ ...newRowData, [colIdx]: e.target.value })
+                              }
+                            />
+                          ) : isNumber ? (
+                            <input
+                              type='number'
+                              step='0.01'
+                              value={newRowData[colIdx] || ''}
+                              onChange={(e) =>
+                                setNewRowData({
+                                  ...newRowData,
+                                  [colIdx]: parseFloat(e.target.value) || 0,
+                                })
+                              }
+                            />
+                          ) : (
+                            <input
+                              type='text'
+                              value={newRowData[colIdx] || ''}
+                              onChange={(e) =>
+                                setNewRowData({ ...newRowData, [colIdx]: e.target.value })
+                              }
+                              placeholder={`Enter ${header}`}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div className='form-group'>
-                    <label>Unit Price (₹):</label>
-                    <input
-                      type='number'
-                      value={editingOrder ? editingOrder.unitPrice : newOrder.unitPrice}
-                      onChange={(e) =>
-                        editingOrder
-                          ? setEditingOrder({
-                              ...editingOrder,
-                              unitPrice: parseFloat(e.target.value) || 0,
-                            })
-                          : handleNewOrderChange('unitPrice', e.target.value)
-                      }
-                      min='0'
-                      step='0.01'
-                    />
-                  </div>
-                  <div className='form-group'>
-                    <label>Total Amount (₹):</label>
-                    <input
-                      type='number'
-                      value={
-                        editingOrder
-                          ? editingOrder.totalAmount || editingOrder.total
-                          : newOrder.totalAmount
-                      }
-                      onChange={(e) =>
-                        editingOrder
-                          ? setEditingOrder({
-                              ...editingOrder,
-                              totalAmount: parseFloat(e.target.value) || 0,
-                              total: parseFloat(e.target.value) || 0,
-                            })
-                          : handleNewOrderChange('totalAmount', e.target.value)
-                      }
-                      min='0'
-                      step='0.01'
-                    />
-                  </div>
-                </div>
-                <div className='form-row'>
-                  <div className='form-group'>
-                    <label>Status:</label>
-                    <select
-                      value={editingOrder ? editingOrder.status : newOrder.status}
-                      onChange={(e) =>
-                        editingOrder
-                          ? setEditingOrder({ ...editingOrder, status: e.target.value })
-                          : handleNewOrderChange('status', e.target.value)
-                      }
-                    >
-                      <option value='Paid'>Paid</option>
-                      <option value='Pending'>Pending</option>
-                      <option value='Unpaid'>Unpaid</option>
-                      <option value='Delivered'>Delivered</option>
-                    </select>
-                  </div>
-                  <div className='form-group'>
-                    <label>Payment Mode:</label>
-                    <select
-                      value={editingOrder ? editingOrder.paymentMode : newOrder.paymentMode}
-                      onChange={(e) =>
-                        editingOrder
-                          ? setEditingOrder({ ...editingOrder, paymentMode: e.target.value })
-                          : handleNewOrderChange('paymentMode', e.target.value)
-                      }
-                    >
-                      <option value='Online'>Online</option>
-                      <option value='Cash'>Cash</option>
-                      <option value='UPI'>UPI</option>
-                      <option value='Card'>Card</option>
-                    </select>
-                  </div>
-                </div>
-                <div className='form-row'>
-                  <div className='form-group'>
-                    <label>Billing Month:</label>
-                    <input
-                      type='text'
-                      value={editingOrder ? editingOrder.billingMonth : newOrder.billingMonth}
-                      onChange={(e) =>
-                        editingOrder
-                          ? setEditingOrder({ ...editingOrder, billingMonth: e.target.value })
-                          : handleNewOrderChange('billingMonth', e.target.value)
-                      }
-                      placeholder='January'
-                    />
-                  </div>
-                  <div className='form-group'>
-                    <label>Reference Month:</label>
-                    <input
-                      type='text'
-                      value={editingOrder ? editingOrder.referenceMonth : newOrder.referenceMonth}
-                      onChange={(e) =>
-                        editingOrder
-                          ? setEditingOrder({ ...editingOrder, referenceMonth: e.target.value })
-                          : handleNewOrderChange('referenceMonth', e.target.value)
-                      }
-                      placeholder="01 - Jan'25"
-                    />
-                  </div>
-                  <div className='form-group'>
-                    <label>Elapsed Days:</label>
-                    <input
-                      type='number'
-                      value={editingOrder ? editingOrder.elapsedDays : newOrder.elapsedDays}
-                      onChange={(e) =>
-                        editingOrder
-                          ? setEditingOrder({ ...editingOrder, elapsedDays: e.target.value })
-                          : handleNewOrderChange('elapsedDays', e.target.value)
-                      }
-                      min='0'
-                    />
-                  </div>
-                </div>
+                )}
               </div>
               <div className='modal-footer'>
                 <button
                   className='btn btn-ghost'
                   onClick={() => {
-                    setShowAddOrderModal(false);
-                    setEditingOrder(null);
+                    setShowAddRowModal(false);
+                    setNewRowData({});
                   }}
                 >
                   Cancel
                 </button>
-                <button className='btn btn-primary' onClick={handleSaveNewOrder}>
-                  <i className='fa-solid fa-save'></i>{' '}
-                  {editingOrder ? 'Update Order' : 'Save Order'}
+                <button
+                  className='btn btn-primary'
+                  onClick={() => {
+                    try {
+                      const updatedData = { ...excelData };
+                      const sheetData = [...updatedData[selectedSheet]];
+                      const headers = sheetData[0] || [];
+                      const newRow = headers.map((_, colIdx) => newRowData[colIdx] || '');
+                      sheetData.push(newRow);
+                      updatedData[selectedSheet] = sheetData;
+                      setExcelData(updatedData);
+                      setShowAddRowModal(false);
+                      setNewRowData({});
+                      // Excel data change will auto-sync to orders via useEffect
+                      showNotification(
+                        'Row added successfully. Dashboard will update automatically.',
+                        'success'
+                      );
+                    } catch (error) {
+                      console.error('Error adding row:', error);
+                      showNotification('Error adding row', 'error');
+                    }
+                  }}
+                >
+                  <i className='fa-solid fa-plus'></i> Add Row
                 </button>
               </div>
             </div>
           </div>
         )}
+
+        {/* Add/Edit Order Modal */}
+        <OrderModal
+          show={showAddOrderModal}
+          editingOrder={editingOrder}
+          newOrder={newOrder}
+          orders={displayOrders}
+          addressSuggestions={addressSuggestions}
+          showAddressSuggestions={showAddressSuggestions}
+          onClose={() => {
+            setShowAddOrderModal(false);
+            setEditingOrder(null);
+            setShowAddressSuggestions(false);
+          }}
+          onSave={handleSaveNewOrder}
+          onNewOrderChange={handleNewOrderChange}
+          onEditingOrderChange={setEditingOrder}
+          setAddressSuggestions={setAddressSuggestions}
+          setShowAddressSuggestions={setShowAddressSuggestions}
+        />
 
         {/* Add/Edit Offer Modal */}
         {showAddOfferModal && (
@@ -5294,9 +3516,8 @@ const AdminDashboard = ({ onLogout }) => {
             }}
           >
             <div
-              className='modal-content'
+              className='modal-content modal-content-medium'
               onClick={(e) => e.stopPropagation()}
-              style={{ maxWidth: '600px' }}
             >
               <div className='modal-header'>
                 <h2>{editingOffer ? 'Edit Offer' : 'Add New Offer'}</h2>
@@ -5331,16 +3552,49 @@ const AdminDashboard = ({ onLogout }) => {
                 </div>
                 <div className='form-row'>
                   <div className='form-group'>
-                    <label>Discount</label>
+                    <label>Type *</label>
+                    <select
+                      value={newOffer.type || 'Flat'}
+                      onChange={(e) => setNewOffer({ ...newOffer, type: e.target.value })}
+                    >
+                      <option value='Flat'>Flat ₹ Off</option>
+                      <option value='Percentage'>Percentage %</option>
+                    </select>
+                  </div>
+                  <div className='form-group'>
+                    <label>Value *</label>
+                    <input
+                      type='number'
+                      value={newOffer.value || 0}
+                      onChange={(e) =>
+                        setNewOffer({ ...newOffer, value: parseFloat(e.target.value) || 0 })
+                      }
+                      placeholder={newOffer.type === 'Percentage' ? 'e.g., 10' : 'e.g., 50'}
+                      min='0'
+                      step={newOffer.type === 'Percentage' ? '1' : '0.01'}
+                    />
+                    <small className='form-helper-text'>
+                      {newOffer.type === 'Percentage'
+                        ? 'Percentage value (e.g., 10 for 10%)'
+                        : 'Flat amount in ₹'}
+                    </small>
+                  </div>
+                </div>
+                <div className='form-row'>
+                  <div className='form-group'>
+                    <label>Discount Display (Optional)</label>
                     <input
                       type='text'
                       value={newOffer.discount}
                       onChange={(e) => setNewOffer({ ...newOffer, discount: e.target.value })}
                       placeholder='e.g., 7% OFF'
                     />
+                    <small className='form-helper-text'>
+                      Text shown on website (auto-generated if empty)
+                    </small>
                   </div>
                   <div className='form-group'>
-                    <label>Badge</label>
+                    <label>Badge (Optional)</label>
                     <input
                       type='text'
                       value={newOffer.badge}
@@ -5388,32 +3642,23 @@ const AdminDashboard = ({ onLogout }) => {
                 <div className='form-group'>
                   <label>
                     Terms & Conditions{' '}
-                    <button
-                      type='button'
-                      className='btn btn-primary btn-small'
-                      onClick={addTerm}
-                      style={{ marginLeft: '0.5rem', padding: '0.25rem 0.5rem' }}
-                    >
+                    <button type='button' className='btn btn-primary btn-small' onClick={addTerm}>
                       <i className='fa-solid fa-plus'></i> Add Term
                     </button>
                   </label>
                   {newOffer.terms.map((term, index) => (
-                    <div
-                      key={index}
-                      style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}
-                    >
+                    <div key={index} className='form-term-item'>
                       <input
                         type='text'
                         value={term}
                         onChange={(e) => updateTerm(index, e.target.value)}
                         placeholder={`Term ${index + 1}`}
-                        style={{ flex: 1 }}
+                        className='form-term-input'
                       />
                       <button
                         type='button'
                         className='btn btn-special danger btn-small'
                         onClick={() => removeTerm(index)}
-                        style={{ padding: '0.25rem 0.5rem' }}
                       >
                         <i className='fa-solid fa-trash'></i>
                       </button>

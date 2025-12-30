@@ -19,9 +19,30 @@ backend/
 └── .env                     # Environment variables
 ```
 
+````markdown
+# Backend Structure
+
+This backend folder contains the HomieBites backend project.
+
+## Structure
+
+```
+backend/
+├── HomieBites/          # HomieBites tiffin service backend
+│   ├── config/          # Database configuration
+│   ├── models/          # Mongoose models
+│   ├── routes/          # API routes
+│   ├── middleware/      # Auth middleware
+│   ├── scripts/         # Utility scripts (seed, verify)
+│   ├── server.js        # Express server
+│   └── README.md        # HomieBites documentation
+├── package.json         # Backend dependencies and scripts
+└── .env                 # Environment variables
+```
+
 ## HomieBites Backend
 
-See [Raavito/HomieBites/README.md](./Raavito/HomieBites/README.md) for complete documentation.
+See [HomieBites/README.md](./HomieBites/README.md) for complete documentation.
 
 ### Quick Start
 
@@ -50,5 +71,5 @@ PORT=3001
 NODE_ENV=development
 ```
 
-**Note:** Database name in connection string is `/HomieBites` (separate from Raavito database)
-
+**Note:** Database name in connection string is `/HomieBites`.
+````

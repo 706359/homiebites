@@ -1,25 +1,30 @@
-'use client';
-
-import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminLogin from '../../../admin/AdminLogin';
+import { NotificationProvider } from '../../contexts/NotificationContext';
+import NotificationWrapper from '../../components/NotificationWrapper';
 
 export default function Admin() {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check if already logged in
     const admin = localStorage.getItem('homiebites_admin');
     const user = localStorage.getItem('homiebites_user');
     if (admin === 'true' || (user && JSON.parse(user).role === 'admin')) {
-      router.push('/admin/dashboard');
+      navigate('/admin/dashboard');
     }
-  }, [router]);
+  }, [navigate]);
 
   const handleLoginSuccess = () => {
-    router.push('/admin/dashboard');
+    navigate('/admin/dashboard');
   };
 
-  return <AdminLogin onLoginSuccess={handleLoginSuccess} />;
+  return (
+    <NotificationProvider>
+      <AdminLogin onLoginSuccess={handleLoginSuccess} />
+      <NotificationWrapper />
+    </NotificationProvider>
+  );
 }
 

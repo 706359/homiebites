@@ -26,14 +26,14 @@ export const metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://homiebites.com'),
+  metadataBase: new URL(import.meta.env.VITE_SITE_URL || 'https://homiebites.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://homiebites.com',
+    url: import.meta.env.VITE_SITE_URL || 'https://homiebites.com',
     siteName: 'HomieBites',
     title: 'HomieBites - Premium Tiffin Service',
     description:

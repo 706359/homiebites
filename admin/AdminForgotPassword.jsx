@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import api from '../web/lib/api.js';
-import '../web/styles/login.css';
 import './AdminForgotPassword.css';
 
 const AdminForgotPassword = () => {
@@ -169,7 +168,6 @@ const AdminForgotPassword = () => {
         type='button'
         onClick={goBack}
         className='btn btn-secondary btn-full'
-        style={{ marginTop: '0.5rem' }}
       >
         Back to Login
       </button>
@@ -189,7 +187,7 @@ const AdminForgotPassword = () => {
           required
           autoFocus
         />
-        <p style={{ fontSize: '0.85rem', color: 'var(--gray)', marginTop: '0.5rem' }}>
+        <p className='admin-forgot-help-text'>
           Enter the 6-digit OTP sent to your registered mobile number
         </p>
       </div>
@@ -207,7 +205,6 @@ const AdminForgotPassword = () => {
           setSuccess('');
         }}
         className='btn btn-secondary btn-full'
-        style={{ marginTop: '0.5rem' }}
       >
         Back
       </button>
@@ -226,7 +223,7 @@ const AdminForgotPassword = () => {
           required
           autoFocus
         />
-        <p style={{ fontSize: '0.85rem', color: 'var(--gray)', marginTop: '0.5rem' }}>
+        <p className='admin-forgot-help-text'>
           Enter the Admin ID associated with your account
         </p>
       </div>
@@ -247,7 +244,7 @@ const AdminForgotPassword = () => {
           maxLength={10}
           required
         />
-        <p style={{ fontSize: '0.85rem', color: 'var(--gray)', marginTop: '0.5rem' }}>
+        <p className='admin-forgot-help-text'>
           Format: ABCDE1234F (10 characters, alphanumeric)
         </p>
       </div>
@@ -266,7 +263,6 @@ const AdminForgotPassword = () => {
           setSuccess('');
         }}
         className='btn btn-secondary btn-full'
-        style={{ marginTop: '0.5rem' }}
       >
         Back
       </button>
@@ -286,7 +282,7 @@ const AdminForgotPassword = () => {
           required
           autoFocus
         />
-        <p style={{ fontSize: '0.85rem', color: 'var(--gray)', marginTop: '0.5rem' }}>
+        <p className='admin-forgot-help-text'>
           Minimum 6 characters
         </p>
       </div>
@@ -316,7 +312,6 @@ const AdminForgotPassword = () => {
           setSuccess('');
         }}
         className='btn btn-secondary btn-full'
-        style={{ marginTop: '0.5rem' }}
       >
         Back
       </button>
@@ -352,9 +347,7 @@ const AdminForgotPassword = () => {
         <div className='login-right-section'>
           <div className='login-content'>
             <h1 className='login-title'>Admin Password Recovery</h1>
-            <p style={{ fontSize: '0.95rem', color: 'var(--gray)', marginBottom: '2rem' }}>
-              {getStepTitle()}
-            </p>
+            <p className='admin-forgot-step-title'>{getStepTitle()}</p>
 
             {step === 1 && renderStep1()}
             {step === 2 && renderStep2()}
@@ -362,7 +355,7 @@ const AdminForgotPassword = () => {
             {step === 4 && renderStep4()}
 
             <div className='login-info'>
-              <p style={{ fontSize: '0.9rem', color: 'var(--gray)' }}>
+              <p className='admin-forgot-security-note'>
                 <strong>Security Note:</strong> This process requires multi-step verification to
                 ensure account security.
               </p>

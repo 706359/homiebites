@@ -4,7 +4,6 @@ import ErrorBoundary from './components/ErrorBoundary';
 import NotificationWrapper from './components/NotificationWrapper';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { NotificationProvider } from './contexts/NotificationContext';
-import AccountPage from './pages/AccountPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminForgotPasswordPage from './pages/AdminForgotPasswordPage';
 import AdminPage from './pages/AdminPage';
@@ -12,13 +11,11 @@ import ErrorPage from './pages/ErrorPage';
 import FAQPage from './pages/FAQPage';
 import HomePage from './pages/HomePage';
 import LegalDisclaimerPage from './pages/LegalDisclaimerPage';
-import LoginPage from './pages/LoginPage';
 import MenuPage from './pages/MenuPage';
 import NotFoundPage from './pages/NotFoundPage';
 import OffersPage from './pages/OffersPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import SearchPage from './pages/SearchPage';
-import SupportPage from './pages/SupportPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 
 function ScrollToTop() {
@@ -90,6 +87,9 @@ function LanguageHandler() {
 }
 
 function AppContent() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  
   return (
     <ErrorBoundary>
       <NotificationProvider>
@@ -99,10 +99,7 @@ function AppContent() {
         <Routes>
           <Route path='/' element={<HomePage />} />
           <Route path='/menu' element={<MenuPage />} />
-          <Route path='/login' element={<LoginPage />} />
-          <Route path='/account' element={<AccountPage />} />
           <Route path='/search' element={<SearchPage />} />
-          <Route path='/support' element={<SupportPage />} />
           <Route path='/faq' element={<FAQPage />} />
           <Route path='/offers' element={<OffersPage />} />
           <Route path='/privacy' element={<PrivacyPolicyPage />} />
@@ -115,6 +112,10 @@ function AppContent() {
           <Route path='*' element={<NotFoundPage />} />
         </Routes>
         <NotificationWrapper />
+        {/* Site Footer - Hidden on admin routes */}
+        {!isAdminRoute && (
+          <footer className='app-footer'>This website made by Oscillate Infotech</footer>
+        )}
       </NotificationProvider>
     </ErrorBoundary>
   );
@@ -125,11 +126,11 @@ function App() {
     // Enhanced global error handler for unhandled promise rejections
     const handleUnhandledRejection = (event) => {
       console.error('Unhandled promise rejection:', event.reason);
-      
+
       // Prevent the default browser error handling and window crash
       event.preventDefault();
       event.stopPropagation();
-      
+
       // Log error details safely
       try {
         if (event.reason) {
@@ -141,7 +142,7 @@ function App() {
       } catch (logError) {
         console.error('Error logging failed:', logError);
       }
-      
+
       // Return false to prevent further error propagation
       return false;
     };
@@ -149,11 +150,11 @@ function App() {
     // Enhanced global error handler for uncaught errors
     const handleError = (event) => {
       console.error('Uncaught error:', event.error);
-      
+
       // Prevent default error handling and window crash
       event.preventDefault();
       event.stopPropagation();
-      
+
       // Log error details safely
       try {
         if (event.error) {
@@ -171,7 +172,7 @@ function App() {
       } catch (logError) {
         console.error('Error logging failed:', logError);
       }
-      
+
       // Return false to prevent further error propagation
       return false;
     };
@@ -186,7 +187,7 @@ function App() {
     // Add all error listeners with capture phase for maximum coverage
     window.addEventListener('unhandledrejection', handleUnhandledRejection, true);
     window.addEventListener('error', handleError, true);
-    
+
     // Also handle React error boundaries at window level
     window.addEventListener('react-error', handleError, true);
 

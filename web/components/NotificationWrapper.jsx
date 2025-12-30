@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
+import './NotificationWrapper.css';
 
 const NotificationWrapper = () => {
   const { notifications, removeNotification } = useNotification();

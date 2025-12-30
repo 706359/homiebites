@@ -1,0 +1,105 @@
+/* Stats Cards */
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--admin-gap-base);
+  margin-bottom: var(--admin-margin-xl);
+  padding: 0;
+}
+
+.stat-card {
+  background: var(--admin-glass-bg);
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  padding: var(--admin-padding-sm) var(--admin-padding-base);
+  border-radius: var(--admin-radius-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--admin-gap-md);
+  box-shadow: var(--admin-glass-shadow);
+  border: 1px solid var(--admin-glass-border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-height: auto;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--admin-accent);
+}
+
+.stat-card:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+}
+
+.stat-card i {
+  font-size: 1.4rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--admin-accent-light);
+  color: var(--admin-accent);
+  flex-shrink: 0;
+  border: 2px solid rgba(var(--admin-accent-rgb), 0.1);
+}
+
+.stat-card div {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+}
+
+.stat-card h3 {
+  font-size: var(--admin-font-xl);
+  font-weight: var(--admin-weight-extrabold);
+  margin: 0;
+  color: var(--admin-text);
+  line-height: var(--admin-line-height-tight);
+  white-space: nowrap;
+}
+
+.stat-card p {
+  margin: 0;
+  color: var(--admin-text-light);
+  font-size: var(--admin-font-xs);
+  font-weight: var(--admin-weight-normal);
+  line-height: var(--admin-line-height-tight);
+  white-space: nowrap;
+}
+
+.stat-change {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  color: var(--admin-text-light);
+  margin: 0;
+  margin-left: auto;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.stat-change.positive {
+  color: var(--admin-success);
+}
+
+.stat-change i {
+  font-size: 0.7rem;
+}

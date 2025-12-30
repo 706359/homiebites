@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getMenuDataSync } from '../lib/menuData';
+import './Rates.css';
 
 const Rates = ({ onOrderClick }) => {
   const { t } = useLanguage();

@@ -1,0 +1,217 @@
+/* =========================================================
+   BUTTON SYSTEM – SINGLE SOURCE OF TRUTH
+   Extracted from shared.css to be the single source for all button styles
+   ========================================================= */
+
+/* Base Button - NON-NEGOTIABLE */
+button.btn,
+a.btn,
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  padding: 0.85rem 1.7rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+
+  border-radius: 8px;
+  border: 2px solid transparent;
+  box-shadow: 0 2px 8px var(--shadow-green-light);
+
+  transform: skewX(-8deg);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.15s ease;
+}
+
+/* Counter-skew content to keep text readable */
+.btn > * {
+  transform: skewX(8deg);
+  display: inline-block;
+}
+
+/* Hover lift effect */
+.btn:hover:not(:disabled) {
+  transform: skewX(-8deg) translateY(-2px);
+  box-shadow: 0 4px 16px var(--shadow-green-medium);
+}
+
+/* Focus (Accessibility) */
+.btn:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 2px var(--shadow-green),
+    0 4px 16px var(--shadow-green-medium);
+}
+
+/* Disabled */
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ================= VARIANTS - ONLY 5 ALLOWED ================= */
+
+/* 1. PRIMARY - Green → Orange (fade), White text always */
+.btn-primary {
+  background-color: var(--primary-green);
+  color: var(--text-white);
+  border-color: transparent;
+  box-shadow: 0 2px 8px var(--shadow-green-light);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--primary-orange);
+  border-color: transparent;
+  box-shadow: 0 4px 16px var(--shadow-orange-medium);
+}
+
+/* 2. SECONDARY - Orange → Green (fade), White text always */
+.btn-secondary {
+  background-color: var(--primary-orange);
+  color: var(--text-white);
+  border-color: transparent;
+  box-shadow: 0 2px 8px var(--shadow-orange-light);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--primary-green);
+  border-color: transparent;
+  box-shadow: 0 4px 16px var(--shadow-green-medium);
+}
+
+/* 3. GHOST - Transparent, Orange text + border, Hover → Green text + border, NO filled background */
+.btn-ghost {
+  background-color: transparent;
+  color: var(--primary-orange);
+  border-color: var(--primary-orange) !important;
+  box-shadow: none;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: transparent;
+  color: var(--primary-green);
+  border-color: var(--primary-green);
+  box-shadow: 0 2px 8px var(--shadow-green-light);
+}
+
+/* 4. PUBLIC - Theme-neutral, safe, boring by design */
+.btn-public {
+  background-color: var(--neutral-200, var(--gray-lighter));
+  color: var(--neutral-900, var(--gray-dark));
+  border-color: transparent; /* Explicit transparent border */
+}
+
+.btn-public:hover:not(:disabled) {
+  background-color: var(--neutral-300, var(--gray-light));
+  border-color: transparent; /* Maintain transparent border on hover */
+}
+
+/* 5. SPECIAL - The only extension point via CSS variables */
+.btn-special {
+  background-color: var(--btn-bg, var(--primary-green));
+  color: var(--btn-text, var(--text-white));
+  border-color: var(--btn-border, transparent);
+  box-shadow: 0 2px 8px var(--shadow-green-light);
+}
+
+.btn-special:hover:not(:disabled) {
+  background-color: var(--btn-bg-hover, var(--primary-orange));
+  border-color: var(--btn-border-hover, var(--btn-border, transparent));
+  box-shadow: 0 4px 16px var(--shadow-orange-medium);
+}
+
+/* Special button examples via modifiers (DO NOT CREATE NEW CLASSES) */
+.btn-special.whatsapp {
+  --btn-bg: var(--whatsapp-green);
+  --btn-bg-hover: var(--whatsapp-green-hover);
+}
+
+.btn-special.danger {
+  --btn-bg: var(--error-red);
+  --btn-bg-hover: var(--error-red-hover);
+}
+
+.btn-special.admin {
+  --btn-bg: var(--primary-green);
+  --btn-bg-hover: var(--primary-orange);
+}
+
+/* ================= SIZE MODIFIERS (SAFE TO KEEP) ================= */
+
+.btn-small {
+  padding: 0.55rem 1.1rem;
+  font-size: 0.85rem;
+  border-radius: 6px;
+}
+
+.btn-large {
+  padding: 1.15rem 2.7rem;
+  font-size: 1.1rem;
+  border-radius: 10px;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* Icon-only button modifier (utility) */
+.btn-icon {
+  padding: 0.6rem;
+  width: auto;
+  min-width: fit-content;
+  border-radius: 50%;
+}
+
+/* ================= QTY BUTTON ================= */
+
+.btn-qty {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+
+  background: var(--light-gray);
+  color: var(--text-primary);
+
+  font-size: 1.2rem;
+  font-weight: 500;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px var(--shadow-green-light);
+
+  /* No skew for circular buttons */
+  transform: none;
+}
+
+.btn-qty > * {
+  transform: none;
+}
+
+.btn-qty:hover:not(:disabled) {
+  background: var(--primary-green);
+  color: var(--white);
+  border-color: transparent;
+  transform: translateY(-1px);
+}
+
+.btn-qty:focus-visible {
+  outline: 3px solid var(--primary-green);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 2px var(--shadow-green);
+}

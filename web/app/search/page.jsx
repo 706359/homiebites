@@ -1,7 +1,5 @@
-'use client';
-
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import OrderModal from '../../components/OrderModal';
@@ -11,7 +9,7 @@ import '../../styles/globals.css';
 
 export default function SearchPage() {
   const { t } = useLanguage();
-  const router = useRouter();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
@@ -84,7 +82,7 @@ export default function SearchPage() {
                     <button
                       className="btn btn-primary btn-small btn-full"
                       onClick={() => {
-                        router.push('/menu');
+                        navigate('/menu');
                         openOrderModal();
                       }}
                     >

@@ -5,8 +5,7 @@
 This is a monorepo project with:
 
 1. **Next.js Website** - Modern web application (`web/`)
-2. **React Native Expo Mobile App** - Native mobile application (`app/`)
-3. **MongoDB Backend** - RESTful API server (`backend/`)
+2. **MongoDB Backend** - RESTful API server (`backend/`)
 
 ## Directory Structure
 
@@ -43,22 +42,6 @@ HomieBites/
 │   │   └── logo.png
 │   ├── next.config.js      # Next.js configuration
 │   └── package.json         # Web app dependencies
-│
-├── app/                    # React Native Expo mobile app
-│   ├── screens/            # Mobile screens
-│   │   ├── HomeScreen.js
-│   │   ├── MenuScreen.js
-│   │   ├── CartScreen.js
-│   │   └── ...
-│   ├── contexts/           # React contexts
-│   │   └── LanguageContext.js
-│   ├── utils/              # Mobile utilities
-│   │   ├── menuDataMobile.js
-│   │   ├── userAuthMobile.js
-│   │   └── i18nMobile.js
-│   ├── App.js              # Mobile app entry
-│   ├── package.json        # Mobile app dependencies
-│   └── babel.config.js
 │
 ├── backend/                # MongoDB Backend API
 │   ├── Raavito/
@@ -102,22 +85,9 @@ HomieBites/
 │       ├── adminConfig.js
 │       └── i18n.js
 │
-├── docs/                   # Documentation files
-│   ├── ANALYTICS-FEATURES.md
-│   ├── BACKEND-RECOMMENDATION.md
-│   ├── EASY-SETUP.md
-│   ├── GOOGLE-SHEET-TEMPLATE.md
-│   ├── GOOGLE-SHEETS-INTEGRATION.md
-│   ├── GOOGLE-SHEETS-SETUP.md
-│   ├── LANGUAGE-IMPLEMENTATION.md
-│   ├── MOVE-LOGO.md
-│   ├── PAGES-CHECKLIST.md
-│   └── QUICK-SETUP.md
-│
 ├── PROJECT-STRUCTURE.md    # This file
 ├── README.md               # Main project README
-├── package.json            # Root package.json (workspace scripts)
-└── app.json                # Expo configuration
+└── package.json            # Root package.json (workspace scripts)
 ```
 
 ## Technology Stack
@@ -128,13 +98,6 @@ HomieBites/
 - **UI**: React 18
 - **Styling**: CSS Modules + Shared CSS
 - **Routing**: Next.js App Router
-
-### Mobile Application (Expo)
-
-- **Framework**: React Native with Expo
-- **Navigation**: React Navigation
-- **State**: React Context + Hooks
-- **Storage**: AsyncStorage
 
 ### Backend (Node.js + MongoDB)
 
@@ -166,23 +129,6 @@ Or from root:
 
 ```bash
 npm run web
-```
-
-### Mobile App (Expo)
-
-```bash
-# Install dependencies
-cd app
-npm install
-
-# Start Expo
-npm start
-```
-
-Or from root:
-
-```bash
-npm run mobile
 ```
 
 ### Backend (MongoDB API)
@@ -247,9 +193,7 @@ Access via: `http://localhost:3000/admin`
 
 ## Notes
 
-- Web and mobile share the same menu data structure
 - Backend API provides data synchronization
-- CSS is shared between web and mobile
-- All platforms support Hindi and English languages
+- Web application supports Hindi and English languages
 - MongoDB stores all persistent data
 - Logo is located at `web/public/logo.png`

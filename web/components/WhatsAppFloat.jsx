@@ -1,3 +1,5 @@
+import './WhatsAppFloat.css';
+
 const WhatsAppFloat = () => {
   const handleClick = () => {
     window.open('https://wa.me/919958983578', '_blank', 'noopener')

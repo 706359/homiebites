@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
+import './Footer.css';
 
 const Footer = ({ onOrderClick }) => {
   const { t } = useLanguage();
@@ -100,7 +101,7 @@ const Footer = ({ onOrderClick }) => {
         </div>
 
         <div className='footer-actions'>
-          <Link className='btn btn-ghost footer-view-menu-btn' to='/menu'>
+          <Link className='btn btn-secondary' to='/menu'>
             {t('footer.viewMenu')}
           </Link>
           <button className='btn btn-primary pulse' onClick={onOrderClick}>
@@ -134,9 +135,6 @@ const Footer = ({ onOrderClick }) => {
           <ul>
             <li>
               <Link to='/faq'>{t('common.faq')}</Link>
-            </li>
-            <li>
-              <Link to='/support'>{t('common.support')}</Link>
             </li>
             <li>
               <a href='/#contact' onClick={(e) => handleHashLink(e, '#contact')}>

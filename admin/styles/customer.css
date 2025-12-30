@@ -1,0 +1,89 @@
+/* Customer Details Modal */
+
+.customer-details-modal {
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.customer-details-section,
+.customer-orders-section {
+  margin-bottom: 2rem;
+}
+
+.customer-details-section h4,
+.customer-orders-section h4 {
+  margin-bottom: 1rem;
+  color: var(--admin-accent);
+  font-size: 1.1rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: var(--admin-text-light);
+  min-width: 150px;
+}
+
+.detail-value {
+  color: var(--admin-text);
+  text-align: right;
+}
+
+.customer-orders-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.customer-order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: var(--admin-card-bg);
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+}
+
+.customer-order-item > div {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.customer-order-item strong {
+  color: var(--admin-accent);
+}
+
+.days-ago {
+  font-size: 0.85rem;
+  color: var(--admin-text-light);
+  margin-left: 0.5rem;
+}
+
+.status-badge.status-active {
+  background: var(--admin-success);
+  color: white;
+}
+
+.status-badge.status-inactive {
+  background: var(--admin-text-muted);
+  color: white;
+}
+
+.address-cell {
+  max-width: 250px;
+  word-break: break-word;
+}
+

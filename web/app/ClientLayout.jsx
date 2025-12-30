@@ -1,13 +1,12 @@
-'use client';
-
-import { usePathname } from 'next/navigation';
+import { useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import NotificationWrapper from '../components/NotificationWrapper';
 import { LanguageProvider, useLanguage } from '../contexts/LanguageContext';
 import { NotificationProvider } from '../contexts/NotificationContext';
 
 function ScrollToTop() {
-  const pathname = usePathname();
+  const location = useLocation();
+  const pathname = location.pathname;
 
   useEffect(() => {
     // Scroll to top on route change, unless there's a hash
@@ -24,7 +23,8 @@ function ScrollToTop() {
 }
 
 function HashScrollHandler() {
-  const pathname = usePathname();
+  const location = useLocation();
+  const pathname = location.pathname;
 
   useEffect(() => {
     // Handle hash navigation when route changes to home page

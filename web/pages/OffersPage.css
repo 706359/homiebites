@@ -1,0 +1,20 @@
+.offers-empty-state {
+  padding: var(--space-16);
+  text-align: center;
+}
+
+.offers-empty-icon {
+  font-size: var(--font-size-display);
+  color: var(--gray);
+  margin-bottom: var(--space-4);
+}
+
+.offers-empty-cta {
+  margin-top: var(--space-8);
+}
+
+.offers-loading-state {
+  padding: var(--space-16);
+  text-align: center;
+}
+

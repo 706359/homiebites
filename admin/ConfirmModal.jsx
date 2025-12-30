@@ -1,6 +1,15 @@
 import './AdminDashboard.css';
 
-const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', cancelText = 'Cancel', type = 'warning' }) => {
+const ConfirmModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  type = 'warning',
+}) => {
   if (!isOpen) return null;
 
   const handleBackdropClick = (e) => {
@@ -39,26 +48,32 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText 
     <div className='confirm-modal-overlay' onClick={handleBackdropClick}>
       <div className='confirm-modal'>
         <div className='confirm-modal-header'>
-          <button className='confirm-modal-close' onClick={onClose}>
+          <button className='confirm-modal-close btn btn-icon' onClick={onClose}>
             <i className='fa-solid fa-times'></i>
           </button>
-          <div className='confirm-modal-icon-wrapper' style={{ background: `${getIconColor()}15`, borderColor: `${getIconColor()}30` }}>
-            <i className={`fa-solid ${getIcon()}`} style={{ color: getIconColor() }}></i>
+          <div
+            className={`confirm-modal-icon-wrapper confirm-modal-icon-${type}`}
+            data-icon-color={getIconColor()}
+          >
+            <i className={`fa-solid ${getIcon()}`}></i>
           </div>
         </div>
-        
+
         <div className='confirm-modal-body'>
           <h3 className='confirm-modal-title'>{title}</h3>
           <p className='confirm-modal-message'>{message}</p>
         </div>
 
         <div className='confirm-modal-footer'>
-          <button className='confirm-modal-btn confirm-modal-btn-cancel' onClick={onClose}>
+          <button
+            className='confirm-modal-btn btn btn-ghost confirm-modal-btn-cancel'
+            onClick={onClose}
+          >
             <i className='fa-solid fa-times'></i>
             <span>{cancelText}</span>
           </button>
-          <button 
-            className={`confirm-modal-btn confirm-modal-btn-confirm confirm-modal-btn-${type}`}
+          <button
+            className={`confirm-modal-btn btn btn-primary confirm-modal-btn-confirm confirm-modal-btn-${type}`}
             onClick={() => {
               onConfirm();
               onClose();

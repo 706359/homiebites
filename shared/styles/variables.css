@@ -72,6 +72,62 @@
   --shadow-orange: rgba(196, 92, 45, 0.2);
   --shadow-green: rgba(68, 144, 49, 0.2);
   --shadow-dark: rgba(0, 0, 0, 0.15);
+  --shadow-green-light: rgba(68, 144, 49, 0.08);
+  --shadow-green-medium: rgba(68, 144, 49, 0.12);
+  --shadow-orange-light: rgba(196, 92, 45, 0.1);
+  --shadow-orange-medium: rgba(196, 92, 45, 0.14);
+  --shadow-green-very-light: rgba(68, 144, 49, 0.03);
+  --shadow-orange-very-light: rgba(196, 92, 45, 0.03);
+  --shadow-green-ultra-light: rgba(68, 144, 49, 0.05);
+  --shadow-orange-ultra-light: rgba(196, 92, 45, 0.05);
+  --shadow-green-strong: rgba(68, 144, 49, 0.3);
+  --shadow-orange-strong: rgba(196, 92, 45, 0.3);
+  --shadow-orange-stronger: rgba(196, 92, 45, 0.4);
+  --shadow-green-radial-light: rgba(68, 144, 49, 0.1);
+  --shadow-orange-radial-light: rgba(196, 92, 45, 0.1);
+
+  /* Additional Semantic Colors */
+  --whatsapp-green-hover: #20ba5a;
+  --error-red-hover: #dc2626;
+  --success-green-light: #10b981;
+  --info-blue-light: #3b82f6;
+  --purple: #9B59B6;
+  --purple-dark: #8E44AD;
+  --yellow: #F5A623;
+  --yellow-dark: #D8941A;
+  --blue: #4A90E2;
+  --blue-dark: #357ABD;
+  --red: #E74C3C;
+  --red-dark: #C0392B;
+
+  /* Spacing Scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Typography Scale */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-display: 3rem;
+  --font-size-avatar: 1.75rem;
+
+  /* Component Sizes */
+  --avatar-size: 56px;
+  --border-radius-sm: 6px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 10px;
+  --border-radius-full: 50%;
 
   /* Font Family */
   --font-primary:

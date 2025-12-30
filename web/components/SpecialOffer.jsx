@@ -1,4 +1,5 @@
 import { useLanguage } from '../contexts/LanguageContext';
+import './SpecialOffer.css';
 
 const SpecialOffer = () => {
   const { t } = useLanguage();

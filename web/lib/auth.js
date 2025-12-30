@@ -4,7 +4,7 @@
 const ADMIN_KEY = 'homiebites_admin';
 const ADMIN_CREDENTIALS = {
   username: 'adminHomieBites',
-  password: 'Bless@@##12$$',
+  password: 'Bless@@!!##12',
 };
 
 export const login = (username, password) => {

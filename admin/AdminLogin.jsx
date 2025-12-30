@@ -1,27 +1,35 @@
 import { useState } from 'react';
 import api from '../web/lib/api.js';
-import '../web/styles/login.css';
+import { useNotification } from '../web/contexts/NotificationContext';
+import './AdminLogin.css';
 
 const AdminLogin = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { error: showError, success: showSuccess } = useNotification();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
       // Try backend API first
       try {
+        // Use username field for admin login (api.login accepts email, so pass username as email)
         const data = await api.login(username, password);
 
-        if (data.success && data.user && data.user.role === 'admin') {
+        if (data.success && data.user && (data.user.role === 'admin' || data.user.isAdmin)) {
           localStorage.setItem('homiebites_token', data.token);
           localStorage.setItem('homiebites_user', JSON.stringify(data.user));
           localStorage.setItem('homiebites_admin', 'true');
+
+          console.log('[AdminLogin] ✅ Successfully logged in via API:', {
+            user: data.user.name,
+            role: data.user.role,
+            hasToken: !!data.token,
+            tokenLength: data.token?.length || 0,
+          });
 
           if (onLoginSuccess) {
             onLoginSuccess();
@@ -30,44 +38,103 @@ const AdminLogin = ({ onLoginSuccess }) => {
           }
           return;
         } else {
-          setError(data.error || 'Invalid credentials. Admin access required.');
+          showError(data.error || 'Invalid credentials. Admin access required.');
+          setLoading(false);
+          return;
         }
       } catch (apiError) {
-        // API failed, will try fallback credentials below
-        console.warn('API login failed, trying fallback:', apiError.message);
+        // API failed - check if it's a connection error or credential error
+        console.error('[AdminLogin] API login failed:', {
+          message: apiError.message,
+          username: username,
+          errorType: apiError.constructor.name,
+        });
+
+        // If it's a network/connection error, try fallback
+        // If it's a credential error, don't try fallback
+        const isNetworkError =
+          apiError.message &&
+          (apiError.message.includes('HTML') ||
+            apiError.message.includes('not available') ||
+            apiError.message.includes('connect') ||
+            apiError.message.includes('Network error') ||
+            apiError.message.includes('Failed to fetch'));
+
+        if (isNetworkError) {
+          console.warn('[AdminLogin] Backend server not available, trying fallback credentials...');
+        } else {
+          // Credential error or other API error - don't try fallback, show error
+          showError(
+            apiError.message ||
+              'Invalid credentials. Please check your username and password. Make sure the backend server is running.'
+          );
+          setLoading(false);
+          return;
+        }
       }
 
-      // Fallback to hardcoded admin credentials if API failed or credentials didn't match
-      if (username === 'adminHomieBites' && password === 'Bless@@##12$$') {
+      // Fallback to hardcoded admin credentials if API failed (network/connection errors only)
+      // This only runs if API failed due to network issues, not credential errors
+      // Support both username and mobile number for login
+      const isAdminLogin = (username === 'adminHomieBites' || username === '8958111112') && password === 'Bless@@!!##12';
+      if (isAdminLogin) {
         const adminUser = {
           id: 'admin',
           name: 'Admin',
           email: 'admin@homiebites.com',
           role: 'admin',
+          isAdmin: true,
         };
+
+        // Store user data and admin flag
         localStorage.setItem('homiebites_user', JSON.stringify(adminUser));
         localStorage.setItem('homiebites_admin', 'true');
+
+        // Generate a dev token for fallback (simple JWT-like string)
+        // Note: Backend API calls will still fail, but dashboard UI will work
+        const devToken = 'dev-fallback-token-' + Date.now();
+        localStorage.setItem('homiebites_token', devToken);
+
+        console.warn(
+          '[AdminLogin] Using fallback credentials. Backend API appears to be offline. Some features may not work until backend is running and you log in via API.'
+        );
 
         if (onLoginSuccess) {
           onLoginSuccess();
         } else {
           window.location.href = '/admin/dashboard';
         }
+        setLoading(false);
         return;
-      } else if (!error) {
-        setError('Invalid credentials. Admin access required. Use fallback credentials if needed.');
+      } else {
+        showError('Invalid credentials. Please check your username and password.');
+        setLoading(false);
       }
     } catch (err) {
-      // Final fallback to hardcoded admin credentials
-      if (username === 'adminHomieBites' && password === 'Bless@@##12$$') {
+      // Final fallback for unexpected errors
+      console.error('[AdminLogin] Unexpected error during login:', err);
+      
+      // Only try fallback if credentials match and it's a connection/network error
+      // Support both username and mobile number for login
+      const isAdminLogin = (username === 'adminHomieBites' || username === '8958111112') && password === 'Bless@@!!##12';
+      if (isAdminLogin) {
         const adminUser = {
           id: 'admin',
           name: 'Admin',
           email: 'admin@homiebites.com',
           role: 'admin',
+          isAdmin: true,
         };
         localStorage.setItem('homiebites_user', JSON.stringify(adminUser));
         localStorage.setItem('homiebites_admin', 'true');
+        
+        // Generate dev token for fallback
+        const devToken = 'dev-fallback-token-' + Date.now();
+        localStorage.setItem('homiebites_token', devToken);
+
+        console.warn(
+          '[AdminLogin] Using fallback credentials due to unexpected error. Backend API may not be available.'
+        );
 
         if (onLoginSuccess) {
           onLoginSuccess();
@@ -75,8 +142,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
           window.location.href = '/admin/dashboard';
         }
       } else {
-        setError('Connection error. Please try again or use fallback credentials.');
-        console.error(err);
+        showError('Login failed. Please check your credentials and ensure the backend server is running.');
       }
     } finally {
       setLoading(false);
@@ -100,11 +166,12 @@ const AdminLogin = ({ onLoginSuccess }) => {
 
             <form onSubmit={handleSubmit} className='login-form'>
               <div className='form-field'>
-                <label>Username or Email</label>
+                <label>Mobile Number</label>
                 <input
                   type='text'
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  placeholder='8958111112'
                   required
                   autoFocus
                 />
@@ -120,21 +187,12 @@ const AdminLogin = ({ onLoginSuccess }) => {
                 />
               </div>
 
-              {error && <div className='error-message'>{error}</div>}
-
               <button type='submit' className='btn btn-primary btn-full' disabled={loading}>
                 {loading ? 'LOGGING IN...' : 'LOG IN'}
               </button>
 
-              <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-                <a
-                  href='/admin/forgot-password'
-                  style={{
-                    fontSize: '0.9rem',
-                    color: 'var(--primary-orange)',
-                    textDecoration: 'none',
-                  }}
-                >
+              <div className='admin-login-forgot-link-wrapper'>
+                <a href='/admin/forgot-password' className='admin-login-forgot-link'>
                   Forgot Password?
                 </a>
               </div>
@@ -144,41 +202,23 @@ const AdminLogin = ({ onLoginSuccess }) => {
               <p>
                 <strong>Admin Access Required</strong>
               </p>
-              <p style={{ fontSize: '0.9rem', color: 'var(--gray)', marginBottom: '1rem' }}>
-                Authorized personnel only
-              </p>
+              <p className='admin-login-info-text'>Authorized personnel only</p>
               {(import.meta.env.DEV || process.env.NODE_ENV === 'development') && (
-                <details style={{ marginTop: '1rem', cursor: 'pointer' }}>
-                  <summary
-                    style={{
-                      fontSize: '0.875rem',
-                      color: 'var(--gray)',
-                      textDecoration: 'underline',
-                    }}
-                  >
-                    Forgot Password?
-                  </summary>
-                  <div
-                    style={{
-                      marginTop: '0.75rem',
-                      padding: '1rem',
-                      background: 'rgba(0,0,0,0.05)',
-                      borderRadius: '8px',
-                      fontSize: '0.875rem',
-                    }}
-                  >
-                    <p style={{ marginBottom: '0.5rem' }}>
+                <details className='admin-login-dev-details'>
+                  <summary className='admin-login-dev-summary'>Forgot Password?</summary>
+                  <div className='admin-login-dev-content'>
+                    <p className='admin-login-dev-item'>
                       <strong>Quick Access:</strong>
                     </p>
-                    <p style={{ marginBottom: '0.5rem' }}>
-                      Username: <code>adminHomieBites</code>
+                    <p className='admin-login-dev-item'>
+                      Mobile: <code>8958111112</code>
                     </p>
-                    <p style={{ marginBottom: '1rem' }}>
-                      Password: <code>Bless@@##12$$</code>
+                    <p className='admin-login-dev-item admin-login-dev-item-last'>
+                      Password: <code>Bless@@!!##12</code>
                     </p>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>
-                      <strong>Note:</strong> For production, reset password via backend database. See{' '}
-                      <code>docs/ADMIN_PASSWORD_RECOVERY.md</code> for detailed instructions.
+                    <p className='admin-login-dev-note'>
+                      <strong>Note:</strong> For production, reset password via backend database.
+                      See <code>docs/ADMIN_PASSWORD_RECOVERY.md</code> for detailed instructions.
                     </p>
                   </div>
                 </details>

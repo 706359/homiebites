@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { getMenuData, getMenuDataSync } from '../lib/menuData';
+import './OrderModal.css';
 
 const OrderModal = ({ isOpen, onClose }) => {
   const { t } = useLanguage();

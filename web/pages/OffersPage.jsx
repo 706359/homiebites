@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getOffersData } from '../lib/offersData';
 import '../styles/globals.css';
+import './OffersPage.css';
 
 export default function OffersPage() {
   const { t } = useLanguage();
@@ -52,11 +53,23 @@ export default function OffersPage() {
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    if (isNaN(date)) return String(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
   };
 
   if (isLoading) {
@@ -65,7 +78,7 @@ export default function OffersPage() {
         <Header onOrderClick={openOrderModal} />
         <div className='offers-page'>
           <div className='offers-container'>
-            <div style={{ padding: '4rem', textAlign: 'center' }}>
+            <div className='offers-empty-state'>
               <p>{t('common.loading') || 'Loading...'}</p>
             </div>
           </div>
@@ -83,9 +96,12 @@ export default function OffersPage() {
           <div className='offers-container'>
             <h1 className='offers-title'>{t('offers.title') || 'Special Offers & Discounts'}</h1>
             <div className='no-offers-message'>
-              <i className='fa-solid fa-tag' style={{ fontSize: '3rem', color: 'var(--gray)', marginBottom: '1rem' }}></i>
-              <p>{t('offers.noOffers') || 'No active offers at the moment. Check back soon for exciting deals!'}</p>
-              <Link to='/menu' className='btn btn-primary' style={{ marginTop: '2rem' }}>
+              <i className='fa-solid fa-tag offers-empty-icon'></i>
+              <p>
+                {t('offers.noOffers') ||
+                  'No active offers at the moment. Check back soon for exciting deals!'}
+              </p>
+              <Link to='/menu' className='btn btn-primary offers-empty-cta'>
                 <i className='fa-solid fa-utensils'></i> View Menu
               </Link>
             </div>
@@ -109,18 +125,12 @@ export default function OffersPage() {
           <div className='offers-grid'>
             {offers.map((offer) => (
               <div key={offer.id} className='offer-card'>
-                {offer.badge && (
-                  <div className='offer-badge'>{offer.badge}</div>
-                )}
+                {offer.badge && <div className='offer-badge'>{offer.badge}</div>}
                 <div className='offer-card-header'>
                   <h2 className='offer-card-title'>{offer.title}</h2>
-                  {offer.discount && (
-                    <div className='offer-discount'>{offer.discount}</div>
-                  )}
+                  {offer.discount && <div className='offer-discount'>{offer.discount}</div>}
                 </div>
-                {offer.description && (
-                  <p className='offer-description'>{offer.description}</p>
-                )}
+                {offer.description && <p className='offer-description'>{offer.description}</p>}
                 {offer.terms && (
                   <div className='offer-terms'>
                     <h3>{t('offers.terms') || 'Terms & Conditions:'}</h3>
@@ -135,7 +145,8 @@ export default function OffersPage() {
                   <div className='offer-dates'>
                     {offer.startDate && (
                       <div>
-                        <strong>{t('offers.starts') || 'Starts:'}</strong> {formatDate(offer.startDate)}
+                        <strong>{t('offers.starts') || 'Starts:'}</strong>{' '}
+                        {formatDate(offer.startDate)}
                       </div>
                     )}
                     {offer.endDate && (

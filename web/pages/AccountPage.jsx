@@ -15,13 +15,29 @@ import {
   updateProfile,
 } from '../lib/userAuth';
 import '../styles/chatbot.css';
+import './AccountPage.css';
 
 export default function AccountPage() {
   const { t } = useLanguage();
   const { success, error: showError } = useNotification();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      return localStorage.getItem('accountActiveTab') || 'profile';
+    } catch (e) {
+      return 'profile';
+    }
+  });
+
+  const handleSetTab = (tab) => {
+    setActiveTab(tab);
+    try {
+      localStorage.setItem('accountActiveTab', tab);
+    } catch (e) {
+      // ignore storage errors
+    }
+  };
   const [orders, setOrders] = useState([]);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -140,6 +156,11 @@ export default function AccountPage() {
   const confirmLogout = () => {
     logoutUser();
     success(t('account.loggedOut') || 'Logged out successfully');
+    try {
+      localStorage.removeItem('accountActiveTab');
+    } catch (e) {
+      // ignore
+    }
     navigate('/');
   };
 
@@ -152,7 +173,7 @@ export default function AccountPage() {
             <h1>{t('account.title')}</h1>
           </div>
           <div className='account-container'>
-            <div style={{ padding: '4rem', textAlign: 'center' }}>
+            <div className='account-empty-state'>
               <p>{t('common.loading') || 'Loading...'}</p>
             </div>
           </div>
@@ -211,23 +232,22 @@ export default function AccountPage() {
             <div className='account-tabs'>
               <button
                 className={`account-tab ${activeTab === 'profile' ? 'active' : ''}`}
-                onClick={() => setActiveTab('profile')}
+                onClick={() => handleSetTab('profile')}
               >
                 <i className='fa-solid fa-user'></i>
                 {t('account.profile')}
               </button>
               <button
                 className={`account-tab ${activeTab === 'addresses' ? 'active' : ''}`}
-                onClick={() => setActiveTab('addresses')}
+                onClick={() => handleSetTab('addresses')}
               >
                 <i className='fa-solid fa-map-marker-alt'></i>
                 {t('account.addresses')}
               </button>
               <button
                 className={`account-tab ${activeTab === 'orders' ? 'active' : ''}`}
-                onClick={() => setActiveTab('orders')}
+                onClick={() => handleSetTab('orders')}
               >
-                <i className='fa-solid fa-shopping-bag'></i>
                 {t('account.orders')}
               </button>
               <button className='account-tab logout-btn' onClick={handleLogout}>

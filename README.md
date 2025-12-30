@@ -1,13 +1,12 @@
 ﻿# HomieBites - Premium Tiffin Service
 
-A full-stack tiffin service platform with Next.js web app, React Native mobile app, and MongoDB backend.
+A full-stack tiffin service platform with Next.js web app and MongoDB backend.
 
 ## 🏗️ Project Structure
 
 ```
 HomieBites/
 ├── web/          # Next.js website (App Router)
-├── app/          # React Native Expo mobile app
 ├── backend/      # MongoDB REST API
 └── shared/       # Shared resources (styles, utils, locales)
 ```
@@ -31,12 +30,7 @@ npm install
 cd web && npm install
 ```
 
-3. **Install mobile app dependencies:**
-```bash
-cd app && npm install
-```
-
-4. **Setup backend:**
+3. **Setup backend:**
 ```bash
 cd backend
 # Create .env file with MongoDB URI and JWT_SECRET
@@ -62,14 +56,6 @@ cd web && npm run dev
 # Access at http://localhost:3000
 ```
 
-**Mobile App (Expo):**
-```bash
-npm run mobile
-# or
-cd app && npm start
-# Scan QR code with Expo Go app
-```
-
 **Backend API:**
 ```bash
 npm run backend
@@ -85,12 +71,6 @@ cd backend && node server.js
 - React 18
 - Server-side rendering
 - API routes support
-
-### Mobile (Expo)
-- React Native
-- Expo SDK
-- AsyncStorage for local data
-- React Navigation
 
 ### Backend (Node.js + MongoDB)
 - Express.js
@@ -134,12 +114,6 @@ NODE_ENV=development
 cd web
 npm run build
 npm start
-```
-
-**Mobile:**
-```bash
-cd app
-npm run build:android  # or build:ios
 ```
 
 ## 📄 License

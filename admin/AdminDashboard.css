@@ -1,5 +1,42 @@
-/* Premium Admin Dashboard Design */
-@import '../shared/styles/shared.css';
+button {
+  color: #fff;
+  border: 2px solid #fff;
+  background: transparent;
+  padding: 0.75em 2em;
+  border-radius: 12px;
+  font-size: 1.1em;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    background 0.2s,
+    border-color 0.2s;
+}
+button:hover,
+button:focus {
+  color: #fff;
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3498db;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+/* loader text removed and backed up in dead-css/AdminDashboard.dead.css */
 
 :root {
   --admin-bg: #f8fafc;
@@ -23,7 +60,7 @@
 
 .admin-dashboard {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: var(--bg-white);
   font-family:
     'Inter',
     -apple-system,
@@ -32,20 +69,6 @@
     sans-serif;
   display: flex;
   position: relative;
-}
-
-/* Sidebar overlay for mobile */
-@media (max-width: 1024px) {
-  .admin-sidebar.open::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-  }
 }
 
 /* Modal Styles */
@@ -92,26 +115,25 @@
 }
 
 .confirm-modal {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: var(--admin-card-bg);
   border-radius: 16px;
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   max-width: 480px;
   width: 100%;
   overflow: hidden;
   animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  border: 2px solid var(--admin-border);
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.95);
+    scale: 0.98;
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    scale: 1;
   }
 }
 
@@ -186,113 +208,14 @@
 
 .confirm-modal-footer {
   padding: 1rem 1.5rem 1.5rem;
-  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.02) 100%);
+  background: var(--light-gray);
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
   border-top: 1px solid var(--admin-border);
 }
 
-.confirm-modal-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  border-radius: 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  font-family: inherit;
-  color: white;
-  /* Skew design */
-  transform: skewX(-8deg);
-  position: relative;
-}
-
-/* Counter-skew content */
-.confirm-modal-btn > * {
-  transform: skewX(8deg);
-  display: inline-block;
-}
-
-.confirm-modal-btn i {
-  font-size: 0.9rem;
-}
-
-.confirm-modal-btn-cancel {
-  background: var(--admin-text-light);
-  color: white;
-}
-
-.confirm-modal-btn-cancel:hover {
-  background: var(--admin-text);
-  color: white;
-  transform: skewX(-8deg) translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-}
-
-.confirm-modal-btn-confirm {
-  background: var(--admin-accent);
-  color: white;
-}
-
-.confirm-modal-btn-confirm:hover {
-  background: var(--admin-secondary);
-  color: white;
-  transform: skewX(-8deg) translateY(-1px);
-  box-shadow: 0 6px 16px rgba(68, 144, 49, 0.3);
-}
-
-.confirm-modal-btn-warning {
-  background: var(--admin-warning);
-  color: white;
-}
-
-.confirm-modal-btn-warning:hover {
-  background: #d97706;
-  color: white;
-  transform: skewX(-8deg) translateY(-1px);
-  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
-}
-
-.confirm-modal-btn-danger {
-  background: var(--admin-danger);
-  color: white;
-}
-
-.confirm-modal-btn-danger:hover {
-  background: #dc2626;
-  color: white;
-  transform: skewX(-8deg) translateY(-1px);
-  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
-}
-
-.confirm-modal-btn-success {
-  background: var(--admin-success);
-  color: white;
-}
-
-.confirm-modal-btn-success:hover {
-  background: #357825;
-  color: white;
-  transform: skewX(-8deg) translateY(-1px);
-  box-shadow: 0 6px 16px rgba(68, 144, 49, 0.4);
-}
-
-.confirm-modal-btn-info {
-  background: var(--admin-accent);
-  color: white;
-}
-
-.confirm-modal-btn-info:hover {
-  background: var(--admin-secondary);
-  color: white;
-  transform: skewX(-8deg) translateY(-1px);
-  box-shadow: 0 6px 16px rgba(196, 92, 45, 0.4);
-}
+/* Modal buttons now use only global .btn classes and variants. Remove all custom modal button overrides. */
 
 .modal-content {
   background: var(--admin-card-bg);
@@ -423,11 +346,11 @@
   left: 0;
   width: 4px;
   height: 100%;
-  background: linear-gradient(180deg, var(--admin-accent) 0%, var(--admin-secondary) 100%);
+  background: var(--admin-accent);
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
+  scale: 1.01;
   box-shadow: var(--admin-shadow-xl);
   border-color: var(--admin-accent);
 }
@@ -440,7 +363,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--admin-accent-light) 0%, #e8f5e9 100%);
+  background: var(--admin-accent-light);
   color: var(--admin-accent);
   flex-shrink: 0;
   border: 2px solid rgba(68, 144, 49, 0.1);
@@ -492,401 +415,94 @@
   font-size: 0.7rem;
 }
 
-/* Premium Sidebar - Modern Design */
-.admin-sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 260px;
-  height: 100vh;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  border-right: none;
-  box-shadow:
-    4px 0 24px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(0, 0, 0, 0.04);
-  display: flex;
-  flex-direction: column;
-  z-index: 1000;
-  transition:
-    width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow-y: auto;
-  overflow-x: hidden;
-  backdrop-filter: blur(10px);
+/* Sidebar styles moved to admin/styles/sidebar.css - see @import in admin/styles/index.css */
+
+/* Crash Report Indicator */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
-/* Collapsed sidebar state */
-.admin-sidebar.collapsed {
-  width: 80px;
-}
-
-.admin-sidebar.collapsed .sidebar-header h2 {
-  display: none;
-}
-
-.admin-sidebar.collapsed .sidebar-item span {
-  display: none;
-}
-
-.admin-sidebar.collapsed .sidebar-item {
-  justify-content: center;
-  padding: 0.875rem;
-}
-
-.admin-sidebar.collapsed .sidebar-item i {
-  margin: 0;
-}
-
-.admin-sidebar.collapsed .sidebar-logo {
-  width: 100%;
-  justify-content: center;
-}
-
-.admin-sidebar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.admin-sidebar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.admin-sidebar::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--admin-accent) 0%, var(--admin-secondary) 100%);
-  border-radius: 2px;
-  transition: background 0.3s ease;
-}
-
-.admin-sidebar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #357825 0%, #a84a1f 100%);
-}
-
-.sidebar-header {
-  padding: 1.25rem 1rem;
-  border-bottom: 1px solid var(--admin-border);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  min-height: 180px;
-}
-
-.admin-sidebar.collapsed .sidebar-header {
-  padding: 1.25rem 0.5rem;
-  justify-content: center;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.sidebar-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 0.5rem 0;
-}
-
-.sidebar-logo-img {
-  width: 150px;
-  height: 150px;
-  object-fit: contain;
-}
-
-.admin-sidebar.collapsed .sidebar-logo-img {
-  width: 80px;
-  height: 80px;
-}
-
-.sidebar-logo-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.5rem;
-  color: white;
-  width: 60px;
-  height: 60px;
-}
-
-.sidebar-toggle-btn {
-  background: transparent;
-  border: none;
-  color: var(--admin-text);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  text-align: left;
-  font-family: inherit;
-  font-weight: 500;
-}
-
-.sidebar-toggle-btn:hover {
-  background: linear-gradient(90deg, var(--admin-accent-light) 0%, rgba(68, 144, 49, 0.05) 100%);
-  color: var(--admin-accent);
-  transform: translateX(4px);
-}
-
-.sidebar-footer .sidebar-toggle-btn {
-  margin-bottom: 0;
-}
-
-.sidebar-footer .sidebar-toggle-btn i {
-  color: var(--admin-text-light);
-  transition: all 0.3s ease;
-}
-
-.sidebar-footer .sidebar-toggle-btn:hover i {
-  color: var(--admin-accent);
-  transform: scale(1.1);
-}
-
-.admin-sidebar.collapsed .sidebar-footer .sidebar-toggle-btn {
-  justify-content: center;
-  width: 100%;
-}
-
-.sidebar-close {
-  display: none;
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
-  color: white;
-  font-size: 1.25rem;
-  cursor: pointer;
-  padding: 0.5rem;
+.report-section {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
   border-radius: 8px;
-  transition: all 0.3s ease;
-  width: 32px;
-  height: 32px;
+  padding: 1rem;
+}
+
+.report-section h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: var(--admin-text);
   display: flex;
   align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 1;
-  backdrop-filter: blur(10px);
-}
-
-.admin-sidebar.collapsed .sidebar-close {
-  display: none;
-}
-
-.sidebar-close:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: rotate(90deg);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.sidebar-nav {
-  flex: 1;
-  padding: 1rem 0.75rem;
-  display: flex;
-  flex-direction: column;
   gap: 0.5rem;
 }
 
-.sidebar-item {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  padding: 0.875rem 1rem;
-  background: transparent;
-  border: none;
-  color: var(--admin-text);
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-align: left;
-  width: 100%;
-  font-family: inherit;
-  border-radius: 10px;
-  position: relative;
-  overflow: hidden;
-}
-
-.sidebar-item::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 0;
-  background: linear-gradient(180deg, var(--admin-accent) 0%, var(--admin-secondary) 100%);
-  border-radius: 0 2px 2px 0;
-  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sidebar-item i {
-  font-size: 1.1rem;
-  width: 24px;
-  text-align: center;
-  color: var(--admin-text-light);
-  flex-shrink: 0;
-  transition: all 0.3s ease;
-  position: relative;
-  z-index: 1;
-}
-
-.sidebar-item span {
-  position: relative;
-  z-index: 1;
-  transition: color 0.3s ease;
-}
-
-.sidebar-item:hover {
-  background: linear-gradient(90deg, var(--admin-accent-light) 0%, rgba(68, 144, 49, 0.05) 100%);
-  color: var(--admin-accent);
-  transform: translateX(4px);
-  box-shadow: 0 2px 8px rgba(68, 144, 49, 0.15);
-}
-
-.sidebar-item:hover::before {
-  height: 60%;
-}
-
-.sidebar-item:hover i {
-  color: var(--admin-accent);
-  transform: scale(1.1);
-}
-
-.sidebar-item.active {
-  background: linear-gradient(
-    90deg,
-    var(--admin-accent-light) 0%,
-    var(--admin-secondary-light) 100%
-  );
-  color: var(--admin-accent);
-  font-weight: 700;
-  box-shadow:
-    0 2px 12px rgba(68, 144, 49, 0.2),
-    inset 0 0 0 1px rgba(196, 92, 45, 0.15);
-}
-
-.sidebar-item.active::before {
-  height: 70%;
-}
-
-.sidebar-item.active i {
-  color: var(--admin-accent);
-  transform: scale(1.15);
-}
-
-.sidebar-footer {
-  padding: 1rem 0.75rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  margin-top: auto;
-  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.02) 100%);
+.error-details {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.admin-sidebar.collapsed .sidebar-footer {
-  padding: 1rem 0.5rem;
-  align-items: center;
-}
-
-/* Profile Section */
-.sidebar-profile {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-  margin: 0.25rem 0;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.sidebar-profile:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  transform: translateY(-1px);
-}
-
-.profile-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--admin-accent) 0%, #357825 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(68, 144, 49, 0.3);
-}
-
-.profile-avatar i {
-  font-size: 1.5rem;
-  color: #ffffff;
-}
-
-.profile-info {
-  flex: 1;
-  min-width: 0;
+.detail-row {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  overflow: hidden;
 }
 
-.profile-name {
-  font-size: 0.95rem;
-  font-weight: 600;
+.detail-row strong {
   color: var(--admin-text);
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 0.9rem;
 }
 
-.profile-role {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--admin-text-light);
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.detail-row pre {
+  background: #f5f5f5;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  overflow-x: auto;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-/* Collapsed profile state */
-.admin-sidebar.collapsed .sidebar-profile {
-  justify-content: center;
+.pending-operations-list,
+.recent-errors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.pending-op-item,
+.error-item {
+  background: #f9f9f9;
   padding: 0.75rem;
-  width: 100%;
-  margin: 0.25rem 0;
+  border-radius: 6px;
+  border-left: 3px solid var(--admin-accent);
 }
 
-.admin-sidebar.collapsed .profile-info {
-  display: none;
-}
-
-.admin-sidebar.collapsed .profile-avatar {
-  width: 40px;
-  height: 40px;
-  margin: 0 auto;
-}
-
-.sidebar-footer .logout-btn {
-  color: var(--admin-danger);
-}
-
-.sidebar-footer .logout-btn:hover {
-  background: linear-gradient(90deg, #fee2e2 0%, rgba(239, 68, 68, 0.1) 100%);
+.error-item {
   border-left-color: var(--admin-danger);
-  color: var(--admin-danger);
 }
 
-.sidebar-footer .logout-btn i {
-  color: var(--admin-danger);
+.error-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.error-message {
+  color: var(--admin-text);
+  font-size: 0.9rem;
 }
 
 /* Main Content Area - Compact */
@@ -898,7 +514,7 @@
     width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   width: calc(100% - 260px);
   padding: 0 1.5rem 1.5rem;
-  background: #f8fafc;
+  background: #ffffff;
 }
 
 .admin-main.sidebar-collapsed {
@@ -1009,7 +625,7 @@
   content: '';
   width: 4px;
   height: 24px;
-  background: linear-gradient(180deg, var(--admin-secondary) 0%, var(--admin-accent) 100%);
+  background: var(--admin-accent);
   border-radius: 2px;
 }
 
@@ -1024,29 +640,8 @@
   flex-wrap: wrap;
 }
 
-.admin-actions .btn {
-  padding: 0.625rem 1.25rem;
-  border-radius: 0;
-  font-weight: 600;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  width: fit-content;
-}
-
-.admin-actions .btn-primary {
-  background: linear-gradient(135deg, var(--admin-accent) 0%, var(--admin-secondary) 100%);
-  color: white;
-  border: none;
-}
-
-.admin-actions .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--admin-shadow-lg);
-}
+/* Action buttons in admin should use the global button system
+   Use class="btn btn-primary" or additional modifiers as needed. */
 
 .save-indicator {
   color: var(--admin-success);
@@ -1064,11 +659,9 @@
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateX(-10px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
   }
 }
 
@@ -1080,10 +673,10 @@
 }
 
 .menu-category-card {
-  border: 1px solid var(--admin-border);
+  border: 2px solid var(--admin-border);
   border-radius: 12px;
   padding: 0.875rem 1rem;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: var(--admin-card-bg);
   box-shadow: var(--admin-shadow-md);
   transition: all 0.3s ease;
   position: relative;
@@ -1101,12 +694,8 @@
   left: 0;
   width: 100%;
   height: 3px;
-  background: linear-gradient(90deg, var(--admin-secondary) 0%, var(--admin-accent) 100%);
+  background: var(--admin-accent);
   border-radius: 12px 12px 0 0;
-}
-
-.menu-category-card:nth-child(even)::before {
-  background: linear-gradient(90deg, var(--admin-accent) 0%, var(--admin-secondary) 100%);
 }
 
 .category-header {
@@ -1135,12 +724,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  background: linear-gradient(
-    135deg,
-    var(--admin-secondary-light) 0%,
-    var(--admin-accent-light) 100%
-  );
-  color: var(--admin-secondary);
+  background: var(--admin-accent-light);
+  color: var(--admin-accent);
   flex-shrink: 0;
 }
 
@@ -1223,7 +808,7 @@
 .menu-item-row:hover {
   border-color: var(--admin-accent);
   box-shadow: 0 2px 8px rgba(68, 144, 49, 0.15);
-  transform: translateY(-2px);
+  scale: 1.01;
 }
 
 .item-name-input {
@@ -1315,104 +900,8 @@
    All JSX has been migrated to the new 5-button system.
    After v1.2.0, these can be safely removed.
    
-   Migration: .btn-remove → .btn.btn-special.danger
+   Migration: legacy admin button aliases removed — use global `.btn` classes
    ========================================================= */
-
-.btn-remove {
-  background: var(--admin-danger);
-  color: white;
-  border: none;
-  padding: 0.4rem 0.75rem;
-  border-radius: 0;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  width: fit-content;
-  min-width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-  /* Skew design */
-  transform: skewX(-8deg);
-  position: relative;
-}
-
-/* Counter-skew content */
-.btn-remove > * {
-  transform: skewX(8deg);
-  display: inline-block;
-}
-
-.btn-remove:hover {
-  background: #dc2626;
-  color: white;
-  transform: skewX(-8deg) translateY(-1px);
-  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
-}
-
-.btn-remove:focus-visible {
-  outline: 3px solid var(--admin-danger);
-  outline-offset: 3px;
-  box-shadow:
-    0 0 0 2px rgba(239, 68, 68, 0.3),
-    0 6px 16px rgba(239, 68, 68, 0.3);
-}
-
-.item-preview-price {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--admin-secondary);
-}
-
-/* Migration: .btn-add-item → .btn.btn-primary */
-.btn-add-item {
-  background: var(--admin-accent);
-  color: white;
-  border: none;
-  padding: 1.25rem;
-  border-radius: 0;
-  cursor: pointer;
-  font-weight: 600;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  justify-content: center;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
-  grid-column: 1 / -1;
-  transform: skewX(-8deg);
-  position: relative;
-}
-
-/* Counter-skew content */
-.btn-add-item > * {
-  transform: skewX(8deg);
-  display: inline-block;
-}
-
-.btn-add-item:hover {
-  background: var(--admin-secondary);
-  color: white;
-  transform: skewX(-8deg) translateY(-1px);
-  box-shadow: 0 6px 16px rgba(68, 144, 49, 0.3);
-}
-
-.btn-add-item:focus-visible {
-  outline: 3px solid var(--admin-accent);
-  outline-offset: 3px;
-  box-shadow:
-    0 0 0 2px rgba(68, 144, 49, 0.3),
-    0 6px 16px rgba(68, 144, 49, 0.3);
-}
-
-.btn-add-item i {
-  font-size: 1.5rem;
-  color: white;
-}
 
 /* Premium Orders Management - Table View */
 .orders-header {
@@ -1441,7 +930,7 @@
   gap: 1.5rem;
   margin-bottom: 2rem;
   padding: 1.75rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  background: var(--admin-card-bg);
   border-radius: 12px;
   border: 2px solid var(--admin-border);
   flex-wrap: wrap;
@@ -1518,56 +1007,66 @@
 .orders-table-container {
   overflow-x: auto;
   border-radius: 12px;
-  border: 2px solid var(--admin-border);
-  background: var(--admin-card-bg);
-  box-shadow: var(--admin-shadow);
+  border: 1px solid var(--admin-glass-border);
+  background: var(--admin-glass-bg);
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   margin-top: 1rem;
 }
 
 .orders-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.95rem;
+  font-family: var(--admin-font-family);
+  font-size: var(--admin-table-font-size);
 }
 
 .orders-table thead {
-  background: linear-gradient(
-    135deg,
-    var(--admin-secondary-light) 0%,
-    var(--admin-accent-light) 100%
-  );
+  background: var(--admin-accent-light);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
   z-index: 10;
+  border-bottom: 2px solid var(--admin-accent);
 }
 
 .orders-table th {
-  padding: 1.25rem 1rem;
+  padding: var(--admin-table-header-padding);
   text-align: left;
-  font-weight: 700;
-  color: var(--admin-text);
+  font-weight: var(--admin-table-header-weight);
+  color: var(--admin-accent);
   text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 0.08em;
-  border-bottom: 2px solid var(--admin-border);
+  font-size: var(--admin-table-header-font-size);
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--admin-accent);
   white-space: nowrap;
+  background: var(--admin-accent-light);
 }
 
 .orders-table td {
-  padding: 1rem;
-  border-bottom: 1px solid var(--admin-border);
+  padding: var(--admin-table-cell-padding);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   color: var(--admin-text);
-  font-size: 0.9rem;
+  font-size: var(--admin-table-font-size);
   vertical-align: middle;
+  line-height: 1.4;
 }
 
+/* .orders-table tbody tr transition removed - no transform effects */
+
 .orders-table tbody tr {
-  transition: all 0.2s ease;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .orders-table tbody tr:hover {
-  background: linear-gradient(90deg, var(--admin-accent-light) 0%, transparent 100%);
+  background: rgba(68, 144, 49, 0.04);
   cursor: pointer;
+  box-shadow: inset 3px 0 0 var(--admin-accent);
+  /* scale: 1.01; - transform effect removed */
 }
 
 .orders-table tbody tr:last-child td {
@@ -1687,15 +1186,17 @@
 /* .btn-delete-order → use .btn-special.danger */
 
 .orders-table tfoot {
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  background: rgba(255, 255, 255, 0.5);
+  border-top: 2px solid var(--admin-border);
 }
 
 .table-footer,
 .table-footer-amount {
-  padding: 1.25rem 1rem;
+  padding: 0.75rem;
   font-weight: 700;
   color: var(--admin-text);
   text-align: right;
+  font-size: 0.875rem;
 }
 
 .table-footer {
@@ -1704,7 +1205,7 @@
 
 .table-footer-amount {
   color: var(--admin-accent);
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 800;
 }
 
@@ -1757,13 +1258,9 @@
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 1.25rem;
-  background: linear-gradient(
-    135deg,
-    var(--admin-secondary-light) 0%,
-    var(--admin-accent-light) 100%
-  );
+  background: var(--admin-accent-light);
   border-radius: 8px;
-  border: 2px solid var(--admin-secondary);
+  border: 2px solid var(--admin-accent);
   font-weight: 600;
   color: var(--admin-text);
   font-size: 0.9rem;
@@ -1784,7 +1281,7 @@
   border: 2px solid var(--admin-border);
   border-radius: 12px;
   padding: 1.25rem;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: var(--admin-card-bg);
   box-shadow: var(--admin-shadow-md);
   transition: all 0.3s ease;
 }
@@ -1792,7 +1289,7 @@
 .user-card:hover {
   box-shadow: var(--admin-shadow-lg);
   border-color: var(--admin-success);
-  transform: translateY(-2px);
+  scale: 1.01;
 }
 
 .user-info h3 {
@@ -1826,7 +1323,7 @@
 .user-card.selected {
   border-color: var(--admin-secondary);
   box-shadow: var(--admin-shadow-xl);
-  background: linear-gradient(135deg, #ffffff 0%, var(--admin-secondary-light) 100%);
+  background: var(--admin-secondary-light);
 }
 
 .user-info {
@@ -1846,7 +1343,7 @@
 }
 
 .user-avatar-initial {
-  background: linear-gradient(135deg, var(--admin-accent) 0%, #357825 100%);
+  background: var(--admin-accent);
   color: white;
   display: flex;
   align-items: center;
@@ -2018,7 +1515,7 @@
 }
 
 .analytics-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: var(--admin-card-bg);
   padding: 1.25rem;
   border-radius: 16px;
   border: 2px solid var(--admin-border);
@@ -2038,15 +1535,11 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--admin-secondary) 0%, var(--admin-accent) 100%);
-}
-
-.analytics-card:nth-child(even)::before {
-  background: linear-gradient(90deg, var(--admin-accent) 0%, var(--admin-secondary) 100%);
+  background: var(--admin-accent);
 }
 
 .analytics-card:hover {
-  transform: translateY(-4px);
+  scale: 1.01;
   box-shadow: var(--admin-shadow-xl);
   border-color: var(--admin-accent);
 }
@@ -2063,31 +1556,23 @@
 }
 
 .analytics-icon.revenue {
-  background: linear-gradient(135deg, var(--admin-secondary-light) 0%, #ffe8e0 100%);
+  background: var(--admin-secondary-light);
   color: var(--admin-secondary);
 }
 
 .analytics-icon.orders {
-  background: linear-gradient(135deg, var(--admin-accent-light) 0%, #e8f5e9 100%);
+  background: var(--admin-accent-light);
   color: var(--admin-accent);
 }
 
 .analytics-icon.average {
-  background: linear-gradient(
-    135deg,
-    var(--admin-accent-light) 0%,
-    var(--admin-secondary-light) 100%
-  );
+  background: var(--admin-accent-light);
   color: var(--admin-accent);
 }
 
 .analytics-icon.completed {
-  background: linear-gradient(
-    135deg,
-    var(--admin-secondary-light) 0%,
-    var(--admin-accent-light) 100%
-  );
-  color: var(--admin-secondary);
+  background: var(--admin-accent-light);
+  color: var(--admin-accent);
 }
 
 .analytics-info {
@@ -2207,7 +1692,7 @@
 .revenue-bar {
   width: 100%;
   max-width: 60px;
-  background: linear-gradient(180deg, var(--admin-accent) 0%, #357825 100%);
+  background: var(--admin-accent);
   border-radius: 8px 8px 0 0;
   position: relative;
   transition: all 0.3s ease;
@@ -2241,7 +1726,7 @@
 }
 
 .revenue-bar {
-  background: linear-gradient(180deg, var(--admin-secondary) 0%, var(--admin-accent) 100%);
+  background: var(--admin-secondary);
 }
 
 .top-items-list {
@@ -2262,7 +1747,7 @@
 }
 
 .top-item-card:hover {
-  transform: translateY(-2px);
+  scale: 1.01;
   box-shadow: var(--admin-shadow-md);
   border-color: var(--admin-accent);
 }
@@ -2276,22 +1761,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(
-    135deg,
-    var(--admin-secondary-light) 0%,
-    var(--admin-accent-light) 100%
-  );
+  background: var(--admin-secondary-light);
   border-radius: 8px;
   border: 2px solid rgba(196, 92, 45, 0.2);
 }
 
 .item-rank:nth-child(even) {
   color: var(--admin-accent);
-  background: linear-gradient(
-    135deg,
-    var(--admin-accent-light) 0%,
-    var(--admin-secondary-light) 100%
-  );
+  background: var(--admin-accent-light);
   border-color: rgba(68, 144, 49, 0.2);
 }
 
@@ -2349,7 +1826,7 @@
 }
 
 .analytics-section {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: var(--admin-card-bg);
   padding: 1.5rem;
   border-radius: 12px;
   border: 2px solid var(--admin-border);
@@ -2417,11 +1894,7 @@
   height: 100%;
   border-radius: 4px;
   transition: width 0.5s ease;
-  background: linear-gradient(90deg, var(--admin-secondary) 0%, var(--admin-accent) 100%);
-}
-
-.status-item:nth-child(even) .status-bar-fill {
-  background: linear-gradient(90deg, var(--admin-accent) 0%, var(--admin-secondary) 100%);
+  background: var(--admin-accent);
 }
 
 .status-percentage {
@@ -2444,7 +1917,7 @@
 }
 
 .analytics-table thead {
-  background: linear-gradient(135deg, var(--admin-accent-light) 0%, #e8f5e9 100%);
+  background: var(--admin-accent-light);
 }
 
 .analytics-table th {
@@ -2464,12 +1937,11 @@
   color: var(--admin-text);
 }
 
-.analytics-table tbody tr {
-  transition: all 0.2s ease;
-}
+/* .analytics-table tbody tr transition removed - no transform effects */
 
 .analytics-table tbody tr:hover {
   background: var(--admin-accent-light);
+  /* transform effects removed */
 }
 
 .analytics-table tbody tr:last-child td {
@@ -2562,7 +2034,7 @@
   border: 2px solid var(--admin-border);
   border-radius: 16px;
   padding: 2rem;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: var(--admin-card-bg);
   box-shadow: var(--admin-shadow-md);
   transition: all 0.3s ease;
 }
@@ -2632,59 +2104,6 @@
   accent-color: var(--admin-success);
 }
 
-.btn-small {
-  padding: 0.625rem 1.25rem;
-  border-radius: 0;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  background: var(--admin-accent);
-  color: white;
-  width: fit-content;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  /* Skew design */
-  transform: skewX(-8deg);
-  position: relative;
-}
-
-/* Counter-skew content */
-.btn-small > * {
-  transform: skewX(8deg);
-  display: inline-block;
-}
-
-.btn-small:hover:not(:disabled) {
-  background: var(--admin-secondary);
-  color: white;
-  transform: skewX(-8deg) translateY(-1px);
-  box-shadow: 0 6px 16px rgba(68, 144, 49, 0.3);
-}
-
-.btn-small:focus-visible {
-  outline: 3px solid var(--admin-accent);
-  outline-offset: 3px;
-  box-shadow:
-    0 0 0 2px rgba(68, 144, 49, 0.3),
-    0 6px 16px rgba(68, 144, 49, 0.3);
-}
-
-.btn-small.btn-danger {
-  background: var(--admin-danger);
-  color: white;
-}
-
-.btn-small.btn-danger:hover:not(:disabled) {
-  background: #dc2626;
-  color: white;
-  transform: skewX(-8deg) translateY(-1px);
-  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
-}
-
 .no-data {
   text-align: center;
   padding: 4rem 2rem;
@@ -2708,7 +2127,7 @@
 }
 
 .dashboard-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: var(--admin-card-bg);
   padding: 1.25rem;
   border-radius: 12px;
   border: 2px solid var(--admin-border);
@@ -2718,7 +2137,7 @@
 
 .dashboard-card:hover {
   box-shadow: var(--admin-shadow-lg);
-  transform: translateY(-2px);
+  scale: 1.01;
 }
 
 .dashboard-card h3 {
@@ -2887,11 +2306,7 @@
 }
 
 .newsletter-table thead {
-  background: linear-gradient(
-    135deg,
-    var(--admin-secondary-light) 0%,
-    var(--admin-accent-light) 100%
-  );
+  background: var(--admin-accent-light);
 }
 
 .newsletter-table th {
@@ -2912,12 +2327,11 @@
   border-bottom: 1px solid var(--admin-border);
 }
 
-.newsletter-table tbody tr {
-  transition: all 0.2s ease;
-}
+/* .newsletter-table tbody tr transition removed - no transform effects */
 
 .newsletter-table tbody tr:hover {
   background: var(--admin-accent-light);
+  /* transform effects removed */
 }
 
 .newsletter-table tbody tr:last-child td {
@@ -3038,11 +2452,11 @@
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    scale: 0.98;
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    scale: 1;
   }
 }
 
@@ -3108,82 +2522,11 @@ select:focus {
    After v1.2.0, these can be safely removed.
    ========================================================= */
 
-/* Legacy aliases - Map old classes to new system via selectors */
-/* Migration: .btn-view-details → .btn.btn-secondary */
-.btn-view-details {
-  background-color: var(--admin-secondary);
-  color: white;
-}
-
-.btn-view-details:hover:not(:disabled) {
-  background-color: var(--admin-accent);
-}
-
-/* Migration: .btn-edit-order → .btn.btn-secondary */
-.btn-edit-order {
-  background-color: var(--admin-secondary);
-  color: white;
-}
-
-.btn-edit-order:hover:not(:disabled) {
-  background-color: var(--admin-accent);
-}
-
-/* Migration: .btn-add-item → .btn.btn-primary */
-.btn-add-item {
-  background-color: var(--admin-accent);
-  color: white;
-}
-
-.btn-add-item:hover:not(:disabled) {
-  background-color: var(--admin-secondary);
-}
-
-/* Migration: Legacy danger classes → .btn.btn-special.danger */
-.admin-dashboard .btn-danger,
-.btn-delete-order,
-.btn-remove,
-.btn-small.btn-danger {
-  --btn-bg: var(--admin-danger);
-  --btn-bg-hover: #dc2626;
-  background-color: var(--btn-bg);
-  color: white;
-}
-
-.admin-dashboard .btn-danger:hover:not(:disabled),
-.btn-delete-order:hover:not(:disabled),
-.btn-remove:hover:not(:disabled),
-.btn-small.btn-danger:hover:not(:disabled) {
-  background-color: var(--btn-bg-hover);
-}
-
-/* Ensure all buttons use skew design */
-.admin-dashboard button.btn:not(.btn-qty):not(.btn-icon),
-.admin-dashboard .btn:not(.btn-qty):not(.btn-icon),
-.admin-actions .btn,
-.btn-small,
-.btn-remove,
-.btn-add-item,
-.btn-view-details,
-.btn-edit-order,
-.btn-delete-order {
-  transform: skewX(-8deg);
-  border-radius: 0;
-  border: none;
-}
-
-.admin-dashboard button.btn:not(.btn-qty):not(.btn-icon) > *,
-.admin-dashboard .btn:not(.btn-qty):not(.btn-icon) > *,
-.admin-actions .btn > *,
-.btn-small > *,
-.btn-remove > *,
-.btn-add-item > *,
-.btn-view-details > *,
-.btn-edit-order > *,
-.btn-delete-order > * {
-  transform: skewX(8deg);
-  display: inline-block;
-}
+/* Legacy button aliases removed here. Use the global button system
+   (`btn`, `btn-primary`, `btn-secondary`, `btn-ghost`, `btn-public`,
+   `btn-special`, and size modifiers) in JSX instead of legacy selectors.
+   These legacy selectors were deprecated and removed to avoid
+   component-scoped overrides. */
 
 /* Admin Notification System */
 .admin-notification-container {
@@ -3198,11 +2541,11 @@ select:focus {
 }
 
 .admin-notification {
-  background: linear-gradient(135deg, var(--admin-card-bg) 0%, #ffffff 100%);
+  background: var(--admin-card-bg);
   border-radius: 12px;
   padding: 1rem 1.25rem;
   box-shadow: var(--admin-shadow-xl);
-  border: 1px solid var(--admin-border);
+  border: 2px solid var(--admin-border);
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -3239,11 +2582,9 @@ select:focus {
 
 @keyframes slideInRight {
   from {
-    transform: translateX(100%);
     opacity: 0;
   }
   to {
-    transform: translateX(0);
     opacity: 1;
   }
 }
@@ -3308,10 +2649,10 @@ select:focus {
 }
 
 .offer-card-admin {
-  border: 1px solid var(--admin-border);
+  border: 2px solid var(--admin-border);
   border-radius: 12px;
   padding: 1.5rem;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: var(--admin-card-bg);
   box-shadow: var(--admin-shadow-md);
   transition: all 0.3s ease;
   position: relative;
@@ -3343,7 +2684,7 @@ select:focus {
 }
 
 .offer-discount-badge {
-  background: linear-gradient(135deg, var(--admin-accent) 0%, var(--admin-secondary) 100%);
+  background: var(--admin-accent);
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 6px;
@@ -3552,7 +2893,7 @@ select:focus {
 
 .summary-table th {
   background: var(--primary-color);
-  color: white;
+  /* color: white; */
   padding: 0.75rem;
   text-align: center;
   font-weight: 600;
@@ -3758,4 +3099,349 @@ select:focus {
     align-items: flex-start;
     gap: 0.5rem;
   }
+}
+
+/* Excel Viewer Styles */
+.excel-viewer-container {
+  margin-top: 2rem;
+}
+
+.excel-file-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: var(--admin-card-bg);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--admin-shadow);
+}
+
+.excel-file-info h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--admin-text);
+}
+
+.excel-file-info h3 i {
+  color: var(--admin-success);
+}
+
+.excel-file-info span {
+  color: var(--admin-text-light);
+  font-size: 0.9rem;
+}
+
+.excel-sheet-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  border-bottom: 2px solid var(--admin-border);
+  padding-bottom: 0.5rem;
+}
+
+.excel-sheet-tab {
+  padding: 0.75rem 1.5rem;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--admin-text-light);
+  transition: all 0.2s;
+  border-bottom: none;
+}
+
+.excel-sheet-tab:hover {
+  background: var(--admin-accent-light);
+  color: var(--admin-accent);
+}
+
+.excel-sheet-tab.active {
+  background: var(--admin-accent);
+  color: white;
+  border-color: var(--admin-accent);
+  position: relative;
+}
+
+.excel-sheet-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--admin-accent);
+}
+
+.excel-sheet-content {
+  background: var(--admin-card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: var(--admin-shadow);
+}
+
+.excel-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.excel-sheet-header h4 {
+  margin: 0;
+  color: var(--admin-text);
+}
+
+.excel-sheet-header span {
+  color: var(--admin-text-light);
+  font-size: 0.9rem;
+}
+
+.excel-table-container {
+  overflow-x: auto;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.excel-data-table {
+  width: 100%;
+  min-width: 100%;
+}
+
+.excel-data-table th {
+  background: var(--admin-accent-light);
+  color: var(--admin-accent);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.excel-number-cell {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+}
+
+.excel-text-cell {
+  text-align: left;
+}
+
+.excel-viewer-empty {
+  margin-top: 4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.excel-viewer-empty .empty-state {
+  text-align: center;
+  padding: 3rem;
+  background: var(--admin-card-bg);
+  border-radius: 12px;
+  box-shadow: var(--admin-shadow-lg);
+  max-width: 500px;
+}
+
+.excel-viewer-empty .empty-state h3 {
+  margin: 1rem 0 0.5rem;
+  color: var(--admin-text);
+}
+
+.excel-viewer-empty .empty-state p {
+  color: var(--admin-text-light);
+  margin-bottom: 1rem;
+}
+
+.excel-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.excel-row-number {
+  text-align: center;
+  font-weight: 600;
+  color: var(--admin-text-light);
+  background: var(--admin-accent-light);
+}
+
+.excel-row-actions {
+  text-align: center;
+}
+
+.excel-date-cell {
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  color: var(--admin-accent);
+}
+
+/* Debug Warning Box */
+.admin-debug-warning {
+  margin-bottom: 1rem;
+  background: var(--warning-orange-light);
+  border: 1px solid var(--warning-orange);
+  padding: 8px;
+  border-radius: 6px;
+  color: var(--orange-dark);
+}
+
+.admin-debug-list {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.admin-debug-filter-text {
+  font-size: 0.95em;
+}
+
+/* Address Suggestions Dropdown */
+.admin-address-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: var(--admin-shadow-md);
+}
+
+.admin-address-suggestion-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color 0.2s ease;
+}
+
+.admin-address-suggestion-item:hover {
+  background: var(--light-gray);
+}
+
+.admin-address-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+/* Auto-calculated Fields */
+.admin-auto-fields-row {
+  opacity: 0.7;
+  font-size: 0.9em;
+}
+
+.admin-readonly-input {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  cursor: not-allowed;
+  color: var(--admin-text-light);
+  opacity: 0.9;
+}
+
+.excel-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--admin-border);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.excel-sheet-header > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* Admin External Links */
+.admin-external-link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Admin Empty States */
+.admin-empty-state {
+  padding: 3rem;
+  text-align: center;
+}
+
+/* Confirm Modal Icon Styles */
+.confirm-modal-icon-wrapper.confirm-modal-icon-danger {
+  background: color-mix(in srgb, var(--admin-danger) 15%, transparent);
+  border-color: color-mix(in srgb, var(--admin-danger) 30%, transparent);
+}
+
+.confirm-modal-icon-wrapper.confirm-modal-icon-danger i {
+  color: var(--admin-danger);
+}
+
+.confirm-modal-icon-wrapper.confirm-modal-icon-success {
+  background: color-mix(in srgb, var(--admin-success) 15%, transparent);
+  border-color: color-mix(in srgb, var(--admin-success) 30%, transparent);
+}
+
+.confirm-modal-icon-wrapper.confirm-modal-icon-success i {
+  color: var(--admin-success);
+}
+
+.confirm-modal-icon-wrapper.confirm-modal-icon-info {
+  background: color-mix(in srgb, var(--admin-accent) 15%, transparent);
+  border-color: color-mix(in srgb, var(--admin-accent) 30%, transparent);
+}
+
+.confirm-modal-icon-wrapper.confirm-modal-icon-info i {
+  color: var(--admin-accent);
+}
+
+.confirm-modal-icon-wrapper.confirm-modal-icon-warning {
+  background: color-mix(in srgb, var(--admin-warning) 15%, transparent);
+  border-color: color-mix(in srgb, var(--admin-warning) 30%, transparent);
+}
+
+.confirm-modal-icon-wrapper.confirm-modal-icon-warning i {
+  color: var(--admin-warning);
+}
+
+/* Confirm Modal Button Styles */
+.confirm-modal-btn-cancel {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  color: var(--admin-secondary) !important;
+  border-color: var(--admin-secondary) !important;
+  box-shadow: none !important;
+}
+
+.confirm-modal-btn-cancel:hover {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  color: var(--admin-secondary) !important;
+  border-color: var(--admin-secondary) !important;
+}
+
+.confirm-modal-btn-confirm.confirm-modal-btn-danger {
+  background-color: var(--admin-success) !important;
+  color: #ffffff !important;
+  border-color: var(--admin-success) !important;
+}
+
+.confirm-modal-btn-confirm.confirm-modal-btn-danger:hover {
+  background-color: #3a7d2a !important;
+  border-color: #3a7d2a !important;
 }

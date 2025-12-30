@@ -2,13 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getOffersDataSync } from '../lib/offersData';
-import { getCurrentUser, isUserLoggedIn } from '../lib/userAuth';
+import './Header.css';
 import LanguageSwitcher from './LanguageSwitcher';
 
 const Header = ({ onOrderClick }) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [location, setLocation] = useState('Panchsheel Greens');
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
@@ -57,10 +56,6 @@ const Header = ({ onOrderClick }) => {
   };
 
   useEffect(() => {
-    if (isUserLoggedIn()) {
-      setUser(getCurrentUser());
-    }
-
     // Check if there are active offers
     const checkOffers = () => {
       const offers = getOffersDataSync();
@@ -168,13 +163,6 @@ const Header = ({ onOrderClick }) => {
     return R * c;
   };
 
-  const handleAccountClick = () => {
-    if (isUserLoggedIn()) {
-      navigate('/account');
-    } else {
-      navigate('/login');
-    }
-  };
 
   return (
     <header>
@@ -232,28 +220,9 @@ const Header = ({ onOrderClick }) => {
           <a href='/#about' onClick={(e) => handleHashLink(e, '#about')}>
             {t('common.about')}
           </a>
-          <Link to='/support' onClick={handleNavClick}>
-            {t('header.support')}
-          </Link>
           <Link to='/faq' onClick={handleNavClick}>
             {t('header.faq')}
           </Link>
-          <div
-            className='nav-icon account-icon'
-            onClick={handleAccountClick}
-            title={user ? user.name : 'Login'}
-            role='button'
-            tabIndex={0}
-            aria-label={user ? `Account: ${user.name}` : 'Login to account'}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                handleAccountClick();
-              }
-            }}
-          >
-            <i className='fa-solid fa-user'></i>
-          </div>
           <div
             className='nav-icon cart-icon'
             onClick={onOrderClick}
@@ -266,9 +235,7 @@ const Header = ({ onOrderClick }) => {
                 onOrderClick();
               }
             }}
-          >
-            <i className='fa-solid fa-shopping-bag'></i>
-          </div>
+          ></div>
           <button
             className={`menu-btn ${isMenuOpen ? 'open' : ''}`}
             onClick={toggleMenu}
@@ -299,9 +266,6 @@ const Header = ({ onOrderClick }) => {
             {t('header.offers') || 'Offers'}
           </Link>
         )}
-        <Link to='/support' onClick={handleNavClick}>
-          {t('header.support')}
-        </Link>
         <Link to='/faq' onClick={handleNavClick}>
           {t('header.faq')}
         </Link>

@@ -3,17 +3,18 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "node Raavito/HomieBites/server.js",
-    "dev": "node --watch Raavito/HomieBites/server.js",
-    "seed": "node Raavito/HomieBites/scripts/seed.js",
-    "verify": "node Raavito/HomieBites/scripts/verify.js"
+    "start": "node HomieBites/server.js",
+    "dev": "node --watch HomieBites/server.js",
+    "seed": "node HomieBites/scripts/seed.js",
+    "verify": "node HomieBites/scripts/verify.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^8.20.2",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.3"
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.20.2",
+    "multer": "^2.0.2"
   }
 }

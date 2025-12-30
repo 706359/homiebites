@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import './FAQ.css';
 
 const FAQ = () => {
   const { t } = useLanguage();

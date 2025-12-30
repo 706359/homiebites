@@ -1,11 +1,10 @@
-'use client';
-
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getOffersData } from '../../lib/offersData';
+import '../../pages/OffersPage.css';
 import '../../styles/globals.css';
 
 export default function OffersPage() {
@@ -17,7 +16,24 @@ export default function OffersPage() {
     const loadOffers = async () => {
       try {
         const data = await getOffersData();
-        setOffers(data);
+        // Filter out invalid/test offers - only show offers with proper title and content
+        const validOffers = data.filter((offer) => {
+          // Must have a title (not empty, not "test", not "Saved via test")
+          const hasValidTitle = 
+            offer.title && 
+            offer.title.trim() !== '' && 
+            !offer.title.toLowerCase().includes('test') &&
+            !offer.title.toLowerCase().includes('saved via');
+          
+          // Must be active
+          const isActive = offer.isActive !== false;
+          
+          // Must not be expired (if endDate exists)
+          const notExpired = !offer.endDate || new Date(offer.endDate) >= new Date();
+          
+          return hasValidTitle && isActive && notExpired;
+        });
+        setOffers(validOffers);
       } catch (error) {
         console.error('Error loading offers:', error);
         setOffers([]);
@@ -54,11 +70,23 @@ export default function OffersPage() {
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    if (isNaN(date)) return String(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
   };
 
   if (isLoading) {
@@ -67,7 +95,7 @@ export default function OffersPage() {
         <Header onOrderClick={openOrderModal} />
         <div className='offers-page'>
           <div className='offers-container'>
-            <div style={{ padding: '4rem', textAlign: 'center' }}>
+            <div className='offers-loading-state'>
               <p>{t('common.loading') || 'Loading...'}</p>
             </div>
           </div>
@@ -84,18 +112,45 @@ export default function OffersPage() {
         <div className='offers-page'>
           <div className='offers-container'>
             <h1 className='offers-title'>{t('offers.title') || 'Special Offers & Discounts'}</h1>
-            <div className='no-offers-message'>
-              <i
-                className='fa-solid fa-tag'
-                style={{ fontSize: '3rem', color: 'var(--gray)', marginBottom: '1rem' }}
-              ></i>
-              <p>
+            <div className='no-offers-message' style={{
+              padding: '4rem 2rem',
+              textAlign: 'center',
+              background: 'var(--light-gray, #f5f5f5)',
+              borderRadius: '12px',
+              marginTop: '2rem',
+              border: '2px dashed var(--gray-light, #ddd)'
+            }}>
+              <i className='fa-solid fa-tag' style={{
+                fontSize: '4rem',
+                color: 'var(--gray, #999)',
+                marginBottom: '1.5rem',
+                display: 'block'
+              }}></i>
+              <h2 style={{
+                fontSize: '1.5rem',
+                color: 'var(--text-primary, #333)',
+                marginBottom: '1rem',
+                fontWeight: '600'
+              }}>
+                {t('offers.noOffersTitle') || 'No Active Offers'}
+              </h2>
+              <p style={{
+                fontSize: '1.1rem',
+                color: 'var(--text-secondary, #666)',
+                marginBottom: '2rem',
+                lineHeight: '1.6'
+              }}>
                 {t('offers.noOffers') ||
-                  'No active offers at the moment. Check back soon for exciting deals!'}
+                  'We currently don\'t have any active offers. Check back soon for exciting deals and special discounts!'}
               </p>
-              <Link href='/menu' className='btn btn-primary' style={{ marginTop: '2rem' }}>
-                <i className='fa-solid fa-utensils'></i> View Menu
-              </Link>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <Link to='/menu' className='btn btn-primary'>
+                  <i className='fa-solid fa-utensils'></i> View Menu
+                </Link>
+                <Link to='/' className='btn btn-secondary'>
+                  <i className='fa-solid fa-home'></i> Go Home
+                </Link>
+              </div>
             </div>
           </div>
         </div>

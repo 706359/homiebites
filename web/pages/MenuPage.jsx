@@ -6,8 +6,8 @@ import Header from '../components/Header';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { getMenuData, getMenuDataSync } from '../lib/menuData';
-import { getCurrentUser, isUserLoggedIn, saveAddress, saveOrder } from '../lib/userAuth';
 import '../styles/chatbot.css';
+import './MenuPage.css';
 
 export default function MenuPage() {
   const { t } = useLanguage();
@@ -16,114 +16,11 @@ export default function MenuPage() {
   const [menuData, setMenuData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [cart, setCart] = useState({});
-  const [user, setUser] = useState(null);
-  const [useGuestCheckout, setUseGuestCheckout] = useState(false);
-  const [selectedAddressId, setSelectedAddressId] = useState(null);
-  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     phone: '',
     address: '',
-    landmark: '',
-    pincode: '',
   });
-
-  useEffect(() => {
-    if (isUserLoggedIn()) {
-      const currentUser = getCurrentUser();
-      setUser(currentUser);
-      if (currentUser.addresses && currentUser.addresses.length > 0) {
-        const defaultAddress =
-          currentUser.addresses.find((a) => a.isDefault) || currentUser.addresses[0];
-        setSelectedAddressId(defaultAddress.id);
-        setUseGuestCheckout(false);
-        setCustomerInfo({
-          name: currentUser.name,
-          phone: currentUser.phone,
-          address: `${defaultAddress.address}${defaultAddress.landmark ? ', ' + defaultAddress.landmark : ''}${defaultAddress.pincode ? ' - ' + defaultAddress.pincode : ''}`,
-          landmark: defaultAddress.landmark || '',
-          pincode: defaultAddress.pincode || '',
-        });
-      } else {
-        setUseGuestCheckout(true);
-        setCustomerInfo({
-          name: currentUser.name,
-          phone: currentUser.phone,
-          address: '',
-          landmark: '',
-          pincode: '',
-        });
-        // Auto-fetch location for logged-in users without saved addresses
-        fetchCurrentLocation();
-      }
-    }
-  }, []);
-
-  const fetchCurrentLocation = async () => {
-    if (!navigator.geolocation) {
-      info(t('menu.locationNotSupported') || 'Location services not available');
-      return;
-    }
-
-    setIsFetchingLocation(true);
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-
-          // Use reverse geocoding to get full address details
-          const response = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-
-            // Build address string
-            const addressParts = [];
-            if (data.locality) addressParts.push(data.locality);
-            if (data.principalSubdivision) addressParts.push(data.principalSubdivision);
-            if (data.city) addressParts.push(data.city);
-
-            const streetAddress = data.street || data.locality || '';
-            const pincode = data.postcode || '';
-
-            const fullAddress = addressParts.join(', ') || streetAddress || 'Your Location';
-
-            setCustomerInfo((prev) => ({
-              ...prev,
-              address: fullAddress,
-              landmark: streetAddress,
-              pincode: pincode,
-            }));
-
-            success(t('menu.locationFetched') || 'Location fetched successfully');
-          } else {
-            throw new Error('Failed to fetch address');
-          }
-        } catch (error) {
-          console.error('Error fetching location:', error);
-          error(t('menu.locationFetchError') || 'Failed to fetch location. Please enter manually.');
-        } finally {
-          setIsFetchingLocation(false);
-        }
-      },
-      (err) => {
-        console.error('Geolocation error:', err);
-        setIsFetchingLocation(false);
-        error(
-          t('menu.locationPermissionDenied') ||
-            'Location permission denied. Please enter address manually.'
-        );
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      }
-    );
-  };
 
   useEffect(() => {
     const loadMenu = async () => {
@@ -251,32 +148,17 @@ export default function MenuPage() {
       price: item.price,
     }));
 
-    // Build full address string
-    let fullAddress = customerInfo.address;
-    if (customerInfo.landmark) {
-      fullAddress += `, ${customerInfo.landmark}`;
-    }
-    if (customerInfo.pincode) {
-      fullAddress += ` - ${customerInfo.pincode}`;
-    }
-
     const orderData = {
       name: customerInfo.name,
       phone: customerInfo.phone,
-      address: fullAddress,
-      landmark: customerInfo.landmark,
-      pincode: customerInfo.pincode,
+      address: customerInfo.address,
       items: items,
       total: getTotal(),
       subtotal: getSubtotal(),
       deliveryCharge: getDeliveryCharge(),
     };
 
-    // Save order (async - API first, localStorage fallback)
-    saveOrder(orderData).catch((err) => {
-      console.error('Error saving order:', err);
-      // Order still sent via WhatsApp, so continue
-    });
+    // Order saved directly to WhatsApp
 
     const itemsText = items
       .map((item) => `${item.name} x${item.quantity} (₹${item.price * item.quantity})`)
@@ -287,23 +169,12 @@ export default function MenuPage() {
         ? '✅ *Free Delivery*'
         : `🚚 *Delivery Charge: ₹${getDeliveryCharge()}*`;
 
-    let addressText = `Address: ${fullAddress}`;
-    if (customerInfo.landmark || customerInfo.pincode) {
-      addressText += '\n';
-      if (customerInfo.landmark) {
-        addressText += `Landmark: ${customerInfo.landmark}\n`;
-      }
-      if (customerInfo.pincode) {
-        addressText += `Pincode: ${customerInfo.pincode}`;
-      }
-    }
-
     const message = `🍽️ *Order from HomieBites*
 
 👤 *Customer Details:*
 Name: ${customerInfo.name}
 Phone: ${customerInfo.phone}
-${addressText}
+Address: ${customerInfo.address}
 
 📋 *Order Items:*
 ${itemsText}
@@ -318,9 +189,7 @@ Please confirm this order. Thank you!`;
     window.open(`https://wa.me/919958983578?text=${encodedMessage}`, '_blank', 'noopener');
 
     setCart({});
-    if (!user) {
-      setCustomerInfo({ name: '', phone: '', address: '', landmark: '', pincode: '' });
-    }
+    setCustomerInfo({ name: '', phone: '', address: '' });
 
     success(t('order.orderPlaced') || 'Order sent to WhatsApp! Our team will confirm shortly.');
   };
@@ -342,11 +211,11 @@ Please confirm this order. Thank you!`;
 
         <div className='menu-content'>
           {isLoading ? (
-            <div style={{ padding: '4rem', textAlign: 'center' }}>
+            <div className='menu-loading-state'>
               <p>{t('common.loading')}</p>
             </div>
           ) : menuData.length === 0 ? (
-            <div style={{ padding: '4rem', textAlign: 'center' }}>
+            <div className='menu-empty-state'>
               <p>{t('menu.noItems')}</p>
             </div>
           ) : (
@@ -422,7 +291,6 @@ Please confirm this order. Thank you!`;
               {Object.keys(cart).length === 0 ? (
                 <div className='cart-empty-state'>
                   <div className='cart-empty-icon'>
-                    <i className='fa-solid fa-shopping-bag'></i>
                   </div>
                   <h4 className='cart-empty-title'>
                     {t('menu.emptyCartTitle') || 'Your cart is empty'}
@@ -480,177 +348,33 @@ Please confirm this order. Thank you!`;
                     </div>
                   </div>
 
-                  {user && user.addresses && user.addresses.length > 0 && !useGuestCheckout ? (
-                    <div className='address-selection'>
-                      <div className='address-selection-header'>
-                        <h4>{t('menu.selectAddress')}</h4>
-                        <button
-                          className='btn btn-ghost btn-small'
-                          onClick={() => {
-                            setUseGuestCheckout(true);
-                            fetchCurrentLocation();
-                          }}
-                        >
-                          {t('menu.addNewAddress')}
-                        </button>
-                      </div>
-                      <div className='addresses-list'>
-                        {user.addresses.map((addr) => (
-                          <div
-                            key={addr.id}
-                            className={`address-option ${selectedAddressId === addr.id ? 'selected' : ''}`}
-                            onClick={() => {
-                              setSelectedAddressId(addr.id);
-                              setUseGuestCheckout(false);
-                              setCustomerInfo({
-                                name: user.name,
-                                phone: user.phone,
-                                address: `${addr.address}${addr.landmark ? ', ' + addr.landmark : ''}${addr.pincode ? ' - ' + addr.pincode : ''}`,
-                                landmark: addr.landmark || '',
-                                pincode: addr.pincode || '',
-                              });
-                            }}
-                          >
-                            {addr.isDefault && <span className='default-badge'>Default</span>}
-                            <p>
-                              <strong>{addr.name}</strong> - {addr.phone}
-                            </p>
-                            <p>{addr.address}</p>
-                            {addr.landmark && (
-                              <p>
-                                {t('account.landmark')}: {addr.landmark}
-                              </p>
-                            )}
-                            {addr.pincode && (
-                              <p>
-                                {t('account.pincode')}: {addr.pincode}
-                              </p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className='customer-form'>
-                      {user && user.addresses && user.addresses.length > 0 && (
-                        <div className='guest-checkout-notice'>
-                          <p>{t('menu.addNewAddress')}</p>
-                          <button
-                            className='btn btn-ghost btn-small'
-                            onClick={() => {
-                              setUseGuestCheckout(false);
-                              const defaultAddress =
-                                user.addresses.find((a) => a.isDefault) || user.addresses[0];
-                              setSelectedAddressId(defaultAddress.id);
-                              setCustomerInfo({
-                                name: user.name,
-                                phone: user.phone,
-                                address: `${defaultAddress.address}${defaultAddress.landmark ? ', ' + defaultAddress.landmark : ''}${defaultAddress.pincode ? ' - ' + defaultAddress.pincode : ''}`,
-                                landmark: defaultAddress.landmark || '',
-                                pincode: defaultAddress.pincode || '',
-                              });
-                            }}
-                          >
-                            {t('menu.selectSavedAddress') || 'Select Saved Address'}
-                          </button>
-                        </div>
-                      )}
-                      {user && (
-                        <div className='location-fetch-section'>
-                          <button
-                            type='button'
-                            className='btn btn-ghost btn-small'
-                            onClick={fetchCurrentLocation}
-                            disabled={isFetchingLocation}
-                          >
-                            <i className='fa-solid fa-location-dot'></i>{' '}
-                            {isFetchingLocation
-                              ? t('menu.fetchingLocation') || 'Fetching...'
-                              : t('menu.useCurrentLocation') || 'Use Current Location'}
-                          </button>
-                        </div>
-                      )}
-                      <input
-                        type='text'
-                        placeholder={t('order.customerName')}
-                        value={customerInfo.name}
-                        onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-                        required
-                      />
-                      <input
-                        type='tel'
-                        placeholder={t('order.customerPhone')}
-                        value={customerInfo.phone}
-                        onChange={(e) =>
-                          setCustomerInfo({ ...customerInfo, phone: e.target.value })
-                        }
-                        required
-                      />
-                      <textarea
-                        placeholder={t('order.deliveryAddress')}
-                        value={customerInfo.address}
-                        onChange={(e) =>
-                          setCustomerInfo({ ...customerInfo, address: e.target.value })
-                        }
-                        required
-                        rows='3'
-                      />
-                      <div className='form-row'>
-                        <div className='form-field'>
-                          <input
-                            type='text'
-                            placeholder={t('account.landmark') || 'Landmark (optional)'}
-                            value={customerInfo.landmark}
-                            onChange={(e) =>
-                              setCustomerInfo({ ...customerInfo, landmark: e.target.value })
-                            }
-                          />
-                        </div>
-                        <div className='form-field'>
-                          <input
-                            type='text'
-                            placeholder={t('account.pincode') || 'Pincode'}
-                            value={customerInfo.pincode}
-                            onChange={(e) =>
-                              setCustomerInfo({ ...customerInfo, pincode: e.target.value })
-                            }
-                            maxLength='6'
-                          />
-                        </div>
-                      </div>
-                      {user && (
-                        <button
-                          type='button'
-                          className='btn btn-ghost btn-small'
-                          onClick={() => {
-                            if (!customerInfo.address.trim()) {
-                              error(t('menu.addressRequired') || 'Please enter an address');
-                              return;
-                            }
-                            const result = saveAddress({
-                              name: customerInfo.name,
-                              phone: customerInfo.phone,
-                              address: customerInfo.address,
-                              landmark: customerInfo.landmark,
-                              pincode: customerInfo.pincode,
-                            });
-                            if (result.success) {
-                              const updatedUser = getCurrentUser();
-                              setUser(updatedUser);
-                              setUseGuestCheckout(false);
-                              setSelectedAddressId(result.address.id);
-                              success(t('account.saveAddress') || 'Address saved successfully!');
-                            } else {
-                              error(result.error || 'Failed to save address');
-                            }
-                          }}
-                        >
-                          <i className='fa-solid fa-bookmark'></i>{' '}
-                          {t('menu.saveAddressForFuture') || 'Save Address for Future'}
-                        </button>
-                      )}
-                    </div>
-                  )}
+                <div className='customer-form'>
+                  <input
+                    type='text'
+                    placeholder={t('order.customerName')}
+                    value={customerInfo.name}
+                    onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
+                    required
+                  />
+                  <input
+                    type='tel'
+                    placeholder={t('order.customerPhone')}
+                    value={customerInfo.phone}
+                    onChange={(e) =>
+                      setCustomerInfo({ ...customerInfo, phone: e.target.value })
+                    }
+                    required
+                  />
+                  <textarea
+                    placeholder={t('order.deliveryAddress')}
+                    value={customerInfo.address}
+                    onChange={(e) =>
+                      setCustomerInfo({ ...customerInfo, address: e.target.value })
+                    }
+                    required
+                    rows='3'
+                  />
+                </div>
                 </>
               )}
             </div>

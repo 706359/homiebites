@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import ReviewForm from './ReviewForm';
+import './Testimonials.css';
 
 const Testimonials = () => {
   const { t } = useLanguage();
@@ -50,6 +51,28 @@ const Testimonials = () => {
     );
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    if (isNaN(date)) return String(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
+  };
+
   if (loading) {
     return (
       <section id='testimonials' className='testimonials-section'>
@@ -92,13 +115,7 @@ const Testimonials = () => {
                 </div>
                 <div className='review-card-footer'>
                   <span className='review-date'>
-                    {review.createdAt
-                      ? new Date(review.createdAt).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })
-                      : ''}
+                    {review.createdAt ? formatDate(review.createdAt) : ''}
                   </span>
                 </div>
               </div>

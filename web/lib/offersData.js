@@ -15,10 +15,24 @@ export const getOffersData = async () => {
     try {
       const response = await api.getOffers();
       if (response.success && response.data && Array.isArray(response.data) && response.data.length > 0) {
-        // Filter only active offers
-        const activeOffers = response.data.filter(
-          (offer) => offer.isActive && (!offer.endDate || new Date(offer.endDate) >= new Date())
-        );
+        // Filter only active offers with valid data
+        const activeOffers = response.data.filter((offer) => {
+          // Must be active
+          if (!offer.isActive) return false;
+          
+          // Must not be expired (if endDate exists)
+          if (offer.endDate && new Date(offer.endDate) < new Date()) return false;
+          
+          // Must have a valid title (not empty, not test data)
+          if (!offer.title || 
+              offer.title.trim() === '' || 
+              offer.title.toLowerCase().includes('test') ||
+              offer.title.toLowerCase().includes('saved via')) {
+            return false;
+          }
+          
+          return true;
+        });
         // Cache in localStorage for offline access
         localStorage.setItem(OFFERS_DATA_KEY, JSON.stringify(activeOffers));
         return activeOffers;
@@ -33,10 +47,24 @@ export const getOffersData = async () => {
       try {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
-          // Filter only active offers
-          const activeOffers = parsed.filter(
-            (offer) => offer.isActive && (!offer.endDate || new Date(offer.endDate) >= new Date())
-          );
+          // Filter only active offers with valid data
+          const activeOffers = parsed.filter((offer) => {
+            // Must be active
+            if (!offer.isActive) return false;
+            
+            // Must not be expired (if endDate exists)
+            if (offer.endDate && new Date(offer.endDate) < new Date()) return false;
+            
+            // Must have a valid title (not empty, not test data)
+            if (!offer.title || 
+                offer.title.trim() === '' || 
+                offer.title.toLowerCase().includes('test') ||
+                offer.title.toLowerCase().includes('saved via')) {
+              return false;
+            }
+            
+            return true;
+          });
           return activeOffers;
         }
       } catch (e) {
@@ -64,10 +92,24 @@ export const getOffersDataSync = () => {
       try {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
-          // Filter only active offers
-          const activeOffers = parsed.filter(
-            (offer) => offer.isActive && (!offer.endDate || new Date(offer.endDate) >= new Date())
-          );
+          // Filter only active offers with valid data
+          const activeOffers = parsed.filter((offer) => {
+            // Must be active
+            if (!offer.isActive) return false;
+            
+            // Must not be expired (if endDate exists)
+            if (offer.endDate && new Date(offer.endDate) < new Date()) return false;
+            
+            // Must have a valid title (not empty, not test data)
+            if (!offer.title || 
+                offer.title.trim() === '' || 
+                offer.title.toLowerCase().includes('test') ||
+                offer.title.toLowerCase().includes('saved via')) {
+              return false;
+            }
+            
+            return true;
+          });
           return activeOffers;
         }
       } catch (e) {

@@ -5,12 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "cd web && npm run dev",
+    "build": "npm run web:build",
+    "check:buttons": "node scripts/check-buttons.cjs",
     "web": "cd web && npm run dev",
     "web:build": "cd web && npm run build",
     "web:start": "cd web && npm start",
-    "mobile": "cd app && npm start",
-    "mobile:ios": "cd app && npm run ios",
-    "mobile:android": "cd app && npm run android",
     "backend": "cd backend && npm start",
     "dev:full": "concurrently \"npm run web\" \"npm run backend\"",
     "push": "git add . && git commit -m 'updated' && git push"
@@ -22,6 +21,7 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.20.2",
+    "multer": "^2.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.10.1"

@@ -7,6 +7,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @import './variables.css';
+@import './_glass.css';
+
+@import './_buttons.css';
 
 /* Reset */
 * {
@@ -29,205 +32,7 @@ body {
    BUTTON SYSTEM – SINGLE SOURCE OF TRUTH
    ========================================================= */
 
-/* Base Button - NON-NEGOTIABLE */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-
-  padding: 0.75rem 1.5rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-
-  border-radius: 0;
-  border: 2px solid transparent;
-
-  transform: skewX(-8deg);
-  cursor: pointer;
-  text-decoration: none;
-  white-space: nowrap;
-
-  transition:
-    background-color 0.25s ease,
-    color 0.25s ease,
-    border-color 0.25s ease,
-    box-shadow 0.25s ease,
-    transform 0.15s ease;
-}
-
-/* Counter-skew content to keep text readable */
-.btn > * {
-  transform: skewX(8deg);
-  display: inline-block;
-}
-
-/* Hover lift effect */
-.btn:hover:not(:disabled) {
-  transform: skewX(-8deg) translateY(-1px);
-}
-
-/* Focus (Accessibility) */
-.btn:focus-visible {
-  outline: 3px solid currentColor;
-  outline-offset: 3px;
-}
-
-/* Disabled */
-.btn:disabled,
-.btn[aria-disabled='true'] {
-  opacity: 0.55;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-/* ================= VARIANTS - ONLY 5 ALLOWED ================= */
-
-/* 1. PRIMARY - Green → Orange (fade), White text always */
-.btn-primary {
-  background-color: var(--primary-green);
-  color: #fff;
-  border-color: transparent; /* Explicit transparent border */
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: var(--primary-orange);
-  border-color: transparent; /* Maintain transparent border on hover */
-}
-
-/* 2. SECONDARY - Orange → Green (fade), White text always */
-.btn-secondary {
-  background-color: var(--primary-orange);
-  color: #fff;
-  border-color: transparent; /* Explicit transparent border */
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: var(--primary-green);
-  border-color: transparent; /* Maintain transparent border on hover */
-}
-
-/* 3. GHOST - Transparent, Orange text + border, Hover → Green text + border, NO filled background */
-.btn-ghost {
-  background-color: transparent;
-  color: var(--primary-orange);
-  border-color: var(--primary-orange) !important;
-}
-
-.btn-ghost:hover:not(:disabled) {
-  background-color: transparent; /* NO filled background */
-  color: var(--primary-green);
-  border-color: var(--primary-green);
-}
-
-/* 4. PUBLIC - Theme-neutral, safe, boring by design */
-.btn-public {
-  background-color: var(--neutral-200, var(--gray-lighter));
-  color: var(--neutral-900, var(--gray-dark));
-  border-color: transparent; /* Explicit transparent border */
-}
-
-.btn-public:hover:not(:disabled) {
-  background-color: var(--neutral-300, var(--gray-light));
-  border-color: transparent; /* Maintain transparent border on hover */
-}
-
-/* 5. SPECIAL - The only extension point via CSS variables */
-.btn-special {
-  background-color: var(--btn-bg, var(--primary-green));
-  color: var(--btn-text, #fff);
-  border-color: var(--btn-border, transparent);
-}
-
-.btn-special:hover:not(:disabled) {
-  background-color: var(--btn-bg-hover, var(--primary-orange));
-  border-color: var(
-    --btn-border-hover,
-    var(--btn-border, transparent)
-  ); /* Maintain border on hover */
-}
-
-/* Special button examples via modifiers (DO NOT CREATE NEW CLASSES) */
-.btn-special.whatsapp {
-  --btn-bg: #25d366;
-  --btn-bg-hover: #20ba5a;
-}
-
-.btn-special.danger {
-  --btn-bg: #ef4444;
-  --btn-bg-hover: #dc2626;
-}
-
-.btn-special.admin {
-  --btn-bg: var(--primary-green);
-  --btn-bg-hover: var(--primary-orange);
-}
-
-/* ================= SIZE MODIFIERS (SAFE TO KEEP) ================= */
-
-.btn-small {
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
-}
-
-.btn-large {
-  padding: 1rem 2.5rem;
-  font-size: 1.1rem;
-}
-
-.btn-full {
-  width: 100%;
-}
-
-/* Icon-only button modifier (utility) */
-.btn-icon {
-  padding: 0.5rem;
-  width: auto;
-  min-width: fit-content;
-  /* Border inherited from base .btn and variant */
-}
-
-/* ================= QTY BUTTON ================= */
-
-.btn-qty {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid transparent; /* Explicit border for consistency */
-
-  background: var(--light-gray);
-  color: var(--text-primary);
-
-  font-size: 1.2rem;
-  font-weight: 500;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  /* No skew for circular buttons */
-  transform: none;
-}
-
-.btn-qty > * {
-  transform: none;
-}
-
-.btn-qty:hover:not(:disabled) {
-  background: var(--primary-green);
-  color: var(--white);
-  border-color: transparent; /* Maintain transparent border on hover */
-  transform: translateY(-1px);
-}
-
-.btn-qty:focus-visible {
-  outline: 3px solid var(--primary-green);
-  outline-offset: 3px;
-  box-shadow: 0 0 0 2px rgba(68, 144, 49, 0.3);
-}
-
-/* ================= SIZE MODIFIERS (SAFE TO KEEP) ================= */
+/* buttons are imported above via _buttons.css */
 
 /* =========================================================
    LAYOUT HELPERS
@@ -237,6 +42,35 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 2rem;
+}
+
+.section-with-kicker {
+  position: relative;
+  /* ensure children flow normally; kicker will be absolutely positioned */
+}
+
+.section-with-kicker .kicker {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -22px; /* lift the pill above the section; adjust as needed */
+  z-index: 5;
+  display: inline-block;
+  background: var(--bg-white);
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+@media (max-width: 768px) {
+  .section-with-kicker .kicker {
+    top: -16px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.9rem;
+  }
 }
 
 .section-heading {

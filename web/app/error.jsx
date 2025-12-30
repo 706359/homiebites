@@ -1,6 +1,4 @@
-'use client';
-
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { useEffect } from 'react';
 import Footer from '../components/Footer';
 import Header from '../components/Header';

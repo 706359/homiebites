@@ -1,4 +1,4 @@
-import '../styles/globals.css';
+import './ConfirmModal.css';
 
 const ConfirmModal = ({
   isOpen,
@@ -48,14 +48,14 @@ const ConfirmModal = ({
     <div className='confirm-modal-overlay' onClick={handleBackdropClick}>
       <div className='confirm-modal'>
         <div className='confirm-modal-header'>
-          <button className='confirm-modal-close' onClick={onClose}>
+          <button className='confirm-modal-close btn btn-icon' onClick={onClose}>
             <i className='fa-solid fa-times'></i>
           </button>
           <div
             className='confirm-modal-icon-wrapper'
-            style={{ background: `${getIconColor()}15`, borderColor: `${getIconColor()}30` }}
+            data-type={type}
           >
-            <i className={`fa-solid ${getIcon()}`} style={{ color: getIconColor() }}></i>
+            <i className={`fa-solid ${getIcon()} confirm-modal-icon`}></i>
           </div>
         </div>
 
@@ -65,12 +65,15 @@ const ConfirmModal = ({
         </div>
 
         <div className='confirm-modal-footer'>
-          <button className='confirm-modal-btn confirm-modal-btn-cancel' onClick={onClose}>
+          <button
+            className='confirm-modal-btn btn btn-ghost confirm-modal-btn-cancel'
+            onClick={onClose}
+          >
             <i className='fa-solid fa-times'></i>
             <span>{cancelText}</span>
           </button>
           <button
-            className={`confirm-modal-btn confirm-modal-btn-confirm confirm-modal-btn-${type}`}
+            className={`confirm-modal-btn btn btn-primary confirm-modal-btn-confirm confirm-modal-btn-${type}`}
             onClick={() => {
               onConfirm();
               onClose();

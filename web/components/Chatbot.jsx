@@ -468,15 +468,6 @@ const Chatbot = () => {
       return;
     }
 
-    if (
-      input.includes('account page') ||
-      input.includes('my account') ||
-      input.includes('go to account')
-    ) {
-      navigateToLink('/account', t('chatbot.openingAccount'));
-      return;
-    }
-
     if (input.includes('faq page') || input.includes('view faq') || input.includes('go to faq')) {
       navigateToLink('/faq', t('chatbot.openingFaq'));
       return;

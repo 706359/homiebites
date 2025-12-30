@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
-import { getCurrentUser } from '../lib/userAuth';
+import './ReviewForm.css';
 
 const ReviewForm = ({ onReviewSubmitted, onClose }) => {
   const { t } = useLanguage();
   const { success, error: showError } = useNotification();
-  const user = getCurrentUser();
 
   const [formData, setFormData] = useState({
-    userName: user?.name || '',
-    userEmail: user?.email || '',
-    userPhone: user?.phone || '',
+    userName: '',
+    userEmail: '',
+    userPhone: '',
     userLocation: '',
     rating: 5,
     comment: '',
@@ -37,9 +36,9 @@ const ReviewForm = ({ onReviewSubmitted, onClose }) => {
             'Thank you! Your review has been submitted and will be published after admin approval.'
         );
         setFormData({
-          userName: user?.name || '',
-          userEmail: user?.email || '',
-          userPhone: user?.phone || '',
+          userName: '',
+          userEmail: '',
+          userPhone: '',
           userLocation: '',
           rating: 5,
           comment: '',
@@ -104,31 +103,26 @@ const ReviewForm = ({ onReviewSubmitted, onClose }) => {
               value={formData.userName}
               onChange={(e) => setFormData({ ...formData, userName: e.target.value })}
               required
-              disabled={!!user}
             />
           </div>
 
-          {!user && (
-            <>
-              <div className='form-field'>
-                <label>{t('common.email')}</label>
-                <input
-                  type='email'
-                  value={formData.userEmail}
-                  onChange={(e) => setFormData({ ...formData, userEmail: e.target.value })}
-                />
-              </div>
+          <div className='form-field'>
+            <label>{t('common.email')}</label>
+            <input
+              type='email'
+              value={formData.userEmail}
+              onChange={(e) => setFormData({ ...formData, userEmail: e.target.value })}
+            />
+          </div>
 
-              <div className='form-field'>
-                <label>{t('common.phone')}</label>
-                <input
-                  type='tel'
-                  value={formData.userPhone}
-                  onChange={(e) => setFormData({ ...formData, userPhone: e.target.value })}
-                />
-              </div>
-            </>
-          )}
+          <div className='form-field'>
+            <label>{t('common.phone')}</label>
+            <input
+              type='tel'
+              value={formData.userPhone}
+              onChange={(e) => setFormData({ ...formData, userPhone: e.target.value })}
+            />
+          </div>
 
           <div className='form-field'>
             <label>{t('reviews.location') || 'Location (Optional)'}</label>

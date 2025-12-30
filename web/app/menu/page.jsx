@@ -1,6 +1,4 @@
-'use client';
-
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Chatbot from '../../components/Chatbot';
 import Footer from '../../components/Footer';
@@ -8,47 +6,21 @@ import Header from '../../components/Header';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNotification } from '../../contexts/NotificationContext';
 import { getMenuData } from '../../lib/menuData';
-import { getCurrentUser, isUserLoggedIn, saveOrder } from '../../lib/userAuth';
 import '../../styles/chatbot.css';
+import '../../pages/MenuPage.css';
 
 export default function MenuPage() {
   const { t } = useLanguage();
   const { success, error, info } = useNotification();
-  const router = useRouter();
+  const navigate = useNavigate();
   const [menuData, setMenuData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [cart, setCart] = useState({});
-  const [user, setUser] = useState(null);
-  const [useGuestCheckout, setUseGuestCheckout] = useState(false);
-  const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     phone: '',
     address: '',
   });
-
-  useEffect(() => {
-    if (isUserLoggedIn()) {
-      const currentUser = getCurrentUser();
-      setUser(currentUser);
-      if (currentUser.addresses && currentUser.addresses.length > 0) {
-        const defaultAddress =
-          currentUser.addresses.find((a) => a.isDefault) || currentUser.addresses[0];
-        setSelectedAddressId(defaultAddress.id);
-        setCustomerInfo({
-          name: currentUser.name,
-          phone: currentUser.phone,
-          address: `${defaultAddress.address}${defaultAddress.landmark ? ', ' + defaultAddress.landmark : ''}${defaultAddress.pincode ? ' - ' + defaultAddress.pincode : ''}`,
-        });
-      } else {
-        setCustomerInfo({
-          name: currentUser.name,
-          phone: currentUser.phone,
-          address: '',
-        });
-      }
-    }
-  }, []);
 
   useEffect(() => {
     try {
@@ -150,17 +122,7 @@ export default function MenuPage() {
       price: item.price,
     }));
 
-    const orderData = {
-      name: customerInfo.name,
-      phone: customerInfo.phone,
-      address: customerInfo.address,
-      items: items,
-      total: getTotal(),
-      subtotal: getSubtotal(),
-      deliveryCharge: getDeliveryCharge(),
-    };
-
-    saveOrder(orderData);
+    // Order saved directly to WhatsApp
 
     const itemsText = items
       .map((item) => `${item.name} x${item.quantity} (₹${item.price * item.quantity})`)
@@ -191,9 +153,7 @@ Please confirm this order. Thank you!`;
     window.open(`https://wa.me/919958983578?text=${encodedMessage}`, '_blank', 'noopener');
 
     setCart({});
-    if (!user) {
-      setCustomerInfo({ name: '', phone: '', address: '' });
-    }
+    setCustomerInfo({ name: '', phone: '', address: '' });
 
     success(t('order.orderPlaced') || 'Order sent to WhatsApp! Our team will confirm shortly.');
   };
@@ -207,7 +167,7 @@ Please confirm this order. Thank you!`;
       <Header onOrderClick={openOrderModal} />
       <div className='menu-page'>
         <div className='menu-header'>
-          <button className='btn btn-ghost' onClick={() => router.push('/')}>
+          <button className='btn btn-ghost' onClick={() => navigate('/')}>
             ← {t('common.back')}
           </button>
           <h1>{t('menu.title')}</h1>
@@ -215,11 +175,11 @@ Please confirm this order. Thank you!`;
 
         <div className='menu-content'>
           {isLoading ? (
-            <div style={{ padding: '4rem', textAlign: 'center' }}>
+            <div className='menu-loading-state'>
               <p>{t('common.loading')}</p>
             </div>
           ) : menuData.length === 0 ? (
-            <div style={{ padding: '4rem', textAlign: 'center' }}>
+            <div className='menu-empty-state'>
               <p>{t('menu.noItems')}</p>
             </div>
           ) : (
@@ -335,100 +295,31 @@ Please confirm this order. Thank you!`;
                   </div>
                 </div>
 
-                {user && user.addresses && user.addresses.length > 0 && !useGuestCheckout ? (
-                  <div className='address-selection'>
-                    <div className='address-selection-header'>
-                      <h4>{t('menu.selectAddress')}</h4>
-                      <button
-                        className='btn btn-ghost btn-small'
-                        onClick={() => setUseGuestCheckout(true)}
-                      >
-                        {t('menu.addNewAddress')}
-                      </button>
-                    </div>
-                    <div className='addresses-list'>
-                      {user.addresses.map((addr) => (
-                        <div
-                          key={addr.id}
-                          className={`address-option ${selectedAddressId === addr.id ? 'selected' : ''}`}
-                          onClick={() => {
-                            setSelectedAddressId(addr.id);
-                            setCustomerInfo({
-                              name: user.name,
-                              phone: user.phone,
-                              address: `${addr.address}${addr.landmark ? ', ' + addr.landmark : ''}${addr.pincode ? ' - ' + addr.pincode : ''}`,
-                            });
-                          }}
-                        >
-                          {addr.isDefault && <span className='default-badge'>Default</span>}
-                          <p>
-                            <strong>{addr.name}</strong> - {addr.phone}
-                          </p>
-                          <p>{addr.address}</p>
-                          {addr.landmark && (
-                            <p>
-                              {t('account.landmark')}: {addr.landmark}
-                            </p>
-                          )}
-                          {addr.pincode && (
-                            <p>
-                              {t('account.pincode')}: {addr.pincode}
-                            </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className='customer-form'>
-                    {user && (
-                      <div className='guest-checkout-notice'>
-                        <p>{t('menu.guestCheckout')}</p>
-                        <button
-                          className='btn btn-ghost btn-small'
-                          onClick={() => {
-                            setUseGuestCheckout(false);
-                            if (user.addresses && user.addresses.length > 0) {
-                              const defaultAddress =
-                                user.addresses.find((a) => a.isDefault) || user.addresses[0];
-                              setSelectedAddressId(defaultAddress.id);
-                              setCustomerInfo({
-                                name: user.name,
-                                phone: user.phone,
-                                address: `${defaultAddress.address}${defaultAddress.landmark ? ', ' + defaultAddress.landmark : ''}${defaultAddress.pincode ? ' - ' + defaultAddress.pincode : ''}`,
-                              });
-                            }
-                          }}
-                        >
-                          {t('menu.selectAddress')}
-                        </button>
-                      </div>
-                    )}
-                    <input
-                      type='text'
-                      placeholder={t('order.customerName')}
-                      value={customerInfo.name}
-                      onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-                      required
-                    />
-                    <input
-                      type='tel'
-                      placeholder={t('order.customerPhone')}
-                      value={customerInfo.phone}
-                      onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
-                      required
-                    />
-                    <textarea
-                      placeholder={t('order.deliveryAddress')}
-                      value={customerInfo.address}
-                      onChange={(e) =>
-                        setCustomerInfo({ ...customerInfo, address: e.target.value })
-                      }
-                      required
-                      rows='3'
-                    />
-                  </div>
-                )}
+                <div className='customer-form'>
+                  <input
+                    type='text'
+                    placeholder={t('order.customerName')}
+                    value={customerInfo.name}
+                    onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
+                    required
+                  />
+                  <input
+                    type='tel'
+                    placeholder={t('order.customerPhone')}
+                    value={customerInfo.phone}
+                    onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
+                    required
+                  />
+                  <textarea
+                    placeholder={t('order.deliveryAddress')}
+                    value={customerInfo.address}
+                    onChange={(e) =>
+                      setCustomerInfo({ ...customerInfo, address: e.target.value })
+                    }
+                    required
+                    rows='3'
+                  />
+                </div>
               </div>
 
               <div className='cart-sidebar-footer'>
