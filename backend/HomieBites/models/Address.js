@@ -1,5 +1,5 @@
 // HomieBites Address model
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const AddressSchema = new mongoose.Schema(
   {
@@ -7,8 +7,7 @@ const AddressSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true }, // Active / Inactive
     notes: { type: String }, // Delivery/payment habits, special instructions
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export default mongoose.model('Address', AddressSchema);
-
+export default mongoose.model("Address", AddressSchema);

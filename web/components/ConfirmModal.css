@@ -52,22 +52,22 @@
   border-color: var(--confirm-icon-border, var(--border-color));
 }
 
-.confirm-modal-icon-wrapper[data-type='danger'] {
+.confirm-modal-icon-wrapper[data-type="danger"] {
   --confirm-icon-bg: var(--error-red-ultra-light);
   --confirm-icon-border: var(--error-red);
 }
 
-.confirm-modal-icon-wrapper[data-type='success'] {
+.confirm-modal-icon-wrapper[data-type="success"] {
   --confirm-icon-bg: var(--success-green-ultra-light);
   --confirm-icon-border: var(--success-green-light);
 }
 
-.confirm-modal-icon-wrapper[data-type='info'] {
+.confirm-modal-icon-wrapper[data-type="info"] {
   --confirm-icon-bg: var(--info-blue-ultra-light);
   --confirm-icon-border: var(--info-blue-light);
 }
 
-.confirm-modal-icon-wrapper[data-type='warning'] {
+.confirm-modal-icon-wrapper[data-type="warning"] {
   --confirm-icon-bg: var(--warning-orange-light);
   --confirm-icon-border: var(--primary-orange);
 }
@@ -80,19 +80,19 @@
   color: var(--confirm-icon-color, var(--primary-orange));
 }
 
-.confirm-modal-icon-wrapper[data-type='danger'] .confirm-modal-icon {
+.confirm-modal-icon-wrapper[data-type="danger"] .confirm-modal-icon {
   --confirm-icon-color: var(--primary-orange);
 }
 
-.confirm-modal-icon-wrapper[data-type='success'] .confirm-modal-icon {
+.confirm-modal-icon-wrapper[data-type="success"] .confirm-modal-icon {
   --confirm-icon-color: var(--primary-green);
 }
 
-.confirm-modal-icon-wrapper[data-type='info'] .confirm-modal-icon {
+.confirm-modal-icon-wrapper[data-type="info"] .confirm-modal-icon {
   --confirm-icon-color: var(--primary-green);
 }
 
-.confirm-modal-icon-wrapper[data-type='warning'] .confirm-modal-icon {
+.confirm-modal-icon-wrapper[data-type="warning"] .confirm-modal-icon {
   --confirm-icon-color: var(--primary-orange);
 }
 
@@ -120,7 +120,11 @@
 }
 
 .confirm-modal-close:hover {
-  background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-orange) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-green) 0%,
+    var(--primary-orange) 100%
+  );
   color: var(--text-white);
   transform: rotate(90deg);
   box-shadow: 0 4px 12px var(--shadow-orange-strong);
@@ -134,7 +138,11 @@
 .confirm-modal-title {
   font-size: var(--font-size-2xl);
   font-weight: 800;
-  background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-orange) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-green) 0%,
+    var(--primary-orange) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -152,7 +160,11 @@
 
 .confirm-modal-footer {
   padding: var(--space-4) var(--space-6) var(--space-6);
-  background: linear-gradient(180deg, transparent 0%, var(--shadow-color-light) 100%);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    var(--shadow-color-light) 100%
+  );
   display: flex;
   gap: var(--space-3);
   justify-content: flex-end;
@@ -196,45 +208,77 @@
 }
 
 .confirm-modal-btn-warning {
-  background: linear-gradient(135deg, var(--primary-orange) 0%, var(--orange-hover) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-orange) 0%,
+    var(--orange-hover) 100%
+  );
   box-shadow: 0 4px 12px var(--shadow-orange-strong);
 }
 
 .confirm-modal-btn-warning:hover {
-  background: linear-gradient(135deg, var(--orange-hover) 0%, var(--orange-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--orange-hover) 0%,
+    var(--orange-dark) 100%
+  );
   transform: translateY(-2px);
   box-shadow: 0 6px 16px var(--shadow-orange-stronger);
 }
 
 .confirm-modal-btn-danger {
-  background: linear-gradient(135deg, var(--primary-orange) 0%, var(--orange-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-orange) 0%,
+    var(--orange-dark) 100%
+  );
   box-shadow: 0 4px 12px var(--shadow-orange-strong);
 }
 
 .confirm-modal-btn-danger:hover {
-  background: linear-gradient(135deg, var(--orange-dark) 0%, var(--orange-darker) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--orange-dark) 0%,
+    var(--orange-darker) 100%
+  );
   transform: translateY(-2px);
   box-shadow: 0 6px 16px var(--shadow-orange-stronger);
 }
 
 .confirm-modal-btn-success {
-  background: linear-gradient(135deg, var(--primary-green) 0%, var(--green-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-green) 0%,
+    var(--green-dark) 100%
+  );
   box-shadow: 0 4px 12px var(--shadow-green-strong);
 }
 
 .confirm-modal-btn-success:hover {
-  background: linear-gradient(135deg, var(--green-dark) 0%, var(--primary-orange) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--green-dark) 0%,
+    var(--primary-orange) 100%
+  );
   transform: translateY(-2px);
   box-shadow: 0 6px 16px var(--shadow-orange-stronger);
 }
 
 .confirm-modal-btn-info {
-  background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-orange) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-green) 0%,
+    var(--primary-orange) 100%
+  );
   box-shadow: 0 4px 12px var(--shadow-green-strong);
 }
 
 .confirm-modal-btn-info:hover {
-  background: linear-gradient(135deg, var(--primary-orange) 0%, var(--primary-green) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-orange) 0%,
+    var(--primary-green) 100%
+  );
   transform: translateY(-2px);
   box-shadow: 0 6px 16px var(--shadow-orange-stronger);
 }

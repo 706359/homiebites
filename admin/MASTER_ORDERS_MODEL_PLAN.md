@@ -1,9 +1,11 @@
 # Master Orders Model Implementation Plan
 
 ## 🎯 Goal
+
 Implement a clean, single-source-of-truth orders model that eliminates derived data storage and ensures all tabs read from one master table.
 
 ## 📋 Current Issues
+
 - ❌ Derived fields stored (S No., Total Amount, Billing Month, Reference Month, Year)
 - ❌ Potential for data inconsistency
 - ❌ Duplicate data storage
@@ -12,6 +14,7 @@ Implement a clean, single-source-of-truth orders model that eliminates derived d
 ## ✅ Target Model
 
 ### Master Orders Table Structure
+
 ```sql
 orders
 ------
@@ -31,11 +34,13 @@ updated_at (TIMESTAMP)
 ```
 
 ### Composite Unique Key
+
 - `(order_date, delivery_address)` - Prevents duplicates
 
 ## 🔄 Implementation Steps
 
 ### Phase 1: Data Model Updates
+
 1. ✅ Create `orderUtils.js` helper functions for:
    - `calculateTotalAmount(quantity, unitPrice)`
    - `extractBillingMonth(orderDate)`
@@ -50,6 +55,7 @@ updated_at (TIMESTAMP)
    - Never store `billingMonth` or `referenceMonth` as strings
 
 ### Phase 2: Excel Upload Logic
+
 1. ✅ Update `convertExcelToOrders()` to:
    - Parse date correctly
    - Extract only: date, address, quantity, unit_price, status, payment_mode
@@ -64,6 +70,7 @@ updated_at (TIMESTAMP)
    - Show preview before save (new/updated/invalid)
 
 ### Phase 3: Order Entry Form
+
 1. ✅ Simplify form fields:
    - Date (default: today)
    - Delivery Address (with autocomplete)
@@ -79,6 +86,7 @@ updated_at (TIMESTAMP)
    - Keyboard-friendly navigation
 
 ### Phase 4: Display Updates
+
 1. ✅ Update All Orders Data tab:
    - Show: Date | Address | Qty | Unit Price | Total | Status | Payment Mode
    - Hide: billing_month, billing_year, source (backend only)
@@ -90,12 +98,14 @@ updated_at (TIMESTAMP)
    - No separate tables needed
 
 ### Phase 5: Edit Functionality
+
 1. ✅ Edit mode:
    - Click row → opens same form in edit mode
    - Save → updates same record (no duplicates)
    - Stats auto-refresh
 
 ## 🚫 Hard Rules (DO NOT BREAK)
+
 1. ✅ All stats read from `orders` table only
 2. ✅ Excel + manual entries go through same logic
 3. ✅ Derived fields NEVER entered manually
@@ -103,6 +113,7 @@ updated_at (TIMESTAMP)
 5. ✅ No hard delete (soft delete or archive only)
 
 ## 📊 Files to Update
+
 1. `admin/utils/orderUtils.js` - Add calculation helpers
 2. `admin/utils/excelUtils.js` - Update conversion logic
 3. `admin/AdminDashboard.jsx` - Update form and save logic
@@ -110,6 +121,7 @@ updated_at (TIMESTAMP)
 5. Backend API (if exists) - Update schema
 
 ## 🧪 Testing Checklist
+
 - [ ] New order entry calculates total correctly
 - [ ] Excel upload updates existing orders
 - [ ] Excel upload creates new orders
@@ -119,4 +131,3 @@ updated_at (TIMESTAMP)
 - [ ] All stats tabs show correct data
 - [ ] Derived fields never stored
 - [ ] Composite key prevents duplicates
-

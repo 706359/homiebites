@@ -1,0 +1,892 @@
+/* ============================================
+   CUSTOM CSS OVERRIDES - Things Tailwind Can't Handle
+   ============================================ */
+
+/* ============================================
+   CUSTOM SCROLLBARS - All Scrollable Elements
+   ============================================ */
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--admin-glass-bg, rgba(255, 255, 255, 0.5));
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--admin-accent, #449031);
+  border-radius: 10px;
+  border: 2px solid var(--admin-glass-bg, rgba(255, 255, 255, 0.5));
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a7a29;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--admin-accent, #449031) var(--admin-glass-bg, rgba(255, 255, 255, 0.5));
+}
+
+/* Custom scrollbar for specific containers */
+.orders-table-container::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar,
+.admin-content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .admin-sidebar,
+  .admin-top-nav,
+  .action-bar,
+  .btn,
+  .modal-overlay,
+  .pagination-controls,
+  .action-buttons-group {
+    display: none !important;
+  }
+
+  .admin-main {
+    margin-left: 0 !important;
+  }
+
+  .admin-content {
+    padding: 0 !important;
+  }
+
+  .dashboard-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+  }
+
+  .orders-table {
+    font-size: 10px !important;
+  }
+
+  .orders-table th,
+  .orders-table td {
+    padding: 4px !important;
+    border: 1px solid #000 !important;
+  }
+
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #666;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY - Focus Visible
+   ============================================ */
+
+/* Better focus indicators for keyboard navigation */
+*:focus-visible {
+  outline: 3px solid var(--admin-accent, #449031);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--admin-accent, #449031);
+  outline-offset: 2px;
+}
+
+.input-field:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--admin-accent, #449031);
+  outline-offset: 2px;
+}
+
+/* Skip to main content link */
+.skip-to-main {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--admin-accent, #449031);
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: 10000;
+}
+
+.skip-to-main:focus {
+  top: 0;
+}
+
+/* ============================================
+   CUSTOM CHECKBOX & RADIO STYLING
+   ============================================ */
+
+input[type="checkbox"],
+input[type="radio"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--admin-border, #e2e8f0);
+  border-radius: 4px;
+  background: var(--admin-glass-bg, rgba(255, 255, 255, 0.9));
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+input[type="radio"] {
+  border-radius: 50%;
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+  background: var(--admin-accent, #449031);
+  border-color: var(--admin-accent, #449031);
+}
+
+input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+input[type="radio"]:checked::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+}
+
+input[type="checkbox"]:hover,
+input[type="radio"]:hover {
+  border-color: var(--admin-accent, #449031);
+  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
+}
+
+input[type="checkbox"]:disabled,
+input[type="radio"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   CUSTOM FILE INPUT STYLING
+   ============================================ */
+
+input[type="file"] {
+  display: none;
+}
+
+.file-input-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--admin-glass-bg, rgba(255, 255, 255, 0.9));
+  border: 2px dashed var(--admin-border, #e2e8f0);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  color: var(--admin-text, #1a202c);
+}
+
+.file-input-label:hover {
+  border-color: var(--admin-accent, #449031);
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+}
+
+.file-input-label:active {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   CUSTOM RANGE INPUT STYLING
+   ============================================ */
+
+input[type="range"] {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--admin-border, #e2e8f0);
+  outline: none;
+  -webkit-appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--admin-accent, #449031);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(68, 144, 49, 0.4);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--admin-accent, #449031);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.1);
+}
+
+/* ============================================
+   CUSTOM COLOR INPUT STYLING
+   ============================================ */
+
+input[type="color"] {
+  width: 60px;
+  height: 40px;
+  border: 2px solid var(--admin-border, #e2e8f0);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 2px;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+input[type="color"]:hover {
+  border-color: var(--admin-accent, #449031);
+  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+/* ============================================
+   CUSTOM TOOLTIPS
+   ============================================ */
+
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]:hover::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 1000;
+  margin-bottom: 8px;
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+[data-tooltip]:hover::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  z-index: 1000;
+  margin-bottom: 2px;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ============================================
+   TEXT SELECTION STYLING
+   ============================================ */
+
+::selection {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.3));
+  color: var(--admin-text, #1a202c);
+}
+
+::-moz-selection {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.3));
+  color: var(--admin-text, #1a202c);
+}
+
+/* ============================================
+   PLACEHOLDER STYLING
+   ============================================ */
+
+::placeholder {
+  color: var(--admin-text-light, #9ca3af);
+  opacity: 0.7;
+}
+
+::-webkit-input-placeholder {
+  color: var(--admin-text-light, #9ca3af);
+  opacity: 0.7;
+}
+
+::-moz-placeholder {
+  color: var(--admin-text-light, #9ca3af);
+  opacity: 0.7;
+}
+
+:-ms-input-placeholder {
+  color: var(--admin-text-light, #9ca3af);
+  opacity: 0.7;
+}
+
+/* ============================================
+   DISABLED STATE ENHANCEMENTS
+   ============================================ */
+
+.btn:disabled,
+.input-field:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--admin-glass-border, rgba(0, 0, 0, 0.06));
+}
+
+.btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: inherit;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--admin-border, #e2e8f0);
+  border-top-color: var(--admin-accent, #449031);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ============================================
+   SMOOTH SCROLLING
+   ============================================ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================
+   TABLE STICKY HEADER ENHANCEMENTS
+   ============================================ */
+
+.orders-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(68, 144, 49, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* ============================================
+   FORM VALIDATION STYLES
+   ============================================ */
+
+.input-field.error,
+select.error,
+textarea.error {
+  border-color: var(--admin-danger, #ef4444);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.input-field.error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.input-field.success,
+select.success,
+textarea.success {
+  border-color: var(--admin-success, #449031);
+  background: rgba(68, 144, 49, 0.05);
+}
+
+.input-field.success:focus {
+  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
+}
+
+.error-message {
+  color: var(--admin-danger, #ef4444);
+  font-size: 12px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.success-message {
+  color: var(--admin-success, #449031);
+  font-size: 12px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ============================================
+   DRAG AND DROP STYLES
+   ============================================ */
+
+.drag-over {
+  border: 2px dashed var(--admin-accent, #449031) !important;
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1)) !important;
+}
+
+.dragging {
+  opacity: 0.5;
+  cursor: grabbing !important;
+}
+
+.drag-handle {
+  cursor: grab;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* ============================================
+   CONTEXT MENU STYLING
+   ============================================ */
+
+.context-menu {
+  position: fixed;
+  background: var(--admin-glass-bg, rgba(255, 255, 255, 0.95));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--admin-glass-border, rgba(0, 0, 0, 0.06));
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  z-index: 10000;
+  min-width: 180px;
+  animation: contextMenuFadeIn 0.2s ease;
+}
+
+.context-menu-item {
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--admin-text, #1a202c);
+}
+
+.context-menu-item:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  color: var(--admin-accent, #449031);
+}
+
+.context-menu-item.danger:hover {
+  background: var(--admin-danger-light, rgba(239, 68, 68, 0.1));
+  color: var(--admin-danger, #ef4444);
+}
+
+.context-menu-divider {
+  height: 1px;
+  background: var(--admin-border, #e2e8f0);
+  margin: 4px 0;
+}
+
+@keyframes contextMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+   TOAST/NOTIFICATION STYLING
+   ============================================ */
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 400px;
+}
+
+.toast {
+  background: var(--admin-glass-bg, rgba(255, 255, 255, 0.95));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--admin-glass-border, rgba(0, 0, 0, 0.06));
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: start;
+  gap: 12px;
+  animation: toastSlideIn 0.3s ease;
+  min-width: 300px;
+}
+
+.toast.success {
+  border-left: 4px solid var(--admin-success, #449031);
+}
+
+.toast.error {
+  border-left: 4px solid var(--admin-danger, #ef4444);
+}
+
+.toast.warning {
+  border-left: 4px solid var(--admin-warning, #f59e0b);
+}
+
+.toast.info {
+  border-left: 4px solid var(--admin-accent, #449031);
+}
+
+.toast-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.toast-content {
+  flex: 1;
+}
+
+.toast-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: var(--admin-text, #1a202c);
+}
+
+.toast-message {
+  font-size: 13px;
+  color: var(--admin-text-secondary, #64748b);
+}
+
+.toast-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--admin-text-light, #9ca3af);
+  font-size: 18px;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.toast-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--admin-text, #1a202c);
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ============================================
+   DATE PICKER CUSTOM STYLING
+   ============================================ */
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  filter: invert(0.5);
+  transition: opacity 0.2s ease;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-clear-button {
+  display: none;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  filter: invert(0.5);
+  transition: opacity 0.2s ease;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* ============================================
+   RESPONSIVE TEXT SIZING
+   ============================================ */
+
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 13px;
+  }
+}
+
+/* ============================================
+   DARK MODE SUPPORT (Future)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  /* Dark mode styles can be added here when theme switching is implemented */
+}
+
+/* ============================================
+   HIGH CONTRAST MODE SUPPORT
+   ============================================ */
+
+@media (prefers-contrast: high) {
+  .dashboard-card {
+    border: 2px solid var(--admin-text, #1a202c);
+  }
+
+  .btn {
+    border: 2px solid currentColor;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION SUPPORT
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-card,
+  .btn,
+  .stat-card {
+    transition: none !important;
+  }
+
+  .loader-spinner,
+  .loading-spinner {
+    animation: none !important;
+  }
+}
+
+/* ============================================
+   BUTTON STYLE ENHANCEMENTS
+   ============================================ */
+
+/* Active/Pressed State */
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Button with Icon */
+.btn i {
+  font-size: inherit;
+  line-height: 1;
+}
+
+.btn-small i {
+  font-size: 12px;
+}
+
+.btn-large i {
+  font-size: 18px;
+}
+
+/* Button Group Spacing */
+.btn + .btn {
+  margin-left: 8px;
+}
+
+/* Button Loading State */
+.btn.loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+}
+
+.btn.loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* Button with Badge */
+.btn .badge {
+  margin-left: 8px;
+  font-size: 0.75em;
+  padding: 2px 6px;
+}
+
+/* Icon-only Button Improvements */
+.btn-icon {
+  min-width: 40px;
+  padding: 8px;
+}
+
+.btn-icon i {
+  margin: 0;
+}
+
+/* Full Width Button in Forms */
+.form-group .btn-full {
+  margin-top: 8px;
+}
+
+/* Button in Action Bar */
+.action-bar .btn {
+  flex-shrink: 0;
+}
+
+/* Button in Modal Footer */
+.modal-footer .btn {
+  min-width: 100px;
+}
+
+/* Responsive Button Adjustments */
+@media (max-width: 768px) {
+  .btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .btn-small {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .btn-large {
+    padding: 12px 24px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  .btn-small {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .action-buttons-group .btn {
+    flex: 1;
+    min-width: 0;
+  }
+}
+

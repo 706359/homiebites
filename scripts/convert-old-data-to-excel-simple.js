@@ -5,36 +5,36 @@
  * Handles space-separated values
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const projectRoot = path.resolve(__dirname, '..');
+const projectRoot = path.resolve(__dirname, "..");
 
-const inputFile = path.join(projectRoot, 'docs', 'old data.md');
-const outputFile = path.join(projectRoot, 'docs', 'old-data-import.csv');
+const inputFile = path.join(projectRoot, "docs", "old data.md");
+const outputFile = path.join(projectRoot, "docs", "old-data-import.csv");
 
-console.log('📄 Converting old data to CSV format...\n');
+console.log("📄 Converting old data to CSV format...\n");
 
 try {
-  const fileContent = fs.readFileSync(inputFile, 'utf-8');
-  const lines = fileContent.split('\n').filter((line) => line.trim() !== '');
+  const fileContent = fs.readFileSync(inputFile, "utf-8");
+  const lines = fileContent.split("\n").filter((line) => line.trim() !== "");
 
   if (lines.length === 0) {
-    throw new Error('File is empty');
+    throw new Error("File is empty");
   }
 
   // Parse header
   const headerLine = lines[0];
   const headers = headerLine.split(/\s+/).filter((h) => h);
 
-  console.log(`📋 Headers: ${headers.join(', ')}\n`);
+  console.log(`📋 Headers: ${headers.join(", ")}\n`);
 
   // Convert to CSV format
   const csvLines = [];
-  csvLines.push(headers.join(',')); // Header row
+  csvLines.push(headers.join(",")); // Header row
 
   // Parse data rows - split by multiple spaces
   for (let i = 1; i < lines.length; i++) {
@@ -67,31 +67,31 @@ try {
 
     // Ensure we have the right number of columns
     while (values.length < headers.length) {
-      values.push('');
+      values.push("");
     }
     values = values.slice(0, headers.length);
 
     // Escape CSV values (handle commas and quotes)
     const escapedValues = values.map((v) => {
-      const str = String(v || '').trim();
-      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      const str = String(v || "").trim();
+      if (str.includes(",") || str.includes('"') || str.includes("\n")) {
         return `"${str.replace(/"/g, '""')}"`;
       }
       return str;
     });
 
-    csvLines.push(escapedValues.join(','));
+    csvLines.push(escapedValues.join(","));
   }
 
   // Write CSV file
-  fs.writeFileSync(outputFile, csvLines.join('\n'), 'utf-8');
+  fs.writeFileSync(outputFile, csvLines.join("\n"), "utf-8");
 
   console.log(`✅ Converted ${csvLines.length - 1} orders to CSV!`);
   console.log(`📁 Output: ${outputFile}\n`);
-  console.log('💡 You can:');
-  console.log('   1. Open CSV in Excel and save as .xlsx');
-  console.log('   2. Or import CSV directly (if supported)\n');
+  console.log("💡 You can:");
+  console.log("   1. Open CSV in Excel and save as .xlsx");
+  console.log("   2. Or import CSV directly (if supported)\n");
 } catch (error) {
-  console.error('❌ Error:', error.message);
+  console.error("❌ Error:", error.message);
   process.exit(1);
 }

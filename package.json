@@ -10,8 +10,12 @@
     "web": "cd web && npm run dev",
     "web:build": "cd web && npm run build",
     "web:start": "cd web && npm start",
+    "admin": "cd admin && npm run dev",
+    "admin:build": "cd admin && npm run build",
+    "admin:preview": "cd admin && npm run preview",
     "backend": "cd backend && npm start",
     "dev:full": "concurrently \"npm run web\" \"npm run backend\"",
+    "dev:all": "concurrently \"npm run web\" \"npm run admin\" \"npm run backend\"",
     "push": "git add . && git commit -m 'updated' && git push"
   },
   "dependencies": {

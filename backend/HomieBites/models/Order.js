@@ -1,84 +1,105 @@
 // HomieBites Order model
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 const OrderSchema = new mongoose.Schema(
   {
     orderId: { type: String, unique: true, index: true, required: true },
     date: { type: Date, required: true },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    },
     deliveryAddress: { type: String, required: true }, // Legacy field - kept for backward compatibility
     addressId: { type: String }, // Address name/code reference
     customerName: { type: String },
     quantity: { type: Number, default: 1 },
     unitPrice: { type: Number, default: 0 },
     totalAmount: { type: Number, default: 0 }, // Calculated on backend: quantity * unitPrice
-    paymentStatus: { type: String, default: 'Pending' }, // Paid, Pending, Unpaid
-    paymentMode: { type: String, default: 'Online' }, // Cash, Online, UPI, Bank Transfer
-    status: { type: String, default: 'PENDING' }, // Legacy field - kept for backward compatibility
-    source: { type: String, enum: ['manual', 'excel', 'api'], default: 'manual' },
+    paymentStatus: { type: String, default: "Pending" }, // Paid, Pending, Unpaid
+    paymentMode: { type: String, default: "Online" }, // Cash, Online, UPI, Bank Transfer
+    mode: { type: String, default: "Morning" }, // Delivery slot: Can be any value from Excel (Lunch, Dinner, Breakfast, Morning, Noon, Night, etc.)
+    status: { type: String, default: "PENDING" }, // Legacy field - kept for backward compatibility
+    source: {
+      type: String,
+      enum: ["manual", "excel", "api"],
+      default: "manual",
+    },
     billingMonth: { type: Number }, // 1-12 (INT)
     billingYear: { type: Number }, // YYYY (INT)
     notes: { type: String },
     priceOverride: { type: Boolean, default: false }, // true when unitPrice ≠ default unit price
+    dateNeedsReview: { type: Boolean, default: false }, // true if date format was invalid and needs manual correction
+    originalDateString: { type: String }, // Store original invalid date string for manual correction
   },
-  { timestamps: true } // createdAt, updatedAt
+  {
+    timestamps: true, // createdAt, updatedAt
+    collection: "orders", // Explicitly set collection name to 'orders' (lowercase)
+  },
 );
 
 // Generate a unique orderId if not present
-// FORMAT: HB250412A9F (HB + YYMMDD + random base36)
-// Short, clean, Excel-safe, zero thinking required
-OrderSchema.pre('validate', async function (next) {
+// NEW FORMAT: HB-Jan'25-15-000079 (HB-{Month}'{YY}-{DD}-{SequenceNo})
+// Format: HB-{MonthAbbr}'{YY}-{DD}-{6-digit-sequence}
+OrderSchema.pre("validate", async function (next) {
   if (!this.orderId) {
     const datePart = this.date ? new Date(this.date) : new Date();
-    // Format: YYMMDD (2-digit year, month, day)
-    const yy = String(datePart.getFullYear()).slice(-2);
-    const mm = String(datePart.getMonth() + 1).padStart(2, '0');
-    const dd = String(datePart.getDate()).padStart(2, '0');
-    const dateStr = `${yy}${mm}${dd}`;
 
-    // Generate random base36 string (3 characters for collision protection)
-    // Base36 uses 0-9 and A-Z (36 characters total)
-    let randomPart = '';
-    while (randomPart.length < 3) {
-      const rand = Math.random().toString(36).substring(2).toUpperCase();
-      randomPart += rand;
-    }
-    randomPart = randomPart.substring(0, 3);
+    // Get month abbreviation (Jan, Feb, Mar, etc.)
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const month = monthNames[datePart.getMonth()];
 
-    // Format: HB250412A9F
-    let orderId = `HB${dateStr}${randomPart}`;
+    // Get 2-digit year
+    const year = String(datePart.getFullYear()).slice(-2);
 
-    // Check for uniqueness in database (only if model exists)
+    // Get 2-digit day
+    const day = String(datePart.getDate()).padStart(2, "0");
+
+    // Get start and end of day for counting orders
+    const startOfDay = new Date(datePart);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(datePart);
+    endOfDay.setHours(23, 59, 59, 999);
+
     try {
-      let isUnique = false;
-      let attempts = 0;
-      while (!isUnique && attempts < 10) {
-        const existing = await mongoose.model('Order').findOne({ orderId });
-        if (!existing) {
-          isUnique = true;
-        } else {
-          // Regenerate random part if collision found
-          randomPart = '';
-          while (randomPart.length < 3) {
-            const rand = Math.random().toString(36).substring(2).toUpperCase();
-            randomPart += rand;
-          }
-          randomPart = randomPart.substring(0, 3);
-          orderId = `HB${dateStr}${randomPart}`;
-          attempts++;
-        }
-      }
-    } catch (error) {
-      // If model not available or error, use generated ID anyway (database unique index will catch duplicates)
-      console.warn('Could not check Order ID uniqueness:', error.message);
-    }
+      // Count existing orders for this day
+      const Order = mongoose.model("Order");
+      const todayCount = await Order.countDocuments({
+        date: { $gte: startOfDay, $lte: endOfDay },
+      });
 
-    this.orderId = orderId;
+      // Generate sequence number (today's count + 1, padded to 6 digits)
+      const sequence = String(todayCount + 1).padStart(6, "0");
+
+      // Format: HB-Jan'25-15-000079
+      this.orderId = `HB-${month}'${year}-${day}-${sequence}`;
+    } catch (error) {
+      // Fallback: use timestamp-based sequence if count fails
+      console.warn(
+        "Could not count orders for Order ID generation:",
+        error.message,
+      );
+      const fallbackSequence = String(Date.now()).slice(-6);
+      this.orderId = `HB-${month}'${year}-${day}-${fallbackSequence}`;
+    }
   }
   next();
 });
 
 // Pre-save: derive billingMonth and billingYear and compute totalAmount (ALWAYS calculated on backend)
-OrderSchema.pre('save', function (next) {
+OrderSchema.pre("save", function (next) {
   if (this.date) {
     const d = new Date(this.date);
     this.billingMonth = d.getMonth() + 1;
@@ -95,15 +116,15 @@ OrderSchema.pre('save', function (next) {
   // Set paymentStatus from status if not provided (backward compatibility)
   if (!this.paymentStatus && this.status) {
     const statusLower = String(this.status).toLowerCase();
-    if (statusLower === 'paid' || statusLower === 'delivered') {
-      this.paymentStatus = 'Paid';
-    } else if (statusLower === 'unpaid') {
-      this.paymentStatus = 'Unpaid';
+    if (statusLower === "paid" || statusLower === "delivered") {
+      this.paymentStatus = "Paid";
+    } else if (statusLower === "unpaid") {
+      this.paymentStatus = "Unpaid";
     } else {
-      this.paymentStatus = 'Pending';
+      this.paymentStatus = "Pending";
     }
   }
   next();
 });
 
-export default mongoose.model('Order', OrderSchema);
+export default mongoose.model("Order", OrderSchema);

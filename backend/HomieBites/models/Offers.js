@@ -1,10 +1,10 @@
 // HomieBites Offers model
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const OfferSchema = new mongoose.Schema(
   {
     title: { type: String, required: true }, // Offer title
-    type: { type: String, enum: ['Flat', 'Percentage'], default: 'Flat' }, // Flat ₹ off or Percentage discount
+    type: { type: String, enum: ["Flat", "Percentage"], default: "Flat" }, // Flat ₹ off or Percentage discount
     value: { type: Number, default: 0 }, // Numeric value (₹ amount or %)
     description: String, // Legacy field
     discount: String, // Legacy field for display
@@ -16,7 +16,7 @@ const OfferSchema = new mongoose.Schema(
     ctaText: String,
     isActive: { type: Boolean, default: true }, // Active toggle
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export default mongoose.model('Offer', OfferSchema);
+export default mongoose.model("Offer", OfferSchema);

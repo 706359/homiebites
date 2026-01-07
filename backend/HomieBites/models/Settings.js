@@ -1,9 +1,9 @@
 // HomieBites Settings model
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const SettingsSchema = new mongoose.Schema(
   {
-    businessName: { type: String, default: 'HomieBites' },
+    businessName: { type: String, default: "HomieBites" },
     defaultUnitPrice: { type: Number, default: 0 },
     paymentModes: [{ type: String }], // Array of payment modes: ['Cash', 'Online', 'UPI', 'Bank Transfer']
     monthLockedTill: { type: String }, // YYYY-MM format, orders before this month cannot be edited
@@ -14,7 +14,7 @@ const SettingsSchema = new mongoose.Schema(
     deliveryCharge: Number,
     announcement: String,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Ensure only one settings document exists
@@ -26,5 +26,4 @@ SettingsSchema.statics.getSettings = async function () {
   return settings;
 };
 
-export default mongoose.model('Settings', SettingsSchema);
-
+export default mongoose.model("Settings", SettingsSchema);

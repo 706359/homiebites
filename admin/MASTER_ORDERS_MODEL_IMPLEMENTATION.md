@@ -7,11 +7,13 @@ The Master Orders Model has been successfully implemented according to your spec
 ## ✅ Completed Features
 
 ### 1. Data Model Structure
+
 - ✅ **Source Fields Only**: `date`, `deliveryAddress`, `quantity`, `unitPrice`, `status`, `paymentMode`, `source`
 - ✅ **Auto-Calculated Fields**: `totalAmount`, `billingMonth` (INT), `billingYear` (INT)
 - ✅ **Never Stored**: `billingMonth`/`referenceMonth` as strings, `year` as string, `sNo`, manual `totalAmount`
 
 ### 2. Order Entry Form
+
 - ✅ Date input (default: today, ISO format)
 - ✅ Delivery Address with **autocomplete** (suggests from previous orders)
 - ✅ Quantity (default: 1)
@@ -22,25 +24,29 @@ The Master Orders Model has been successfully implemented according to your spec
 - ✅ Derived fields shown as read-only (Billing Month, Reference Month, Year)
 
 ### 3. Smart Excel Upload
+
 - ✅ **Composite Key**: `(order_date + delivery_address)`
-- ✅ **Update/Insert Logic**: 
+- ✅ **Update/Insert Logic**:
   - If same date + address exists → UPDATE
   - If not → INSERT
 - ✅ Never deletes old data
 - ✅ Auto-calculates derived fields from source data
 
 ### 4. Display Updates
+
 - ✅ **All Orders Data Tab**: Shows only source fields
   - Date | Address | Qty | Unit Price | Total | Status | Payment Mode
   - Hidden: `billingMonth`, `billingYear`, `source` (backend only)
 - ✅ S No. calculated on display (UI only)
 
 ### 5. Edit Functionality
+
 - ✅ Click row → opens form in edit mode
 - ✅ Save → updates same record (no duplicates)
 - ✅ Stats auto-refresh
 
 ### 6. Utility Functions Created
+
 - ✅ `calculateTotalAmount(quantity, unitPrice)` - Only way to calculate total
 - ✅ `extractBillingMonth(orderDate)` - Returns INT (1-12)
 - ✅ `extractBillingYear(orderDate)` - Returns INT (YYYY)

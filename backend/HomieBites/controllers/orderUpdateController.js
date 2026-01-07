@@ -1,6 +1,6 @@
-import Order from '../models/Order.js';
-import Settings from '../models/Settings.js';
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
+import Order from "../models/Order.js";
+import Settings from "../models/Settings.js";
 
 // Helper function to find order by ID (handles both ObjectId and custom orderId)
 async function findOrderById(id) {
@@ -19,20 +19,27 @@ export async function updateOrder(req, res) {
     const orderId = req.params.id;
     const existingOrder = await findOrderById(orderId);
     if (!existingOrder) {
-      return res.status(404).json({ success: false, message: 'Order not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
     }
 
     // MONTH LOCK: Check if order's month is locked
     try {
       const settings = await Settings.getSettings();
       if (settings.monthLockedTill) {
-        const [lockedYear, lockedMonth] = settings.monthLockedTill.split('-').map(Number);
+        const [lockedYear, lockedMonth] = settings.monthLockedTill
+          .split("-")
+          .map(Number);
         const orderDate = new Date(existingOrder.date);
         const orderYear = orderDate.getFullYear();
         const orderMonth = orderDate.getMonth() + 1;
-        
+
         // If order is before locked month, prevent editing
-        if (orderYear < lockedYear || (orderYear === lockedYear && orderMonth < lockedMonth)) {
+        if (
+          orderYear < lockedYear ||
+          (orderYear === lockedYear && orderMonth < lockedMonth)
+        ) {
           return res.status(403).json({
             success: false,
             error: `Cannot edit orders from ${orderMonth}/${orderYear}. Month is locked until ${settings.monthLockedTill}`,
@@ -41,21 +48,41 @@ export async function updateOrder(req, res) {
       }
     } catch (settingsError) {
       // If Settings model doesn't exist or error, continue without month lock check
-      console.warn('Month lock check failed:', settingsError);
+      console.warn("Month lock check failed:", settingsError);
     }
 
     const update = { ...req.body };
-    
+
     // CRITICAL: orderId is immutable - never allow it to be changed
     delete update.orderId;
-    
+
+    // If date is being updated and is valid, clear dateNeedsReview flag
+    if (update.date) {
+      const newDate = new Date(update.date);
+      if (!isNaN(newDate.getTime())) {
+        // Date is valid, clear the review flag
+        update.dateNeedsReview = false;
+        update.originalDateString = undefined;
+      }
+    }
+
     // CRITICAL: totalAmount is ALWAYS calculated on backend (quantity * unitPrice)
     // Never trust totalAmount from request body
     if (update.quantity !== undefined || update.unitPrice !== undefined) {
-      const quantity = Number(update.quantity !== undefined ? update.quantity : existingOrder.quantity) || 1;
-      const unitPrice = Number(update.unitPrice !== undefined ? update.unitPrice : existingOrder.unitPrice) || 0;
+      const quantity =
+        Number(
+          update.quantity !== undefined
+            ? update.quantity
+            : existingOrder.quantity,
+        ) || 1;
+      const unitPrice =
+        Number(
+          update.unitPrice !== undefined
+            ? update.unitPrice
+            : existingOrder.unitPrice,
+        ) || 0;
       update.totalAmount = quantity * unitPrice;
-      
+
       // Set priceOverride flag if unitPrice differs from default
       try {
         const settings = await Settings.getSettings();
@@ -65,25 +92,41 @@ export async function updateOrder(req, res) {
         update.priceOverride = false;
       }
     }
-    
+
     // Remove totalAmount from update if present (always calculate on backend)
     delete update.totalAmount;
-    
+
     // Update using the correct ID field
     let updatedOrder;
     if (mongoose.Types.ObjectId.isValid(orderId)) {
-      updatedOrder = await Order.findByIdAndUpdate(orderId, update, { new: true, runValidators: true });
+      updatedOrder = await Order.findByIdAndUpdate(orderId, update, {
+        new: true,
+        runValidators: true,
+      });
     } else {
-      updatedOrder = await Order.findOneAndUpdate({ orderId: orderId }, update, { new: true, runValidators: true });
+      updatedOrder = await Order.findOneAndUpdate(
+        { orderId: orderId },
+        update,
+        {
+          new: true,
+          runValidators: true,
+        },
+      );
     }
-    
+
     if (!updatedOrder) {
-      return res.status(404).json({ success: false, message: 'Order not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
     }
-    
+
     res.json({ success: true, data: updatedOrder });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Failed to update order', error: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to update order",
+      error: err.message,
+    });
   }
 }
 
@@ -97,9 +140,13 @@ export async function deleteOrder(req, res) {
     } else {
       deletedOrder = await Order.findOneAndDelete({ orderId: orderId });
     }
-    if (!deletedOrder) return res.status(404).json({ message: 'Order not found' });
-    res.json({ message: 'Order deleted', order: deletedOrder });
+    if (!deletedOrder)
+      return res.status(404).json({ message: "Order not found" });
+
+    res.json({ message: "Order deleted", order: deletedOrder });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to delete order', error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to delete order", error: err.message });
   }
 }

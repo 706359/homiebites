@@ -1,8 +1,8 @@
-import { useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
-import NotificationWrapper from '../components/NotificationWrapper';
-import { LanguageProvider, useLanguage } from '../contexts/LanguageContext';
-import { NotificationProvider } from '../contexts/NotificationContext';
+import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import NotificationWrapper from "../components/NotificationWrapper";
+import { LanguageProvider, useLanguage } from "../contexts/LanguageContext";
+import { NotificationProvider } from "../contexts/NotificationContext";
 
 function ScrollToTop() {
   const location = useLocation();
@@ -11,10 +11,10 @@ function ScrollToTop() {
   useEffect(() => {
     // Scroll to top on route change, unless there's a hash
     const hash = window.location.hash;
-    if (!hash || hash === '#') {
+    if (!hash || hash === "#") {
       window.scrollTo({
         top: 0,
-        behavior: 'instant',
+        behavior: "instant",
       });
     }
   }, [pathname]);
@@ -28,20 +28,21 @@ function HashScrollHandler() {
 
   useEffect(() => {
     // Handle hash navigation when route changes to home page
-    if (pathname === '/') {
+    if (pathname === "/") {
       const hash = window.location.hash;
-      if (hash && hash !== '#') {
+      if (hash && hash !== "#") {
         // Wait for DOM to be ready
         const scrollToHash = () => {
           const targetElement = document.querySelector(hash);
           if (targetElement) {
             const headerOffset = 70;
             const elementPosition = targetElement.getBoundingClientRect().top;
-            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+            const offsetPosition =
+              elementPosition + window.pageYOffset - headerOffset;
 
             window.scrollTo({
               top: offsetPosition,
-              behavior: 'smooth',
+              behavior: "smooth",
             });
             return true;
           }
@@ -68,7 +69,7 @@ function LanguageHandler() {
 
   useEffect(() => {
     // Update HTML lang attribute based on selected language
-    document.documentElement.lang = language === 'hi' ? 'hi' : 'en';
+    document.documentElement.lang = language === "hi" ? "hi" : "en";
   }, [language]);
 
   return null;

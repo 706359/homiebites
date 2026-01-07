@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Footer from '../components/Footer';
-import Header from '../components/Header';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Footer from "../components/Footer";
+import Header from "../components/Header";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export default function ErrorPage({ error, reset }) {
   const { t } = useLanguage();
@@ -11,7 +11,7 @@ export default function ErrorPage({ error, reset }) {
   useEffect(() => {
     // Log error to console or error reporting service
     if (error) {
-      console.error('Application error:', error);
+      console.error("Application error:", error);
     }
   }, [error]);
 
@@ -23,34 +23,39 @@ export default function ErrorPage({ error, reset }) {
     if (reset) {
       reset();
     } else {
-      navigate('/');
+      navigate("/");
     }
   };
 
   return (
     <>
       <Header onOrderClick={openOrderModal} />
-      <div className='error-container'>
-        <div className='error-content'>
-          <div className='error-icon'>
-            <i className='fa-solid fa-circle-exclamation'></i>
+      <div className="error-container">
+        <div className="error-content">
+          <div className="error-icon">
+            <i className="fa-solid fa-circle-exclamation"></i>
           </div>
-          <h1 className='error-title'>{t('error.title') || 'Something went wrong!'}</h1>
-          <p className='error-description'>
-            {t('error.description') || 'We encountered an unexpected error. Please try again.'}
+          <h1 className="error-title">
+            {t("error.title") || "Something went wrong!"}
+          </h1>
+          <p className="error-description">
+            {t("error.description") ||
+              "We encountered an unexpected error. Please try again."}
           </p>
-          <div className='error-actions'>
-            <button onClick={handleReset} className='btn btn-primary'>
-              {t('error.tryAgain') || 'Try Again'}
+          <div className="error-actions">
+            <button onClick={handleReset} className="btn btn-primary">
+              {t("error.tryAgain") || "Try Again"}
             </button>
-            <Link to='/' className='btn btn-ghost'>
-              {t('error.goHome') || 'Go to Homepage'}
+            <Link to="/" className="btn btn-ghost">
+              {t("error.goHome") || "Go to Homepage"}
             </Link>
           </div>
           {import.meta.env.DEV && error && (
-            <details className='error-details'>
-              <summary>{t('error.errorDetails') || 'Error Details'}</summary>
-              <pre className='error-stack'>{error.message || String(error)}</pre>
+            <details className="error-details">
+              <summary>{t("error.errorDetails") || "Error Details"}</summary>
+              <pre className="error-stack">
+                {error.message || String(error)}
+              </pre>
             </details>
           )}
         </div>

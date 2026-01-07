@@ -1,34 +1,36 @@
-import express from 'express';
-import { authenticate, isAdmin } from '../middleware/auth.js';
-import Offer from '../models/Offers.js';
+import express from "express";
+import { authenticate, isAdmin } from "../middleware/auth.js";
+import Offer from "../models/Offers.js";
 
 const router = express.Router();
 
 // GET /api/offers - public (only active offers returned)
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const now = new Date();
     const offers = await Offer.find({ isActive: true }).lean();
-    const active = offers.filter((o) => !o.endDate || new Date(o.endDate) >= now);
+    const active = offers.filter(
+      (o) => !o.endDate || new Date(o.endDate) >= now,
+    );
     // Format dates to DD-MMM-YYYY (e.g., 09-Jul-2027)
     const fmt = (d) => {
       if (!d) return null;
       const date = new Date(d);
       if (isNaN(date.getTime())) return String(d);
-      const dd = String(date.getDate()).padStart(2, '0');
+      const dd = String(date.getDate()).padStart(2, "0");
       const mNames = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
       ];
       const m = mNames[date.getMonth()];
       const yyyy = date.getFullYear();
@@ -43,13 +45,15 @@ router.get('/', async (req, res) => {
 
     return res.json({ success: true, data: formatted });
   } catch (error) {
-    console.error('GET /api/offers error:', error);
-    return res.status(500).json({ success: false, error: 'Failed to fetch offers' });
+    console.error("GET /api/offers error:", error);
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch offers" });
   }
 });
 
 // PUT /api/offers - admin only: replace all offers (payload: array of offers)
-router.put('/', authenticate, isAdmin, async (req, res) => {
+router.put("/", authenticate, isAdmin, async (req, res) => {
   try {
     const payload = req.body;
     // support { offers: [...] } or direct array payload
@@ -60,7 +64,9 @@ router.put('/', authenticate, isAdmin, async (req, res) => {
         : null;
 
     if (!Array.isArray(data)) {
-      return res.status(400).json({ success: false, error: 'Offers must be an array' });
+      return res
+        .status(400)
+        .json({ success: false, error: "Offers must be an array" });
     }
 
     // Simple approach: remove all existing offers and insert new ones
@@ -69,8 +75,10 @@ router.put('/', authenticate, isAdmin, async (req, res) => {
 
     return res.json({ success: true, data: created });
   } catch (error) {
-    console.error('PUT /api/offers error:', error);
-    return res.status(500).json({ success: false, error: 'Failed to update offers' });
+    console.error("PUT /api/offers error:", error);
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to update offers" });
   }
 });
 

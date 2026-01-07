@@ -1,9 +1,9 @@
-import './WhatsAppFloat.css';
+import "./WhatsAppFloat.css";
 
 const WhatsAppFloat = () => {
   const handleClick = () => {
-    window.open('https://wa.me/919958983578', '_blank', 'noopener')
-  }
+    window.open("https://wa.me/919958983578", "_blank", "noopener");
+  };
 
   return (
     <a
@@ -13,14 +13,13 @@ const WhatsAppFloat = () => {
       rel="noreferrer"
       aria-label="Chat on WhatsApp"
       onClick={(e) => {
-        e.preventDefault()
-        handleClick()
+        e.preventDefault();
+        handleClick();
       }}
     >
       <i className="fa-brands fa-whatsapp"></i>
     </a>
-  )
-}
+  );
+};
 
-export default WhatsAppFloat
-
+export default WhatsAppFloat;

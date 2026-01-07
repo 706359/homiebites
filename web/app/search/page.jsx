@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
-import OrderModal from '../../components/OrderModal';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { getMenuData } from '../../lib/menuData';
-import '../../styles/globals.css';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
+import OrderModal from "../../components/OrderModal";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { getMenuData } from "../../lib/menuData";
+import "../../styles/globals.css";
 
 export default function SearchPage() {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
@@ -51,14 +51,16 @@ export default function SearchPage() {
       <Header onOrderClick={openOrderModal} />
       <div className="search-page">
         <div className="search-container">
-          <h1 className="search-title">{t('header.search')}</h1>
-          
+          <h1 className="search-title">{t("header.search")}</h1>
+
           <form onSubmit={handleSearch} className="search-form">
             <div className="search-input-wrapper">
               <input
                 type="text"
                 className="search-input"
-                placeholder={t('search.placeholder') || 'Search for dishes, categories...'}
+                placeholder={
+                  t("search.placeholder") || "Search for dishes, categories..."
+                }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -71,18 +73,22 @@ export default function SearchPage() {
           {searchResults.length > 0 ? (
             <div className="search-results">
               <h2 className="results-title">
-                {t('search.results') || 'Search Results'} ({searchResults.length})
+                {t("search.results") || "Search Results"} (
+                {searchResults.length})
               </h2>
               <div className="results-grid">
                 {searchResults.map((item, index) => (
-                  <div key={`${item.categoryId}-${item.id}-${index}`} className="result-card">
+                  <div
+                    key={`${item.categoryId}-${item.id}-${index}`}
+                    className="result-card"
+                  >
                     <div className="result-category">{item.category}</div>
                     <h3 className="result-name">{item.name}</h3>
                     <div className="result-price">₹{item.price}</div>
                     <button
                       className="btn btn-primary btn-small btn-full"
                       onClick={() => {
-                        navigate('/menu');
+                        navigate("/menu");
                         openOrderModal();
                       }}
                     >
@@ -94,12 +100,18 @@ export default function SearchPage() {
             </div>
           ) : searchQuery ? (
             <div className="no-results">
-              <p>{t('search.noResults') || 'No results found. Try a different search term.'}</p>
+              <p>
+                {t("search.noResults") ||
+                  "No results found. Try a different search term."}
+              </p>
             </div>
           ) : (
             <div className="search-placeholder">
               <i className="fa-solid fa-magnifying-glass"></i>
-              <p>{t('search.startSearching') || 'Start typing to search for dishes...'}</p>
+              <p>
+                {t("search.startSearching") ||
+                  "Start typing to search for dishes..."}
+              </p>
             </div>
           )}
         </div>

@@ -1,5 +1,7 @@
+import PremiumLoader from './PremiumLoader.jsx';
 import { getFilteredOrdersByDate } from '../utils/calculations.js';
-import { formatCurrency, getTotalRevenue } from '../utils/orderUtils.js';
+import { formatDate, formatDateShort, parseOrderDate } from '../utils/dateUtils.js';
+import { formatCurrency, getTotalRevenue, isPendingStatus } from '../utils/orderUtils.js';
 
 const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   const now = new Date();
@@ -8,83 +10,151 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  // TODAY SECTION
+  // CURRENT MONTH ORDERS
+  const currentMonthOrders = getFilteredOrdersByDate(orders, 'month', '', '');
+  const currentMonthTotal = currentMonthOrders.length;
+  const currentMonthRevenue = getTotalRevenue(currentMonthOrders);
+  const currentMonthUnpaidAmount = currentMonthOrders
+    .filter((o) => isPendingStatus(o.status))
+    .reduce((sum, o) => {
+      const total = parseFloat(o.total || o.totalAmount || 0);
+      return sum + (isNaN(total) ? 0 : total);
+    }, 0);
+  const unpaidOrdersCount = currentMonthOrders.filter((o) => isPendingStatus(o.status)).length;
+
+  // TOTAL CUSTOMERS (unique addresses)
+  const allUniqueAddresses = new Set(
+    orders.map((o) => o.deliveryAddress || o.customerAddress || o.address).filter(Boolean)
+  ).size;
+
+  // MONTH-OVER-MONTH GROWTH
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+  const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+  const lastMonthOrders = orders.filter((o) => {
+    try {
+      const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+      return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === lastMonthYear;
+    } catch (e) {
+      return false;
+    }
+  });
+  const lastMonthRevenue = getTotalRevenue(lastMonthOrders);
+  const monthOverMonthGrowth =
+    lastMonthRevenue > 0
+      ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
+      : currentMonthRevenue > 0
+      ? Infinity
+      : 0;
+  const isNewGrowth = lastMonthRevenue === 0 && currentMonthRevenue > 0;
+
+  // SECONDARY STATS
+  // Today's Revenue
   const todayOrders = orders.filter((o) => {
     try {
-      const orderDate = new Date(o.createdAt || o.date || o.order_date);
+      const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
       return orderDate >= today && orderDate < tomorrow;
     } catch (e) {
       return false;
     }
   });
-
   const todayOrdersCount = todayOrders.length;
-  const todayQuantity = todayOrders.reduce((sum, o) => {
-    const qty = parseInt(o.quantity || 1);
-    return sum + qty;
-  }, 0);
+  const todayRevenue = getTotalRevenue(todayOrders);
 
-  // Today paid collection
-  const todayPaidCollection = todayOrders
-    .filter((o) => {
-      const status = (o.status || '').toLowerCase();
-      return status === 'paid';
-    })
-    .reduce((sum, o) => {
-      const total = parseFloat(o.total || o.totalAmount || 0);
-      return sum + (isNaN(total) ? 0 : total);
-    }, 0);
+  // This Week Revenue
+  const thisWeekStart = new Date(now);
+  thisWeekStart.setDate(now.getDate() - now.getDay());
+  thisWeekStart.setHours(0, 0, 0, 0);
+  const thisWeekOrders = orders.filter((o) => {
+    try {
+      const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+      return orderDate >= thisWeekStart;
+    } catch (e) {
+      return false;
+    }
+  });
+  const thisWeekRevenue = getTotalRevenue(thisWeekOrders);
+  const thisWeekOrdersCount = thisWeekOrders.length;
 
-  // Today unpaid amount
-  const todayUnpaidAmount = todayOrders
-    .filter((o) => {
-      const status = (o.status || '').toLowerCase();
-      return status === 'unpaid';
-    })
-    .reduce((sum, o) => {
-      const total = parseFloat(o.total || o.totalAmount || 0);
-      return sum + (isNaN(total) ? 0 : total);
-    }, 0);
+  // Avg Order Value
+  const currentMonthAvgOrderValue =
+    currentMonthTotal > 0 ? Math.round(currentMonthRevenue / currentMonthTotal) : 0;
 
-  // CURRENT MONTH SECTION
-  const currentMonthOrders = getFilteredOrdersByDate(orders, 'month', '', '');
-  const currentMonthTotal = currentMonthOrders.length;
-  const currentMonthRevenue = getTotalRevenue(currentMonthOrders);
+  // Cancel Rate
+  const cancelledOrders = orders.filter((o) => {
+    const status = (o.status || '').toLowerCase();
+    return status === 'cancelled' || status === 'cancel';
+  });
+  const cancelRate = orders.length > 0 ? (cancelledOrders.length / orders.length) * 100 : 0;
 
-  // Current month paid revenue
-  const currentMonthPaidRevenue = currentMonthOrders
-    .filter((o) => {
-      const status = (o.status || '').toLowerCase();
-      return status === 'paid';
-    })
-    .reduce((sum, o) => {
-      const total = parseFloat(o.total || o.totalAmount || 0);
-      return sum + (isNaN(total) ? 0 : total);
-    }, 0);
+  // CHARTS DATA
+  // Revenue Trend (Last 6 Months)
+  const last6MonthsRevenue = [];
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date(now);
+    date.setMonth(date.getMonth() - i);
+    date.setDate(1);
+    date.setHours(0, 0, 0, 0);
+    const nextMonth = new Date(date);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
 
-  // Current month unpaid amount
-  const currentMonthUnpaidAmount = currentMonthOrders
-    .filter((o) => {
-      const status = (o.status || '').toLowerCase();
-      return status === 'unpaid';
-    })
-    .reduce((sum, o) => {
-      const total = parseFloat(o.total || o.totalAmount || 0);
-      return sum + (isNaN(total) ? 0 : total);
-    }, 0);
+    const monthOrders = orders.filter((o) => {
+      try {
+        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+        return orderDate >= date && orderDate < nextMonth;
+      } catch (e) {
+        return false;
+      }
+    });
 
-  // Status breakdown
-  const paidOrdersCount = currentMonthOrders.filter(
-    (o) => (o.status || '').toLowerCase() === 'paid'
-  ).length;
-  const unpaidOrdersCount = currentMonthOrders.filter(
-    (o) => (o.status || '').toLowerCase() === 'unpaid'
-  ).length;
-  const ordersWithoutStatus = currentMonthOrders.filter(
-    (o) => !o.status || (o.status || '').trim() === ''
-  ).length;
+    const monthName = formatDateShort(date);
+    last6MonthsRevenue.push({
+      month: monthName,
+      revenue: getTotalRevenue(monthOrders),
+      orders: monthOrders.length,
+    });
+  }
 
-  // Payment mode breakdown
+  // Orders by Mode (Lunch vs Dinner)
+  const ordersByMode = {
+    Lunch: 0,
+    Dinner: 0,
+    'Not Set': 0,
+  };
+  currentMonthOrders.forEach((o) => {
+    const mode = o.mode || 'Not Set';
+    ordersByMode[mode] = (ordersByMode[mode] || 0) + 1;
+  });
+
+  // Daily Orders This Month
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const daysInMonth = currentMonthEnd.getDate();
+  const dailyOrdersData = [];
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(now.getFullYear(), now.getMonth(), day);
+    const nextDay = new Date(date);
+    nextDay.setDate(nextDay.getDate() + 1);
+
+    const dayOrders = currentMonthOrders.filter((o) => {
+      try {
+        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+        return orderDate >= date && orderDate < nextDay;
+      } catch (e) {
+        return false;
+      }
+    });
+
+    dailyOrdersData.push({
+      day,
+      orders: dayOrders.length,
+      revenue: getTotalRevenue(dayOrders),
+    });
+  }
+  const maxDailyOrders = Math.max(...dailyOrdersData.map((d) => d.orders), 1);
+
+  // Payment Mode Split
   const paymentModeStats = {};
   currentMonthOrders.forEach((o) => {
     const mode = o.paymentMode || 'Not Set';
@@ -95,20 +165,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     paymentModeStats[mode].amount += parseFloat(o.total || o.totalAmount || 0);
   });
 
-  // Top addresses by order count
-  const addressOrderCount = {};
-  currentMonthOrders.forEach((o) => {
-    const addr = o.deliveryAddress || o.customerAddress || o.address;
-    if (addr) {
-      addressOrderCount[addr] = (addressOrderCount[addr] || 0) + 1;
-    }
-  });
-  const topAddresses = Object.entries(addressOrderCount)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 10)
-    .map(([addr, count]) => ({ address: addr, count }));
-
-  // Recent orders (last 10)
+  // RECENT ORDERS (Last 10)
   const recentOrders = [...orders]
     .sort((a, b) => {
       const dateA = new Date(a.createdAt || a.date || a.order_date);
@@ -117,94 +174,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     })
     .slice(0, 10);
 
-  // Avg order value (current month)
-  const currentMonthAvgOrderValue =
-    currentMonthTotal > 0 ? Math.round(currentMonthRevenue / currentMonthTotal) : 0;
-
-  // ALERTS SECTION
-  // Pending > 7 days
-  const sevenDaysAgo = new Date(now);
-  sevenDaysAgo.setDate(now.getDate() - 7);
-  sevenDaysAgo.setHours(0, 0, 0, 0);
-
-  const pendingOver7Days = orders.filter((o) => {
-    try {
-      const orderDate = new Date(o.createdAt || o.date || o.order_date);
-      const status = (o.status || '').toLowerCase();
-      // Only include orders that explicitly have unpaid status
-      return orderDate < sevenDaysAgo && status === 'unpaid';
-    } catch (e) {
-      return false;
-    }
-  });
-
-  // Inactive addresses (>3 days)
-  const threeDaysAgo = new Date(now);
-  threeDaysAgo.setDate(now.getDate() - 3);
-  threeDaysAgo.setHours(0, 0, 0, 0);
-
-  const addressLastOrder = {};
-  orders.forEach((o) => {
-    try {
-      const addr = o.deliveryAddress || o.customerAddress || o.address;
-      if (!addr) return;
-      const orderDate = new Date(o.createdAt || o.date || o.order_date);
-      if (!addressLastOrder[addr] || orderDate > addressLastOrder[addr]) {
-        addressLastOrder[addr] = orderDate;
-      }
-    } catch (e) {}
-  });
-
-  const inactiveAddresses = Object.entries(addressLastOrder)
-    .filter(([addr, lastOrderDate]) => lastOrderDate < threeDaysAgo)
-    .map(([addr]) => addr);
-
-  // Price override alerts (orders where unitPrice doesn't match default from settings)
-  const defaultUnitPrice = settings?.defaultUnitPrice || 0;
-  const priceOverrideAlerts = orders.filter((o) => {
-    try {
-      if (!o.unitPrice || o.unitPrice === 0) return false;
-      const storedPrice = parseFloat(o.unitPrice);
-      // Check if stored price differs from default unit price
-      return defaultUnitPrice > 0 && Math.abs(storedPrice - defaultUnitPrice) > 0.01;
-    } catch (e) {
-      return false;
-    }
-  });
-
-  // Active addresses (addresses with orders in current month - aligns with billing cycle)
-  const currentMonthOrdersForAddresses = getFilteredOrdersByDate(orders, 'month', '', '');
-  const activeAddresses = new Set(
-    currentMonthOrdersForAddresses
-      .map((o) => o.deliveryAddress || o.customerAddress || o.address)
-      .filter(Boolean)
-  ).size;
-
-  // Last 7 days trend data
-  const last7Days = [];
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date(now);
-    date.setDate(date.getDate() - i);
-    date.setHours(0, 0, 0, 0);
-    const nextDay = new Date(date);
-    nextDay.setDate(nextDay.getDate() + 1);
-
-    const dayOrders = orders.filter((o) => {
-      const orderDate = new Date(o.createdAt || o.date || o.order_date);
-      return orderDate >= date && orderDate < nextDay;
-    });
-
-    last7Days.push({
-      date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-      orders: dayOrders.length,
-      revenue: getTotalRevenue(dayOrders),
-    });
-  }
-
-  const maxOrders = Math.max(...last7Days.map((d) => d.orders), 1);
-  const maxRevenue = Math.max(...last7Days.map((d) => d.revenue), 1);
-
-  // Month Lock Status
+  // MONTH LOCK STATUS
   const getMonthLockStatus = () => {
     if (!settings || !settings.monthLockedTill) {
       return { status: 'OPEN', lockedTill: null };
@@ -234,638 +204,259 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     } catch (e) {}
     return { status: 'OPEN', lockedTill: null };
   };
-
   const monthLockStatus = getMonthLockStatus();
 
-  // Show loading state
+  // LOADING STATE
   if (loading) {
     return (
       <div className='admin-content'>
         <div className='dashboard-header'>
           <h2>Dashboard</h2>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: '400px',
-            flexDirection: 'column',
-            gap: '1rem',
-          }}
-        >
-          <div
-            className='loader-spinner'
-            style={{
-              width: '50px',
-              height: '50px',
-              border: '4px solid var(--admin-border)',
-              borderTop: '4px solid var(--admin-accent)',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-            }}
-          ></div>
-          <p style={{ color: 'var(--admin-text-light)', fontSize: '0.9rem' }}>
-            Loading dashboard data...
-          </p>
-        </div>
+        <PremiumLoader message="Loading dashboard data..." size="large" />
       </div>
     );
   }
 
   return (
     <div className='admin-content'>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '1.5rem',
-        }}
-      >
-        <h2>Dashboard</h2>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          {/* Month Lock Status */}
-          <div
-            style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '6px',
-              background:
-                monthLockStatus.status === 'LOCKED'
-                  ? 'var(--admin-warning-light)'
-                  : 'var(--admin-success-light)',
-              border: `2px solid ${monthLockStatus.status === 'LOCKED' ? 'var(--admin-warning)' : 'var(--admin-success)'}`,
-              fontSize: '0.9rem',
-              fontWeight: '600',
-              color:
-                monthLockStatus.status === 'LOCKED'
-                  ? 'var(--admin-warning)'
-                  : 'var(--admin-success)',
-            }}
-          >
-            {monthLockStatus.status === 'LOCKED' ? '🔒' : '🟢'} Current Month:{' '}
-            {monthLockStatus.status}
-            {monthLockStatus.lockedTill && ` (till ${monthLockStatus.lockedTill})`}
-          </div>
-          {/* Quick Action Buttons */}
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className='btn btn-primary btn-small'
-              onClick={() => setActiveTab('currentMonthOrders')}
-              title='Add New Order'
-            >
-              <i className='fa-solid fa-plus'></i> Add Order
-            </button>
-            <button
-              className='btn btn-secondary btn-small'
-              onClick={() => setActiveTab('pendingAmounts')}
-              title='View Pending Amounts'
-            >
-              <i className='fa-solid fa-money-bill-wave'></i> Pending
-            </button>
-            <button
-              className='btn btn-ghost btn-small'
-              onClick={() => setActiveTab('summary')}
-              title='View Monthly Summary'
-            >
-              <i className='fa-solid fa-table'></i> Summary
-            </button>
-          </div>
+      {/* DASHBOARD HEADER */}
+      <div className='dashboard-header'>
+        <div>
+          <h2>Dashboard</h2>
+          <p>Overview of your business metrics</p>
+        </div>
+        <div
+          style={{
+            padding: '0.5rem 1rem',
+            borderRadius: '8px',
+            background:
+              monthLockStatus.status === 'LOCKED'
+                ? 'var(--admin-warning-light)'
+                : 'var(--admin-success-light)',
+            border: `2px solid ${
+              monthLockStatus.status === 'LOCKED' ? 'var(--admin-warning)' : 'var(--admin-success)'
+            }`,
+            fontSize: '0.875rem',
+            fontWeight: '600',
+            color:
+              monthLockStatus.status === 'LOCKED' ? 'var(--admin-warning)' : 'var(--admin-success)',
+          }}
+        >
+          {monthLockStatus.status === 'LOCKED' ? '🔒' : '🟢'} Current Month:{' '}
+          {monthLockStatus.status}
+          {monthLockStatus.lockedTill && ` (till ${monthLockStatus.lockedTill})`}
         </div>
       </div>
 
-      {/* TODAY SECTION */}
-      <div className='dashboard-section'>
-        <h3
-          style={{
-            marginBottom: '1rem',
-            color: 'var(--admin-accent)',
-            fontSize: '1.1rem',
-            fontWeight: '600',
-          }}
-        >
-          Today
-        </h3>
-        <div className='admin-stats'>
-          <div className='stat-card'>
-            <i className='fa-solid fa-calendar-day'></i>
-            <div>
-              <h3>{todayOrdersCount}</h3>
-              <p>Today Orders</p>
-            </div>
-          </div>
-          <div className='stat-card'>
-            <i className='fa-solid fa-box'></i>
-            <div>
-              <h3>{todayQuantity}</h3>
-              <p>Today Quantity</p>
-            </div>
-          </div>
-          <div className='stat-card'>
-            <i className='fa-solid fa-check-circle' style={{ color: 'var(--admin-success)' }}></i>
-            <div>
-              <h3>₹{formatCurrency(todayPaidCollection)}</h3>
-              <p>Today Paid</p>
-            </div>
-          </div>
-          <div className='stat-card'>
-            <i
-              className='fa-solid fa-exclamation-triangle'
-              style={{ color: 'var(--admin-warning)' }}
-            ></i>
-            <div>
-              <h3>₹{formatCurrency(todayUnpaidAmount)}</h3>
-              <p>Today Unpaid</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* CURRENT MONTH SECTION */}
-      <div className='dashboard-section'>
-        <h3
-          style={{
-            marginBottom: '1rem',
-            color: 'var(--admin-accent)',
-            fontSize: '1.1rem',
-            fontWeight: '600',
-          }}
-        >
-          Current Month
-        </h3>
-        <div className='admin-stats'>
-          <div className='stat-card'>
-            <i className='fa-solid fa-shopping-cart'></i>
-            <div>
-              <h3>{currentMonthTotal}</h3>
-              <p>Total Orders</p>
-            </div>
-          </div>
-          <div className='stat-card'>
-            <i className='fa-solid fa-rupee-sign'></i>
-            <div>
-              <h3>₹{formatCurrency(currentMonthRevenue)}</h3>
-              <p>Total Revenue</p>
-            </div>
-          </div>
-          <div className='stat-card'>
-            <i className='fa-solid fa-check-circle' style={{ color: 'var(--admin-success)' }}></i>
-            <div>
-              <h3>₹{formatCurrency(currentMonthPaidRevenue)}</h3>
-              <p>Paid Revenue</p>
-            </div>
-          </div>
-          <div className='stat-card'>
-            <i
-              className='fa-solid fa-exclamation-triangle'
-              style={{ color: 'var(--admin-warning)' }}
-            ></i>
-            <div>
-              <h3>₹{formatCurrency(currentMonthUnpaidAmount)}</h3>
-              <p>Unpaid Amount</p>
-            </div>
-          </div>
-          <div className='stat-card'>
-            <i className='fa-solid fa-chart-line'></i>
-            <div>
-              <h3>₹{formatCurrency(currentMonthAvgOrderValue)}</h3>
-              <p>Avg Order Value</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ALERTS SECTION */}
-      {(pendingOver7Days.length > 0 ||
-        inactiveAddresses.length > 0 ||
-        priceOverrideAlerts.length > 0) && (
-        <div className='dashboard-section'>
-          <h3
-            style={{
-              marginBottom: '1rem',
-              color: 'var(--admin-danger)',
-              fontSize: '1.1rem',
-              fontWeight: '600',
-            }}
-          >
-            Alerts
-          </h3>
-          <div className='dashboard-alerts'>
-            {pendingOver7Days.length > 0 && (
-              <div
-                className='alert-card'
-                style={{
-                  padding: '1.25rem',
-                  background: 'var(--admin-danger-light)',
-                  border: '3px solid var(--admin-danger)',
-                  borderRadius: '8px',
-                  marginBottom: '1rem',
-                  boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <i
-                    className='fa-solid fa-exclamation-circle'
-                    style={{ color: 'var(--admin-danger)', fontSize: '1.5rem' }}
-                  ></i>
-                  <div>
-                    <strong style={{ color: 'var(--admin-danger)', fontSize: '1.2rem' }}>
-                      Pending &gt; 7 days
-                    </strong>
-                    <p
-                      style={{
-                        margin: '0.5rem 0 0 0',
-                        color: 'var(--admin-text)',
-                        fontSize: '1rem',
-                      }}
-                    >
-                      {pendingOver7Days.length} order{pendingOver7Days.length !== 1 ? 's' : ''} with
-                      pending amount over 7 days old
-                    </p>
-                    <p
-                      style={{
-                        margin: '0.5rem 0 0 0',
-                        fontSize: '1.1rem',
-                        color: 'var(--admin-danger)',
-                        fontWeight: '700',
-                      }}
-                    >
-                      Total: ₹
-                      {formatCurrency(
-                        pendingOver7Days.reduce(
-                          (sum, o) => sum + parseFloat(o.total || o.totalAmount || 0),
-                          0
-                        )
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {inactiveAddresses.length > 0 && (
-              <div
-                className='alert-card'
-                style={{
-                  padding: '1.25rem',
-                  background: 'var(--admin-warning-light)',
-                  border: '3px solid var(--admin-warning)',
-                  borderRadius: '8px',
-                  marginBottom: '1rem',
-                  boxShadow: '0 2px 8px rgba(251, 191, 36, 0.2)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <i
-                    className='fa-solid fa-map-marker-alt'
-                    style={{ color: 'var(--admin-warning)', fontSize: '1.5rem' }}
-                  ></i>
-                  <div>
-                    <strong style={{ color: 'var(--admin-warning)', fontSize: '1.2rem' }}>
-                      Inactive Addresses (&gt;3 days)
-                    </strong>
-                    <p
-                      style={{
-                        margin: '0.5rem 0 0 0',
-                        color: 'var(--admin-text)',
-                        fontSize: '1rem',
-                      }}
-                    >
-                      {inactiveAddresses.length} address{inactiveAddresses.length !== 1 ? 'es' : ''}{' '}
-                      with no orders in last 3 days
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {priceOverrideAlerts.length > 0 && (
-              <div
-                className='alert-card'
-                style={{
-                  padding: '1.25rem',
-                  background: 'var(--admin-accent-light)',
-                  border: '3px solid var(--admin-accent)',
-                  borderRadius: '8px',
-                  marginBottom: '1rem',
-                  boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <i
-                    className='fa-solid fa-tag'
-                    style={{ color: 'var(--admin-accent)', fontSize: '1.5rem' }}
-                  ></i>
-                  <div>
-                    <strong style={{ color: 'var(--admin-accent)', fontSize: '1.2rem' }}>
-                      Price Override Alerts
-                    </strong>
-                    <p
-                      style={{
-                        margin: '0.5rem 0 0 0',
-                        color: 'var(--admin-text)',
-                        fontSize: '1rem',
-                      }}
-                    >
-                      {priceOverrideAlerts.length} order
-                      {priceOverrideAlerts.length !== 1 ? 's' : ''} with custom unit prices this
-                      month
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* STATUS BREAKDOWN */}
-      <div className='dashboard-section'>
-        <h3
-          style={{
-            marginBottom: '1rem',
-            color: 'var(--admin-accent)',
-            fontSize: '1.1rem',
-            fontWeight: '600',
-          }}
-        >
-          Status Breakdown (Current Month)
-        </h3>
-        <div className='admin-stats'>
-          <div
-            className='stat-card'
-            style={{
-              background: 'var(--admin-success-light)',
-              border: '2px solid var(--admin-success)',
-            }}
-          >
-            <i className='fa-solid fa-check-circle' style={{ color: 'var(--admin-success)' }}></i>
-            <div>
-              <h3 style={{ color: 'var(--admin-success)' }}>{paidOrdersCount}</h3>
-              <p>Paid Orders</p>
-              <p
-                style={{
-                  fontSize: '0.85rem',
-                  marginTop: '0.25rem',
-                  color: 'var(--admin-text-light)',
-                }}
-              >
-                ₹{formatCurrency(currentMonthPaidRevenue)}
-              </p>
-            </div>
-          </div>
-          <div
-            className='stat-card'
-            style={{
-              background: 'var(--admin-warning-light)',
-              border: '2px solid var(--admin-warning)',
-            }}
-          >
-            <i
-              className='fa-solid fa-exclamation-triangle'
-              style={{ color: 'var(--admin-warning)' }}
-            ></i>
-            <div>
-              <h3 style={{ color: 'var(--admin-warning)' }}>{unpaidOrdersCount}</h3>
-              <p>Unpaid Orders</p>
-              <p
-                style={{
-                  fontSize: '0.85rem',
-                  marginTop: '0.25rem',
-                  color: 'var(--admin-text-light)',
-                }}
-              >
-                ₹{formatCurrency(currentMonthUnpaidAmount)}
-              </p>
-            </div>
-          </div>
-          {ordersWithoutStatus > 0 && (
-            <div
-              className='stat-card'
+      {/* TOP STATS CARDS (4 columns) - Total Revenue, Total Orders, Pending Payments, Total Customers */}
+      <div className='admin-stats'>
+        <div className='stat-card'>
+          <i className='fa-solid fa-rupee-sign'></i>
+          <div>
+            <h3>₹{formatCurrency(currentMonthRevenue)}</h3>
+            <p>Total Revenue</p>
+            <p
               style={{
-                background: 'var(--admin-border)',
-                border: '2px solid var(--admin-text-light)',
+                fontSize: '0.85rem',
+                marginTop: '0.25rem',
+                color: 'var(--admin-text-light)',
               }}
             >
-              <i
-                className='fa-solid fa-question-circle'
-                style={{ color: 'var(--admin-text-light)' }}
-              ></i>
-              <div>
-                <h3 style={{ color: 'var(--admin-text-light)' }}>{ordersWithoutStatus}</h3>
-                <p>No Status</p>
-                <p
-                  style={{
-                    fontSize: '0.75rem',
-                    marginTop: '0.25rem',
-                    color: 'var(--admin-text-light)',
-                  }}
-                >
-                  Please update status
-                </p>
-              </div>
-            </div>
-          )}
+              {isNewGrowth
+                ? 'New'
+                : `${monthOverMonthGrowth >= 0 ? '+' : ''}${monthOverMonthGrowth.toFixed(1)}%`}{' '}
+              {monthOverMonthGrowth >= 0 ? '↑' : '↓'}
+            </p>
+          </div>
+        </div>
+        <div className='stat-card'>
+          <i className='fa-solid fa-shopping-cart'></i>
+          <div>
+            <h3>{currentMonthTotal}</h3>
+            <p>Total Orders</p>
+            <p
+              style={{
+                fontSize: '0.85rem',
+                marginTop: '0.25rem',
+                color: 'var(--admin-text-light)',
+              }}
+            >
+              Current month
+            </p>
+          </div>
+        </div>
+        <div className='stat-card'>
+          <i
+            className='fa-solid fa-exclamation-triangle'
+            style={{ color: 'var(--admin-warning)' }}
+          ></i>
+          <div>
+            <h3>₹{formatCurrency(currentMonthUnpaidAmount)}</h3>
+            <p>Pending Payments</p>
+            <p
+              style={{
+                fontSize: '0.85rem',
+                marginTop: '0.25rem',
+                color: 'var(--admin-text-light)',
+              }}
+            >
+              {unpaidOrdersCount} orders
+            </p>
+          </div>
+        </div>
+        <div className='stat-card'>
+          <i className='fa-solid fa-users'></i>
+          <div>
+            <h3>{allUniqueAddresses}</h3>
+            <p>Total Customers</p>
+            <p
+              style={{
+                fontSize: '0.85rem',
+                marginTop: '0.25rem',
+                color: 'var(--admin-text-light)',
+              }}
+            >
+              Unique addresses
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* PAYMENT MODE STATISTICS */}
-      {Object.keys(paymentModeStats).length > 0 && (
-        <div className='dashboard-section'>
-          <h3
-            style={{
-              marginBottom: '1rem',
-              color: 'var(--admin-accent)',
-              fontSize: '1.1rem',
-              fontWeight: '600',
-            }}
-          >
-            Payment Mode Breakdown
-          </h3>
+      {/* SECONDARY STATS CARDS (4 columns) - Today's Revenue, This Week Revenue, Avg Order Value, Cancel Rate */}
+      <div className='admin-stats'>
+        <div className='stat-card'>
+          <i className='fa-solid fa-calendar-day' style={{ color: 'var(--admin-accent)' }}></i>
+          <div>
+            <h3>₹{formatCurrency(todayRevenue)}</h3>
+            <p>Today's Revenue</p>
+            <p
+              style={{
+                fontSize: '0.85rem',
+                marginTop: '0.25rem',
+                color: 'var(--admin-text-light)',
+              }}
+            >
+              {todayOrdersCount} orders
+            </p>
+          </div>
+        </div>
+        <div className='stat-card'>
+          <i className='fa-solid fa-calendar-week' style={{ color: 'var(--admin-secondary)' }}></i>
+          <div>
+            <h3>₹{formatCurrency(thisWeekRevenue)}</h3>
+            <p>This Week Revenue</p>
+            <p
+              style={{
+                fontSize: '0.85rem',
+                marginTop: '0.25rem',
+                color: 'var(--admin-text-light)',
+              }}
+            >
+              {thisWeekOrdersCount} orders
+            </p>
+          </div>
+        </div>
+        <div className='stat-card'>
+          <i className='fa-solid fa-chart-line' style={{ color: 'var(--admin-success)' }}></i>
+          <div>
+            <h3>₹{formatCurrency(currentMonthAvgOrderValue)}</h3>
+            <p>Avg Order Value</p>
+          </div>
+        </div>
+        <div className='stat-card'>
+          <i className='fa-solid fa-times-circle' style={{ color: 'var(--admin-danger)' }}></i>
+          <div>
+            <h3>{cancelRate.toFixed(1)}%</h3>
+            <p>Cancel Rate</p>
+            <p
+              style={{
+                fontSize: '0.85rem',
+                marginTop: '0.25rem',
+                color: 'var(--admin-text-light)',
+              }}
+            >
+              {cancelledOrders.length} orders
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* CHARTS SECTION (2 columns) */}
+      <div className='dashboard-grid-layout'>
+        {/* Revenue Trend (Last 6 Months) */}
+        <div className='dashboard-grid-item two-thirds'>
           <div className='dashboard-card'>
+            <h3 className='dashboard-section-title'>
+              <i className='fa-solid fa-chart-line' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
+              Revenue Trend (Last 6 Months)
+            </h3>
             <div
               style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                display: 'flex',
+                alignItems: 'flex-end',
                 gap: '1rem',
+                minHeight: '200px',
+                padding: '1rem',
+                borderTop: '2px solid var(--admin-border)',
+                marginTop: '0.5rem',
               }}
             >
-              {Object.entries(paymentModeStats)
-                .sort(([, a], [, b]) => b.amount - a.amount)
-                .map(([mode, stats]) => (
-                  <div
-                    key={mode}
-                    style={{
-                      padding: '1rem',
-                      background: 'var(--admin-glass-bg)',
-                      borderRadius: '8px',
-                      border: '1px solid var(--admin-glass-border)',
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '0.5rem',
-                      }}
-                    >
-                      <strong style={{ color: 'var(--admin-text)' }}>{mode}</strong>
-                      <span style={{ color: 'var(--admin-text-light)', fontSize: '0.9rem' }}>
-                        {stats.count} orders
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '1.1rem',
-                        fontWeight: '700',
-                        color: 'var(--admin-accent)',
-                      }}
-                    >
-                      ₹{formatCurrency(stats.amount)}
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TOP ADDRESSES */}
-      {topAddresses.length > 0 && (
-        <div className='dashboard-section'>
-          <h3
-            style={{
-              marginBottom: '1rem',
-              color: 'var(--admin-accent)',
-              fontSize: '1.1rem',
-              fontWeight: '600',
-            }}
-          >
-            Top 10 Addresses (Current Month)
-          </h3>
-          <div className='dashboard-card'>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {topAddresses.map((item, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '0.75rem',
-                    background: idx < 3 ? 'var(--admin-accent-light)' : 'transparent',
-                    borderRadius: '6px',
-                    border:
-                      idx < 3 ? '1px solid var(--admin-accent)' : '1px solid var(--admin-border)',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <span
-                      style={{
-                        width: '24px',
-                        height: '24px',
-                        borderRadius: '50%',
-                        background: idx < 3 ? 'var(--admin-accent)' : 'var(--admin-border)',
-                        color: idx < 3 ? 'white' : 'var(--admin-text-light)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.75rem',
-                        fontWeight: '700',
-                      }}
-                    >
-                      {idx + 1}
-                    </span>
-                    <span
-                      style={{ color: 'var(--admin-text)', fontWeight: idx < 3 ? '600' : '500' }}
-                    >
-                      {item.address}
-                    </span>
-                  </div>
-                  <span style={{ color: 'var(--admin-accent)', fontWeight: '700' }}>
-                    {item.count} orders
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* RECENT ORDERS */}
-      {recentOrders.length > 0 && (
-        <div className='dashboard-section'>
-          <h3
-            style={{
-              marginBottom: '1rem',
-              color: 'var(--admin-accent)',
-              fontSize: '1.1rem',
-              fontWeight: '600',
-            }}
-          >
-            Recent Orders (Last 10)
-          </h3>
-          <div className='dashboard-card'>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {recentOrders.map((order, idx) => {
-                const orderDate = new Date(order.createdAt || order.date || order.order_date);
-                const dateStr = orderDate.toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                });
-                const status = (order.status || '').toLowerCase();
-                const isPaid = status === 'paid';
+              {last6MonthsRevenue.map((month, idx) => {
+                const maxRevenue = Math.max(...last6MonthsRevenue.map((m) => m.revenue), 1);
                 return (
                   <div
                     key={idx}
                     style={{
+                      flex: 1,
                       display: 'flex',
-                      justifyContent: 'space-between',
+                      flexDirection: 'column',
                       alignItems: 'center',
-                      padding: '0.75rem',
-                      background: 'var(--admin-glass-overlay)',
-                      borderRadius: '6px',
-                      border: '1px solid var(--admin-glass-border)',
+                      gap: '0.5rem',
                     }}
                   >
                     <div
-                      style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1 }}
+                      style={{
+                        width: '100%',
+                        maxWidth: '80px',
+                        height: `${(month.revenue / maxRevenue) * 180}px`,
+                        minHeight: '10px',
+                        background: 'var(--admin-accent, #449031)',
+                        borderRadius: '8px 8px 0 0',
+                        display: 'flex',
+                        alignItems: 'flex-end',
+                        justifyContent: 'center',
+                        paddingBottom: '0.5rem',
+                        cursor: 'pointer',
+                        position: 'relative',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                      }}
+                      title={`${month.month}: ₹${formatCurrency(month.revenue)} (${
+                        month.orders
+                      } orders)`}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ color: 'var(--admin-text)', fontWeight: '600' }}>
-                          {order.deliveryAddress || order.customerAddress || order.address || 'N/A'}
-                        </span>
-                        <span
-                          style={{
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '4px',
-                            fontSize: '0.75rem',
-                            fontWeight: '600',
-                            background: isPaid
-                              ? 'var(--admin-success-light)'
-                              : 'var(--admin-warning-light)',
-                            color: isPaid ? 'var(--admin-success)' : 'var(--admin-warning)',
-                            border: `1px solid ${isPaid ? 'var(--admin-success)' : 'var(--admin-warning)'}`,
-                          }}
-                        >
-                          {order.status || 'No Status'}
-                        </span>
-                      </div>
-                      <span style={{ color: 'var(--admin-text-light)', fontSize: '0.85rem' }}>
-                        {dateStr} • Qty: {order.quantity || 1} •{' '}
-                        {order.paymentMode || 'No Payment Mode'}
+                      <span
+                        style={{
+                          color: 'white',
+                          fontSize: '0.75rem',
+                          fontWeight: '600',
+                        }}
+                      >
+                        ₹{Math.round(month.revenue / 1000)}k
                       </span>
                     </div>
                     <span
                       style={{
-                        color: 'var(--admin-accent)',
-                        fontWeight: '700',
-                        fontSize: '1.1rem',
+                        fontSize: '0.75rem',
+                        color: 'var(--admin-text-light)',
+                        textAlign: 'center',
+                        lineHeight: '1.2',
+                        fontWeight: '500',
                       }}
                     >
-                      ₹{formatCurrency(order.total || order.totalAmount || 0)}
+                      {month.month.split(' ')[0]}
+                      <br />
+                      {month.month.split(' ')[1]}
                     </span>
                   </div>
                 );
@@ -873,148 +464,426 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
             </div>
           </div>
         </div>
-      )}
 
-      {/* Active Addresses Summary */}
-      <div className='stat-card' style={{ marginTop: '1rem' }}>
-        <i className='fa-solid fa-map-marker-alt'></i>
-        <div>
-          <h3>{activeAddresses}</h3>
-          <p>Active Addresses (Current Month)</p>
+        {/* Orders by Mode (Lunch vs Dinner) */}
+        <div className='dashboard-grid-item third-width'>
+          <div className='dashboard-card'>
+            <h3 className='dashboard-section-title'>
+              <i className='fa-solid fa-chart-pie' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
+              Orders by Mode
+            </h3>
+            <div
+              style={{
+                padding: '1.5rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem',
+                borderTop: '2px solid var(--admin-border)',
+                marginTop: '0.5rem',
+              }}
+            >
+              {Object.entries(ordersByMode)
+                .filter(([mode]) => mode !== 'Not Set' || ordersByMode[mode] > 0)
+                .map(([mode, count]) => {
+                  const total = Object.values(ordersByMode).reduce((sum, c) => sum + c, 0);
+                  // Calculate percentage: (count / total) * 100, with accuracy based on total records / 100
+                  const percentage =
+                    total > 0 ? Math.min(100, parseFloat(((count / total) * 100).toFixed(2))) : 0;
+                  const isLunch = mode === 'Lunch';
+                  const isDinner = mode === 'Dinner';
+                  return (
+                    <div
+                      key={mode}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.5rem',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontWeight: '600',
+                            color: 'var(--admin-text)',
+                          }}
+                        >
+                          {mode}
+                        </span>
+                        <span
+                          style={{
+                            fontWeight: '700',
+                            color: 'var(--admin-accent)',
+                            fontSize: '1.1rem',
+                          }}
+                        >
+                          {count} ({percentage.toFixed(2)}%)
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '24px',
+                          background: 'var(--admin-glass-border)',
+                          borderRadius: '12px',
+                          overflow: 'hidden',
+                          position: 'relative',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${percentage}%`,
+                            height: '100%',
+                            background: isLunch
+                              ? 'var(--admin-success, #449031)'
+                              : isDinner
+                              ? 'var(--admin-accent, #449031)'
+                              : 'var(--admin-border, #e2e8f0)',
+                            borderRadius: '12px',
+                            transition: 'width 0.5s ease',
+                            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.1)',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Last 7 Days Trend Chart */}
-      <div
-        className='dashboard-card'
-        style={{ marginTop: '1.5rem', minHeight: 'auto', overflow: 'visible' }}
-      >
-        <h3>Last 7 Days Trend</h3>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-end',
-            gap: '1rem',
-            minHeight: '200px',
-            padding: '1rem',
-            borderTop: '2px solid var(--admin-border)',
-            marginTop: '0.5rem',
-          }}
-        >
-          {last7Days.map((day, idx) => (
+      {/* DAILY ORDERS & PAYMENT MODE SPLIT - Side by Side */}
+      <div className='dashboard-grid-layout'>
+        {/* Daily Orders This Month - Area Chart */}
+        <div className='dashboard-grid-item two-thirds'>
+          <div className='dashboard-card'>
+            <h3 className='dashboard-section-title'>
+              <i className='fa-solid fa-chart-area' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
+              Daily Orders This Month
+            </h3>
             <div
-              key={idx}
               style={{
-                flex: 1,
                 display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
+                alignItems: 'flex-end',
                 gap: '0.5rem',
+                minHeight: '200px',
+                padding: '1rem',
+                borderTop: '2px solid var(--admin-border)',
+                marginTop: '0.5rem',
               }}
             >
-              <div
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.25rem',
-                  alignItems: 'center',
-                }}
-              >
+              {dailyOrdersData.map((dayData, idx) => (
                 <div
+                  key={idx}
                   style={{
-                    width: '100%',
-                    maxWidth: '60px',
-                    height: `${(day.orders / maxOrders) * 150}px`,
-                    minHeight: '10px',
-                    background: 'var(--admin-accent)',
-                    borderRadius: '4px 4px 0 0',
+                    flex: 1,
                     display: 'flex',
-                    alignItems: 'flex-end',
-                    justifyContent: 'center',
-                    paddingBottom: '0.25rem',
-                    cursor: 'pointer',
-                    position: 'relative',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.25rem',
                   }}
-                  title={`${day.date}: ${day.orders} orders, ₹${formatCurrency(day.revenue)} revenue`}
+                  title={`Day ${dayData.day}: ${dayData.orders} orders, ₹${formatCurrency(
+                    dayData.revenue
+                  )}`}
                 >
-                  <span style={{ color: 'white', fontSize: '0.75rem', fontWeight: '600' }}>
-                    {day.orders}
-                  </span>
+                  <div
+                    style={{
+                      width: '100%',
+                      height: `${(dayData.orders / maxDailyOrders) * 180}px`,
+                      minHeight: '4px',
+                      background: 'var(--admin-accent, #449031)',
+                      borderRadius: '4px 4px 0 0',
+                      opacity: dayData.orders > 0 ? 1 : 0.3,
+                      cursor: 'pointer',
+                      transition: 'opacity 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => (e.target.style.opacity = '0.8')}
+                    onMouseLeave={(e) => (e.target.style.opacity = dayData.orders > 0 ? 1 : 0.3)}
+                  />
+                  {dayData.day % 5 === 0 || dayData.day === 1 || dayData.day === daysInMonth ? (
+                    <span
+                      style={{
+                        fontSize: '0.7rem',
+                        color: 'var(--admin-text-light)',
+                        fontWeight: '500',
+                      }}
+                    >
+                      {dayData.day}
+                    </span>
+                  ) : null}
                 </div>
-                <div
-                  style={{
-                    width: '100%',
-                    maxWidth: '60px',
-                    height: `${(day.revenue / maxRevenue) * 150}px`,
-                    minHeight: '10px',
-                    background: 'var(--admin-secondary)',
-                    borderRadius: '4px 4px 0 0',
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    justifyContent: 'center',
-                    paddingBottom: '0.25rem',
-                    cursor: 'pointer',
-                    position: 'relative',
-                  }}
-                  title={`${day.date}: ₹${formatCurrency(day.revenue)} revenue`}
+              ))}
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginTop: '0.5rem',
+                fontSize: '0.85rem',
+                color: 'var(--admin-text-light)',
+              }}
+            >
+              Daily order count for current month
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Mode Split - Bar Chart */}
+        <div className='dashboard-grid-item third-width'>
+          <div className='dashboard-card'>
+            <h3 className='dashboard-section-title'>
+              <i className='fa-solid fa-chart-bar' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
+              Payment Mode Split
+            </h3>
+            <div
+              style={{
+                padding: '1.5rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem',
+                borderTop: '2px solid var(--admin-border)',
+                marginTop: '0.5rem',
+              }}
+            >
+              {Object.entries(paymentModeStats)
+                .sort(([, a], [, b]) => b.count - a.count)
+                .map(([mode, stats]) => {
+                  const totalCount = Object.values(paymentModeStats).reduce(
+                    (sum, s) => sum + s.count,
+                    0
+                  );
+                  // Calculate percentage: (count / total) * 100, with accuracy based on total records / 100
+                  const percentage =
+                    totalCount > 0
+                      ? Math.min(100, parseFloat(((stats.count / totalCount) * 100).toFixed(2)))
+                      : 0;
+                  return (
+                    <div
+                      key={mode}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.5rem',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontWeight: '600',
+                            color: 'var(--admin-text)',
+                          }}
+                        >
+                          {mode}
+                        </span>
+                        <span
+                          style={{
+                            fontWeight: '700',
+                            color: 'var(--admin-accent)',
+                            fontSize: '1rem',
+                          }}
+                        >
+                          {stats.count}
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '28px',
+                          background: 'var(--admin-glass-border)',
+                          borderRadius: '6px',
+                          overflow: 'hidden',
+                          position: 'relative',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${percentage}%`,
+                            height: '100%',
+                            background: `var(--admin-accent, #449031)`,
+                            borderRadius: '6px',
+                            transition: 'width 0.5s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-end',
+                            paddingRight: '0.5rem',
+                            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.1)',
+                          }}
+                        >
+                          {percentage > 15 && (
+                            <span
+                              style={{
+                                color: 'white',
+                                fontSize: '0.75rem',
+                                fontWeight: '600',
+                              }}
+                            >
+                              {percentage.toFixed(0)}%
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '0.85rem',
+                          color: 'var(--admin-text-light)',
+                        }}
+                      >
+                        ₹{formatCurrency(stats.amount)}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* RECENT ORDERS TABLE & QUICK ACTIONS - Side by Side */}
+      <div className='dashboard-grid-layout'>
+        {/* RECENT ORDERS TABLE */}
+        {recentOrders.length > 0 && (
+          <div className='dashboard-grid-item two-thirds'>
+            <div className='dashboard-section'>
+              <div className='recent-orders-header'>
+                <h3 className='dashboard-section-title' style={{ marginBottom: 0 }}>
+                  <i
+                    className='fa-solid fa-clock-rotate-left'
+                    style={{ fontSize: '1rem', opacity: 0.7 }}
+                  ></i>
+                  Recent Orders (Last 10)
+                </h3>
+                <button
+                  className='btn btn-ghost btn-small'
+                  onClick={() => setActiveTab('allOrdersData')}
                 >
-                  <span style={{ color: 'white', fontSize: '0.7rem', fontWeight: '600' }}>
-                    ₹{Math.round(day.revenue / 1000)}k
-                  </span>
+                  View All Orders →
+                </button>
+              </div>
+              <div className='dashboard-card'>
+                <div className='recent-orders-table-container'>
+                  <table className='recent-orders-table'>
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Address</th>
+                        <th>Quantity</th>
+                        <th>Amount</th>
+                        <th>Mode</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentOrders.map((order, idx) => {
+                        const orderDate = parseOrderDate(
+                          order.createdAt || order.date || order.order_date
+                        );
+                        const dateStr = formatDate(orderDate);
+                        const status = (order.status || '').toLowerCase();
+                        const isPaid = status === 'paid';
+                        return (
+                          <tr key={idx}>
+                            <td>{dateStr}</td>
+                            <td>
+                              {order.deliveryAddress ||
+                                order.customerAddress ||
+                                order.address ||
+                                'N/A'}
+                            </td>
+                            <td>{order.quantity || 1}</td>
+                            <td>₹{formatCurrency(order.total || order.totalAmount || 0)}</td>
+                            <td>{order.mode || 'N/A'}</td>
+                            <td>
+                              <span
+                                className={`badge ${isPaid ? 'badge-success' : 'badge-warning'}`}
+                              >
+                                {order.status || 'No Status'}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-              <span
-                style={{
-                  fontSize: '0.75rem',
-                  color: 'var(--admin-text-light)',
-                  textAlign: 'center',
-                  lineHeight: '1.2',
-                }}
-              >
-                {day.date.split(' ')[0]}
-                <br />
-                {day.date.split(' ').slice(1).join(' ')}
-              </span>
             </div>
-          ))}
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '2rem',
-            marginTop: '1rem',
-            fontSize: '0.85rem',
-            color: 'var(--admin-text-light)',
-          }}
-        >
-          <span>
-            <span
-              style={{
-                display: 'inline-block',
-                width: '12px',
-                height: '12px',
-                background: 'var(--admin-accent)',
-                borderRadius: '2px',
-                marginRight: '0.5rem',
-              }}
-            ></span>
-            Orders
-          </span>
-          <span>
-            <span
-              style={{
-                display: 'inline-block',
-                width: '12px',
-                height: '12px',
-                background: 'var(--admin-secondary)',
-                borderRadius: '2px',
-                marginRight: '0.5rem',
-              }}
-            ></span>
-            Revenue (₹100s)
-          </span>
+          </div>
+        )}
+
+        {/* QUICK ACTIONS PANEL */}
+        <div className='dashboard-grid-item third-width'>
+          <div className='dashboard-section'>
+            <h3 className='dashboard-section-title'>
+              <i
+                className='fa-solid fa-bolt'
+                style={{ fontSize: '1rem', opacity: 0.7, color: 'var(--admin-accent)' }}
+              ></i>
+              Quick Actions
+            </h3>
+            <div className='quick-actions-panel'>
+              <button
+                className='btn btn-primary btn-small btn-full'
+                onClick={() => setActiveTab('currentMonthOrders')}
+                title='Add New Order'
+              >
+                <i className='fa-solid fa-plus'></i> Add New Order
+              </button>
+              <button
+                className='btn btn-secondary btn-small btn-full'
+                onClick={() => {
+                  const csvContent =
+                    'Date,Address,Quantity,Amount,Mode,Status\n' +
+                    orders
+                      .slice(0, 100)
+                      .map((o) => {
+                        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+                        return `"${formatDate(orderDate)}","${
+                          o.deliveryAddress || o.customerAddress || o.address || 'N/A'
+                        }","${o.quantity || 1}","${o.total || o.totalAmount || 0}","${
+                          o.mode || 'N/A'
+                        }","${o.status || 'N/A'}"`;
+                      })
+                      .join('\n');
+                  const blob = new Blob([csvContent], {
+                    type: 'text/csv;charset=utf-8;',
+                  });
+                  const link = document.createElement('a');
+                  link.href = URL.createObjectURL(blob);
+                  link.download = `dashboard_export_${new Date().toISOString().split('T')[0]}.csv`;
+                  link.click();
+                }}
+                title='Export Data'
+              >
+                <i className='fa-solid fa-download'></i> Export Data
+              </button>
+              <button
+                className='btn btn-secondary btn-small btn-full'
+                onClick={() => setActiveTab('pendingAmounts')}
+                title='View Pending Payments'
+              >
+                <i className='fa-solid fa-money-bill-wave'></i> Pending Payments
+              </button>
+              <button
+                className='btn btn-ghost btn-small btn-full'
+                onClick={() => setActiveTab('reports')}
+                title='Generate Report'
+              >
+                <i className='fa-solid fa-chart-bar'></i> Generate Report
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

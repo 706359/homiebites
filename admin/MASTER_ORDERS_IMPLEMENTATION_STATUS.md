@@ -3,6 +3,7 @@
 ## ✅ Completed
 
 ### 1. Utility Functions (orderUtils.js)
+
 - ✅ `calculateTotalAmount()` - Auto-calculates total from quantity × unitPrice
 - ✅ `extractBillingMonth()` - Extracts month (1-12) from date
 - ✅ `extractBillingYear()` - Extracts year from date
@@ -15,6 +16,7 @@
 - ✅ `getUniqueAddresses()` - Address autocomplete suggestions
 
 ### 2. Order Creation Form
+
 - ✅ Removed derived fields from state (billingMonth, referenceMonth, year, totalAmount as input)
 - ✅ Total Amount is now read-only (auto-calculated)
 - ✅ Date field uses HTML5 date input (YYYY-MM-DD format)
@@ -23,23 +25,27 @@
 - ✅ Derived fields shown as read-only (for reference only)
 
 ### 3. Order Save Logic
+
 - ✅ `handleSaveNewOrder()` - Uses master model with auto-calculation
 - ✅ Smart update/insert based on composite key (date + address)
 - ✅ Auto-calculates: totalAmount, billingMonth, billingYear
 - ✅ Never stores derived fields as strings
 
 ### 4. Order Edit Logic
+
 - ✅ `handleSaveEditedOrder()` - Uses master model
 - ✅ Auto-calculates derived fields on save
 - ✅ Updates same record (no duplicates)
 
 ### 5. Excel Upload
+
 - ✅ `convertExcelToOrders()` - Updated to use master model
 - ✅ Smart update/insert logic (checks existing orders)
 - ✅ Auto-calculates derived fields
 - ✅ Sets `source = 'excel'`
 
 ### 6. Table Display
+
 - ✅ Removed Billing Month, Reference Month, Year columns
 - ✅ Shows only: Date | Address | Qty | Unit Price | Total | Status | Payment Mode
 - ✅ S No. calculated on display (UI only)
@@ -47,20 +53,24 @@
 ## ⏳ Remaining Tasks
 
 ### 1. Excel Upload Preview
+
 - ⏳ Show preview before save (new/updated/invalid rows)
 - ⏳ Color coding: 🟢 New, 🟡 Updated, 🔴 Invalid
 
 ### 2. Backend Schema Update
+
 - ⏳ Update backend Order model to match master model
 - ⏳ Add composite unique index on (order_date, delivery_address)
 - ⏳ Remove derived field storage
 
 ### 3. Migration Script
+
 - ⏳ Migrate existing orders to new model
 - ⏳ Calculate derived fields for old data
 - ⏳ Remove duplicate orders based on composite key
 
 ### 4. Display Formatting
+
 - ⏳ Ensure all date displays use consistent format
 - ⏳ Update summary reports to use master model
 - ⏳ Update analytics to read from master orders
@@ -68,6 +78,7 @@
 ## 📋 Master Orders Model Structure
 
 ### Stored Fields (Source of Truth)
+
 ```javascript
 {
   id: string,
@@ -84,6 +95,7 @@
 ```
 
 ### Auto-Calculated Fields (Never Stored as Strings)
+
 ```javascript
 {
   totalAmount: number,          // quantity * unitPrice
@@ -94,6 +106,7 @@
 ```
 
 ### Display-Only Fields (Calculated on Render)
+
 ```javascript
 {
   billingMonthFormatted: string,    // "February'24"

@@ -1,13 +1,13 @@
-import { Navigate, useNavigate } from 'react-router-dom';
-import AdminDashboard from '../../admin/AdminDashboard';
-import ErrorBoundary from '../components/ErrorBoundary';
+import { Navigate, useNavigate } from "react-router-dom";
+import AdminDashboard from "../../admin/AdminDashboard";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
 
   // Check auth - stable boolean check
-  const token = localStorage.getItem('homiebites_token');
-  const isAdmin = localStorage.getItem('homiebites_admin') === 'true';
+  const token = localStorage.getItem("homiebites_token");
+  const isAdmin = localStorage.getItem("homiebites_admin") === "true";
   const isAuthenticated = !!(token && isAdmin);
 
   // Use Navigate component for auth gating - no useEffect, no loops
@@ -17,7 +17,7 @@ export default function AdminDashboardPage() {
 
   return (
     <ErrorBoundary>
-      <AdminDashboard onLogout={() => navigate('/admin')} />
+      <AdminDashboard onLogout={() => navigate("/admin")} />
     </ErrorBoundary>
   );
 }

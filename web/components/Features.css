@@ -81,27 +81,27 @@
   scale: 1.01;
 }
 
-.feature-icon-wrapper[data-color='green'] i {
+.feature-icon-wrapper[data-color="green"] i {
   color: var(--primary-green);
 }
 
-.feature-icon-wrapper[data-color='orange'] i {
+.feature-icon-wrapper[data-color="orange"] i {
   color: var(--primary-orange);
 }
 
-.feature-icon-wrapper[data-color='blue'] i {
+.feature-icon-wrapper[data-color="blue"] i {
   color: #3b82f6;
 }
 
-.feature-icon-wrapper[data-color='yellow'] i {
+.feature-icon-wrapper[data-color="yellow"] i {
   color: #f59e0b;
 }
 
-.feature-icon-wrapper[data-color='red'] i {
+.feature-icon-wrapper[data-color="red"] i {
   color: #ef4444;
 }
 
-.feature-icon-wrapper[data-color='purple'] i {
+.feature-icon-wrapper[data-color="purple"] i {
   color: #a855f7;
 }
 

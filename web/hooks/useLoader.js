@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 /**
  * Hook to manage loader state
@@ -14,7 +14,7 @@ export function useLoader(initialLoading = false, delay = 0) {
 
   useEffect(() => {
     let timeoutId;
-    
+
     if (isLoading) {
       if (delay > 0) {
         timeoutId = setTimeout(() => {
@@ -48,4 +48,3 @@ export function useLoader(initialLoading = false, delay = 0) {
 
   return [showLoader, setLoading, showLoaderFunc, hideLoader];
 }
-

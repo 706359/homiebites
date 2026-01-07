@@ -1,14 +1,18 @@
+// Tab 3: Current Month Data - Following FULL_DASHBOARD_PLAN.md structure
+// This file has been recreated from scratch to match the plan exactly
+
 import { useMemo, useState } from 'react';
-import api from '../../web/lib/api.js';
+import PremiumLoader from './PremiumLoader.jsx';
 import { getFilteredOrdersByDate } from '../utils/calculations.js';
+import { formatDate, parseOrderDate } from '../utils/dateUtils.js';
 import {
   formatCurrency,
-  getLastUnitPriceForAddress,
   getTotalRevenue,
-  extractBillingMonth,
-  extractBillingYear,
-  formatBillingMonth,
+  isPaidStatus,
+  isPendingStatus,
 } from '../utils/orderUtils.js';
+import EmptyState from './EmptyState.jsx';
+import OrderModal from './OrderModal.jsx';
 
 const CurrentMonthOrdersTab = ({
   orders = [],
@@ -17,866 +21,653 @@ const CurrentMonthOrdersTab = ({
   onDeleteOrder,
   onUpdateOrderStatus,
   currentPage = 1,
-  recordsPerPage = 20,
+  recordsPerPage = 25,
   onPageChange,
   onRecordsPerPageChange,
   loading = false,
   loadOrders,
   showNotification,
+  settings,
 }) => {
-  // Filter states
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [addressFilter, setAddressFilter] = useState('');
-  const [bulkUpdateStatus, setBulkUpdateStatus] = useState('');
-  const [isUpdating, setIsUpdating] = useState(false);
-  // Debug logging
-  if (typeof window !== 'undefined' && window.location.search.includes('debug')) {
-    console.log('CurrentMonthOrdersTab rendered', {
-      ordersCount: Array.isArray(orders) ? orders.length : 'not array',
-      currentPage,
-      recordsPerPage,
-    });
-  }
+  const now = new Date();
+  const currentMonthName = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-  // Ensure orders is always an array
-  const safeOrders = Array.isArray(orders) ? orders : [];
-
-  // Safe handler functions with fallbacks
-  const safeOnAddOrder = onAddOrder || (() => console.warn('onAddOrder not provided'));
-  const safeOnEditOrder = onEditOrder || (() => console.warn('onEditOrder not provided'));
-  const safeOnDeleteOrder = onDeleteOrder || (() => console.warn('onDeleteOrder not provided'));
-  const safeOnUpdateOrderStatus =
-    onUpdateOrderStatus || (() => console.warn('onUpdateOrderStatus not provided'));
-  const safeOnPageChange = onPageChange || (() => console.warn('onPageChange not provided'));
-  const safeOnRecordsPerPageChange =
-    onRecordsPerPageChange || (() => console.warn('onRecordsPerPageChange not provided'));
-
-  // Filter to current month only - MUST BE DEFINED FIRST
-  // Sort by date DESC (latest date on top, oldest at bottom)
-  const filteredOrders = useMemo(() => {
-    try {
-      if (!safeOrders || safeOrders.length === 0) return [];
-      let filtered = getFilteredOrdersByDate(safeOrders, 'month', '', '');
-
-      // Apply status filter
-      if (statusFilter && statusFilter !== 'all') {
-        filtered = filtered.filter((order) => {
-          const status = (order.status || '').toLowerCase().trim();
-          const filterStatus = statusFilter.toLowerCase().trim();
-          if (filterStatus === 'paid') {
-            return status === 'paid';
-          } else if (filterStatus === 'unpaid') {
-            return status === 'unpaid';
-          } else {
-            return status === filterStatus;
-          }
-        });
-      }
-
-      // Apply address filter
-      if (addressFilter && addressFilter.trim() !== '') {
-        const searchAddr = addressFilter.trim().toLowerCase();
-        filtered = filtered.filter((order) => {
-          const addr = (
-            order.deliveryAddress ||
-            order.customerAddress ||
-            order.address ||
-            order.delivery_address ||
-            order.customer_address ||
-            ''
-          )
-            .toString()
-            .trim()
-            .toLowerCase();
-          return addr && addr.includes(searchAddr);
-        });
-      }
-
-      // Sort by date descending (newest first, oldest last)
-      return filtered.sort((a, b) => {
-        // Helper function to parse date with support for DD-MMM-YY format
-        const parseDate = (dateValue) => {
-          if (!dateValue) return null;
-          let date = new Date(dateValue);
-
-          // If parsing fails, try parsing as DD-MMM-YY format (e.g., "31-Dec-25")
-          if (isNaN(date.getTime()) && typeof dateValue === 'string') {
-            const dateStr = dateValue.trim();
-            const dateMatch = dateStr.match(/(\d{1,2})-([A-Za-z]{3})-(\d{2,4})/i);
-            if (dateMatch) {
-              const day = parseInt(dateMatch[1], 10);
-              const monthNames = [
-                'jan',
-                'feb',
-                'mar',
-                'apr',
-                'may',
-                'jun',
-                'jul',
-                'aug',
-                'sep',
-                'oct',
-                'nov',
-                'dec',
-              ];
-              const month = monthNames.indexOf(dateMatch[2].toLowerCase());
-              let year = parseInt(dateMatch[3], 10);
-              // Handle 2-digit years: 25 -> 2025, 24 -> 2024
-              if (year < 100) {
-                year = year < 50 ? 2000 + year : 1900 + year;
-              }
-              if (month >= 0 && day > 0 && day <= 31 && year > 1900) {
-                date = new Date(year, month, day);
-              }
-            }
-          }
-          return date;
-        };
-
-        const dateA = parseDate(
-          a.order_date || a.createdAt || a.date || a.orderDate || a.created_at
-        );
-        const dateB = parseDate(
-          b.order_date || b.createdAt || b.date || b.orderDate || b.created_at
-        );
-
-        // If dates are invalid, put them at the end
-        if (!dateA || isNaN(dateA.getTime())) return 1;
-        if (!dateB || isNaN(dateB.getTime())) return -1;
-
-        // Sort descending (newest first = latest to oldest)
-        return dateB.getTime() - dateA.getTime();
-      });
-    } catch (error) {
-      console.error('Error filtering orders:', error);
-      return [];
-    }
-  }, [safeOrders, statusFilter, addressFilter]);
-
-  // Get unique addresses for filter dropdown
-  const uniqueAddresses = useMemo(() => {
-    const addresses = new Set();
-    safeOrders.forEach((order) => {
-      const addr = order.deliveryAddress || order.customerAddress || order.address;
-      if (addr) addresses.add(addr);
-    });
-    return Array.from(addresses).sort();
-  }, [safeOrders]);
-
-  // Bulk update status for filtered orders
-  const handleBulkUpdateStatus = async () => {
-    if (!bulkUpdateStatus) {
-      showNotification && showNotification('Please select a status to update', 'warning');
-      return;
-    }
-
-    if (filteredOrders.length === 0) {
-      showNotification && showNotification('No orders found to update', 'warning');
-      return;
-    }
-
-    const confirmMessage = `Are you sure you want to update status to "${bulkUpdateStatus}" for ${filteredOrders.length} filtered order(s)?`;
-    if (!window.confirm(confirmMessage)) {
-      return;
-    }
-
-    setIsUpdating(true);
-    try {
-      const token = localStorage.getItem('homiebites_token');
-      if (!token) {
-        showNotification && showNotification('Please login to update orders', 'error');
-        setIsUpdating(false);
-        return;
-      }
-
-      showNotification && showNotification(`Updating ${filteredOrders.length} orders...`, 'info');
-
-      // Update each order via API
-      const updatePromises = filteredOrders.map(async (order) => {
-        try {
-          const orderId = order._id || order.id;
-          if (!orderId) return null;
-
-          await api.updateOrder(orderId, {
-            ...order,
-            status: bulkUpdateStatus,
-          });
-          return orderId;
-        } catch (err) {
-          console.warn(`Failed to update order ${order.orderId}:`, err);
-          return null;
-        }
-      });
-
-      const results = await Promise.all(updatePromises);
-      const successCount = results.filter((r) => r !== null).length;
-
-      // Reload orders from backend
-      if (loadOrders) {
-        await loadOrders();
-      }
-
-      showNotification &&
-        showNotification(
-          `Successfully updated ${successCount} of ${filteredOrders.length} orders to "${bulkUpdateStatus}"!`,
-          successCount === filteredOrders.length ? 'success' : 'warning'
-        );
-
-      // Reset bulk update status
-      setBulkUpdateStatus('');
-    } catch (error) {
-      console.error('Error bulk updating orders:', error);
-      showNotification && showNotification('Error updating orders: ' + error.message, 'error');
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  // Pagination
-  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / recordsPerPage));
-  const paginatedOrders = useMemo(() => {
-    const startIndex = (currentPage - 1) * recordsPerPage;
-    const endIndex = startIndex + recordsPerPage;
-    return filteredOrders.slice(startIndex, endIndex);
-  }, [filteredOrders, currentPage, recordsPerPage]);
-
-  // Current month stats
-  const monthStats = useMemo(() => {
-    const totalQuantity = filteredOrders.reduce((sum, o) => {
-      const qty = parseInt(o.quantity || 1);
-      return sum + (isNaN(qty) ? 1 : qty);
-    }, 0);
-    const revenue = getTotalRevenue(filteredOrders);
-    const pendingAmount = filteredOrders
-      .filter((o) => {
-        const status = (o.status || '').toLowerCase();
-        return status === 'unpaid';
-      })
-      .reduce((sum, o) => {
-        const total = parseFloat(o.total || o.totalAmount || 0);
-        return sum + (isNaN(total) ? 0 : total);
-      }, 0);
-    const avgOrderValue =
-      filteredOrders.length > 0 ? Math.round(revenue / filteredOrders.length) : 0;
-
-    return {
-      total: filteredOrders.length,
-      quantity: totalQuantity,
-      revenue: revenue,
-      pendingAmount: pendingAmount,
-      avgOrderValue: avgOrderValue,
-    };
-  }, [filteredOrders]);
-
-  // Calculate unit price helper
-  const getUnitPrice = (order) => {
-    try {
-      if (
-        order.unitPrice !== undefined &&
-        order.unitPrice !== null &&
-        !isNaN(parseFloat(order.unitPrice)) &&
-        parseFloat(order.unitPrice) > 0
-      ) {
-        return parseFloat(order.unitPrice);
-      }
-      const totalAmount = parseFloat(order.total || order.totalAmount || order.total_amount || 0);
-      const quantity = parseInt(order.quantity || 1);
-      if (!isNaN(totalAmount) && totalAmount > 0 && quantity > 0) {
-        return totalAmount / quantity;
-      }
-      if (order.deliveryAddress) {
-        const lastPrice = getLastUnitPriceForAddress(
-          safeOrders,
-          order.deliveryAddress || order.customerAddress || order.address
-        );
-        if (lastPrice && lastPrice > 0) return lastPrice;
-      }
-      return 0;
-    } catch (e) {
-      return 0;
-    }
-  };
-
-  // Format date helper
-  const formatDate = (dateValue) => {
-    if (!dateValue) return '-';
-    try {
-      const date = new Date(dateValue);
-      if (isNaN(date.getTime())) return '-';
-      const pad = (n) => n.toString().padStart(2, '0');
-      const monthNames = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-      ];
-      return `${pad(date.getDate())}-${monthNames[date.getMonth()]}-${date.getFullYear()}`;
-    } catch (e) {
-      return '-';
-    }
-  };
-
-  // Debug logging
-  console.log('[CurrentMonthOrdersTab] Component rendering', {
-    ordersLength: safeOrders.length,
-    filteredLength: filteredOrders.length,
-    currentPage,
-    recordsPerPage,
-    hasHandlers: {
-      onAddOrder: !!onAddOrder,
-      onEditOrder: !!onEditOrder,
-      onDeleteOrder: !!onDeleteOrder,
-    },
+  // Quick filter state
+  const [quickFilter, setQuickFilter] = useState('all'); // 'all', 'today', 'yesterday', 'thisWeek', 'pending', 'paid'
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showAddOrderModal, setShowAddOrderModal] = useState(false);
+  const [editingOrder, setEditingOrder] = useState(null);
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
+  const [newOrder, setNewOrder] = useState({
+    date: new Date().toISOString().split('T')[0],
+    deliveryAddress: '',
+    quantity: 1,
+    unitPrice: settings?.defaultUnitPrice || 100,
+    total: settings?.defaultUnitPrice || 100,
+    mode: 'Lunch',
+    status: 'Pending',
+    paymentMode: 'Online',
   });
 
-  // Show loading state
+  // Get current month orders
+  const currentMonthOrders = useMemo(() => {
+    return getFilteredOrdersByDate(orders, 'month', '', '');
+  }, [orders]);
+
+  // Calculate stats
+  const currentMonthStats = useMemo(() => {
+    const revenue = getTotalRevenue(currentMonthOrders);
+    const total = currentMonthOrders.length;
+    const pending = currentMonthOrders.filter((o) => isPendingStatus(o.status));
+    const pendingAmount = pending.reduce((sum, o) => {
+      return sum + parseFloat(o.total || o.totalAmount || 0);
+    }, 0);
+
+    // Calculate month-over-month growth
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    const lastMonthOrders = orders.filter((o) => {
+      try {
+        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+        return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === lastMonthYear;
+      } catch (e) {
+        return false;
+      }
+    });
+    const lastMonthRevenue = getTotalRevenue(lastMonthOrders);
+    const growth =
+      lastMonthRevenue > 0
+        ? ((revenue - lastMonthRevenue) / lastMonthRevenue) * 100
+        : revenue > 0
+        ? Infinity
+        : 0;
+
+    return {
+      revenue,
+      total,
+      pendingCount: pending.length,
+      pendingAmount,
+      growth,
+    };
+  }, [currentMonthOrders, orders, now]);
+
+  // Quick filter dates
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const thisWeekStart = new Date(now);
+  thisWeekStart.setDate(now.getDate() - now.getDay());
+  thisWeekStart.setHours(0, 0, 0, 0);
+
+  // Filter orders based on quick filter
+  const filteredOrders = useMemo(() => {
+    let filtered = [...currentMonthOrders];
+
+    switch (quickFilter) {
+      case 'today':
+        filtered = filtered.filter((o) => {
+          try {
+            const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+            return orderDate >= today && orderDate < tomorrow;
+          } catch (e) {
+            return false;
+          }
+        });
+        break;
+      case 'yesterday':
+        filtered = filtered.filter((o) => {
+          try {
+            const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+            return orderDate >= yesterday && orderDate < today;
+          } catch (e) {
+            return false;
+          }
+        });
+        break;
+      case 'thisWeek':
+        filtered = filtered.filter((o) => {
+          try {
+            const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+            return orderDate >= thisWeekStart;
+          } catch (e) {
+            return false;
+          }
+        });
+        break;
+      case 'pending':
+        filtered = filtered.filter((o) => isPendingStatus(o.status));
+        break;
+      case 'paid':
+        filtered = filtered.filter((o) => isPaidStatus(o.status));
+        break;
+      default:
+        // 'all' - no filter
+        break;
+    }
+
+    return filtered;
+  }, [currentMonthOrders, quickFilter, searchQuery, today, tomorrow, yesterday, thisWeekStart]);
+
+  // Quick filter counts
+  const quickFilterCounts = useMemo(() => {
+    const todayOrders = currentMonthOrders.filter((o) => {
+      try {
+        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+        return orderDate >= today && orderDate < tomorrow;
+      } catch (e) {
+        return false;
+      }
+    });
+
+    const yesterdayOrders = currentMonthOrders.filter((o) => {
+      try {
+        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+        return orderDate >= yesterday && orderDate < today;
+      } catch (e) {
+        return false;
+      }
+    });
+
+    const thisWeekOrders = currentMonthOrders.filter((o) => {
+      try {
+        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+        return orderDate >= thisWeekStart;
+      } catch (e) {
+        return false;
+      }
+    });
+
+    const pendingOrders = currentMonthOrders.filter((o) => isPendingStatus(o.status));
+    const paidOrders = currentMonthOrders.filter((o) => isPaidStatus(o.status));
+
+    return {
+      all: currentMonthOrders.length,
+      today: todayOrders.length,
+      yesterday: yesterdayOrders.length,
+      thisWeek: thisWeekOrders.length,
+      pending: pendingOrders.length,
+      paid: paidOrders.length,
+    };
+  }, [currentMonthOrders, today, tomorrow, yesterday, thisWeekStart]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredOrders.length / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const paginatedOrders = filteredOrders.slice(startIndex, startIndex + recordsPerPage);
+
+  // Handle new order change
+  const handleNewOrderChange = (field, value) => {
+    const updated = { ...newOrder, [field]: value };
+
+    // Auto-calculate total when quantity or unitPrice changes
+    if (field === 'quantity' || field === 'unitPrice') {
+      const qty = field === 'quantity' ? parseInt(value) || 1 : parseInt(updated.quantity) || 1;
+      const price =
+        field === 'unitPrice' ? parseFloat(value) || 0 : parseFloat(updated.unitPrice) || 0;
+      updated.total = qty * price;
+    }
+
+    setNewOrder(updated);
+  };
+
+  // Handle save order
+  const handleSaveOrder = async () => {
+    try {
+      if (onAddOrder) {
+        await onAddOrder(newOrder);
+        if (showNotification) showNotification('Order added successfully', 'success');
+        setShowAddOrderModal(false);
+        setNewOrder({
+          date: new Date().toISOString().split('T')[0],
+          deliveryAddress: '',
+          quantity: 1,
+          unitPrice: settings?.defaultUnitPrice || 100,
+          total: settings?.defaultUnitPrice || 100,
+          mode: 'Lunch',
+          status: 'Pending',
+          paymentMode: 'Online',
+        });
+        if (loadOrders) loadOrders();
+      }
+    } catch (error) {
+      console.error('Error saving order:', error);
+      if (showNotification) showNotification('Error saving order', 'error');
+    }
+  };
+
+  // Get recent addresses for autocomplete
+  const recentAddresses = useMemo(() => {
+    const addresses = new Set();
+    currentMonthOrders.forEach((o) => {
+      const addr = o.deliveryAddress || o.customerAddress || o.address;
+      if (addr) addresses.add(addr);
+    });
+    return Array.from(addresses).slice(0, 10);
+  }, [currentMonthOrders]);
+
   if (loading) {
     return (
-      <div className='admin-content' data-testid='current-month-orders-tab'>
-        <div className='orders-header'>
+      <div className='admin-content'>
+        <div className='dashboard-header'>
           <h2>Current Month Orders</h2>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: '400px',
-            flexDirection: 'column',
-            gap: '1rem',
-          }}
-        >
-          <div
-            className='loader-spinner'
-            style={{
-              width: '50px',
-              height: '50px',
-              border: '4px solid var(--admin-border)',
-              borderTop: '4px solid var(--admin-accent)',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-            }}
-          ></div>
-          <p style={{ color: 'var(--admin-text-light)', fontSize: '0.9rem' }}>Loading orders...</p>
-        </div>
+        <PremiumLoader message="Loading orders..." size="large" />
       </div>
     );
   }
 
-  // Ensure component always renders something
-  try {
-    return (
-      <div className='admin-content' data-testid='current-month-orders-tab'>
-        <div className='orders-header'>
-          <h2>Current Month Orders</h2>
-          <div className='orders-actions'>
-            <button className='btn btn-primary' onClick={safeOnAddOrder}>
-              <i className='fa-solid fa-plus'></i> Add Order
-            </button>
+  return (
+    <div className='admin-content'>
+      {/* HEADER */}
+      <div className='dashboard-header'>
+        <div>
+          <h2>Current Month: {currentMonthName}</h2>
+          <p>Manage orders for the current billing month</p>
+        </div>
+        <button className='btn btn-primary' onClick={() => setShowAddOrderModal(true)}>
+          <i className='fa-solid fa-plus'></i> Add New Order
+        </button>
+      </div>
+
+      {/* STATS ROW */}
+      <div className='admin-stats'>
+        <div className='stat-card'>
+          <i className='fa-solid fa-rupee-sign'></i>
+          <div>
+            <h3>₹{formatCurrency(currentMonthStats.revenue)}</h3>
+            <p>This Month Revenue</p>
           </div>
         </div>
-
-        {/* Current Month Stats */}
-        <div className='admin-stats'>
-          <div className='stat-card'>
-            <i className='fa-solid fa-shopping-cart'></i>
-            <div>
-              <h3>{monthStats.total}</h3>
-              <p>Total Orders</p>
-            </div>
-          </div>
-          <div className='stat-card'>
-            <i className='fa-solid fa-boxes'></i>
-            <div>
-              <h3>{monthStats.quantity}</h3>
-              <p>Total Quantity</p>
-            </div>
-          </div>
-          <div className='stat-card'>
-            <i className='fa-solid fa-rupee-sign'></i>
-            <div>
-              <h3>₹{formatCurrency(monthStats.revenue)}</h3>
-              <p>Revenue</p>
-            </div>
-          </div>
-          <div className='stat-card'>
-            <i className='fa-solid fa-clock'></i>
-            <div>
-              <h3>₹{formatCurrency(monthStats.pendingAmount)}</h3>
-              <p>Pending Amount</p>
-            </div>
-          </div>
-          <div className='stat-card'>
-            <i className='fa-solid fa-chart-line'></i>
-            <div>
-              <h3>₹{formatCurrency(monthStats.avgOrderValue)}</h3>
-              <p>Avg Order Value</p>
-            </div>
+        <div className='stat-card'>
+          <i className='fa-solid fa-shopping-cart'></i>
+          <div>
+            <h3>{currentMonthStats.total}</h3>
+            <p>Total Orders</p>
           </div>
         </div>
-
-        {/* Filters and Bulk Update Section */}
-        <div
-          style={{
-            background: 'var(--admin-surface)',
-            border: '1px solid var(--admin-border)',
-            borderRadius: '8px',
-            padding: '1.5rem',
-            marginBottom: '2rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-            <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--admin-accent)' }}>
-              Filters & Bulk Update
-            </h3>
-            {filteredOrders.length > 0 && (
-              <span
-                style={{
-                  padding: '0.25rem 0.75rem',
-                  background: 'var(--admin-accent-light)',
-                  color: 'var(--admin-accent)',
-                  borderRadius: '4px',
-                  fontSize: '0.85rem',
-                  fontWeight: '600',
-                }}
-              >
-                {filteredOrders.length} order{filteredOrders.length !== 1 ? 's' : ''} found
-              </span>
-            )}
-          </div>
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '1rem',
-              marginBottom: '1rem',
-            }}
-          >
-            {/* Status Filter */}
-            <div className='form-group' style={{ margin: 0 }}>
-              <label style={{ marginBottom: '0.5rem', display: 'block', fontWeight: '600' }}>
-                Filter by Status
-              </label>
-              <select
-                className='custom-dropdown'
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  onPageChange && onPageChange(1); // Reset to first page
-                }}
-              >
-                <option value='all'>All Status</option>
-                <option value='paid'>Paid</option>
-                <option value='unpaid'>Unpaid</option>
-              </select>
-            </div>
-
-            {/* Address Filter */}
-            <div className='form-group' style={{ margin: 0 }}>
-              <label style={{ marginBottom: '0.5rem', display: 'block', fontWeight: '600' }}>
-                Filter by Address
-              </label>
-              <input
-                type='text'
-                value={addressFilter}
-                onChange={(e) => {
-                  setAddressFilter(e.target.value);
-                  onPageChange && onPageChange(1); // Reset to first page
-                }}
-                placeholder='Search address...'
-                style={{
-                  width: '100%',
-                  padding: '0.5rem',
-                  border: '1px solid var(--admin-border)',
-                  borderRadius: '4px',
-                  background: 'var(--admin-bg)',
-                  color: 'var(--admin-text)',
-                }}
-              />
-            </div>
-
-            {/* Bulk Update Status */}
-            <div className='form-group' style={{ margin: 0 }}>
-              <label style={{ marginBottom: '0.5rem', display: 'block', fontWeight: '600' }}>
-                Bulk Update Status
-              </label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <select
-                  className='custom-dropdown'
-                  value={bulkUpdateStatus}
-                  onChange={(e) => setBulkUpdateStatus(e.target.value)}
-                  style={{ flex: 1 }}
-                >
-                  <option value=''>Select Status...</option>
-                  <option value='Paid'>Paid</option>
-                  <option value='Unpaid'>Unpaid</option>
-                </select>
-                <button
-                  className='btn btn-primary'
-                  onClick={handleBulkUpdateStatus}
-                  disabled={!bulkUpdateStatus || isUpdating || filteredOrders.length === 0}
-                  style={{ whiteSpace: 'nowrap' }}
-                >
-                  {isUpdating ? (
-                    <>
-                      <i className='fa-solid fa-spinner fa-spin'></i> Updating...
-                    </>
-                  ) : (
-                    <>
-                      <i className='fa-solid fa-check-double'></i> Update All
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Clear Filters */}
-          {(statusFilter !== 'all' || addressFilter.trim() !== '') && (
-            <button
-              className='btn btn-ghost btn-small'
-              onClick={() => {
-                setStatusFilter('all');
-                setAddressFilter('');
-                onPageChange && onPageChange(1);
-              }}
-              style={{ fontSize: '0.85rem' }}
-            >
-              <i className='fa-solid fa-times'></i> Clear Filters
-            </button>
-          )}
-        </div>
-
-        {/* Pagination Controls */}
-        {filteredOrders.length > 0 && (
-          <div className='pagination-controls'>
-            <div className='pagination-info'>
-              <label>Show:</label>
-              <select
-                value={recordsPerPage}
-                onChange={(e) => safeOnRecordsPerPageChange(Number(e.target.value))}
-                className='records-per-page-select'
-              >
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={200}>200</option>
-              </select>
-              <span>records per page</span>
-            </div>
-            <div className='pagination-info'>
-              Showing {(currentPage - 1) * recordsPerPage + 1} to{' '}
-              {Math.min(currentPage * recordsPerPage, filteredOrders.length)} of{' '}
-              {filteredOrders.length} orders
-            </div>
-          </div>
-        )}
-
-        {/* Orders Table */}
-        {filteredOrders.length === 0 ? (
-          <div className='no-data' style={{ padding: '2rem' }}>
-            <i
-              className='fa-solid fa-inbox'
-              style={{ fontSize: '3rem', color: 'var(--admin-text-light)', marginBottom: '1rem' }}
-            ></i>
-            <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>
-              No orders found for the current month.
-            </p>
+        <div className='stat-card'>
+          <i
+            className='fa-solid fa-exclamation-triangle'
+            style={{ color: 'var(--admin-warning)' }}
+          ></i>
+          <div>
+            <h3>₹{formatCurrency(currentMonthStats.pendingAmount)}</h3>
+            <p>Pending Payments</p>
             <p
               style={{
-                fontSize: '0.9rem',
+                fontSize: '0.85rem',
+                marginTop: '0.25rem',
                 color: 'var(--admin-text-light)',
-                marginTop: '0.5rem',
-                marginBottom: '1rem',
               }}
             >
-              Total orders in system: {safeOrders.length}
+              {currentMonthStats.pendingCount} orders
             </p>
-            <button
-              className='btn btn-primary'
-              onClick={safeOnAddOrder}
-              style={{ marginTop: '1rem' }}
-            >
-              <i className='fa-solid fa-plus'></i> Add New Order
-            </button>
           </div>
+        </div>
+        <div className='stat-card'>
+          <i className='fa-solid fa-chart-line' style={{ color: 'var(--admin-success)' }}></i>
+          <div>
+            <h3>
+              {currentMonthStats.growth === Infinity
+                ? 'New'
+                : `${currentMonthStats.growth >= 0 ? '+' : ''}${currentMonthStats.growth.toFixed(
+                    1
+                  )}%`}
+            </h3>
+            <p>vs Last Month</p>
+            <p
+              style={{
+                fontSize: '0.85rem',
+                marginTop: '0.25rem',
+                color: 'var(--admin-text-light)',
+              }}
+            >
+              {currentMonthStats.growth >= 0 ? '↑' : '↓'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ACTION BAR */}
+      <div className='action-bar' style={{ marginBottom: '24px' }}>
+        <div className='search-input-wrapper'>
+          <i className='fa-solid fa-search search-input-icon'></i>
+          <input
+            type='text'
+            className='input-field search-input-with-icon'
+            placeholder='Search this month...'
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ flex: 1 }}
+          />
+        </div>
+        <div className='action-buttons-group'>
+          <button
+            className='btn btn-secondary btn-small'
+            title='Upload CSV'
+            onClick={() => {
+              // TODO: Open CSV upload modal
+              if (showNotification) showNotification('CSV upload coming soon', 'info');
+            }}
+          >
+            <i className='fa-solid fa-upload'></i> Upload CSV
+          </button>
+          <button
+            className='btn btn-secondary btn-small'
+            title='Export Month'
+            onClick={() => {
+              const csvContent =
+                'Date,Address,Quantity,Amount,Mode,Status,Payment\n' +
+                filteredOrders
+                  .map((o) => {
+                    const date = new Date(o.createdAt || o.date || o.order_date);
+                    const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+                    return `"${formatDate(orderDate)}","${
+                      o.deliveryAddress || o.customerAddress || o.address || 'N/A'
+                    }","${o.quantity || 1}","${o.total || o.totalAmount || 0}","${
+                      o.mode || 'N/A'
+                    }","${o.status || 'N/A'}","${o.paymentMode || 'N/A'}"`;
+                  })
+                  .join('\n');
+              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              const link = document.createElement('a');
+              link.href = URL.createObjectURL(blob);
+              link.download = `current_month_export_${new Date().toISOString().split('T')[0]}.csv`;
+              link.click();
+              if (showNotification) showNotification('Month data exported successfully', 'success');
+            }}
+          >
+            <i className='fa-solid fa-download'></i> Export Month
+          </button>
+          <button
+            className='btn btn-ghost btn-small'
+            title='Refresh'
+            onClick={() => loadOrders && loadOrders()}
+          >
+            <i className='fa-solid fa-refresh'></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      {/* QUICK FILTERS */}
+      <div className='action-bar' style={{ marginBottom: '24px', flexWrap: 'wrap', gap: '8px' }}>
+        <button
+          className={`btn ${quickFilter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+          onClick={() => {
+            setQuickFilter('all');
+            if (onPageChange) onPageChange(1);
+          }}
+        >
+          All ({quickFilterCounts.all})
+        </button>
+        <button
+          className={`btn ${quickFilter === 'today' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+          onClick={() => {
+            setQuickFilter('today');
+            if (onPageChange) onPageChange(1);
+          }}
+        >
+          Today ({quickFilterCounts.today})
+        </button>
+        <button
+          className={`btn ${quickFilter === 'yesterday' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+          onClick={() => {
+            setQuickFilter('yesterday');
+            if (onPageChange) onPageChange(1);
+          }}
+        >
+          Yesterday ({quickFilterCounts.yesterday})
+        </button>
+        <button
+          className={`btn ${quickFilter === 'thisWeek' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+          onClick={() => {
+            setQuickFilter('thisWeek');
+            if (onPageChange) onPageChange(1);
+          }}
+        >
+          This Week ({quickFilterCounts.thisWeek})
+        </button>
+        <button
+          className={`btn ${quickFilter === 'pending' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+          onClick={() => {
+            setQuickFilter('pending');
+            if (onPageChange) onPageChange(1);
+          }}
+        >
+          Pending ({quickFilterCounts.pending})
+        </button>
+        <button
+          className={`btn ${quickFilter === 'paid' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+          onClick={() => {
+            setQuickFilter('paid');
+            if (onPageChange) onPageChange(1);
+          }}
+        >
+          Paid ({quickFilterCounts.paid})
+        </button>
+      </div>
+
+      {/* DATA TABLE */}
+      <div className='dashboard-card'>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '16px',
+          }}
+        >
+          <div style={{ color: 'var(--admin-text-secondary)', fontSize: '0.9rem' }}>
+            Showing {startIndex + 1}-{Math.min(startIndex + recordsPerPage, filteredOrders.length)}{' '}
+            of {filteredOrders.length} orders
+          </div>
+        </div>
+
+        {filteredOrders.length === 0 ? (
+          <EmptyState
+            icon='fa-solid fa-inbox'
+            title='No orders found'
+            message='Try adjusting your filters or add a new order'
+            actionLabel='Add New Order'
+            onAction={() => setShowAddOrderModal(true)}
+          />
         ) : (
-          <div className='excel-sheet-content'>
-            <div className='orders-table-container excel-table-container'>
-              <table className='orders-table excel-data-table'>
+          <>
+            <div className='orders-table-container'>
+              <table className='orders-table'>
                 <thead>
                   <tr>
-                    <th>S No.</th>
+                    <th>S.No</th>
                     <th>Date</th>
                     <th>Address</th>
-                    <th>Qty</th>
-                    <th>Unit Price</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
                     <th>Total</th>
+                    <th>Mode</th>
                     <th>Status</th>
-                    <th>Payment Mode</th>
-                    <th>Month/Year</th>
-                    <th>Order ID</th>
+                    <th>Payment</th>
+                    <th>OrderID</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedOrders.map((order, index) => {
-                    if (!order) return null;
-                    try {
-                      const quantity = parseInt(order.quantity || 1);
-                      const unitPrice = getUnitPrice(order);
-                      const totalAmount = quantity * unitPrice;
+                  {paginatedOrders.map((order, idx) => {
+                    const orderDate = parseOrderDate(
+                      order.createdAt || order.date || order.order_date
+                    );
+                    const dateStr = formatDate(orderDate);
+                    const isPaid = isPaidStatus(order.status);
 
-                      const orderDate = order.createdAt || order.date || order.orderDate;
-                      let dateStr = '-';
-                      if (orderDate) {
-                        try {
-                          const date = new Date(orderDate);
-                          if (!isNaN(date.getTime())) {
-                            dateStr = date.toLocaleDateString('en-IN', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                            });
-                          }
-                        } catch (e) {
-                          dateStr = String(orderDate).split('T')[0];
-                        }
-                      }
-
-                      const orderId = order.orderId || order.order_id || order.id || 'N/A';
-                      const billingMonth =
-                        order.billingMonth ||
-                        order.billing_month ||
-                        (orderDate ? extractBillingMonth(new Date(orderDate)) : null);
-                      const billingYear =
-                        order.billingYear ||
-                        order.billing_year ||
-                        (orderDate ? extractBillingYear(new Date(orderDate)) : null);
-                      const monthDisplay =
-                        billingMonth && billingYear
-                          ? formatBillingMonth(billingMonth, billingYear)
-                          : '-';
-
-                      // Determine row class based on order status
-                      const statusValue = order.status || order.paymentStatus || '';
-                      const orderStatus = String(statusValue).toLowerCase().trim();
-                      const rowClassName = 
-                        orderStatus === 'unpaid' || 
-                        orderStatus === 'pending' || 
-                        (orderStatus !== 'paid' && orderStatus !== 'delivered' && statusValue !== '')
-                          ? 'row-unpaid' 
-                          : orderStatus === 'paid' || orderStatus === 'delivered' 
-                          ? 'row-paid' 
-                          : '';
-
-                      return (
-                        <tr key={order.id || order.orderId || index} className={rowClassName}>
-                          <td className='excel-row-number'>
-                            {(currentPage - 1) * recordsPerPage + index + 1}
-                          </td>
-                          <td className='excel-date-cell'>{dateStr}</td>
-                          <td className='excel-text-cell'>
-                            {order.deliveryAddress || order.customerAddress || order.address || '-'}
-                          </td>
-                          <td className='excel-number-cell'>{quantity}</td>
-                          <td className='excel-number-cell'>₹{formatCurrency(unitPrice)}</td>
-                          <td className='excel-number-cell'>
-                            <strong>₹{formatCurrency(totalAmount)}</strong>
-                          </td>
-                          <td className='order-status-cell'>
-                            <div
-                              style={{
-                                display: 'flex',
-                                gap: '0.5rem',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
-                            >
-                              <button
-                                className={`btn btn-small ${
-                                  (order.status || order.paymentStatus || '').toLowerCase() === 'paid'
-                                    ? 'btn-primary'
-                                    : 'btn-ghost'
-                                }`}
-                                onClick={() => {
-                                  if (safeOnUpdateOrderStatus) {
-                                    safeOnUpdateOrderStatus(order.id || order._id, 'Paid');
-                                  }
-                                }}
-                                style={{
-                                  minWidth: '70px',
-                                  fontSize: '0.85rem',
-                                  padding: '0.5rem 0.75rem',
-                                }}
-                                title='Mark as Paid'
-                              >
-                                Paid
-                              </button>
-                              <button
-                                className={`btn btn-small ${
-                                  (order.status || order.paymentStatus || '').toLowerCase() === 'unpaid'
-                                    ? 'btn-special danger'
-                                    : 'btn-ghost'
-                                }`}
-                                onClick={() => {
-                                  if (safeOnUpdateOrderStatus) {
-                                    safeOnUpdateOrderStatus(order.id || order._id, 'Unpaid');
-                                  }
-                                }}
-                                style={{
-                                  minWidth: '70px',
-                                  fontSize: '0.85rem',
-                                  padding: '0.5rem 0.75rem',
-                                }}
-                                title='Mark as Unpaid'
-                              >
-                                Unpaid
-                              </button>
-                            </div>
-                          </td>
-                          <td className='excel-text-cell'>{order.paymentMode || order.payment_mode || '-'}</td>
-                          <td className='excel-text-cell'>{monthDisplay}</td>
-                          <td
-                            className='excel-text-cell order-id-cell'
-                            style={{
-                              wordBreak: 'break-all',
+                    return (
+                      <tr
+                        key={order._id || order.orderId || idx}
+                        onDoubleClick={() => {
+                          setEditingOrder(order);
+                          setShowAddOrderModal(true);
+                        }}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <td>{startIndex + idx + 1}</td>
+                        <td>{dateStr}</td>
+                        <td>
+                          {order.deliveryAddress || order.customerAddress || order.address || 'N/A'}
+                        </td>
+                        <td>{order.quantity || 1}</td>
+                        <td>₹{formatCurrency(order.unitPrice || 0)}</td>
+                        <td>₹{formatCurrency(order.total || order.totalAmount || 0)}</td>
+                        <td>{order.mode || 'N/A'}</td>
+                        <td>
+                          <select
+                            className={`status-dropdown ${
+                              isPaid ? 'status-paid' : 'status-unpaid'
+                            }`}
+                            value={isPaid ? 'Paid' : 'Unpaid'}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              if (onUpdateOrderStatus) {
+                                onUpdateOrderStatus(order._id || order.orderId, e.target.value);
+                              }
                             }}
-                            title={orderId}
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            {orderId}
-                          </td>
-                          <td className='order-actions-cell'>
-                            <div className='order-actions-group'>
-                              <button
-                                className='action-icon-btn action-icon-edit'
-                                onClick={() => safeOnEditOrder(order)}
-                                title='Edit Order'
-                              >
-                                <i className='fa-solid fa-edit'></i>
-                              </button>
-                              <button
-                                className='action-icon-btn action-icon-delete'
-                                onClick={() => safeOnDeleteOrder(order.id)}
-                                title='Delete Order'
-                              >
-                                <i className='fa-solid fa-trash'></i>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    } catch (rowError) {
-                      console.warn(`Error rendering order row ${index}:`, rowError);
-                      return null;
-                    }
+                            <option value='Paid'>Paid</option>
+                            <option value='Unpaid'>Unpaid</option>
+                          </select>
+                        </td>
+                        <td>{order.paymentMode || 'N/A'}</td>
+                        <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                          {order.orderId || 'N/A'}
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              className='action-icon-btn action-icon-edit'
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingOrder(order);
+                                setShowAddOrderModal(true);
+                              }}
+                              title='Edit'
+                            >
+                              <i className='fa-solid fa-pencil'></i>
+                            </button>
+                            <button
+                              className='action-icon-btn action-icon-delete'
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (onDeleteOrder) onDeleteOrder(order._id || order.orderId);
+                              }}
+                              title='Delete'
+                            >
+                              <i className='fa-solid fa-trash'></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
                   })}
                 </tbody>
               </table>
             </div>
-          </div>
-        )}
 
-        {/* Pagination Navigation */}
-        {filteredOrders.length > 0 && totalPages > 1 && (
-          <div className='pagination-navigation'>
-            <button
-              className='btn btn-ghost'
-              onClick={() => safeOnPageChange(1)}
-              disabled={currentPage === 1}
-              title='First Page'
-            >
-              <i className='fa-solid fa-angle-double-left'></i>
-            </button>
-            <button
-              className='btn btn-ghost'
-              onClick={() => safeOnPageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              title='Previous Page'
-            >
-              <i className='fa-solid fa-angle-left'></i>
-            </button>
-            <div className='page-numbers'>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-                if (
-                  pageNum === 1 ||
-                  pageNum === totalPages ||
-                  (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)
-                ) {
-                  return (
-                    <button
-                      key={pageNum}
-                      className={`btn btn-ghost ${currentPage === pageNum ? 'active' : ''}`}
-                      onClick={() => safeOnPageChange(pageNum)}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                } else if (pageNum === currentPage - 3 || pageNum === currentPage + 3) {
-                  return (
-                    <span key={pageNum} className='page-ellipsis'>
-                      ...
-                    </span>
-                  );
-                }
-                return null;
-              })}
+            {/* PAGINATION */}
+            <div className='pagination-controls'>
+              <div>
+                <button
+                  className='btn btn-ghost btn-small'
+                  onClick={() => onPageChange && onPageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <i className='fa-solid fa-chevron-left'></i> Previous
+                </button>
+                <span style={{ margin: '0 16px', fontWeight: '600' }}>
+                  Page {currentPage} of {totalPages || 1}
+                </span>
+                <button
+                  className='btn btn-ghost btn-small'
+                  onClick={() => onPageChange && onPageChange(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                >
+                  Next <i className='fa-solid fa-chevron-right'></i>
+                </button>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>Show:</span>
+                <select
+                  className='input-field'
+                  style={{ width: '80px', padding: '6px 8px' }}
+                  value={recordsPerPage}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (onRecordsPerPageChange) onRecordsPerPageChange(value);
+                    if (onPageChange) onPageChange(1);
+                  }}
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span>per page</span>
+              </div>
             </div>
-            <button
-              className='btn btn-ghost'
-              onClick={() => safeOnPageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              title='Next Page'
-            >
-              <i className='fa-solid fa-angle-right'></i>
-            </button>
-            <button
-              className='btn btn-ghost'
-              onClick={() => safeOnPageChange(totalPages)}
-              disabled={currentPage === totalPages}
-              title='Last Page'
-            >
-              <i className='fa-solid fa-angle-double-right'></i>
-            </button>
-          </div>
+          </>
         )}
       </div>
-    );
-  } catch (error) {
-    console.error('Error rendering CurrentMonthOrdersTab:', error);
-    return (
-      <div className='admin-content'>
-        <div className='orders-header'>
-          <h2>Current Month Orders</h2>
-          <div className='orders-actions'>
-            <button className='btn btn-primary' onClick={safeOnAddOrder}>
-              <i className='fa-solid fa-plus'></i> Add Order
-            </button>
-          </div>
-        </div>
-        <div className='no-data' style={{ padding: '2rem', textAlign: 'center' }}>
-          <i
-            className='fa-solid fa-exclamation-triangle'
-            style={{ fontSize: '3rem', color: 'var(--admin-warning)', marginBottom: '1rem' }}
-          ></i>
-          <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>
-            Error loading orders. Please refresh the page.
-          </p>
-          <p style={{ fontSize: '0.9rem', color: 'var(--admin-text-light)', marginTop: '0.5rem' }}>
-            {error.message || 'Unknown error occurred'}
-          </p>
-        </div>
-      </div>
-    );
-  }
+
+      {/* ADD ORDER MODAL */}
+      {showAddOrderModal && (
+        <OrderModal
+          show={showAddOrderModal}
+          editingOrder={editingOrder}
+          newOrder={newOrder}
+          orders={orders}
+          addressSuggestions={recentAddresses}
+          showAddressSuggestions={showAddressSuggestions}
+          onClose={() => {
+            setShowAddOrderModal(false);
+            setEditingOrder(null);
+            setNewOrder({
+              date: new Date().toISOString().split('T')[0],
+              deliveryAddress: '',
+              quantity: 1,
+              unitPrice: settings?.defaultUnitPrice || 100,
+              total: settings?.defaultUnitPrice || 100,
+              mode: 'Lunch',
+              status: 'Pending',
+              paymentMode: 'Online',
+            });
+          }}
+          onSave={
+            editingOrder
+              ? async () => {
+                  if (onEditOrder) {
+                    await onEditOrder(editingOrder._id || editingOrder.orderId, editingOrder);
+                    if (showNotification) showNotification('Order updated successfully', 'success');
+                  }
+                  setShowAddOrderModal(false);
+                  setEditingOrder(null);
+                  if (loadOrders) loadOrders();
+                }
+              : handleSaveOrder
+          }
+          onNewOrderChange={handleNewOrderChange}
+          onEditingOrderChange={(field, value) => {
+            setEditingOrder({ ...editingOrder, [field]: value });
+          }}
+          setAddressSuggestions={setAddressSuggestions}
+          setShowAddressSuggestions={setShowAddressSuggestions}
+        />
+      )}
+    </div>
+  );
 };
 
 export default CurrentMonthOrdersTab;

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import AdminForgotPassword from '../../../../admin/AdminForgotPassword';
+import AdminForgotPassword from "../../../../admin/AdminForgotPassword";
 
 export default function AdminForgotPasswordPage() {
   return <AdminForgotPassword />;

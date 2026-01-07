@@ -91,14 +91,14 @@
   --error-red-hover: #dc2626;
   --success-green-light: #10b981;
   --info-blue-light: #3b82f6;
-  --purple: #9B59B6;
-  --purple-dark: #8E44AD;
-  --yellow: #F5A623;
-  --yellow-dark: #D8941A;
-  --blue: #4A90E2;
-  --blue-dark: #357ABD;
-  --red: #E74C3C;
-  --red-dark: #C0392B;
+  --purple: #9b59b6;
+  --purple-dark: #8e44ad;
+  --yellow: #f5a623;
+  --yellow-dark: #d8941a;
+  --blue: #4a90e2;
+  --blue-dark: #357abd;
+  --red: #e74c3c;
+  --red-dark: #c0392b;
 
   /* Spacing Scale */
   --space-1: 0.25rem;
@@ -131,10 +131,12 @@
 
   /* Font Family */
   --font-primary:
-    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
-    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  --font-display:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono:
-    'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Fira Mono', 'Droid Sans Mono',
-    'Source Code Pro', monospace;
+    "SF Mono", "Monaco", "Inconsolata", "Fira Code", "Fira Mono",
+    "Droid Sans Mono", "Source Code Pro", monospace;
 }

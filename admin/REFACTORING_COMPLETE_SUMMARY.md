@@ -129,12 +129,12 @@
 
 ```jsx
 // admin/components/[ComponentName].jsx
-import React from 'react';
-import { formatCurrency } from '../utils/orderUtils.js';
+import React from "react";
+import { formatCurrency } from "../utils/orderUtils.js";
 
 const ComponentName = ({ prop1, prop2, handler1, handler2 }) => {
   // Component JSX here
-  return <div className='admin-content'>{/* Component content */}</div>;
+  return <div className="admin-content">{/* Component content */}</div>;
 };
 
 export default ComponentName;
@@ -144,12 +144,17 @@ export default ComponentName;
 
 ```jsx
 // Add import at top
-import ComponentName from './components/ComponentName.jsx';
+import ComponentName from "./components/ComponentName.jsx";
 
 // Replace inline JSX with component
 {
-  activeTab === 'tabName' && (
-    <ComponentName prop1={prop1} prop2={prop2} handler1={handler1} handler2={handler2} />
+  activeTab === "tabName" && (
+    <ComponentName
+      prop1={prop1}
+      prop2={prop2}
+      handler1={handler1}
+      handler2={handler2}
+    />
   );
 }
 ```

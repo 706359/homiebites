@@ -18,10 +18,10 @@ class ErrorTracker {
 
     try {
       // Capture unhandled errors
-      window.addEventListener('error', (event) => {
+      window.addEventListener("error", (event) => {
         try {
           this.captureError({
-            type: 'unhandled_error',
+            type: "unhandled_error",
             message: event.message,
             filename: event.filename,
             lineno: event.lineno,
@@ -32,15 +32,15 @@ class ErrorTracker {
           });
         } catch (e) {
           // Silently fail if error tracking itself fails
-          console.warn('ErrorTracker: Failed to capture error', e);
+          console.warn("ErrorTracker: Failed to capture error", e);
         }
       });
 
       // Capture unhandled promise rejections
-      window.addEventListener('unhandledrejection', (event) => {
+      window.addEventListener("unhandledrejection", (event) => {
         try {
           this.captureError({
-            type: 'unhandled_promise_rejection',
+            type: "unhandled_promise_rejection",
             reason: event.reason,
             message: event.reason?.message || String(event.reason),
             stack: event.reason?.stack,
@@ -48,7 +48,7 @@ class ErrorTracker {
           });
         } catch (e) {
           // Silently fail if error tracking itself fails
-          console.warn('ErrorTracker: Failed to capture promise rejection', e);
+          console.warn("ErrorTracker: Failed to capture promise rejection", e);
         }
       });
 
@@ -58,12 +58,12 @@ class ErrorTracker {
       this.isInitialized = true;
       // Silent initialization - only log in development
       if (import.meta.env?.DEV) {
-        console.log('[ErrorTracker] Initialized');
+        console.log("[ErrorTracker] Initialized");
       }
     } catch (initError) {
       // If initialization fails, just mark as initialized to prevent retries
       this.isInitialized = true;
-      console.warn('ErrorTracker: Initialization failed', initError);
+      console.warn("ErrorTracker: Initialization failed", initError);
     }
   }
 
@@ -74,14 +74,14 @@ class ErrorTracker {
       console.error = (...args) => {
         try {
           // Check if it's a React error
-          const errorString = args.join(' ');
+          const errorString = args.join(" ");
           if (
-            errorString.includes('Warning:') ||
-            errorString.includes('Error:') ||
-            errorString.includes('Uncaught')
+            errorString.includes("Warning:") ||
+            errorString.includes("Error:") ||
+            errorString.includes("Uncaught")
           ) {
             this.captureError({
-              type: 'react_error',
+              type: "react_error",
               message: errorString,
               args: args.map((arg) => {
                 try {
@@ -94,7 +94,7 @@ class ErrorTracker {
                   }
                   return String(arg);
                 } catch (e) {
-                  return '[Error serializing argument]';
+                  return "[Error serializing argument]";
                 }
               }),
               timestamp: new Date().toISOString(),
@@ -107,7 +107,7 @@ class ErrorTracker {
       };
     } catch (e) {
       // Silently fail if setup fails
-      console.warn('ErrorTracker: Failed to setup React error boundary', e);
+      console.warn("ErrorTracker: Failed to setup React error boundary", e);
     }
   }
 
@@ -118,7 +118,7 @@ class ErrorTracker {
     const operation = {
       id: operationId,
       name: operationName,
-      status: 'pending',
+      status: "pending",
       startTime: Date.now(),
       details,
       timestamp: new Date().toISOString(),
@@ -140,14 +140,16 @@ class ErrorTracker {
   completeOperation(operationId, result = null) {
     const operation = this.pendingOperations.get(operationId);
     if (operation) {
-      operation.status = 'completed';
+      operation.status = "completed";
       operation.endTime = Date.now();
       operation.duration = operation.endTime - operation.startTime;
       operation.result = result;
       this.pendingOperations.delete(operationId);
       // Only log in development mode
       if (import.meta.env?.DEV) {
-        console.log(`[Queue] Completed: ${operation.name} (${operation.duration}ms)`);
+        console.log(
+          `[Queue] Completed: ${operation.name} (${operation.duration}ms)`,
+        );
       }
     }
   }
@@ -158,7 +160,7 @@ class ErrorTracker {
   failOperation(operationId, error) {
     const operation = this.pendingOperations.get(operationId);
     if (operation) {
-      operation.status = 'failed';
+      operation.status = "failed";
       operation.endTime = Date.now();
       operation.duration = operation.endTime - operation.startTime;
       operation.error = {
@@ -168,7 +170,7 @@ class ErrorTracker {
       };
 
       this.captureError({
-        type: 'operation_failed',
+        type: "operation_failed",
         operationId,
         operationName: operation.name,
         error: operation.error,
@@ -192,8 +194,9 @@ class ErrorTracker {
         id: `ERR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         pendingOperations: Array.from(this.pendingOperations.values()),
         queueLength: this.queue.length,
-        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
-        url: typeof window !== 'undefined' ? window.location.href : 'Unknown',
+        userAgent:
+          typeof navigator !== "undefined" ? navigator.userAgent : "Unknown",
+        url: typeof window !== "undefined" ? window.location.href : "Unknown",
         localStorageSize: this.getLocalStorageSize(),
         memoryInfo: this.getMemoryInfo(),
       };
@@ -211,16 +214,16 @@ class ErrorTracker {
       // Log to console (only in development or for critical errors)
       if (
         import.meta.env?.DEV ||
-        errorData.type === 'unhandled_error' ||
-        errorData.type === 'unhandled_promise_rejection'
+        errorData.type === "unhandled_error" ||
+        errorData.type === "unhandled_promise_rejection"
       ) {
-        console.error('[ErrorTracker] Error captured:', error);
+        console.error("[ErrorTracker] Error captured:", error);
       }
 
       return error.id;
     } catch (e) {
       // If error tracking itself fails, just return a dummy ID
-      console.warn('ErrorTracker: Failed to capture error', e);
+      console.warn("ErrorTracker: Failed to capture error", e);
       return `ERR-FAILED-${Date.now()}`;
     }
   }
@@ -233,7 +236,7 @@ class ErrorTracker {
     if (pending.length === 0) {
       // Check queue for last pending item
       const lastPending = this.queue
-        .filter((op) => op.status === 'pending')
+        .filter((op) => op.status === "pending")
         .sort((a, b) => b.startTime - a.startTime)[0];
       return lastPending || null;
     }
@@ -245,7 +248,9 @@ class ErrorTracker {
    * Get last error/crash reason
    */
   getLastError() {
-    return this.errorLog.length > 0 ? this.errorLog[this.errorLog.length - 1] : null;
+    return this.errorLog.length > 0
+      ? this.errorLog[this.errorLog.length - 1]
+      : null;
   }
 
   /**
@@ -357,8 +362,12 @@ class ErrorTracker {
           usedJSHeapSize: performance.memory.usedJSHeapSize,
           totalJSHeapSize: performance.memory.totalJSHeapSize,
           jsHeapSizeLimit: performance.memory.jsHeapSizeLimit,
-          usedMB: (performance.memory.usedJSHeapSize / (1024 * 1024)).toFixed(2),
-          totalMB: (performance.memory.totalJSHeapSize / (1024 * 1024)).toFixed(2),
+          usedMB: (performance.memory.usedJSHeapSize / (1024 * 1024)).toFixed(
+            2,
+          ),
+          totalMB: (performance.memory.totalJSHeapSize / (1024 * 1024)).toFixed(
+            2,
+          ),
         };
       }
       return { available: false };
@@ -376,9 +385,9 @@ class ErrorTracker {
         errorLog: this.errorLog.slice(-50), // Keep last 50 errors
         lastUpdate: new Date().toISOString(),
       };
-      localStorage.setItem('homiebites_error_log', JSON.stringify(data));
+      localStorage.setItem("homiebites_error_log", JSON.stringify(data));
     } catch (e) {
-      console.warn('[ErrorTracker] Failed to save to localStorage:', e);
+      console.warn("[ErrorTracker] Failed to save to localStorage:", e);
     }
   }
 
@@ -387,46 +396,48 @@ class ErrorTracker {
    */
   loadFromLocalStorage() {
     try {
-      const stored = localStorage.getItem('homiebites_error_log');
+      const stored = localStorage.getItem("homiebites_error_log");
       if (stored) {
         const data = JSON.parse(stored);
         if (data.errorLog && Array.isArray(data.errorLog)) {
           const originalCount = data.errorLog.length;
-          
+
           // Clean up old errors (older than 7 days or more than 50 entries)
           const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-          
+
           this.errorLog = data.errorLog
             .filter((error) => {
               const errorTime = new Date(error.timestamp || 0).getTime();
               return errorTime > sevenDaysAgo;
             })
             .slice(-50); // Keep only last 50 errors
-          
+
           const removedCount = originalCount - this.errorLog.length;
-          
+
           // Save cleaned log back to localStorage if we removed entries
           if (removedCount > 0) {
             this.saveToLocalStorage();
           }
-          
+
           // Only log in development mode
           if (import.meta.env?.DEV) {
             if (removedCount > 0) {
               console.log(
-                `[ErrorTracker] Loaded ${originalCount} errors, cleaned ${removedCount} old entries, kept ${this.errorLog.length}`
+                `[ErrorTracker] Loaded ${originalCount} errors, cleaned ${removedCount} old entries, kept ${this.errorLog.length}`,
               );
             } else {
-              console.log(`[ErrorTracker] Loaded ${this.errorLog.length} errors from localStorage`);
+              console.log(
+                `[ErrorTracker] Loaded ${this.errorLog.length} errors from localStorage`,
+              );
             }
           }
         }
       }
     } catch (e) {
-      console.warn('[ErrorTracker] Failed to load from localStorage:', e);
+      console.warn("[ErrorTracker] Failed to load from localStorage:", e);
       // If parsing fails, clear corrupted data
       try {
-        localStorage.removeItem('homiebites_error_log');
+        localStorage.removeItem("homiebites_error_log");
         this.errorLog = [];
       } catch (clearError) {
         // Ignore
@@ -441,10 +452,10 @@ class ErrorTracker {
     this.errorLog = [];
     this.queue = [];
     this.pendingOperations.clear();
-    localStorage.removeItem('homiebites_error_log');
+    localStorage.removeItem("homiebites_error_log");
     // Only log in development mode
     if (import.meta.env?.DEV) {
-      console.log('[ErrorTracker] Error log cleared');
+      console.log("[ErrorTracker] Error log cleared");
     }
   }
 
@@ -453,9 +464,11 @@ class ErrorTracker {
    */
   exportErrorReport() {
     const report = this.getCrashReport();
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(report, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `error-report-${Date.now()}.json`;
     a.click();
@@ -467,12 +480,18 @@ class ErrorTracker {
    */
   printErrorReport() {
     const report = this.getCrashReport();
-    console.group('🔴 Crash Report');
-    console.log('Last Error:', report.crashInfo.lastError);
-    console.log('Last Pending Operation:', report.crashInfo.lastPendingOperation);
-    console.log('All Pending Operations:', report.crashInfo.allPendingOperations);
-    console.log('Context:', report.context);
-    console.log('Recent Errors:', report.recentErrors);
+    console.group("🔴 Crash Report");
+    console.log("Last Error:", report.crashInfo.lastError);
+    console.log(
+      "Last Pending Operation:",
+      report.crashInfo.lastPendingOperation,
+    );
+    console.log(
+      "All Pending Operations:",
+      report.crashInfo.allPendingOperations,
+    );
+    console.log("Context:", report.context);
+    console.log("Recent Errors:", report.recentErrors);
     console.groupEnd();
     return report;
   }
@@ -488,16 +507,16 @@ errorTracker.loadFromLocalStorage();
 export default errorTracker;
 
 // Also expose globally for debugging (development only)
-if (typeof window !== 'undefined' && import.meta.env?.DEV) {
+if (typeof window !== "undefined" && import.meta.env?.DEV) {
   window.errorTracker = errorTracker;
   window.getCrashReport = () => errorTracker.getCrashReport();
   window.getLastError = () => errorTracker.getLastError();
   window.getLastPending = () => errorTracker.getLastPendingOperation();
   window.clearErrorLogs = () => {
     errorTracker.clearErrorLog();
-    console.log('[ErrorTracker] All error logs cleared manually');
+    console.log("[ErrorTracker] All error logs cleared manually");
   };
   console.log(
-    '[ErrorTracker] Available globally: window.errorTracker, window.getCrashReport(), window.getLastError(), window.getLastPending(), window.clearErrorLogs()'
+    "[ErrorTracker] Available globally: window.errorTracker, window.getCrashReport(), window.getLastError(), window.getLastPending(), window.clearErrorLogs()",
   );
 }
