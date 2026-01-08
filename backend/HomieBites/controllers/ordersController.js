@@ -307,7 +307,7 @@ export async function getAllOrders(req, res) {
               normalized.order_date ||
               normalized.orderDate ||
               normalized.createdAt ||
-              new Date();
+              null; // Never use today's date as fallback
           }
           if (normalized.Date) delete normalized.Date; // Remove old field
 
@@ -398,8 +398,8 @@ export async function getAllOrders(req, res) {
             try {
               const orderDate = normalized.date
                 ? new Date(normalized.date)
-                : new Date();
-              if (!isNaN(orderDate.getTime())) {
+                : null; // Never use today's date as fallback
+              if (orderDate && !isNaN(orderDate.getTime())) {
                 normalized.billingMonth = orderDate.getMonth() + 1;
                 normalized.billingYear = orderDate.getFullYear();
               }
@@ -476,28 +476,18 @@ export async function getAllOrders(req, res) {
             delete normalized["OrderID"];
           }
 
-          // Only generate orderId if still missing (for backward compatibility with old data)
-          // New uploads should always have orderId provided in Excel
+          // Order ID auto-generation removed - Order IDs must be provided manually
+          // Skip orders without Order IDs
           if (
             !normalized.orderId ||
             normalized.orderId === "N/A" ||
             normalized.orderId === ""
           ) {
             console.warn(
-              "[getAllOrders] Order missing orderId, generating one:",
+              "[getAllOrders] Order missing orderId, skipping:",
               normalized,
             );
-            const datePart = normalized.date
-              ? new Date(normalized.date)
-              : new Date();
-            const yy = String(datePart.getFullYear()).slice(-2);
-            const mm = String(datePart.getMonth() + 1).padStart(2, "0");
-            const dd = String(datePart.getDate()).padStart(2, "0");
-            const random = Math.random()
-              .toString(36)
-              .substring(2, 5)
-              .toUpperCase();
-            normalized.orderId = `HB${yy}${mm}${dd}${random}`;
+            return null; // Skip orders without Order IDs
           }
 
           // Preserve dateNeedsReview and originalDateString fields (don't normalize them)
@@ -744,9 +734,16 @@ export async function createOrder(req, res) {
     // Set priceOverride flag if unitPrice differs from default (would need Settings lookup)
     const priceOverride = false; // TODO: Compare with defaultUnitPrice from Settings
 
-    // Remove orderId and totalAmount from body to prevent manual override
+    // Order ID must be provided - no auto-generation
+    if (!orderData.orderId || !orderData.orderId.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: "Order ID is required. Please provide Order ID.",
+      });
+    }
+
+    // Remove totalAmount from body to prevent manual override (always calculated on backend)
     const orderDataWithoutId = { ...orderData };
-    delete orderDataWithoutId.orderId;
     delete orderDataWithoutId.totalAmount; // Always calculate on backend
 
     const order = await Order.create({
@@ -816,10 +813,16 @@ export async function createManualOrder(req, res) {
     // CRITICAL: totalAmount is ALWAYS calculated on backend (quantity * unitPrice)
     const totalAmount = unitPrice * quantity;
 
-    // Remove orderId and totalAmount from body to prevent manual override
-    // OrderID will be auto-generated in the pre('validate') hook with new format
+    // Order ID must be provided - no auto-generation
+    if (!orderData.orderId || !orderData.orderId.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: "Order ID is required. Please provide Order ID.",
+      });
+    }
+
+    // Remove totalAmount from body to prevent manual override (always calculated on backend)
     const orderDataWithoutId = { ...orderData };
-    delete orderDataWithoutId.orderId;
     delete orderDataWithoutId.totalAmount;
 
     // Normalize payment status
@@ -840,8 +843,9 @@ export async function createManualOrder(req, res) {
       }
     }
 
-    // Create order - OrderID will be auto-generated in pre('validate') hook
+    // Create order with provided Order ID
     const order = await Order.create({
+      orderId: orderData.orderId.trim(), // Use provided Order ID
       date: parsedDate,
       deliveryAddress: orderData.deliveryAddress,
       quantity,

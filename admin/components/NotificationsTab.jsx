@@ -2,9 +2,9 @@
 // This file has been recreated from scratch to match the plan exactly
 
 import { useState } from 'react';
-import PremiumLoader from './PremiumLoader.jsx';
 import { formatDateMonthDay, parseOrderDate } from '../utils/dateUtils.js';
 import { isPendingStatus } from '../utils/orderUtils.js';
+import PremiumLoader from './PremiumLoader.jsx';
 
 // Get time ago helper
 function getTimeAgo(date) {
@@ -28,8 +28,11 @@ const NotificationsTab = ({
   onViewOrder,
   onMarkAsPaid,
   onSendReminder,
+  setActiveTab,
+  showConfirmation,
 }) => {
   const [filter, setFilter] = useState('all'); // 'all', 'unread', 'payments', 'orders', 'system'
+  const [readNotifications, setReadNotifications] = useState(new Set());
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [notificationSettings, setNotificationSettings] = useState({
     notifyNewOrders: true,
@@ -43,13 +46,71 @@ const NotificationsTab = ({
     deliverySMS: false,
   });
 
-  // Generate notifications from orders (mock - in real app would come from API)
+  // Generate notifications from orders - REAL DATA
   const notifications = [];
+  const now = new Date();
 
-  // Recent orders notifications
-  const recentOrders = orders.slice(0, 10).reverse();
+  // Calculate overdue threshold (45 days like PendingAmountsTab)
+  const fortyFiveDaysAgo = new Date(now);
+  fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
+  fortyFiveDaysAgo.setHours(0, 0, 0, 0);
+
+  // Overdue payments notifications (most urgent - show first)
+  const pendingOrders = orders.filter((o) => isPendingStatus(o.status));
+  const overduePayments = pendingOrders
+    .map((order) => {
+      try {
+        const orderDate = parseOrderDate(order.date || order.order_date || null);
+        if (!orderDate) return null;
+        const orderDateMidnight = new Date(orderDate);
+        orderDateMidnight.setHours(0, 0, 0, 0);
+        const daysPending = Math.floor((now - orderDateMidnight) / (1000 * 60 * 60 * 24));
+        const isOverdue = orderDateMidnight < fortyFiveDaysAgo;
+        const isUrgent = daysPending > 7;
+        return { order, orderDate, daysPending, isOverdue, isUrgent };
+      } catch (e) {
+        return null;
+      }
+    })
+    .filter((item) => item && (item.isOverdue || item.isUrgent))
+    .sort((a, b) => b.daysPending - a.daysPending)
+    .slice(0, 15); // Show up to 15 overdue/urgent payments
+
+  overduePayments.forEach(({ order, orderDate, daysPending, isOverdue }) => {
+    const timeAgo = getTimeAgo(orderDate);
+    const address = order.deliveryAddress || order.customerAddress || order.address || 'N/A';
+    notifications.push({
+      id: `payment-${order._id || order.orderId}`,
+      type: 'payment',
+      title: isOverdue ? 'Payment Overdue' : 'Payment Pending',
+      message: `Order #${order.orderId || 'N/A'} from ${address}`,
+      details: `₹${order.total || order.totalAmount || 0} • ${daysPending} days pending`,
+      timeAgo,
+      read: false,
+      action: isOverdue ? 'viewPendingPayments' : 'sendReminder',
+      orderId: order._id || order.orderId,
+      daysPending,
+      isOverdue,
+    });
+  });
+
+  // Recent orders notifications (last 7 days, limit to 10)
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const recentOrders = orders
+    .filter((order) => {
+      const orderDate = parseOrderDate(order.date || order.order_date || null);
+      return orderDate && orderDate >= sevenDaysAgo;
+    })
+    .sort((a, b) => {
+      const dateA = parseOrderDate(a.date || a.order_date || null);
+      const dateB = parseOrderDate(b.date || b.order_date || null);
+      return (dateB || new Date(0)) - (dateA || new Date(0));
+    })
+    .slice(0, 10);
+
   recentOrders.forEach((order) => {
-    const orderDate = parseOrderDate(order.createdAt || order.date || order.order_date);
+    const orderDate = parseOrderDate(order.date || order.order_date || null);
     if (!orderDate) return;
     const timeAgo = getTimeAgo(orderDate);
     notifications.push({
@@ -59,9 +120,9 @@ const NotificationsTab = ({
       message: `Order #${order.orderId || 'N/A'} from ${
         order.deliveryAddress || order.customerAddress || order.address || 'N/A'
       }`,
-      details: `Amount: ₹${order.total || order.totalAmount || 0} | Mode: ${
-        order.mode || 'N/A'
-      } | Status: ${order.status || 'N/A'}`,
+      details: `₹${order.total || order.totalAmount || 0} • ${order.mode || 'N/A'} • ${
+        order.status || 'N/A'
+      }`,
       timeAgo,
       read: false,
       action: 'viewOrder',
@@ -69,56 +130,24 @@ const NotificationsTab = ({
     });
   });
 
-  // Pending payments notifications
-  const pendingOrders = orders.filter((o) => isPendingStatus(o.status));
-  pendingOrders.slice(0, 10).forEach((order) => {
-    const orderDate = parseOrderDate(order.createdAt || order.date || order.order_date);
-    if (!orderDate) return;
-    const daysPending = Math.floor((new Date() - orderDate) / (1000 * 60 * 60 * 24));
-    if (daysPending > 3) {
-      const timeAgo = getTimeAgo(orderDate);
-      notifications.push({
-        id: `payment-${order._id || order.orderId}`,
-        type: 'payment',
-        title: 'Payment Overdue',
-        message: `Order #${order.orderId || 'N/A'} pending for ${daysPending} days`,
-        details: `Amount: ₹${order.total || order.totalAmount || 0} from ${
-          order.deliveryAddress || order.customerAddress || order.address || 'N/A'
-        }`,
-        timeAgo,
-        read: false,
-        action: 'sendReminder',
-        orderId: order._id || order.orderId,
-        daysPending,
-      });
-    }
+  // Sort notifications: overdue payments first, then by date (newest first)
+  notifications.sort((a, b) => {
+    if (a.isOverdue && !b.isOverdue) return -1;
+    if (!a.isOverdue && b.isOverdue) return 1;
+    // For same type, sort by time (newer first)
+    const timeA = a.timeAgo.includes('mins') ? 0 : a.timeAgo.includes('hour') ? 1 : 2;
+    const timeB = b.timeAgo.includes('mins') ? 0 : b.timeAgo.includes('hour') ? 1 : 2;
+    return timeA - timeB;
   });
 
-  // System notifications (mock)
-  notifications.push({
-    id: 'system-1',
-    type: 'system',
-    title: 'Daily Summary Generated',
-    message: 'Total orders: 9 | Revenue: ₹1,800',
-    details: 'Generated Today 9AM',
-    timeAgo: 'Today 9AM',
-    read: false,
-    action: 'viewReport',
-  });
-
-  notifications.push({
-    id: 'system-2',
-    type: 'system',
-    title: 'Low Order Day Yesterday',
-    message: 'Only 3 orders received yesterday',
-    details: 'Consider sending promotional messages',
-    timeAgo: 'Yesterday',
-    read: false,
-    action: 'viewDetails',
-  });
+  // Mark notifications as read based on state
+  const notificationsWithReadState = notifications.map((notif) => ({
+    ...notif,
+    read: readNotifications.has(notif.id) || notif.read,
+  }));
 
   // Filter notifications
-  const filteredNotifications = notifications.filter((notif) => {
+  const filteredNotifications = notificationsWithReadState.filter((notif) => {
     if (filter === 'all') return true;
     if (filter === 'unread') return !notif.read;
     if (filter === 'payments') return notif.type === 'payment';
@@ -128,20 +157,25 @@ const NotificationsTab = ({
   });
 
   // Counts
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notificationsWithReadState.filter((n) => !n.read).length;
   const paymentCount = notifications.filter((n) => n.type === 'payment').length;
   const orderCount = notifications.filter((n) => n.type === 'order').length;
   const systemCount = notifications.filter((n) => n.type === 'system').length;
 
   // Handle mark as read
   const handleMarkAsRead = (id) => {
-    // In real app, would update via API
+    setReadNotifications((prev) => {
+      const newSet = new Set(prev);
+      newSet.add(id);
+      return newSet;
+    });
     if (showNotification) showNotification('Notification marked as read', 'success');
   };
 
   // Handle mark all as read
   const handleMarkAllAsRead = () => {
-    // In real app, would update via API
+    const allIds = notifications.map((n) => n.id);
+    setReadNotifications(new Set(allIds));
     if (showNotification) showNotification('All notifications marked as read', 'success');
   };
 
@@ -149,10 +183,26 @@ const NotificationsTab = ({
   const handleAction = (notif) => {
     switch (notif.action) {
       case 'viewOrder':
-        if (onViewOrder) onViewOrder(notif.orderId);
+        if (onViewOrder) {
+          onViewOrder(notif.orderId);
+        } else if (setActiveTab) {
+          setActiveTab('allOrdersData');
+        }
+        break;
+      case 'viewPendingPayments':
+        if (setActiveTab) {
+          setActiveTab('pendingAmounts');
+          if (showNotification) {
+            showNotification('Showing overdue payments', 'info');
+          }
+        }
         break;
       case 'sendReminder':
-        if (onSendReminder) onSendReminder(notif.orderId);
+        if (onSendReminder) {
+          onSendReminder(notif.orderId);
+        } else if (setActiveTab) {
+          setActiveTab('pendingAmounts');
+        }
         break;
       case 'markAsPaid':
         if (showConfirmation && onMarkAsPaid) {
@@ -174,7 +224,7 @@ const NotificationsTab = ({
         }
         break;
       case 'viewReport':
-        // Navigate to reports
+        if (setActiveTab) setActiveTab('reports');
         break;
       case 'viewDetails':
         // Show details
@@ -213,10 +263,7 @@ const NotificationsTab = ({
   if (loading) {
     return (
       <div className='admin-content'>
-        <div className='dashboard-header'>
-          <h2>Notifications</h2>
-        </div>
-        <PremiumLoader message="Loading notifications..." size="large" />
+        <PremiumLoader message='Loading notifications...' size='large' />
       </div>
     );
   }
@@ -225,10 +272,7 @@ const NotificationsTab = ({
     <div className='admin-content'>
       {/* HEADER */}
       <div className='dashboard-header'>
-        <div>
-          <h2>Notifications {unreadCount > 0 && `(${unreadCount} unread)`}</h2>
-          <p>Stay updated with your business activities</p>
-        </div>
+        <div>{unreadCount > 0 && <h2>Notifications ({unreadCount} unread)</h2>}</div>
         <div className='action-buttons-group'>
           <button className='btn btn-secondary btn-small' onClick={handleMarkAllAsRead}>
             Mark All as Read
@@ -240,7 +284,7 @@ const NotificationsTab = ({
       </div>
 
       {/* FILTER TABS */}
-      <div className='action-bar' style={{ marginBottom: '24px', flexWrap: 'wrap', gap: '8px' }}>
+      <div className='action-bar action-bar-spaced'>
         <button
           className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-small`}
           onClick={() => setFilter('all')}
@@ -283,97 +327,47 @@ const NotificationsTab = ({
             ></i>
             <p>No notifications</p>
             <p style={{ color: 'var(--admin-text-light)', fontSize: '0.9rem' }}>
-              You're all caught up!
+              You&apos;re all caught up!
             </p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className='notification-grid-4-col'>
             {filteredNotifications.map((notif) => (
               <div
                 key={notif.id}
-                className='dashboard-card'
-                style={{
-                  padding: '16px',
-                  border: `2px solid ${
-                    notif.read ? 'transparent' : getNotificationColor(notif.type)
-                  }`,
-                  background: notif.read ? 'var(--admin-glass-bg)' : 'var(--admin-glass-overlay)',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                }}
+                className={`notification-card-grid ${notif.read ? 'read' : 'unread'} ${notif.isOverdue ? 'overdue' : ''}`}
                 onClick={() => handleAction(notif)}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateX(4px)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateX(0)';
-                  e.currentTarget.style.boxShadow = '';
-                }}
               >
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'start' }}>
-                  <div
-                    style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: '50%',
-                      background: `${getNotificationColor(notif.type)}20`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
+                <div className='notification-card-grid-header'>
+                  <div className='notification-card-grid-icon'>
                     <i
                       className={getNotificationIcon(notif.type)}
-                      style={{ fontSize: '24px', color: getNotificationColor(notif.type) }}
+                      style={{ color: getNotificationColor(notif.type) }}
                     ></i>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'start',
-                        marginBottom: '8px',
-                      }}
-                    >
-                      <div>
-                        <h4 style={{ marginBottom: '4px', fontSize: '1rem', fontWeight: '600' }}>
-                          {notif.title}
-                        </h4>
-                        <p style={{ color: 'var(--admin-text)', marginBottom: '4px' }}>
-                          {notif.message}
-                        </p>
-                        <p style={{ color: 'var(--admin-text-secondary)', fontSize: '0.85rem' }}>
-                          {notif.details}
-                        </p>
-                      </div>
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'flex-end',
-                          gap: '8px',
-                        }}
-                      >
-                        <span style={{ color: 'var(--admin-text-light)', fontSize: '0.75rem' }}>
-                          {notif.timeAgo}
-                        </span>
-                        {!notif.read && (
-                          <span
-                            className='badge badge-info'
-                            style={{ fontSize: '0.7rem', padding: '2px 8px' }}
-                          >
-                            Unread
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className='action-buttons-group' style={{ marginTop: '12px' }}>
+                  {!notif.read && <span className='notification-badge-unread-grid'>New</span>}
+                </div>
+                <div className='notification-card-grid-content'>
+                  <h4 className='notification-card-grid-title'>{notif.title}</h4>
+                  <p className='notification-card-grid-message'>{notif.message}</p>
+                  <p className='notification-card-grid-details'>{notif.details}</p>
+                  <div className='notification-card-grid-footer'>
+                    <span className='notification-card-grid-time'>{notif.timeAgo}</span>
+                    <div className='notification-card-grid-actions'>
+                      {notif.action === 'viewPendingPayments' && (
+                        <button
+                          className='btn btn-primary btn-small btn-full'
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAction(notif);
+                          }}
+                        >
+                          View Payments
+                        </button>
+                      )}
                       {notif.action === 'viewOrder' && (
                         <button
-                          className='btn btn-primary btn-small'
+                          className='btn btn-primary btn-small btn-full'
                           onClick={(e) => {
                             e.stopPropagation();
                             handleAction(notif);
@@ -383,73 +377,25 @@ const NotificationsTab = ({
                         </button>
                       )}
                       {notif.action === 'sendReminder' && (
-                        <>
-                          <button
-                            className='btn btn-secondary btn-small'
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAction(notif);
-                            }}
-                          >
-                            Send Reminder
-                          </button>
-                          <button
-                            className='btn btn-success btn-small'
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (showConfirmation && onMarkAsPaid) {
-                                const order = orders.find((o) => (o._id || o.orderId) === notif.orderId);
-                                const orderInfo = order
-                                  ? `Order ${order.orderId || notif.orderId} for ${order.deliveryAddress || order.customerAddress || 'N/A'}`
-                                  : `Order ${notif.orderId}`;
-                                showConfirmation({
-                                  title: 'Mark as Paid',
-                                  message: `Are you sure you want to mark ${orderInfo} as paid?`,
-                                  type: 'info',
-                                  confirmText: 'Mark as Paid',
-                                  onConfirm: () => {
-                                    onMarkAsPaid(notif.orderId);
-                                  },
-                                });
-                              } else if (onMarkAsPaid) {
-                                onMarkAsPaid(notif.orderId);
-                              }
-                            }}
-                          >
-                            Mark as Paid
-                          </button>
-                        </>
-                      )}
-                      {notif.action === 'viewReport' && (
                         <button
-                          className='btn btn-secondary btn-small'
+                          className='btn btn-secondary btn-small btn-full'
                           onClick={(e) => {
                             e.stopPropagation();
                             handleAction(notif);
                           }}
                         >
-                          View Report
-                        </button>
-                      )}
-                      {notif.action === 'viewDetails' && (
-                        <button
-                          className='btn btn-secondary btn-small'
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAction(notif);
-                          }}
-                        >
-                          View Details
+                          Send Reminder
                         </button>
                       )}
                       <button
-                        className='btn btn-ghost btn-small'
+                        className='btn btn-ghost btn-small btn-full'
                         onClick={(e) => {
                           e.stopPropagation();
                           handleMarkAsRead(notif.id);
                         }}
+                        title='Mark as Read'
                       >
-                        Mark as Read
+                        <i className='fa-solid fa-check'></i> Read
                       </button>
                     </div>
                   </div>

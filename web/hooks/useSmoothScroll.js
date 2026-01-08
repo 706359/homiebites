@@ -1,9 +1,8 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { usePathname } from "next/navigation";
 
 export const useSmoothScroll = () => {
-  const location = useLocation();
-  const pathname = location.pathname;
+  const pathname = usePathname();
 
   useEffect(() => {
     // Handle hash in URL when page loads or route changes
@@ -53,7 +52,7 @@ export const useSmoothScroll = () => {
         return;
       }
 
-      // Handle React Router Link components with hash
+      // Handle Next.js Link components with hash
       const link = e.target.closest('a[href*="#"]');
       if (link) {
         const href = link.getAttribute("href");

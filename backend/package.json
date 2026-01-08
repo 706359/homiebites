@@ -6,7 +6,8 @@
     "start": "node HomieBites/server.js",
     "dev": "node --watch HomieBites/server.js",
     "seed": "node HomieBites/scripts/seed.js",
-    "verify": "node HomieBites/scripts/verify.js"
+    "verify": "node HomieBites/scripts/verify.js",
+    "reset:test": "node HomieBites/scripts/resetAndTest.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

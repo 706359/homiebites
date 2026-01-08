@@ -26,9 +26,12 @@ export const parseOrderDate = (dateValue) => {
 
     const dateStr = String(dateValue).trim();
 
-    // Handle ISO format (YYYY-MM-DD)
+    // Handle ISO format (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ)
     if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
-      const date = new Date(dateStr);
+      // Parse as UTC to avoid timezone conversion issues
+      // If no timezone specified, treat as UTC midnight
+      const isoStr = dateStr.includes('T') ? dateStr : dateStr + 'T00:00:00Z';
+      const date = new Date(isoStr);
       return isNaN(date.getTime()) ? null : date;
     }
 
@@ -119,10 +122,11 @@ export const formatDate = (dateValue, options = {}) => {
   const date = parseOrderDate(dateValue);
   if (!date) return 'N/A';
 
-  // Default format: DD/MM/YYYY
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
+  // Use UTC methods to avoid timezone conversion issues
+  // Dates are stored in UTC in MongoDB, so we should display UTC dates
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const year = date.getUTCFullYear();
 
   // If custom options provided, use toLocaleDateString
   if (Object.keys(options).length > 0) {
@@ -130,6 +134,7 @@ export const formatDate = (dateValue, options = {}) => {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
+      timeZone: 'UTC', // Use UTC timezone for display
       ...options,
     };
     return date.toLocaleDateString('en-US', defaultOptions);

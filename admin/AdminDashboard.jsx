@@ -1,5 +1,7 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import AllAddressesTab from './components/AllAddressesTab.jsx';
 import AllOrdersDataTab from './components/AllOrdersDataTab.jsx';
 import AnalyticsTab from './components/AnalyticsTab.jsx';
@@ -24,7 +26,7 @@ import { logout } from './lib/auth.js';
 import dataSyncManager from './utils/dataSyncManager.js';
 
 const AdminDashboard = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { showNotification } = useNotification();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -32,6 +34,7 @@ const AdminDashboard = () => {
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [showCSVUploadModal, setShowCSVUploadModal] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
+  const [showAddOrderModalForCurrentMonth, setShowAddOrderModalForCurrentMonth] = useState(false);
   const [confirmationModal, setConfirmationModal] = useState({
     show: false,
     title: '',
@@ -59,6 +62,7 @@ const AdminDashboard = () => {
   const [allOrdersFilterAddress, setAllOrdersFilterAddress] = useState('');
   const [allOrdersFilterPaymentStatus, setAllOrdersFilterPaymentStatus] = useState('');
   const [dismissedNotifications, setDismissedNotifications] = useState([]);
+  const [showOverdueFilter, setShowOverdueFilter] = useState(false);
 
   // Load data using fast sync hook for optimized operations
   const {
@@ -81,9 +85,9 @@ const AdminDashboard = () => {
     const isAdmin = localStorage.getItem('homiebites_admin') === 'true';
 
     if (!token || !isAdmin) {
-      navigate('/admin/login', { replace: true });
+      router.replace('/login');
     }
-  }, [navigate]);
+  }, [router]);
 
   // Cleanup on unmount - cancel all pending operations
   useEffect(() => {
@@ -151,7 +155,7 @@ const AdminDashboard = () => {
   // Handle logout
   const handleLogout = () => {
     logout();
-    navigate('/admin/login', { replace: true });
+    router.replace('/login');
   };
 
   // Handle add order - using fast sync
@@ -163,7 +167,7 @@ const AdminDashboard = () => {
           if (showNotification) {
             showNotification('Order added successfully', 'success');
           }
-          setShowOrderModal(false);
+          // Reset form to allow new entry
           setNewOrder({
             date: new Date().toISOString().split('T')[0],
             deliveryAddress: '',
@@ -174,6 +178,7 @@ const AdminDashboard = () => {
             status: 'Unpaid',
             paymentMode: '',
           });
+          // Keep modal open for next entry (don't close it)
         },
         (error) => {
           console.error('Error adding order:', error);
@@ -192,35 +197,49 @@ const AdminDashboard = () => {
 
   // Handle edit order - using fast sync
   const handleEditOrder = async (orderId, orderData) => {
-    try {
-      const order = (orders || []).find(
-        (o) => o.orderId === orderId || o._id === orderId || o.id === orderId
-      );
-      const apiOrderId = order?._id || order?.id || order?.orderId || orderId;
+    const order = (orders || []).find(
+      (o) => o.orderId === orderId || o._id === orderId || o.id === orderId
+    );
+    const orderInfo = order
+      ? `Order ${order.orderId || orderId} for ${order.deliveryAddress || order.customerAddress || 'N/A'}`
+      : `Order ${orderId}`;
 
-      await fastUpdate(
-        apiOrderId,
-        orderData,
-        () => {
-          if (showNotification) {
-            showNotification('Order updated successfully', 'success');
+    const performUpdate = async () => {
+      try {
+        const apiOrderId = order?._id || order?.id || order?.orderId || orderId;
+
+        await fastUpdate(
+          apiOrderId,
+          orderData,
+          () => {
+            if (showNotification) {
+              showNotification('Order updated successfully', 'success');
+            }
+            setShowOrderModal(false);
+            setEditingOrder(null);
+          },
+          (error) => {
+            console.error('Error updating order:', error);
+            if (showNotification) {
+              showNotification(error.message || 'Error updating order', 'error');
+            }
           }
-          setShowOrderModal(false);
-          setEditingOrder(null);
-        },
-        (error) => {
-          console.error('Error updating order:', error);
-          if (showNotification) {
-            showNotification(error.message || 'Error updating order', 'error');
-          }
+        );
+      } catch (error) {
+        console.error('Error updating order:', error);
+        if (showNotification) {
+          showNotification('Error updating order', 'error');
         }
-      );
-    } catch (error) {
-      console.error('Error updating order:', error);
-      if (showNotification) {
-        showNotification('Error updating order', 'error');
       }
-    }
+    };
+
+    showConfirmation({
+      title: 'Update Order',
+      message: `Are you sure you want to save changes to ${orderInfo}?`,
+      type: 'info',
+      confirmText: 'Save Changes',
+      onConfirm: performUpdate,
+    });
   };
 
   // Show confirmation modal
@@ -385,6 +404,7 @@ const AdminDashboard = () => {
 
   // Handle view pending amounts
   const handleViewPendingAmounts = () => {
+    setShowOverdueFilter(true);
     setActiveTab('pendingAmounts');
   };
 
@@ -414,14 +434,103 @@ const AdminDashboard = () => {
   // Handle update settings
   const handleUpdateSettings = async (newSettings) => {
     try {
-      // In a real app, this would call an API
-      if (showNotification) {
-        showNotification('Settings updated successfully', 'success');
+      // Save settings to backend API
+      const response = await api.updateSettings(newSettings);
+
+      if (response && response.success) {
+        // Update local settings state if needed
+        // The settings will be reloaded on next sync
+
+        if (showNotification) {
+          // Determine which specific setting was updated and show appropriate message
+          let message = '';
+
+          if (newSettings.businessInfo) {
+            message = 'Business information has been saved successfully';
+          } else if (newSettings.pricing) {
+            const { defaultUnitPrice, lunchPrice, dinnerPrice } = newSettings.pricing;
+            const priceParts = [];
+            if (defaultUnitPrice !== undefined) priceParts.push(`Default: ₹${defaultUnitPrice}`);
+            if (lunchPrice !== undefined) priceParts.push(`Lunch: ₹${lunchPrice}`);
+            if (dinnerPrice !== undefined) priceParts.push(`Dinner: ₹${dinnerPrice}`);
+            message =
+              priceParts.length > 0
+                ? `Pricing updated: ${priceParts.join(', ')}`
+                : 'Pricing configuration has been updated';
+          } else if (newSettings.orderSettings) {
+            message = 'Order settings have been saved successfully';
+          } else if (newSettings.notificationPrefs) {
+            message = 'Notification preferences have been updated';
+          } else if (newSettings.dataSettings) {
+            const { autoBackup, autoBackupTime } = newSettings.dataSettings;
+            message = autoBackup
+              ? `Automatic backup enabled: Daily at ${autoBackupTime}`
+              : 'Automatic backup has been disabled';
+          } else if (newSettings.userProfile) {
+            const { newPassword } = newSettings.userProfile;
+            message = newPassword
+              ? 'Your profile and password have been updated'
+              : 'Your profile has been updated successfully';
+          } else if (newSettings.themeSettings) {
+            const { theme, primaryColor, fontSize, fontFamily } = newSettings.themeSettings;
+            const changes = [];
+
+            // Build descriptive message parts
+            if (theme) {
+              const themeName = theme === 'light' ? 'Light' : theme === 'dark' ? 'Dark' : 'Auto';
+              changes.push(`${themeName} theme`);
+            }
+
+            if (primaryColor) {
+              const colorNames = {
+                '#449031': 'Green',
+                '#3b82f6': 'Blue',
+                '#8b5cf6': 'Purple',
+                '#ef4444': 'Red',
+                '#10b981': 'Emerald',
+                '#c45c2d': 'Orange',
+              };
+              const colorName =
+                colorNames[primaryColor.toLowerCase()] || primaryColor.toUpperCase();
+              changes.push(`${colorName} accent color`);
+            }
+
+            if (fontSize) {
+              const sizeName =
+                fontSize === 'small'
+                  ? 'Small'
+                  : fontSize === 'large'
+                    ? 'Large'
+                    : fontSize === 'extra-large'
+                      ? 'Extra Large'
+                      : 'Medium';
+              changes.push(`${sizeName} font size`);
+            }
+
+            if (fontFamily && fontFamily.trim() !== '') {
+              changes.push(`${fontFamily} font family`);
+            }
+
+            // Format message professionally
+            if (changes.length > 0) {
+              message = `Appearance updated: ${changes.join(', ')}`;
+            } else {
+              message = 'Appearance settings have been updated successfully';
+            }
+          } else {
+            message = 'Settings have been saved successfully';
+          }
+
+          showNotification(message, 'success');
+        }
+      } else {
+        throw new Error('Failed to save settings');
       }
     } catch (error) {
       console.error('Error updating settings:', error);
       if (showNotification) {
-        showNotification('Error updating settings', 'error');
+        const errorMessage = error.message || 'Error updating settings';
+        showNotification(errorMessage, 'error');
       }
     }
   };
@@ -520,6 +629,126 @@ const AdminDashboard = () => {
     }
   };
 
+  // Get tab information for TopNav
+  const getTabInfo = () => {
+    const getMonthLockStatus = () => {
+      if (!settings || !settings.monthLockedTill) {
+        return { status: 'OPEN', lockedTill: null };
+      }
+      try {
+        const lockedDate = new Date(settings.monthLockedTill);
+        const currentDate = new Date();
+        if (lockedDate > currentDate) {
+          const monthNames = [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+          ];
+          const month = monthNames[lockedDate.getMonth()];
+          const year = lockedDate.getFullYear();
+          return { status: 'LOCKED', lockedTill: `${month} ${year}` };
+        }
+      } catch (e) {}
+      return { status: 'OPEN', lockedTill: null };
+    };
+
+    const monthLockStatus = getMonthLockStatus();
+
+    const tabInfoMap = {
+      dashboard: {
+        title: 'Dashboard',
+        subtitle: 'Overview of your business metrics',
+        action: (
+          <div
+            style={{
+              padding: '0.5rem 1rem',
+              borderRadius: '8px',
+              background:
+                monthLockStatus.status === 'LOCKED'
+                  ? 'var(--admin-warning-light)'
+                  : 'var(--admin-success-light)',
+              border: `2px solid ${
+                monthLockStatus.status === 'LOCKED'
+                  ? 'var(--admin-warning)'
+                  : 'var(--admin-success)'
+              }`,
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              color:
+                monthLockStatus.status === 'LOCKED'
+                  ? 'var(--admin-warning)'
+                  : 'var(--admin-success)',
+            }}
+          >
+            {monthLockStatus.status === 'LOCKED' ? '🔒' : '🟢'} Current Month:{' '}
+            {monthLockStatus.status}
+            {monthLockStatus.lockedTill && ` (till ${monthLockStatus.lockedTill})`}
+          </div>
+        ),
+      },
+      allOrdersData: {
+        title: 'All Orders Data',
+        subtitle: 'View and manage all orders',
+      },
+      currentMonthOrders: {
+        title: 'Current Month Orders',
+        subtitle: 'Manage orders for the current billing month',
+        action: (
+          <button
+            className='btn btn-primary'
+            onClick={() => {
+              setEditingOrder(null);
+              setShowOrderModal(true);
+            }}
+          >
+            <i className='fa-solid fa-plus'></i> Add New Order
+          </button>
+        ),
+      },
+      analytics: {
+        title: 'Analytics',
+        subtitle: 'Business insights and performance metrics',
+      },
+      customers: {
+        title: 'Customers',
+        subtitle: 'Manage and analyze customer data',
+      },
+      reports: {
+        title: 'Reports',
+        subtitle: 'Generate and manage business reports',
+      },
+      pendingAmounts: {
+        title: 'Payment Management',
+        subtitle: 'Track and manage payment collections',
+      },
+      settings: {
+        title: 'Settings',
+        subtitle: 'Configure your application settings',
+      },
+      notifications: {
+        title: 'Notifications',
+        subtitle: 'Stay updated with your business activities',
+      },
+      menuPrice: {
+        title: 'Menu & Price',
+        subtitle: 'Manage your menu items, categories, and pricing',
+      },
+    };
+
+    return tabInfoMap[activeTab] || tabInfoMap.dashboard;
+  };
+
+  const tabInfo = getTabInfo();
+
   // Render active tab
   const renderActiveTab = () => {
     // Ensure orders is always an array to prevent runtime errors
@@ -604,6 +833,8 @@ const AdminDashboard = () => {
             {...commonProps}
             onUpdateOrderStatus={handleUpdateOrderStatus}
             onSendReminder={handleSendReminder}
+            showOverdueFilter={showOverdueFilter}
+            onOverdueFilterApplied={() => setShowOverdueFilter(false)}
           />
         );
 
@@ -622,6 +853,8 @@ const AdminDashboard = () => {
         return (
           <NotificationsTab
             {...commonProps}
+            setActiveTab={setActiveTab}
+            showConfirmation={showConfirmation}
             onViewOrder={handleViewOrder}
             onMarkAsPaid={handleUpdateOrderStatus}
             onSendReminder={handleSendReminder}
@@ -629,7 +862,7 @@ const AdminDashboard = () => {
         );
 
       case 'menuPrice':
-        return <MenuPriceTab {...commonProps} />;
+        return <MenuPriceTab {...commonProps} showConfirmation={showConfirmation} />;
 
       default:
         return <DashboardTab {...commonProps} setActiveTab={setActiveTab} />;
@@ -657,6 +890,16 @@ const AdminDashboard = () => {
           currentUser={currentUser}
           onLogout={handleLogout}
           setActiveTab={setActiveTab}
+          tabTitle={tabInfo.title}
+          tabSubtitle={tabInfo.subtitle}
+          tabAction={tabInfo.action}
+          onNewOrder={() => {
+            setActiveTab('currentMonthOrders');
+            // Dispatch custom event to open modal in CurrentMonthOrdersTab
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('openNewOrderModal'));
+            }, 150);
+          }}
         />
 
         {/* Important Notifications Banner */}
@@ -715,6 +958,7 @@ const AdminDashboard = () => {
           }}
           showNotification={showNotification}
           loadOrders={loadOrders}
+          showConfirmation={showConfirmation}
         />
       )}
       <ConfirmationModal

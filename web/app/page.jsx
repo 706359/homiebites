@@ -11,7 +11,6 @@ import FAQ from "../components/FAQ";
 import About from "../components/About";
 import Contact from "../components/Contact";
 import Footer from "../components/Footer";
-import OrderModal from "../components/OrderModal";
 import Chatbot from "../components/Chatbot";
 import "../styles/chatbot.css";
 import { useSmoothScroll } from "../hooks/useSmoothScroll";
@@ -22,7 +21,6 @@ import { useLanguage } from "../contexts/LanguageContext";
 export default function HomePage() {
   const { t } = useLanguage();
   const { info } = useNotification();
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   useSmoothScroll();
   useRevealAnimation();
@@ -40,13 +38,14 @@ export default function HomePage() {
     }
   }, [info, t]);
 
-  const openOrderModal = () => setIsOrderModalOpen(true);
-  const closeOrderModal = () => setIsOrderModalOpen(false);
+  const handleContact = () => {
+    window.open('https://wa.me/919958983578', '_blank', 'noopener');
+  };
 
   return (
     <>
-      <Header onOrderClick={openOrderModal} />
-      <Hero onOrderClick={openOrderModal} />
+      <Header onOrderClick={handleContact} />
+      <Hero onOrderClick={handleContact} />
       <Features />
       <SpecialOffer />
       <Gallery />
@@ -54,8 +53,7 @@ export default function HomePage() {
       <FAQ />
       <About />
       <Contact />
-      <Footer onOrderClick={openOrderModal} />
-      <OrderModal isOpen={isOrderModalOpen} onClose={closeOrderModal} />
+      <Footer onOrderClick={handleContact} />
       <Chatbot />
     </>
   );

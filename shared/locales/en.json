@@ -59,7 +59,8 @@
     "search": "Search",
     "support": "Support",
     "faq": "FAQ",
-    "offers": "Offers"
+    "offers": "Offers",
+    "gallery": "Gallery"
   },
 
   "hero": {
@@ -102,7 +103,9 @@
     "fullTiffin": "Full Tiffin Meal",
     "rotiSabji": "Roti with Sabji",
     "stuffedParatha": "Stuffed Parathas",
-    "khichdi": "Khichdi Special"
+    "khichdi": "Khichdi Special",
+    "noItemsTitle": "Gallery Coming Soon",
+    "noItems": "We're currently updating our gallery with fresh, delicious meals. Check back soon to see our latest offerings!"
   },
 
   "testimonials": {
@@ -110,6 +113,20 @@
     "review1": "The food tastes just like home and delivery is reliable.",
     "review2": "Healthy food and perfect for working professionals.",
     "review3": "Khichdi is fresh and comforting."
+  },
+
+  "reviews": {
+    "writeReview": "Write a Review",
+    "submitReview": "Submit Your Review",
+    "submit": "Submit Review",
+    "submitSuccess": "Thank you! Your review has been submitted and will be published after admin approval.",
+    "noReviews": "No reviews yet. Be the first to review!",
+    "noReviewsTitle": "Be the First to Share Your Experience!",
+    "rating": "Rating",
+    "comment": "Your Review",
+    "commentPlaceholder": "Share your experience with HomieBites...",
+    "location": "Location (Optional)",
+    "locationPlaceholder": "e.g., Panchsheel Greens, Tower A1"
   },
 
   "specialOffer": {
@@ -136,6 +153,8 @@
     "badge3": "LESS OIL & SPICES",
     "badge4": "DAILY DELIVERY",
     "whyChoose": "Why Choose HomieBites",
+    "whyChooseSubtitle": "Experience the difference with our commitment to quality and freshness",
+    "whyChooseIntro": "At HomieBites, we understand that your daily meals should be more than just food—they should be a source of comfort, nutrition, and joy. Our commitment goes beyond cooking; we create experiences that bring the warmth of home to your table every single day.",
     "benefit1": "Hygienic kitchen",
     "benefit2": "Affordable daily pricing",
     "benefit3": "Flexible delivery slots",
@@ -149,21 +168,26 @@
     "address": "Address",
     "addressValue": "A1-405, Panchsheel Greens",
     "timings": "Delivery Timings",
-    "timingsValue": "Morning 7–10 AM, Noon 12–3 PM, Night 7–9 PM"
+    "timingsValue": "Morning 7–10 AM, Noon 12–3 PM, Night 7–9 PM",
+    "deliveryOptions": "Delivery Options",
+    "deliveryPanchsheel": "Panchsheel Greens 1: Home Delivery & Pick up option from Tower A1 lobby",
+    "deliveryOutside": "Outside Panchsheel Greens 1: Delivery available on gate only"
   },
 
   "faq": {
     "title": "Frequently Asked Questions",
     "q1": "How do I place an order?",
-    "a1": "You can place an order via website, WhatsApp, or phone.",
+    "a1": "You can place an order via WhatsApp (+91-9958983578) or call us directly.",
     "q2": "What are your delivery timings?",
     "a2": "We deliver in three slots: Morning (7–10 AM), Noon (12–3 PM), Night (7–9 PM).",
     "q3": "What areas do you deliver to?",
-    "a3": "Panchsheel Greens and nearby societies.",
+    "a3": "Panchsheel Greens 1: Home delivery available. Pickup option from Tower A1 lobby. Outside Panchsheel Greens 1: Delivery available at gate only.",
     "q4": "What payment methods do you accept?",
     "a4": "Cash on Delivery, UPI, and online payments.",
     "q5": "Do you offer subscriptions?",
     "a5": "Yes, monthly subscription plans are available.",
+    "q6": "What are the delivery options?",
+    "a6": "For Panchsheel Greens 1 residents: Home delivery to your doorstep or pickup from Tower A1 lobby. For outside Panchsheel Greens 1: Delivery available at the main gate only.",
     "stillHaveQuestions": "Still have questions?",
     "contactWhatsApp": "Contact us on WhatsApp"
   },
@@ -228,7 +252,7 @@
     "customerDetails": "Customer Details",
     "pleaseConfirm": "Please confirm this order. Thank you!",
     "menuInfo": "We serve:\n• Full Tiffin (₹100-₹150)\n• Mix and Match Tiffin\n• Khichdi Special\n\nWould you like to see our full menu? Go to /menu or say \"order\"!",
-    "deliveryInfo": "📦 Delivery Details:\n• Free delivery on orders ₹100+\n• Delivery slots: Morning 7–10 AM, Noon 12–3 PM, Night 7–9 PM\n• Area: Panchsheel Greens and nearby (2 km radius)\n\nWould you like to place an order?",
+    "deliveryInfo": "📦 Delivery Details:\n• Free delivery on orders ₹100+\n• Delivery slots: Morning 7–10 AM, Noon 12–3 PM, Night 7–9 PM\n• Panchsheel Greens 1: Home delivery & Pickup from Tower A1 lobby\n• Outside Panchsheel Greens 1: Delivery at gate only\n\nWould you like to place an order?",
     "accountSupport": "For account support:\n• Login/Register: Click on account icon\n• View orders: Go to account page\n• Manage addresses: Account → Addresses\n\nNeed more help? Contact +91-9958983578",
     "defaultResponse": "I can help you with:\n• Placing orders\n• Menu information\n• Delivery details\n• Account support\n\nWhat would you like to know?",
     "online": "Online",
@@ -245,7 +269,7 @@
     "customize": "Yes! We offer Mix and Match Tiffin where you can customize your meal. Contact us via WhatsApp (+91-9958983578) to discuss your preferences and place custom orders.",
     "tiffin": "Tiffin is a complete home-cooked meal that typically includes:\n• Roti (Indian bread)\n• Sabji (vegetable curry)\n• Rice\n• Dal (lentils)\n• Sometimes dessert\n\nWe serve fresh, home-style tiffin daily!",
     "deliveryTime": "We deliver in three slots daily: Morning (7–10 AM), Noon (12–3 PM), and Night (7–9 PM). We deliver 7 days a week, including weekends and most holidays.",
-    "deliveryArea": "📍 Delivery Area:\n• All towers of Panchsheel Greens (A1-A5, B1-B3)\n• Nearby areas within 2 km radius\n• For locations beyond this, contact us to check availability\n\nAddress: A1-405, Panchsheel Greens",
+    "deliveryArea": "📍 Delivery Area:\n• Panchsheel Greens 1: Home delivery & Pickup from Tower A1 lobby\n• Outside Panchsheel Greens 1: Delivery at gate only\n\nAddress: A1-405, Panchsheel Greens",
     "deliveryCharge": "💰 Delivery Charge:\n• Free delivery on orders ₹100 and above\n• ₹20 delivery charge for orders under ₹100\n• Self-pickup available from A1-405, Panchsheel Greens\n\nAdd ₹100+ items for free delivery!",
     "minOrder": "For free delivery, minimum order value is ₹100. Orders below this amount will incur a ₹20 delivery charge. Otherwise there's no minimum order requirement.",
     "notAvailable": "If you won't be available during delivery:\n• Inform us in advance via WhatsApp\n• Arrange for someone else to receive\n• We can reschedule for another time\n• Contact: +91-9958983578",
@@ -253,7 +277,7 @@
     "password": "To reset your password, please contact us via WhatsApp or phone (+91-9958983578). We'll help you reset it securely.",
     "orderHistory": "To view your order history:\n1. Log in to your account\n2. Go to account page\n3. Click on \"Orders\" tab\n4. View all past orders with details and status\n\nNot logged in? Click on account icon to log in!",
     "contact": "📞 Contact Us:\n\n📱 Phone/WhatsApp: +91-9958983578\n📧 Email: support@homiebites.com\n📍 Address: A1-405, Panchsheel Greens\n\nWe're available 7 days a week!",
-    "address": "📍 Our Location:\n\nA1-405, Panchsheel Greens\nNew Delhi\n\nSelf-pickup available!\nDelivery to Panchsheel Greens and nearby areas (2 km radius)",
+    "address": "📍 Our Location:\n\nA1-405, Panchsheel Greens\nNew Delhi\n\nDelivery Options:\n• Panchsheel Greens 1: Home delivery & Pickup from Tower A1 lobby\n• Outside Panchsheel Greens 1: Delivery at gate only",
     "hours": "⏰ Operating Hours:\n\n📅 Open: 7 days a week\n🚚 Delivery Slots:\n  • Morning: 7–10 AM\n  • Noon: 12–3 PM\n  • Night: 7–9 PM\n\nWe deliver daily, including weekends!",
     "weekend": "Yes! We deliver 7 days a week, including weekends and most holidays. You can place orders any day of the week. Delivery slots: Morning (7–10 AM), Noon (12–3 PM), Night (7–9 PM).",
     "vegetarian": "✅ Yes! All our food is 100% pure vegetarian. We use fresh, quality ingredients and prepare everything in a clean, hygienic kitchen. No meat, eggs, or animal products.",
@@ -285,8 +309,8 @@
     "whatsappSupport": "WhatsApp Support",
     "adminLogin": "Admin Login",
     "serviceAreas": "Service Areas",
-    "panchsheelGreens1": "Panchsheel Greens",
-    "emergencyDelivery": "Emergency delivery available",
+    "panchsheelGreens1": "Panchsheel Greens1",
+    "emergencyDelivery": "Outside Panchsheel Greens1 delivery available on gate only",
     "newsletterTitle": "Newsletter",
     "newsletterDesc": "Subscribe to get special offers and updates",
     "newsletterPlaceholder": "Enter your email",

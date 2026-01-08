@@ -3,7 +3,7 @@
  * Combines useAdminData with optimistic updates and sync manager
  * Provides fast, safe data operations with automatic sync
  */
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useAdminData } from './useAdminData.js';
 import useOptimisticData from './useOptimisticData.js';
 import dataSyncManager from '../utils/dataSyncManager.js';
@@ -27,6 +27,28 @@ export const useFastDataSync = () => {
     },
     enableOptimistic: true,
   });
+
+  // Sync optimisticData with adminData.orders when orders change
+  useEffect(() => {
+    if (adminData.orders && Array.isArray(adminData.orders)) {
+      // Always sync optimisticData with adminData.orders to keep them in sync
+      const currentOptimistic = optimisticData.data || [];
+      const ordersChanged = 
+        currentOptimistic.length !== adminData.orders.length ||
+        !adminData.orders.every(order => 
+          currentOptimistic.some(item => 
+            (order._id && item._id === order._id) || 
+            (order.orderId && item.orderId === order.orderId) ||
+            (order.id && item.id === order.id)
+          )
+        );
+      
+      if (ordersChanged) {
+        optimisticData.setData([...adminData.orders]);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminData.orders]);
 
   /**
    * Fast delete with optimistic update
@@ -62,15 +84,33 @@ export const useFastDataSync = () => {
    */
   const fastUpdate = useCallback(async (orderId, updates, onSuccess, onError) => {
     try {
+      // Ensure optimisticData has the current orders before updating
+      const currentOrders = adminData.orders || [];
+      const order = currentOrders.find(
+        (o) => o._id === orderId || o.orderId === orderId || o.id === orderId
+      );
+      
+      if (!order) {
+        throw new Error(`Order with ID ${orderId} not found`);
+      }
+
+      // Sync optimisticData with adminData.orders if needed
+      const optimisticOrders = optimisticData.data || [];
+      const orderInOptimistic = optimisticOrders.find(
+        (o) => o._id === orderId || o.orderId === orderId || o.id === orderId
+      );
+      
+      if (!orderInOptimistic) {
+        // Order not in optimistic data, sync it first
+        optimisticData.setData([...currentOrders]);
+      }
+
+      const apiOrderId = order._id || order.id || order.orderId || orderId;
+      
       await optimisticData.updateOptimistic(
         orderId,
         updates,
         async () => {
-          const order = (adminData.orders || []).find(
-            (o) => o._id === orderId || o.orderId === orderId || o.id === orderId
-          );
-          const apiOrderId = order?._id || order?.id || order?.orderId || orderId;
-          
           const response = await api.updateOrder(apiOrderId, {
             ...order,
             ...updates,
@@ -79,11 +119,21 @@ export const useFastDataSync = () => {
         }
       );
       
+      // Update adminData.orders immediately with optimistic update
+      adminData.setOrders((prevOrders) =>
+        prevOrders.map((o) =>
+          o._id === orderId || o.orderId === orderId || o.id === orderId
+            ? { ...o, ...updates }
+            : o
+        )
+      );
+      
       // Sync in background (debounced)
       await optimisticData.syncDebounced(async () => {
         const response = await api.getAllOrders({});
         if (response.success && response.data) {
           adminData.setOrders(response.data);
+          optimisticData.setData(response.data);
         }
         return response;
       }, 500);

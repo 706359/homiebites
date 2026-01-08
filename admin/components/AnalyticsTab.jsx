@@ -2,10 +2,10 @@
 // This file has been recreated from scratch to match the plan exactly
 
 import { useMemo, useState } from 'react';
-import PremiumLoader from './PremiumLoader.jsx';
 import { getFilteredOrdersByDate } from '../utils/calculations.js';
 import { parseOrderDate } from '../utils/dateUtils.js';
-import { formatCurrency, getTotalRevenue } from '../utils/orderUtils.js';
+import { formatCurrency, formatNumberIndian, getTotalRevenue } from '../utils/orderUtils.js';
+import PremiumLoader from './PremiumLoader.jsx';
 
 const AnalyticsTab = ({ orders = [], loading = false }) => {
   const [period, setPeriod] = useState('thisMonth'); // 'thisMonth', 'thisYear', 'custom'
@@ -21,19 +21,21 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
         return getFilteredOrdersByDate(orders, 'month', '', '');
       case 'thisYear':
         return getFilteredOrdersByDate(orders, 'year', '', '');
-      case 'custom':
+      case 'custom': {
         if (!customFrom || !customTo) return orders;
         const from = new Date(customFrom);
         const to = new Date(customTo);
         to.setHours(23, 59, 59, 999);
         return orders.filter((o) => {
           try {
-            const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+            // Never use createdAt (today's date) as fallback - only use actual order date
+            const orderDate = parseOrderDate(o.date || o.order_date || null);
             return orderDate >= from && orderDate <= to;
           } catch (e) {
             return false;
           }
         });
+      }
       default:
         return orders;
     }
@@ -77,8 +79,8 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
       previousRevenue > 0
         ? ((totalRevenue - previousRevenue) / previousRevenue) * 100
         : totalRevenue > 0
-        ? Infinity
-        : 0;
+          ? Infinity
+          : 0;
 
     // Calculate retention rate (simplified - customers who ordered more than once)
     const customerOrders = {};
@@ -102,11 +104,27 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
     };
   }, [periodOrders, orders, period, now]);
 
-  // Monthly Revenue Trend (Last 12 Months)
+  // Monthly Revenue Trend (Last 12 Months from most recent order date)
   const monthlyRevenueTrend = useMemo(() => {
+    // Find the most recent order date to determine the end date for "last 12 months"
+    let mostRecentDate = now;
+    const validOrders = orders.filter((o) => {
+      const orderDate = parseOrderDate(o.date || o.order_date || null);
+      return orderDate !== null;
+    });
+
+    if (validOrders.length > 0) {
+      const dates = validOrders
+        .map((o) => parseOrderDate(o.date || o.order_date || null))
+        .filter(Boolean);
+      if (dates.length > 0) {
+        mostRecentDate = new Date(Math.max(...dates.map((d) => d.getTime())));
+      }
+    }
+
     const trend = [];
     for (let i = 11; i >= 0; i--) {
-      const date = new Date(now);
+      const date = new Date(mostRecentDate);
       date.setMonth(date.getMonth() - i);
       date.setDate(1);
       date.setHours(0, 0, 0, 0);
@@ -115,7 +133,8 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
 
       const monthOrders = orders.filter((o) => {
         try {
-          const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+          // Never use createdAt (today's date) as fallback - only use actual order date
+          const orderDate = parseOrderDate(o.date || o.order_date || null);
           if (!orderDate) return false;
           return orderDate >= date && orderDate < nextMonth;
         } catch (e) {
@@ -131,7 +150,7 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
       });
     }
     return trend;
-  }, [orders, now]);
+  }, [orders]);
 
   const maxMonthlyRevenue = Math.max(...monthlyRevenueTrend.map((m) => m.revenue), 1);
   const peakMonth = monthlyRevenueTrend.reduce(
@@ -149,7 +168,14 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
           areaStats[addr] = { address: addr, orders: 0, revenue: 0 };
         }
         areaStats[addr].orders++;
-        areaStats[addr].revenue += parseFloat(o.total || o.totalAmount || 0);
+        // Try total first, then totalAmount, then calculate from quantity * unitPrice
+        let amount = parseFloat(o.total || o.totalAmount || 0);
+        if (isNaN(amount) || amount === 0) {
+          const qty = parseFloat(o.quantity || 1);
+          const price = parseFloat(o.unitPrice || 0);
+          amount = qty * price;
+        }
+        areaStats[addr].revenue += isNaN(amount) ? 0 : amount;
       }
     });
     return Object.values(areaStats)
@@ -180,18 +206,38 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
 
   // Order Frequency Distribution
   const frequencyDistribution = useMemo(() => {
-    const customerOrders = {};
+    const customerData = {};
     periodOrders.forEach((o) => {
       const addr = o.deliveryAddress || o.customerAddress || o.address;
       if (addr) {
-        if (!customerOrders[addr]) customerOrders[addr] = 0;
-        customerOrders[addr]++;
+        if (!customerData[addr]) {
+          customerData[addr] = { orders: 0, spent: 0 };
+        }
+        customerData[addr].orders++;
+        const amount = parseFloat(o.total || o.totalAmount || 0);
+        if (isNaN(amount)) {
+          const qty = parseFloat(o.quantity || 1);
+          const price = parseFloat(o.unitPrice || 0);
+          customerData[addr].spent += qty * price;
+        } else {
+          customerData[addr].spent += amount;
+        }
       }
     });
-    const oneTime = Object.values(customerOrders).filter((count) => count === 1).length;
-    const regular = Object.values(customerOrders).filter((count) => count > 1 && count <= 5).length;
-    const vip = Object.values(customerOrders).filter((count) => count > 20).length;
-    return { oneTime, regular, vip };
+    // Customer segmentation based on spending:
+    // New: < ₹2,000
+    // Regular: ₹2,000 - ₹7,999
+    // VIP: ≥ ₹8,000
+    // Super VIP: ≥ ₹15,000
+    const oneTime = Object.values(customerData).filter((c) => c.orders === 1).length;
+    const regular = Object.values(customerData).filter(
+      (c) => c.spent >= 2000 && c.spent < 8000
+    ).length;
+    const vip = Object.values(customerData).filter(
+      (c) => c.spent >= 8000 && c.spent < 15000
+    ).length;
+    const superVip = Object.values(customerData).filter((c) => c.spent >= 15000).length;
+    return { oneTime, regular, vip, superVip };
   }, [periodOrders]);
 
   // Payment Mode Trends
@@ -203,7 +249,14 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
         trends[mode] = { count: 0, amount: 0 };
       }
       trends[mode].count++;
-      trends[mode].amount += parseFloat(o.total || o.totalAmount || 0);
+      // Try total first, then totalAmount, then calculate from quantity * unitPrice
+      let amount = parseFloat(o.total || o.totalAmount || 0);
+      if (isNaN(amount) || amount === 0) {
+        const qty = parseFloat(o.quantity || 1);
+        const price = parseFloat(o.unitPrice || 0);
+        amount = qty * price;
+      }
+      trends[mode].amount += isNaN(amount) ? 0 : amount;
     });
     return Object.entries(trends)
       .map(([mode, stats]) => ({ mode, ...stats }))
@@ -227,7 +280,8 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
         const quarterEnd = new Date(now.getFullYear(), (i + 1) * 3, 0);
         const quarterOrders = orders.filter((o) => {
           try {
-            const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+            // Never use createdAt (today's date) as fallback - only use actual order date
+            const orderDate = parseOrderDate(o.date || o.order_date || null);
             return orderDate >= quarterStart && orderDate <= quarterEnd;
           } catch (e) {
             return false;
@@ -276,46 +330,54 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
         <div className='dashboard-header'>
           <h2>Analytics</h2>
         </div>
-        <PremiumLoader message="Loading analytics..." size="large" />
+        <PremiumLoader message='Loading analytics...' size='large' />
       </div>
     );
   }
 
   return (
     <div className='admin-content'>
-      {/* HEADER */}
-      <div className='dashboard-header'>
-        <div>
-          <h2>Analytics</h2>
-          <p>Business insights and performance metrics</p>
-        </div>
-      </div>
-
       {/* TIME PERIOD SELECTOR */}
-      <div className='action-bar' style={{ marginBottom: '24px' }}>
-        <select className='input-field' value={period} onChange={(e) => setPeriod(e.target.value)}>
-          <option value='thisMonth'>This Month</option>
-          <option value='thisYear'>This Year</option>
-          <option value='custom'>Custom Range</option>
-        </select>
-        {period === 'custom' && (
-          <>
-            <input
-              type='date'
-              className='input-field'
-              value={customFrom}
-              onChange={(e) => setCustomFrom(e.target.value)}
-              placeholder='From'
-            />
-            <input
-              type='date'
-              className='input-field'
-              value={customTo}
-              onChange={(e) => setCustomTo(e.target.value)}
-              placeholder='To'
-            />
-          </>
-        )}
+      <div className='dashboard-card dashboard-card-spaced'>
+        <div className='filter-container'>
+          <div className='filter-field-group-standard min-width-160'>
+            <label className='filter-label-standard'>
+              <i className='fa-solid fa-calendar-alt filter-label-icon'></i>
+              Time Period
+            </label>
+            <select
+              className='input-field filter-input-standard'
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+            >
+              <option value='thisMonth'>This Month</option>
+              <option value='thisYear'>This Year</option>
+              <option value='custom'>Custom Range</option>
+            </select>
+          </div>
+          {period === 'custom' && (
+            <>
+              <div className='filter-field-group-standard min-width-160'>
+                <label className='filter-label-standard'>From Date</label>
+                <input
+                  type='date'
+                  className='input-field filter-input-standard'
+                  value={customFrom}
+                  onChange={(e) => setCustomFrom(e.target.value)}
+                />
+              </div>
+              <div className='filter-field-group-standard min-width-160'>
+                <label className='filter-label-standard'>To Date</label>
+                <input
+                  type='date'
+                  className='input-field filter-input-standard'
+                  value={customTo}
+                  onChange={(e) => setCustomTo(e.target.value)}
+                />
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* KEY METRICS GRID */}
@@ -419,7 +481,7 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
                       } orders)`}
                     >
                       <span style={{ color: 'white', fontSize: '0.7rem', fontWeight: '600' }}>
-                        ₹{Math.round(month.revenue / 1000)}k
+                        ₹{formatNumberIndian(month.revenue)}
                       </span>
                     </div>
                     <span
@@ -430,7 +492,7 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
                         fontWeight: '500',
                       }}
                     >
-                      {month.month.split(' ')[0]}
+                      {month.month}
                     </span>
                   </div>
                 ))}
@@ -465,51 +527,83 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
                 marginTop: '0.5rem',
               }}
             >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {topAreas.map((area, idx) => (
-                  <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {topAreas.length === 0 ? (
+                <div
+                  style={{
+                    textAlign: 'center',
+                    padding: '48px',
+                    color: 'var(--admin-text-light)',
+                  }}
+                >
+                  <i className='fa-solid fa-inbox' style={{ fontSize: '48px', opacity: 0.3 }}></i>
+                  <p style={{ marginTop: '16px' }}>No delivery areas found</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {topAreas.map((area, idx) => (
                     <div
+                      key={idx}
                       style={{
                         display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <span style={{ fontWeight: '600', color: 'var(--admin-text)' }}>
-                        {idx + 1}. {area.address}
-                      </span>
-                      <span
-                        style={{
-                          fontWeight: '700',
-                          color: 'var(--admin-accent)',
-                          fontSize: '1rem',
-                        }}
-                      >
-                        ₹{formatCurrency(area.revenue)} ({area.orders} orders)
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        width: '100%',
-                        height: '24px',
-                        background: 'var(--admin-glass-border)',
-                        borderRadius: '12px',
-                        overflow: 'hidden',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        padding: '12px',
+                        background: idx % 2 === 0 ? 'transparent' : 'var(--admin-glass-border)',
+                        borderRadius: '8px',
                       }}
                     >
                       <div
                         style={{
-                          width: `${(area.revenue / maxAreaRevenue) * 100}%`,
-                          height: '100%',
-                          background: 'var(--admin-accent, #449031)',
-                          borderRadius: '12px',
-                          transition: 'width 0.5s ease',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
                         }}
-                      />
+                      >
+                        <span
+                          style={{
+                            fontWeight: '600',
+                            color: 'var(--admin-text)',
+                            fontSize: '0.95rem',
+                          }}
+                        >
+                          {idx + 1}. {area.address}
+                        </span>
+                        <span
+                          style={{
+                            fontWeight: '700',
+                            color: 'var(--admin-accent)',
+                            fontSize: '0.95rem',
+                          }}
+                        >
+                          ₹{formatCurrency(area.revenue)} ({area.orders}{' '}
+                          {area.orders === 1 ? 'order' : 'orders'})
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '20px',
+                          background: 'var(--admin-glass-border)',
+                          borderRadius: '10px',
+                          overflow: 'hidden',
+                          position: 'relative',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${maxAreaRevenue > 0 ? (area.revenue / maxAreaRevenue) * 100 : 0}%`,
+                            height: '100%',
+                            background: 'var(--admin-accent, #449031)',
+                            borderRadius: '10px',
+                            transition: 'width 0.5s ease',
+                            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.1)',
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -531,56 +625,80 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
                 marginTop: '0.5rem',
               }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-end',
-                  gap: '0.75rem',
-                  minHeight: '150px',
-                }}
-              >
-                {ordersByDay.map((day, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                    }}
-                  >
+              {maxDayOrders === 0 ? (
+                <div
+                  style={{
+                    textAlign: 'center',
+                    padding: '48px',
+                    color: 'var(--admin-text-light)',
+                  }}
+                >
+                  <i className='fa-solid fa-inbox' style={{ fontSize: '48px', opacity: 0.3 }}></i>
+                  <p style={{ marginTop: '16px' }}>No orders data available</p>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    gap: '0.75rem',
+                    minHeight: '150px',
+                  }}
+                >
+                  {ordersByDay.map((day, idx) => (
                     <div
+                      key={idx}
                       style={{
-                        width: '100%',
-                        height: `${(day.count / maxDayOrders) * 140}px`,
-                        minHeight: '10px',
-                        background: 'var(--admin-accent)',
-                        borderRadius: '4px 4px 0 0',
+                        flex: 1,
                         display: 'flex',
-                        alignItems: 'flex-end',
-                        justifyContent: 'center',
-                        paddingBottom: '0.25rem',
-                        cursor: 'pointer',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.5rem',
                       }}
-                      title={`${day.day}: ${day.count} orders`}
                     >
-                      <span style={{ color: 'white', fontSize: '0.7rem', fontWeight: '600' }}>
-                        {day.count}
+                      <div
+                        style={{
+                          width: '100%',
+                          height: `${(day.count / maxDayOrders) * 140}px`,
+                          minHeight: day.count > 0 ? '20px' : '4px',
+                          background:
+                            day.count > 0 ? 'var(--admin-accent)' : 'var(--admin-glass-border)',
+                          borderRadius: '4px 4px 0 0',
+                          display: 'flex',
+                          alignItems: 'flex-end',
+                          justifyContent: 'center',
+                          paddingBottom: '0.25rem',
+                          cursor: 'pointer',
+                          transition: 'opacity 0.2s ease',
+                          opacity: day.count > 0 ? 1 : 0.3,
+                        }}
+                        onMouseEnter={(e) => {
+                          if (day.count > 0) e.currentTarget.style.opacity = '0.8';
+                        }}
+                        onMouseLeave={(e) => {
+                          if (day.count > 0) e.currentTarget.style.opacity = '1';
+                        }}
+                        title={`${day.day}: ${day.count} orders`}
+                      >
+                        {day.count > 0 && (
+                          <span style={{ color: 'white', fontSize: '0.7rem', fontWeight: '600' }}>
+                            {day.count}
+                          </span>
+                        )}
+                      </div>
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          color: 'var(--admin-text-light)',
+                          fontWeight: '500',
+                        }}
+                      >
+                        {day.day}
                       </span>
                     </div>
-                    <span
-                      style={{
-                        fontSize: '0.75rem',
-                        color: 'var(--admin-text-light)',
-                        fontWeight: '500',
-                      }}
-                    >
-                      {day.day}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -588,7 +706,10 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
         {/* Order Frequency Distribution */}
         <div className='dashboard-grid-item half-width'>
           <div className='dashboard-card'>
-            <h3 className='dashboard-section-title'>
+            <h3
+              className='dashboard-section-title'
+              style={{ wordBreak: 'break-word', lineHeight: '1.4' }}
+            >
               <i className='fa-solid fa-user-group' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
               Order Frequency Distribution
             </h3>
@@ -601,37 +722,155 @@ const AnalyticsTab = ({ orders = [], loading = false }) => {
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div
-                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '12px',
+                    background: 'var(--admin-glass-border)',
+                    borderRadius: '8px',
+                    gap: '8px',
+                  }}
                 >
-                  <span style={{ fontWeight: '600', color: 'var(--admin-text)' }}>🆕 One-time</span>
                   <span
-                    style={{ fontWeight: '700', color: 'var(--admin-accent)', fontSize: '1.1rem' }}
+                    style={{
+                      fontWeight: '600',
+                      color: 'var(--admin-text)',
+                      fontSize: '0.95rem',
+                      flex: '1',
+                      minWidth: 0,
+                    }}
                   >
-                    {frequencyDistribution.oneTime} customers
+                    <i
+                      className='fa-solid fa-user-plus'
+                      style={{ marginRight: '8px', color: 'var(--admin-accent)' }}
+                    ></i>
+                    <span style={{ wordBreak: 'break-word' }}>One-time customers</span>
+                  </span>
+                  <span
+                    style={{
+                      fontWeight: '700',
+                      color: 'var(--admin-accent)',
+                      fontSize: '1rem',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {frequencyDistribution.oneTime}
                   </span>
                 </div>
                 <div
-                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '12px',
+                    background: 'var(--admin-glass-border)',
+                    borderRadius: '8px',
+                    gap: '8px',
+                  }}
                 >
-                  <span style={{ fontWeight: '600', color: 'var(--admin-text)' }}>
-                    📈 Regular (&gt;5)
+                  <span
+                    style={{
+                      fontWeight: '600',
+                      color: 'var(--admin-text)',
+                      fontSize: '0.95rem',
+                      flex: '1',
+                      minWidth: 0,
+                    }}
+                  >
+                    <i
+                      className='fa-solid fa-chart-line'
+                      style={{ marginRight: '8px', color: 'var(--admin-success)' }}
+                    ></i>
+                    <span style={{ wordBreak: 'break-word' }}>Regular customers (₹2k-₹8k)</span>
                   </span>
                   <span
-                    style={{ fontWeight: '700', color: 'var(--admin-accent)', fontSize: '1.1rem' }}
+                    style={{
+                      fontWeight: '700',
+                      color: 'var(--admin-accent)',
+                      fontSize: '1rem',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                    }}
                   >
-                    {frequencyDistribution.regular} customers
+                    {frequencyDistribution.regular}
                   </span>
                 </div>
                 <div
-                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '12px',
+                    background: 'var(--admin-glass-border)',
+                    borderRadius: '8px',
+                    gap: '8px',
+                  }}
                 >
-                  <span style={{ fontWeight: '600', color: 'var(--admin-text)' }}>
-                    🌟 VIP (&gt;20)
+                  <span
+                    style={{
+                      fontWeight: '600',
+                      color: 'var(--admin-text)',
+                      fontSize: '0.95rem',
+                      flex: '1',
+                      minWidth: 0,
+                    }}
+                  >
+                    <i
+                      className='fa-solid fa-star'
+                      style={{ marginRight: '8px', color: 'var(--admin-warning)' }}
+                    ></i>
+                    <span style={{ wordBreak: 'break-word' }}>VIP customers (₹8k-₹15k)</span>
                   </span>
                   <span
-                    style={{ fontWeight: '700', color: 'var(--admin-accent)', fontSize: '1.1rem' }}
+                    style={{
+                      fontWeight: '700',
+                      color: 'var(--admin-accent)',
+                      fontSize: '1rem',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                    }}
                   >
-                    {frequencyDistribution.vip} customers
+                    {frequencyDistribution.vip}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '12px',
+                    background: 'var(--admin-glass-border)',
+                    borderRadius: '8px',
+                    gap: '8px',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontWeight: '600',
+                      color: 'var(--admin-text)',
+                      fontSize: '0.95rem',
+                      flex: '1',
+                      minWidth: 0,
+                    }}
+                  >
+                    <i
+                      className='fa-solid fa-crown'
+                      style={{ marginRight: '8px', color: 'var(--admin-warning)' }}
+                    ></i>
+                    <span style={{ wordBreak: 'break-word' }}>Super VIP customers (≥₹15k)</span>
+                  </span>
+                  <span
+                    style={{
+                      fontWeight: '700',
+                      color: 'var(--admin-accent)',
+                      fontSize: '1rem',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {frequencyDistribution.superVip}
                   </span>
                 </div>
               </div>

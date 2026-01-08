@@ -1,8 +1,7 @@
 // Tab 7: Payment Management (Pending Payments) - Following FULL_DASHBOARD_PLAN.md structure
 // This file has been recreated from scratch to match the plan exactly
 
-import { useMemo, useState } from 'react';
-import PremiumLoader from './PremiumLoader.jsx';
+import { useEffect, useMemo, useState } from 'react';
 import { getFilteredOrdersByDate } from '../utils/calculations.js';
 import { formatDateMonthDay, parseOrderDate } from '../utils/dateUtils.js';
 import {
@@ -11,6 +10,7 @@ import {
   isPaidStatus,
   isPendingStatus,
 } from '../utils/orderUtils.js';
+import PremiumLoader from './PremiumLoader.jsx';
 
 const PendingAmountsTab = ({
   orders = [],
@@ -19,6 +19,8 @@ const PendingAmountsTab = ({
   showNotification,
   settings,
   showConfirmation,
+  showOverdueFilter = false,
+  onOverdueFilterApplied,
 }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showReminderModal, setShowReminderModal] = useState(false);
@@ -27,6 +29,11 @@ const PendingAmountsTab = ({
   const [sendViaWhatsApp, setSendViaWhatsApp] = useState(true);
   const [sendViaEmail, setSendViaEmail] = useState(false);
 
+  // Filter state
+  const [filterUrgency, setFilterUrgency] = useState('all'); // 'all', 'urgent', 'normal'
+  const [filterDaysPending, setFilterDaysPending] = useState('all'); // 'all', '0-3', '4-7', '7+'
+  const [searchQuery, setSearchQuery] = useState('');
+
   const now = new Date();
 
   // Calculate summary stats
@@ -34,13 +41,19 @@ const PendingAmountsTab = ({
     const paidOrders = orders.filter((o) => isPaidStatus(o.status));
     const pendingOrders = orders.filter((o) => isPendingStatus(o.status));
 
-    // Overdue orders (pending > 7 days)
-    const sevenDaysAgo = new Date(now);
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    // Overdue orders (pending > 45 days)
+    const fortyFiveDaysAgo = new Date(now);
+    fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
+    fortyFiveDaysAgo.setHours(0, 0, 0, 0); // Set to midnight for consistent date comparison
     const overdueOrders = pendingOrders.filter((o) => {
       try {
-        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
-        return orderDate < sevenDaysAgo;
+        // Never use createdAt (today's date) as fallback - only use actual order date
+        const orderDate = parseOrderDate(o.date || o.order_date || null);
+        if (!orderDate) return false;
+        // Normalize orderDate to midnight for comparison
+        const orderDateMidnight = new Date(orderDate);
+        orderDateMidnight.setHours(0, 0, 0, 0);
+        return orderDateMidnight < fortyFiveDaysAgo;
       } catch (e) {
         return false;
       }
@@ -65,24 +78,36 @@ const PendingAmountsTab = ({
   // Pending payments list
   const pendingPayments = useMemo(() => {
     const pending = orders.filter((o) => isPendingStatus(o.status));
-    return pending
+    // Calculate fortyFiveDaysAgo to match notification logic exactly
+    const fortyFiveDaysAgo = new Date(now);
+    fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
+    fortyFiveDaysAgo.setHours(0, 0, 0, 0);
+
+    let payments = pending
       .map((order) => {
         try {
-          const orderDate = parseOrderDate(order.createdAt || order.date || order.order_date);
+          // Never use createdAt (today's date) as fallback - only use actual order date
+          const orderDate = parseOrderDate(order.date || order.order_date || null);
           if (!orderDate) {
             return {
               ...order,
               orderDate: null,
               daysPending: 0,
               isUrgent: false,
+              isOverdue: false,
             };
           }
           const daysPending = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24));
+          // Use same logic as notification: normalize dates to midnight and compare
+          const orderDateMidnight = new Date(orderDate);
+          orderDateMidnight.setHours(0, 0, 0, 0);
+          const isOverdue = orderDateMidnight < fortyFiveDaysAgo;
           return {
             ...order,
             orderDate,
             daysPending,
             isUrgent: daysPending > 7,
+            isOverdue, // Match notification logic exactly
           };
         } catch (e) {
           return {
@@ -90,11 +115,56 @@ const PendingAmountsTab = ({
             orderDate: null,
             daysPending: 0,
             isUrgent: false,
+            isOverdue: false,
           };
         }
       })
       .sort((a, b) => b.daysPending - a.daysPending); // Sort by days pending (most urgent first)
-  }, [orders, now]);
+
+    // Apply filters
+    if (filterUrgency === 'urgent') {
+      // Use isOverdue to match notification logic exactly
+      payments = payments.filter((p) => p.isOverdue);
+    } else if (filterUrgency === 'normal') {
+      payments = payments.filter((p) => !p.isOverdue);
+    }
+
+    if (filterDaysPending === '0-3') {
+      payments = payments.filter((p) => p.daysPending >= 0 && p.daysPending <= 3);
+    } else if (filterDaysPending === '4-7') {
+      payments = payments.filter((p) => p.daysPending >= 4 && p.daysPending <= 7);
+    } else if (filterDaysPending === '7+') {
+      // Filter for orders > 7 days (but not necessarily overdue)
+      payments = payments.filter((p) => p.daysPending > 7);
+    } else if (filterDaysPending === '45+') {
+      // Use isOverdue to match notification logic exactly (> 45 days)
+      payments = payments.filter((p) => p.isOverdue);
+    }
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      payments = payments.filter((p) => {
+        const address = (p.deliveryAddress || p.customerAddress || p.address || '').toLowerCase();
+        const orderId = (p.orderId || p._id || '').toString().toLowerCase();
+        return address.includes(query) || orderId.includes(query);
+      });
+    }
+
+    return payments;
+  }, [orders, now, filterUrgency, filterDaysPending, searchQuery]);
+
+  // Auto-filter to overdue when opened from notification
+  useEffect(() => {
+    if (showOverdueFilter) {
+      setFilterDaysPending('45+');
+      setFilterUrgency('urgent');
+      // Reset the flag after applying filters
+      if (onOverdueFilterApplied) {
+        onOverdueFilterApplied();
+      }
+    }
+  }, [showOverdueFilter, onOverdueFilterApplied]);
 
   // Payment collection timeline (last 30 days)
   const paymentTimeline = useMemo(() => {
@@ -108,7 +178,8 @@ const PendingAmountsTab = ({
 
       const dayOrders = orders.filter((o) => {
         try {
-          const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+          // Never use createdAt (today's date) as fallback - only use actual order date
+          const orderDate = parseOrderDate(o.date || o.order_date || null);
           return orderDate >= date && orderDate < nextDay;
         } catch (e) {
           return false;
@@ -198,7 +269,7 @@ const PendingAmountsTab = ({
   const handleBulkMarkAsPaid = async () => {
     const selectedOrders = pendingPayments.filter((p) => p.isUrgent);
     const count = selectedOrders.length;
-    
+
     if (count === 0) {
       if (showNotification) showNotification('No urgent orders selected', 'info');
       return;
@@ -258,21 +329,67 @@ const PendingAmountsTab = ({
   if (loading) {
     return (
       <div className='admin-content'>
-        <div className='dashboard-header'>
-          <h2>Payment Management</h2>
-        </div>
-        <PremiumLoader message="Loading payment data..." size="large" />
+        <PremiumLoader message='Loading payment data...' size='large' />
       </div>
     );
   }
 
   return (
     <div className='admin-content'>
-      {/* HEADER */}
-      <div className='dashboard-header'>
-        <div>
-          <h2>Payment Management</h2>
-          <p>Track and manage payment collections</p>
+
+      {/* FILTER BAR */}
+      <div className='dashboard-card dashboard-card-spaced'>
+        <div className='filter-container'>
+          <div className='search-input-wrapper search-input-wrapper-flex'>
+            <i className='fa-solid fa-search search-input-icon'></i>
+            <input
+              type='text'
+              className='input-field search-input-with-icon'
+              placeholder='Search by address or order ID...'
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className='filter-field-group-standard min-width-140'>
+            <label className='filter-label-standard'>Urgency</label>
+            <select
+              className='input-field filter-input-standard'
+              value={filterUrgency}
+              onChange={(e) => setFilterUrgency(e.target.value)}
+            >
+              <option value='all'>All</option>
+              <option value='urgent'>Urgent (&gt;7 days)</option>
+              <option value='normal'>Normal (≤7 days)</option>
+            </select>
+          </div>
+          <div className='filter-field-group-standard min-width-140'>
+            <label className='filter-label-standard'>Days Pending</label>
+            <select
+              className='input-field filter-input-standard'
+              value={filterDaysPending}
+              onChange={(e) => setFilterDaysPending(e.target.value)}
+            >
+              <option value='all'>All</option>
+              <option value='0-3'>0-3 days</option>
+              <option value='4-7'>4-7 days</option>
+              <option value='7+'>7+ days</option>
+              <option value='45+'>45+ days (Overdue)</option>
+            </select>
+          </div>
+          {(searchQuery || filterUrgency !== 'all' || filterDaysPending !== 'all') && (
+            <button
+              className='btn btn-ghost btn-small'
+              onClick={() => {
+                setSearchQuery('');
+                setFilterUrgency('all');
+                setFilterDaysPending('all');
+              }}
+              style={{ fontSize: '13px', padding: '10px 16px' }}
+            >
+              <i className='fa-solid fa-xmark' style={{ marginRight: '6px' }}></i>
+              Clear Filters
+            </button>
+          )}
         </div>
       </div>
 
@@ -348,7 +465,7 @@ const PendingAmountsTab = ({
       </div>
 
       {/* PENDING PAYMENTS TABLE */}
-      <div className='dashboard-card' style={{ marginBottom: '24px' }}>
+      <div className='dashboard-card margin-bottom-24'>
         <div
           style={{
             display: 'flex',
@@ -399,7 +516,8 @@ const PendingAmountsTab = ({
               <tbody>
                 {pendingPayments.map((order, idx) => {
                   const orderDate = parseOrderDate(
-                    order.orderDate || order.createdAt || order.date || order.order_date
+                    // Never use createdAt (today's date) as fallback - only use actual order date
+                    order.orderDate || order.date || order.order_date || null
                   );
                   const dateStr = formatDateMonthDay(orderDate);
 
@@ -424,9 +542,7 @@ const PendingAmountsTab = ({
                           {order.daysPending} days {order.isUrgent && '⚠️'}
                         </span>
                       </td>
-                      <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                        {order.orderId || 'N/A'}
-                      </td>
+                      <td className='monospace-text'>{order.orderId || 'N/A'}</td>
                       <td>
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <button

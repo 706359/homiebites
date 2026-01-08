@@ -2,8 +2,8 @@
 // This file has been recreated from scratch to match the plan exactly
 
 import { useState } from 'react';
-import PremiumLoader from './PremiumLoader.jsx';
 import { formatDate, formatDateMonthDay, parseOrderDate } from '../utils/dateUtils.js';
+import PremiumLoader from './PremiumLoader.jsx';
 
 const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
   const [selectedReportType, setSelectedReportType] = useState('');
@@ -68,7 +68,8 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
       if (from) {
         from.setHours(0, 0, 0, 0);
         filteredOrders = filteredOrders.filter((o) => {
-          const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+          // Never use createdAt (today's date) as fallback - only use actual order date
+          const orderDate = parseOrderDate(o.date || o.order_date || null);
           return orderDate && orderDate >= from;
         });
       }
@@ -78,7 +79,8 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
       if (to) {
         to.setHours(23, 59, 59, 999);
         filteredOrders = filteredOrders.filter((o) => {
-          const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+          // Never use createdAt (today's date) as fallback - only use actual order date
+          const orderDate = parseOrderDate(o.date || o.order_date || null);
           return orderDate && orderDate <= to;
         });
       }
@@ -124,7 +126,8 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         'Date,Address,Quantity,Amount,Mode,Status,PaymentMode\n' +
         filteredOrders
           .map((o) => {
-            const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+            // Never use createdAt (today's date) as fallback - only use actual order date
+          const orderDate = parseOrderDate(o.date || o.order_date || null);
             const dateStr = formatDate(orderDate);
             return `"${dateStr}","${
               o.deliveryAddress || o.customerAddress || o.address || 'N/A'
@@ -165,23 +168,13 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
   if (loading) {
     return (
       <div className='admin-content'>
-        <div className='dashboard-header'>
-          <h2>Reports</h2>
-        </div>
-        <PremiumLoader message="Loading reports..." size="large" />
+        <PremiumLoader message='Loading reports...' size='large' />
       </div>
     );
   }
 
   return (
     <div className='admin-content'>
-      {/* HEADER */}
-      <div className='dashboard-header'>
-        <div>
-          <h2>Reports</h2>
-          <p>Generate and manage business reports</p>
-        </div>
-      </div>
 
       {/* REPORT TYPES */}
       <div className='dashboard-grid-layout' style={{ marginBottom: '32px' }}>
@@ -533,7 +526,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
       )}
 
       {/* SCHEDULED REPORTS */}
-      <div className='dashboard-card' style={{ marginBottom: '24px' }}>
+      <div className='dashboard-card margin-bottom-24'>
         <div
           style={{
             display: 'flex',

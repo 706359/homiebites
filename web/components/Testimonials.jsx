@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import ReviewForm from "./ReviewForm";
@@ -20,9 +22,9 @@ const Testimonials = () => {
       const data = await api.getReviews(true, 10);
 
       if (data.success) {
-        // Only use real reviews from API
-        if (data.reviews && data.reviews.length > 0) {
-          setReviews(data.reviews);
+        // API returns { success: true, data: [...] }
+        if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+          setReviews(data.data);
         } else {
           // No reviews yet - wait for first real review
           setReviews([]);
@@ -147,13 +149,6 @@ const Testimonials = () => {
               {t("reviews.noReviews") ||
                 "No reviews yet. Be the first to review!"}
             </p>
-            <button
-              className="btn btn-primary btn-large"
-              onClick={() => setShowReviewForm(true)}
-            >
-              <i className="fa-solid fa-pen"></i>{" "}
-              {t("reviews.writeReview") || "Write a Review"}
-            </button>
           </div>
         )}
       </div>

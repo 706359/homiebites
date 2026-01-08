@@ -12,10 +12,18 @@
     "web:start": "cd web && npm start",
     "admin": "cd admin && npm run dev",
     "admin:build": "cd admin && npm run build",
-    "admin:preview": "cd admin && npm run preview",
+    "admin:start": "cd admin && npm start",
     "backend": "cd backend && npm start",
     "dev:full": "concurrently \"npm run web\" \"npm run backend\"",
     "dev:all": "concurrently \"npm run web\" \"npm run admin\" \"npm run backend\"",
+    "stop": "lsof -ti:3000,3001,3002 | xargs kill -9 2>/dev/null || echo 'No processes found on ports 3000, 3001, 3002'",
+    "stop:web": "lsof -ti:3000 | xargs kill -9 2>/dev/null || echo 'No process found on port 3000'",
+    "stop:admin": "lsof -ti:3002 | xargs kill -9 2>/dev/null || echo 'No process found on port 3002'",
+    "stop:backend": "lsof -ti:3001 | xargs kill -9 2>/dev/null || echo 'No process found on port 3001'",
+    "check:dead": "node scripts/check-dead-files.js",
+    "verify:safe": "node scripts/verify-safe-to-delete.js",
+    "cleanup:safe": "node scripts/safe-cleanup.js",
+    "cleanup:safe:dry": "node scripts/safe-cleanup.js --dry-run",
     "push": "git add . && git commit -m 'updated' && git push"
   },
   "dependencies": {
@@ -27,8 +35,7 @@
     "mongoose": "^8.20.2",
     "multer": "^2.0.2",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^7.10.1"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

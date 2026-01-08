@@ -9,7 +9,6 @@ const InstallPrompt = () => {
     // Check if already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     if (isStandalone) {
-      console.log('[InstallPrompt] App is already installed (standalone mode)');
       setIsInstalled(true);
       return;
     }
@@ -30,17 +29,6 @@ const InstallPrompt = () => {
       ];
       
       const isIOSDevice = checks.some(check => check === true);
-      
-      console.log('[InstallPrompt] ========== iOS Detection ==========');
-      console.log('[InstallPrompt] User Agent:', userAgent);
-      console.log('[InstallPrompt] Platform:', platform);
-      console.log('[InstallPrompt] Vendor:', vendor);
-      console.log('[InstallPrompt] Max Touch Points:', navigator.maxTouchPoints);
-      console.log('[InstallPrompt] Window Width:', window.innerWidth);
-      console.log('[InstallPrompt] Checks:', checks);
-      console.log('[InstallPrompt] iOS Detected:', isIOSDevice);
-      console.log('[InstallPrompt] ====================================');
-      
       return isIOSDevice;
     };
 
@@ -52,50 +40,36 @@ const InstallPrompt = () => {
     const shouldShow = detectedIOS || (isMobile && /Safari/.test(navigator.userAgent) && !/Chrome|CriOS|FxiOS/.test(navigator.userAgent));
     
     if (shouldShow || detectedIOS) {
-      console.log('[InstallPrompt] Will show prompt for iOS device');
-      
       // Check URL parameter first (for testing/debugging)
       const urlParams = new URLSearchParams(window.location.search);
       const forceShow = urlParams.get('showInstall') === 'true';
       const forceHide = urlParams.get('hideInstall') === 'true';
       
       if (forceHide) {
-        console.log('[InstallPrompt] Force hiding prompt (URL parameter)');
         return;
       }
       
       // Add a delay to ensure the page is fully loaded
       const timer = setTimeout(() => {
         if (forceShow) {
-          console.log('[InstallPrompt] Force showing prompt (URL parameter)');
           localStorage.removeItem('pwa-ios-prompt-seen');
           setShowIOSPrompt(true);
           return;
         }
         
         const hasSeenPrompt = localStorage.getItem('pwa-ios-prompt-seen');
-        console.log('[InstallPrompt] Has seen prompt:', hasSeenPrompt);
-        
-        // For debugging: always show on first load, ignore localStorage
-        // Remove this in production
         const debugMode = urlParams.get('debug') === 'true';
         
         if (debugMode || !hasSeenPrompt) {
-          console.log('[InstallPrompt] Showing iOS install prompt');
           setShowIOSPrompt(true);
-        } else {
-          console.log('[InstallPrompt] Prompt already shown. Add ?showInstall=true or ?debug=true to URL to show again.');
         }
       }, 1500); // Reduced delay to 1.5 seconds
 
       return () => clearTimeout(timer);
-    } else {
-      console.log('[InstallPrompt] Not iOS device, skipping iOS prompt');
     }
 
     // Listen for beforeinstallprompt (Android/Chrome)
     const handleBeforeInstallPrompt = (e) => {
-      console.log('[InstallPrompt] beforeinstallprompt event fired');
       e.preventDefault();
       setDeferredPrompt(e);
     };
@@ -124,21 +98,11 @@ const InstallPrompt = () => {
   };
 
   if (isInstalled) {
-    console.log('[InstallPrompt] App is installed, not showing prompt');
     return null;
   }
 
-  // Debug: Always log current state
-  console.log('[InstallPrompt] Render state:', {
-    showIOSPrompt,
-    deferredPrompt: !!deferredPrompt,
-    isInstalled,
-  });
-
   // iOS Install Instructions
   if (showIOSPrompt) {
-    console.log('[InstallPrompt] Rendering iOS install prompt UI');
-    console.log('[InstallPrompt] Rendering iOS install prompt UI');
     return (
       <div
         id="pwa-install-prompt"
@@ -257,7 +221,6 @@ const InstallPrompt = () => {
       >
         <button
           onClick={() => {
-            console.log('[InstallPrompt] Test button clicked - forcing show');
             localStorage.removeItem('pwa-ios-prompt-seen');
             setShowIOSPrompt(true);
           }}

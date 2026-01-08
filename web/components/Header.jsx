@@ -1,5 +1,8 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { useLanguage } from "../contexts/LanguageContext";
 import { getOffersDataSync } from "../lib/offersData";
 import "./Header.css";
@@ -7,7 +10,8 @@ import LanguageSwitcher from "./LanguageSwitcher";
 
 const Header = ({ onOrderClick }) => {
   const { t } = useLanguage();
-  const navigate = useNavigate();
+  const router = useRouter();
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [location, setLocation] = useState("Panchsheel Greens");
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
@@ -23,7 +27,7 @@ const Header = ({ onOrderClick }) => {
   const handleHashLink = (e, hash) => {
     e.preventDefault();
     closeMenu();
-    if (window.location.pathname === "/") {
+    if (pathname === "/") {
       // Already on home page, just scroll
       setTimeout(() => {
         const targetElement = document.querySelector(hash);
@@ -40,7 +44,7 @@ const Header = ({ onOrderClick }) => {
       }, 50);
     } else {
       // Navigate to home first, then scroll after navigation
-      navigate("/");
+      router.push("/");
       setTimeout(() => {
         const targetElement = document.querySelector(hash);
         if (targetElement) {
@@ -143,7 +147,30 @@ const Header = ({ onOrderClick }) => {
         }
       },
       (error) => {
-        console.error("Geolocation error:", error);
+        // Handle different geolocation error types
+        let errorMessage = "Location detection failed";
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            // User denied location permission - this is expected, don't log as error
+            errorMessage = "Location permission denied";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location information unavailable";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Location request timed out";
+            break;
+          default:
+            errorMessage = "Unknown location error";
+            break;
+        }
+        
+        // Only log non-permission errors to console
+        if (error.code !== error.PERMISSION_DENIED) {
+          console.warn("Geolocation error:", errorMessage, error);
+        }
+        
         // Check saved location
         const savedLocation = localStorage.getItem("homiebites_location");
         if (savedLocation) {
@@ -206,7 +233,7 @@ const Header = ({ onOrderClick }) => {
       {/* Main Navigation */}
       <nav className="nav">
         <div className="nav-left">
-          <Link to="/" className="brand-logo" onClick={handleNavClick}>
+          <Link href="/" className="brand-logo" onClick={handleNavClick}>
             <img
               src="/logo.png"
               alt="HomieBites"
@@ -223,28 +250,26 @@ const Header = ({ onOrderClick }) => {
         </div>
 
         <div className="nav-right">
-          <Link to="/" onClick={handleNavClick}>
+          <Link href="/" onClick={handleNavClick}>
             {t("common.home")}
           </Link>
           <a href="/#about" onClick={(e) => handleHashLink(e, "#about")}>
             {t("common.about")}
           </a>
-          <Link to="/faq" onClick={handleNavClick}>
+          <a href="/#gallery" onClick={(e) => handleHashLink(e, "#gallery")}>
+            {t("header.gallery") || "Gallery"}
+          </a>
+          <Link href="/faq" onClick={handleNavClick}>
             {t("header.faq")}
           </Link>
-          <div
+          <a
+            href="https://wa.me/919958983578"
+            target="_blank"
+            rel="noopener noreferrer"
             className="nav-icon cart-icon"
-            onClick={onOrderClick}
-            role="button"
-            tabIndex={0}
-            aria-label="View cart and order"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onOrderClick();
-              }
-            }}
-          ></div>
+            aria-label="Contact us on WhatsApp"
+            title="Contact us on WhatsApp"
+          ></a>
           <button
             className={`menu-btn ${isMenuOpen ? "open" : ""}`}
             onClick={toggleMenu}
@@ -258,35 +283,38 @@ const Header = ({ onOrderClick }) => {
 
       {/* Mobile Menu */}
       <div className={`mobile-menu ${isMenuOpen ? "open" : ""}`}>
-        <Link to="/menu" onClick={handleNavClick}>
+        <a href="/#gallery" onClick={(e) => handleHashLink(e, "#gallery")}>
           {t("header.menu")}
-        </Link>
-        <Link to="/" onClick={handleNavClick}>
+        </a>
+        <Link href="/" onClick={handleNavClick}>
           {t("common.home")}
         </Link>
         <a href="/#about" onClick={(e) => handleHashLink(e, "#about")}>
           {t("common.about")}
         </a>
-        <Link to="/search" onClick={handleNavClick}>
+        <a href="/#gallery" onClick={(e) => handleHashLink(e, "#gallery")}>
+          {t("header.gallery") || "Gallery"}
+        </a>
+        <Link href="/search" onClick={handleNavClick}>
           {t("header.search")}
         </Link>
         {hasActiveOffers && (
-          <Link to="/offers" onClick={handleNavClick}>
+          <Link href="/offers" onClick={handleNavClick}>
             {t("header.offers") || "Offers"}
           </Link>
         )}
-        <Link to="/faq" onClick={handleNavClick}>
+        <Link href="/faq" onClick={handleNavClick}>
           {t("header.faq")}
         </Link>
-        <button
+        <a
+          href="https://wa.me/919958983578"
+          target="_blank"
+          rel="noopener noreferrer"
           className="btn btn-primary btn-small"
-          onClick={() => {
-            onOrderClick();
-            handleNavClick();
-          }}
+          onClick={handleNavClick}
         >
           {t("header.subscribe")}
-        </button>
+        </a>
       </div>
     </header>
   );

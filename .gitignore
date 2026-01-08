@@ -66,3 +66,10 @@ local.properties
 
 # Vite
 .vite/
+
+# Next.js
+.next/
+out/
+.swc/
+*.swc
+next-env.d.ts

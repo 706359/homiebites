@@ -6,31 +6,31 @@
   /* Background Colors - Clean and bright */
   --admin-bg: #ffffff;
   --admin-bg-secondary: #f7f9fc;
-  
+
   /* Text Colors - High contrast for readability */
   --admin-text: #0f172a;
   --admin-text-primary: #1e293b;
   --admin-text-secondary: #475569;
   --admin-text-light: #64748b;
-  
+
   /* Border Colors - Clear separation */
   --admin-border: #cbd5e1;
   --admin-glass-bg: rgba(255, 255, 255, 0.95);
   --admin-glass-border: rgba(0, 0, 0, 0.08);
   --admin-glass-overlay: rgba(255, 255, 255, 0.6);
-  
-  /* Accent Colors - Optimized for light theme */
+
+  /* Accent Colors - Consistent green theme */
   --admin-accent: #449031;
-  --admin-accent-light: rgba(68, 144, 49, 0.12);
+  --admin-accent-light: rgba(68, 144, 49, 0.1);
   --admin-success: #449031;
-  --admin-success-light: rgba(68, 144, 49, 0.12);
-  
+  --admin-success-light: rgba(68, 144, 49, 0.1);
+
   /* Warning & Danger - High visibility */
   --admin-warning: #f59e0b;
   --admin-warning-light: rgba(245, 158, 11, 0.15);
   --admin-danger: #dc2626;
   --admin-danger-light: rgba(220, 38, 38, 0.12);
-  
+
   /* Secondary color */
   --admin-secondary: #c45c2d;
   --admin-secondary-light: rgba(196, 92, 45, 0.12);
@@ -41,46 +41,97 @@
   /* Background Colors - Balanced for visibility */
   --admin-bg: #1a1f2e;
   --admin-bg-secondary: #252b3d;
-  
+
   /* Text Colors - High contrast for readability */
   --admin-text: #e8eaed;
   --admin-text-primary: #ffffff;
   --admin-text-secondary: #b0b8c4;
   --admin-text-light: #8b95a6;
-  
+
   /* Border Colors - More visible */
   --admin-border: #3d4558;
   --admin-glass-bg: rgba(26, 31, 46, 0.95);
   --admin-glass-border: rgba(255, 255, 255, 0.12);
   --admin-glass-overlay: rgba(26, 31, 46, 0.6);
-  
-  /* Accent Colors - Adjusted for dark theme visibility */
+
+  /* Accent Colors - Consistent green theme for dark */
   --admin-accent: #5cb85c;
-  --admin-accent-light: rgba(92, 184, 92, 0.15);
+  --admin-accent-light: rgba(92, 184, 92, 0.12);
   --admin-success: #5cb85c;
-  --admin-success-light: rgba(92, 184, 92, 0.15);
-  
+  --admin-success-light: rgba(92, 184, 92, 0.12);
+
   /* Warning & Danger - More visible in dark */
   --admin-warning: #ffc107;
   --admin-warning-light: rgba(255, 193, 7, 0.2);
   --admin-danger: #ff5252;
   --admin-danger-light: rgba(255, 82, 82, 0.2);
-  
+
   /* Secondary color - Adjusted */
   --admin-secondary: #ff8c42;
   --admin-secondary-light: rgba(255, 140, 66, 0.15);
 }
 
-/* Apply background colors */
+/* Apply background colors - SCOPED TO ADMIN DASHBOARD */
 body {
   background-color: var(--admin-bg-secondary);
   color: var(--admin-text);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
+/* Theme classes scoped to admin-dashboard only */
 .admin-dashboard {
   background-color: var(--admin-bg-secondary);
   color: var(--admin-text);
+}
+
+/* Dark theme - scoped to admin-dashboard */
+.admin-dashboard.dark-theme {
+  --admin-bg: #1a1f2e;
+  --admin-bg-secondary: #252b3d;
+  --admin-text: #e8eaed;
+  --admin-text-primary: #ffffff;
+  --admin-text-secondary: #b0b8c4;
+  --admin-text-light: #8b95a6;
+  --admin-border: #3d4558;
+  --admin-glass-bg: rgba(26, 31, 46, 0.95);
+  --admin-glass-border: rgba(255, 255, 255, 0.12);
+  --admin-glass-overlay: rgba(26, 31, 46, 0.6);
+  --admin-accent: #5cb85c;
+  --admin-accent-light: rgba(92, 184, 92, 0.12);
+  --admin-success: #5cb85c;
+  --admin-success-light: rgba(92, 184, 92, 0.12);
+  --admin-warning: #ffc107;
+  --admin-warning-light: rgba(255, 193, 7, 0.2);
+  --admin-danger: #ff5252;
+  --admin-danger-light: rgba(255, 82, 82, 0.2);
+  --admin-secondary: #ff8c42;
+  --admin-secondary-light: rgba(255, 140, 66, 0.15);
+}
+
+/* Light theme - scoped to admin-dashboard */
+.admin-dashboard.light-theme {
+  --admin-bg: #ffffff;
+  --admin-bg-secondary: #f7f9fc;
+  --admin-text: #0f172a;
+  --admin-text-primary: #1e293b;
+  --admin-text-secondary: #475569;
+  --admin-text-light: #64748b;
+  --admin-border: #cbd5e1;
+  --admin-glass-bg: rgba(255, 255, 255, 0.95);
+  --admin-glass-border: rgba(0, 0, 0, 0.08);
+  --admin-glass-overlay: rgba(255, 255, 255, 0.6);
+  --admin-accent: #449031;
+  --admin-accent-light: rgba(68, 144, 49, 0.1);
+  --admin-success: #449031;
+  --admin-success-light: rgba(68, 144, 49, 0.1);
+  --admin-warning: #f59e0b;
+  --admin-warning-light: rgba(245, 158, 11, 0.15);
+  --admin-danger: #dc2626;
+  --admin-danger-light: rgba(220, 38, 38, 0.12);
+  --admin-secondary: #c45c2d;
+  --admin-secondary-light: rgba(196, 92, 45, 0.12);
 }
 
 .admin-content {
@@ -104,17 +155,19 @@ body {
   border-color: var(--admin-border);
 }
 
-/* Font Size Variables */
+/* Font Size Variables - SCOPED TO ADMIN DASHBOARD ONLY */
 :root {
   --admin-base-font-size: 16px;
+  --admin-font-family: 'Baloo 2', sans-serif;
 }
 
-body {
-  font-size: var(--admin-base-font-size);
-}
+/* Font size and theme are scoped to .admin-dashboard only */
+/* This ensures website is not affected */
 
 /* Smooth transitions for theme changes */
 * {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
 }
-

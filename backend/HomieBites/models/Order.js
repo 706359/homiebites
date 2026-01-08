@@ -1,12 +1,12 @@
 // HomieBites Order model
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 const OrderSchema = new mongoose.Schema(
   {
-    orderId: { type: String, unique: true, index: true, required: true },
+    orderId: { type: String, unique: true, index: true, required: false },
     date: { type: Date, required: true },
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: false,
     },
     deliveryAddress: { type: String, required: true }, // Legacy field - kept for backward compatibility
@@ -15,14 +15,14 @@ const OrderSchema = new mongoose.Schema(
     quantity: { type: Number, default: 1 },
     unitPrice: { type: Number, default: 0 },
     totalAmount: { type: Number, default: 0 }, // Calculated on backend: quantity * unitPrice
-    paymentStatus: { type: String, default: "Pending" }, // Paid, Pending, Unpaid
-    paymentMode: { type: String, default: "Online" }, // Cash, Online, UPI, Bank Transfer
-    mode: { type: String, default: "Morning" }, // Delivery slot: Can be any value from Excel (Lunch, Dinner, Breakfast, Morning, Noon, Night, etc.)
-    status: { type: String, default: "PENDING" }, // Legacy field - kept for backward compatibility
+    paymentStatus: { type: String, default: 'Pending' }, // Paid, Pending, Unpaid
+    paymentMode: { type: String, default: 'Online' }, // Cash, Online, UPI, Bank Transfer
+    mode: { type: String, default: 'Morning' }, // Delivery slot: Can be any value from Excel (Lunch, Dinner, Breakfast, Morning, Noon, Night, etc.)
+    status: { type: String, default: 'PENDING' }, // Legacy field - kept for backward compatibility
     source: {
       type: String,
-      enum: ["manual", "excel", "api"],
-      default: "manual",
+      enum: ['manual', 'excel', 'api'],
+      default: 'manual',
     },
     billingMonth: { type: Number }, // 1-12 (INT)
     billingYear: { type: Number }, // YYYY (INT)
@@ -33,77 +33,39 @@ const OrderSchema = new mongoose.Schema(
   },
   {
     timestamps: true, // createdAt, updatedAt
-    collection: "orders", // Explicitly set collection name to 'orders' (lowercase)
-  },
+    collection: 'orders', // Explicitly set collection name to 'orders' (lowercase)
+  }
 );
 
-// Generate a unique orderId if not present
-// NEW FORMAT: HB-Jan'25-15-000079 (HB-{Month}'{YY}-{DD}-{SequenceNo})
-// Format: HB-{MonthAbbr}'{YY}-{DD}-{6-digit-sequence}
-OrderSchema.pre("validate", async function (next) {
-  if (!this.orderId) {
-    const datePart = this.date ? new Date(this.date) : new Date();
-
-    // Get month abbreviation (Jan, Feb, Mar, etc.)
-    const monthNames = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    const month = monthNames[datePart.getMonth()];
-
-    // Get 2-digit year
-    const year = String(datePart.getFullYear()).slice(-2);
-
-    // Get 2-digit day
-    const day = String(datePart.getDate()).padStart(2, "0");
-
-    // Get start and end of day for counting orders
-    const startOfDay = new Date(datePart);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(datePart);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    try {
-      // Count existing orders for this day
-      const Order = mongoose.model("Order");
-      const todayCount = await Order.countDocuments({
-        date: { $gte: startOfDay, $lte: endOfDay },
-      });
-
-      // Generate sequence number (today's count + 1, padded to 6 digits)
-      const sequence = String(todayCount + 1).padStart(6, "0");
-
-      // Format: HB-Jan'25-15-000079
-      this.orderId = `HB-${month}'${year}-${day}-${sequence}`;
-    } catch (error) {
-      // Fallback: use timestamp-based sequence if count fails
-      console.warn(
-        "Could not count orders for Order ID generation:",
-        error.message,
-      );
-      const fallbackSequence = String(Date.now()).slice(-6);
-      this.orderId = `HB-${month}'${year}-${day}-${fallbackSequence}`;
-    }
-  }
-  next();
-});
+// Order ID auto-generation removed - Order IDs must be provided manually
 
 // Pre-save: derive billingMonth and billingYear and compute totalAmount (ALWAYS calculated on backend)
-OrderSchema.pre("save", function (next) {
+OrderSchema.pre('save', function (next) {
   if (this.date) {
-    const d = new Date(this.date);
-    this.billingMonth = d.getMonth() + 1;
-    this.billingYear = d.getFullYear();
+    // Only calculate billingMonth/billingYear if not already set (preserve values from upload)
+    if (this.billingMonth === undefined || this.billingYear === undefined) {
+      // Parse date safely - handle ISO strings and Date objects
+      let d;
+      if (this.date instanceof Date) {
+        d = this.date;
+      } else if (typeof this.date === 'string') {
+        // For ISO format YYYY-MM-DD, parse as UTC to avoid timezone issues
+        if (/^\d{4}-\d{2}-\d{2}$/.test(this.date)) {
+          d = new Date(this.date + 'T00:00:00Z'); // Z indicates UTC
+        } else {
+          d = new Date(this.date);
+        }
+      } else {
+        d = new Date(this.date);
+      }
+
+      // Only set if date is valid
+      // Use UTC methods to avoid timezone issues when MongoDB stores dates in UTC
+      if (!isNaN(d.getTime())) {
+        this.billingMonth = d.getUTCMonth() + 1;
+        this.billingYear = d.getUTCFullYear();
+      }
+    }
   }
   // ALWAYS calculate totalAmount on backend (quantity * unitPrice)
   if (this.unitPrice !== undefined && this.quantity !== undefined) {
@@ -116,15 +78,15 @@ OrderSchema.pre("save", function (next) {
   // Set paymentStatus from status if not provided (backward compatibility)
   if (!this.paymentStatus && this.status) {
     const statusLower = String(this.status).toLowerCase();
-    if (statusLower === "paid" || statusLower === "delivered") {
-      this.paymentStatus = "Paid";
-    } else if (statusLower === "unpaid") {
-      this.paymentStatus = "Unpaid";
+    if (statusLower === 'paid' || statusLower === 'delivered') {
+      this.paymentStatus = 'Paid';
+    } else if (statusLower === 'unpaid') {
+      this.paymentStatus = 'Unpaid';
     } else {
-      this.paymentStatus = "Pending";
+      this.paymentStatus = 'Pending';
     }
   }
   next();
 });
 
-export default mongoose.model("Order", OrderSchema);
+export default mongoose.model('Order', OrderSchema);

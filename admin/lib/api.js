@@ -2,9 +2,11 @@
 
 // Determine API base URL
 // In production (served from Express), use relative URLs
-// In development (Vite dev server), use absolute URL to backend
-const isProduction = import.meta.env.PROD;
-const isDevelopment = import.meta.env.DEV;
+// In development (Next.js dev server), use absolute URL to backend
+const isProduction = typeof window !== 'undefined' 
+  ? (process.env.NODE_ENV === 'production' || window.location.hostname !== 'localhost')
+  : process.env.NODE_ENV === 'production';
+const isDevelopment = !isProduction;
 
 let resolvedApiUrl;
 
@@ -15,11 +17,22 @@ if (isProduction) {
   // Development: Use absolute URL to backend server
   // Force backend API URL to port 3001 (backend server port)
   // Admin runs on 3002, backend API runs on 3001
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_BASE_URL =
+    (typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL : null) ||
+    process.env.API_URL ||
+    process.env.VITE_API_URL ||
+    'http://localhost:3001';
 
   resolvedApiUrl = API_BASE_URL;
   if (resolvedApiUrl.includes(':3000') || resolvedApiUrl.includes(':3002')) {
     resolvedApiUrl = resolvedApiUrl.replace(':3000', ':3001').replace(':3002', ':3001');
+  }
+  
+  // Ensure we're always using port 3001 in development
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    if (!resolvedApiUrl.includes('localhost:3001') && !resolvedApiUrl.includes('127.0.0.1:3001')) {
+      resolvedApiUrl = 'http://localhost:3001';
+    }
   }
 }
 
@@ -31,7 +44,7 @@ if (typeof window !== 'undefined') {
     '(mode:',
     isProduction ? 'production' : 'development',
     ', env:',
-    import.meta.env.VITE_API_URL || 'default',
+    process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'default',
     ')'
   );
 }
@@ -182,13 +195,17 @@ export const api = {
 
   // Menu endpoints
   async getMenu() {
-    return this.request('/api/menu');
+    const result = await this.request('/api/menu');
+    console.log('[API] getMenu() response:', result);
+    return result;
   },
 
   async updateMenu(menuData) {
+    // Backend accepts either array directly or { categories: [...] }
+    // Send array directly to match backend expectation
     return this.request('/api/menu', {
       method: 'PUT',
-      body: JSON.stringify({ categories: menuData }),
+      body: JSON.stringify(menuData),
     });
   },
 
@@ -329,7 +346,47 @@ export const api = {
   async getAllUsers() {
     return this.request('/api/auth/users');
   },
+
+  // Gallery endpoints
+  async getGallery() {
+    return this.request('/api/gallery');
+  },
+
+  async createGalleryItem(itemData) {
+    return this.request('/api/gallery', {
+      method: 'POST',
+      body: JSON.stringify(itemData),
+    });
+  },
+
+  async updateGalleryItem(id, itemData) {
+    return this.request(`/api/gallery/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(itemData),
+    });
+  },
+
+  async deleteGalleryItem(id) {
+    return this.request(`/api/gallery/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Settings endpoints
+  async getSettings() {
+    return this.request('/api/settings');
+  },
+
+  async getFullSettings() {
+    return this.request('/api/settings/full');
+  },
+
+  async updateSettings(settingsData) {
+    return this.request('/api/settings', {
+      method: 'PUT',
+      body: JSON.stringify(settingsData),
+    });
+  },
 };
 
 export default api;
-

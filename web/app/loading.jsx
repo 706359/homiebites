@@ -1,11 +1,9 @@
-import Loader from "../components/Loader";
-
-import "./Loading.css";
+import PremiumLoader from '../components/PremiumLoader';
 
 export default function Loading() {
   return (
-    <div className="loading-page-container">
-      <Loader fullScreen={false} size="large" />
+    <div className='loading-page-container'>
+      <PremiumLoader message='Loading...' size='large' showText={true} />
     </div>
   );
 }

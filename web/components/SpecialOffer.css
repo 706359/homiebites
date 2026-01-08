@@ -26,6 +26,14 @@
   letter-spacing: -0.02em;
 }
 
+.offer-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin: 2rem 0;
+}
+
 .offer-text {
   font-size: 1.25rem;
   color: rgba(255, 255, 255, 0.98);

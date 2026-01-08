@@ -5,7 +5,7 @@ import "./AdminForgotPassword.css";
 
 const AdminForgotPassword = () => {
   const goBack = () => {
-    window.location.href = "/admin";
+    window.location.href = "/login";
   };
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);

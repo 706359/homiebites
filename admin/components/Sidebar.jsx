@@ -114,9 +114,6 @@ const Sidebar = ({
                 <div className="sidebar-profile-name">
                   {currentUser?.name || "Admin User"}
                 </div>
-                <div className="sidebar-profile-email">
-                  {currentUser?.email || "admin@example.com"}
-                </div>
               </div>
             )}
             {!sidebarCollapsed && (

@@ -9,11 +9,12 @@ import {
   isPaidStatus,
   isPendingStatus,
 } from '../utils/orderUtils.js';
+import PremiumLoader from './PremiumLoader.jsx';
 
 const AllOrdersDataTab = ({
   orders = [],
-  settings,
-  excelFileName,
+  settings: _settings,
+  excelFileName: _excelFileName,
   allOrdersFilterMonth,
   setAllOrdersFilterMonth,
   allOrdersFilterAddress,
@@ -21,7 +22,7 @@ const AllOrdersDataTab = ({
   allOrdersFilterPaymentStatus,
   setAllOrdersFilterPaymentStatus,
   onLoadExcelFile,
-  onClearExcelData,
+  onClearExcelData: _onClearExcelData,
   onClearAllData,
   onEditOrder,
   onDeleteOrder,
@@ -35,7 +36,7 @@ const AllOrdersDataTab = ({
   loadOrders,
   showConfirmation,
 }) => {
-  // State for filters panel
+  // State for filters panel - collapsed by default
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [dateRangeFrom, setDateRangeFrom] = useState('');
   const [dateRangeTo, setDateRangeTo] = useState('');
@@ -50,8 +51,8 @@ const AllOrdersDataTab = ({
   const [selectedRows, setSelectedRows] = useState(new Set());
   const [selectAll, setSelectAll] = useState(false);
 
-  // Sorting state
-  const [sortColumn, setSortColumn] = useState(null);
+  // Sorting state - default to orderId descending (newest to oldest)
+  const [sortColumn, setSortColumn] = useState('orderId');
   const [sortDirection, setSortDirection] = useState('desc');
 
   // Modal states removed - using showConfirmation from parent
@@ -84,10 +85,11 @@ const AllOrdersDataTab = ({
           month = parseInt(order.billingMonth);
           year = parseInt(order.billingYear);
         } else {
-          const orderDate = parseOrderDate(order.createdAt || order.date || order.order_date);
+          // Never use createdAt (today's date) as fallback - only use actual order date
+          const orderDate = parseOrderDate(order.date || order.order_date || null);
           if (!orderDate) return false;
-          month = orderDate.getMonth() + 1;
-          year = orderDate.getFullYear();
+          month = orderDate.getUTCMonth() + 1;
+          year = orderDate.getUTCFullYear();
         }
         return formatBillingMonth(month, year) === allOrdersFilterMonth;
       });
@@ -145,7 +147,8 @@ const AllOrdersDataTab = ({
         if (order.billingYear) {
           year = parseInt(order.billingYear);
         } else {
-          const orderDate = parseOrderDate(order.createdAt || order.date || order.order_date);
+          // Never use createdAt (today's date) as fallback - only use actual order date
+          const orderDate = parseOrderDate(order.date || order.order_date || null);
           if (orderDate) {
             year = orderDate.getFullYear();
           }
@@ -171,7 +174,8 @@ const AllOrdersDataTab = ({
       const fromDate = parseOrderDate(dateRangeFrom);
       if (fromDate) {
         filtered = filtered.filter((order) => {
-          const orderDate = parseOrderDate(order.createdAt || order.date || order.order_date);
+          // Never use createdAt (today's date) as fallback - only use actual order date
+          const orderDate = parseOrderDate(order.date || order.order_date || null);
           return orderDate && orderDate >= fromDate;
         });
       }
@@ -182,57 +186,204 @@ const AllOrdersDataTab = ({
       if (toDate) {
         toDate.setHours(23, 59, 59, 999); // End of day
         filtered = filtered.filter((order) => {
-          const orderDate = parseOrderDate(order.createdAt || order.date || order.order_date);
+          // Never use createdAt (today's date) as fallback - only use actual order date
+          const orderDate = parseOrderDate(order.date || order.order_date || null);
           return orderDate && orderDate <= toDate;
         });
       }
     }
 
-    // Sorting
-    if (sortColumn) {
-      filtered.sort((a, b) => {
-        let aVal, bVal;
+    // Sorting - always sort, default to date descending then orderId descending
+    filtered.sort((a, b) => {
+      let aVal, bVal;
+      let aSecondaryVal, bSecondaryVal;
 
-        switch (sortColumn) {
-          case 'date':
-            aVal = parseOrderDate(a.createdAt || a.date || a.order_date);
-            bVal = parseOrderDate(b.createdAt || b.date || b.order_date);
-            aVal = aVal ? aVal.getTime() : 0;
-            bVal = bVal ? bVal.getTime() : 0;
-            break;
-          case 'address':
-            aVal = (a.deliveryAddress || a.customerAddress || a.address || '').toLowerCase();
-            bVal = (b.deliveryAddress || b.customerAddress || b.address || '').toLowerCase();
-            break;
-          case 'quantity':
-            aVal = parseInt(a.quantity || 1);
-            bVal = parseInt(b.quantity || 1);
-            break;
-          case 'total':
-            aVal = parseFloat(a.total || a.totalAmount || 0);
-            bVal = parseFloat(b.total || b.totalAmount || 0);
-            break;
-          case 'mode':
-            aVal = (a.mode || '').toLowerCase();
-            bVal = (b.mode || '').toLowerCase();
-            break;
-          case 'status':
-            aVal = (a.status || '').toLowerCase();
-            bVal = (b.status || '').toLowerCase();
-            break;
-          case 'payment':
-            aVal = (a.paymentMode || '').toLowerCase();
-            bVal = (b.paymentMode || '').toLowerCase();
-            break;
-          default:
-            return 0;
+      switch (sortColumn) {
+        case 'date': {
+          // Never use createdAt (today's date) as fallback - only use actual order date
+          aVal = parseOrderDate(a.date || a.order_date || null);
+          bVal = parseOrderDate(b.date || b.order_date || null);
+          aVal = aVal ? aVal.getTime() : 0;
+          bVal = bVal ? bVal.getTime() : 0;
+          // Secondary sort by orderId sequence number when dates are equal
+          const extractSequence = (orderId) => {
+            if (!orderId) return 0;
+            const match = orderId.toString().match(/HB-\w+'?\d{2}-\d{2}-(\d+)$/);
+            return match && match[1] ? parseInt(match[1], 10) : 0;
+          };
+          aSecondaryVal = extractSequence(a.orderId);
+          bSecondaryVal = extractSequence(b.orderId);
+          // If sequence numbers are same or missing, fall back to lexicographic sort
+          if (aSecondaryVal === 0 && bSecondaryVal === 0) {
+            aSecondaryVal = (a.orderId || '').toString();
+            bSecondaryVal = (b.orderId || '').toString();
+          }
+          break;
         }
+        case 'orderId': {
+          // Parse Order ID to extract date and sequence (format: HB-Feb'24-21-000001)
+          const parseOrderIdDate = (orderIdStr) => {
+            if (!orderIdStr) return { date: 0, sequence: 0 };
+            const str = orderIdStr.toString();
+            // Match: HB-Month'YY-DD-SequenceNumber
+            const match = str.match(/HB-(\w+)'?(\d{2})-(\d{2})-(\d+)$/);
+            if (!match) {
+              return { date: 0, sequence: 0 };
+            }
 
-        if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
-        if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
+            const monthStr = match[1].toLowerCase();
+            const year2Digit = parseInt(match[2], 10);
+            const day = parseInt(match[3], 10);
+            const sequence = parseInt(match[4], 10);
+
+            // Convert 2-digit year to 4-digit (assume 2000-2099)
+            const year = year2Digit < 50 ? 2000 + year2Digit : 1900 + year2Digit;
+
+            // Month abbreviations to number
+            const monthMap = {
+              jan: 0,
+              feb: 1,
+              mar: 2,
+              apr: 3,
+              may: 4,
+              jun: 5,
+              jul: 6,
+              aug: 7,
+              sep: 8,
+              oct: 9,
+              nov: 10,
+              dec: 11,
+            };
+
+            const month = monthMap[monthStr] !== undefined ? monthMap[monthStr] : 0;
+            const date = new Date(year, month, day);
+            return {
+              date: date.getTime(),
+              sequence: sequence,
+            };
+          };
+
+          const aParsed = parseOrderIdDate(a.orderId);
+          const bParsed = parseOrderIdDate(b.orderId);
+
+          // Primary sort by date from Order ID
+          aVal = aParsed.date;
+          bVal = bParsed.date;
+
+          // If date parsing failed, fall back to order date field
+          if (aVal === 0) {
+            const aOrderDate = parseOrderDate(a.date || a.order_date || null);
+            aVal = aOrderDate ? aOrderDate.getTime() : 0;
+          }
+          if (bVal === 0) {
+            const bOrderDate = parseOrderDate(b.date || b.order_date || null);
+            bVal = bOrderDate ? bOrderDate.getTime() : 0;
+          }
+
+          // Secondary sort by sequence number
+          aSecondaryVal = aParsed.sequence;
+          bSecondaryVal = bParsed.sequence;
+          break;
+        }
+        case 'address':
+          aVal = (a.deliveryAddress || a.customerAddress || a.address || '').toLowerCase();
+          bVal = (b.deliveryAddress || b.customerAddress || b.address || '').toLowerCase();
+          break;
+        case 'quantity':
+          aVal = parseInt(a.quantity || 1);
+          bVal = parseInt(b.quantity || 1);
+          break;
+        case 'total': {
+          // Try total first, then totalAmount, then calculate from quantity * unitPrice
+          let aTotal = parseFloat(a.total || a.totalAmount || 0);
+          if (isNaN(aTotal) || aTotal === 0) {
+            const aQty = parseFloat(a.quantity || 1);
+            const aPrice = parseFloat(a.unitPrice || 0);
+            aTotal = aQty * aPrice;
+          }
+          let bTotal = parseFloat(b.total || b.totalAmount || 0);
+          if (isNaN(bTotal) || bTotal === 0) {
+            const bQty = parseFloat(b.quantity || 1);
+            const bPrice = parseFloat(b.unitPrice || 0);
+            bTotal = bQty * bPrice;
+          }
+          aVal = isNaN(aTotal) ? 0 : aTotal;
+          bVal = isNaN(bTotal) ? 0 : bTotal;
+          break;
+        }
+        case 'mode':
+          aVal = (a.mode || '').toLowerCase();
+          bVal = (b.mode || '').toLowerCase();
+          break;
+        case 'status':
+          aVal = (a.status || '').toLowerCase();
+          bVal = (b.status || '').toLowerCase();
+          break;
+        case 'payment':
+          aVal = (a.paymentMode || '').toLowerCase();
+          bVal = (b.paymentMode || '').toLowerCase();
+          break;
+        default: {
+          // Default sort: date descending, then orderId sequence ascending (000001, 000002, etc.)
+          aVal = parseOrderDate(a.date || a.order_date || null);
+          bVal = parseOrderDate(b.date || b.order_date || null);
+          aVal = aVal ? aVal.getTime() : 0;
+          bVal = bVal ? bVal.getTime() : 0;
+          // Secondary sort by orderId sequence number (ascending)
+          const extractSequence = (orderId) => {
+            if (!orderId) return 0;
+            const match = orderId.toString().match(/HB-\w+'?\d{2}-\d{2}-(\d+)$/);
+            return match && match[1] ? parseInt(match[1], 10) : 0;
+          };
+          aSecondaryVal = extractSequence(a.orderId);
+          bSecondaryVal = extractSequence(b.orderId);
+          // If sequence numbers are same or missing, fall back to lexicographic sort
+          if (aSecondaryVal === 0 && bSecondaryVal === 0) {
+            aSecondaryVal = (a.orderId || '').toString();
+            bSecondaryVal = (b.orderId || '').toString();
+          }
+          break;
+        }
+      }
+
+      // Primary sort
+      if (aVal < bVal) {
+        const primaryResult = sortDirection === 'asc' ? -1 : 1;
+        return primaryResult;
+      }
+      if (aVal > bVal) {
+        const primaryResult = sortDirection === 'asc' ? 1 : -1;
+        return primaryResult;
+      }
+
+      // Secondary sort (when primary values are equal)
+      // For date sorting, secondary sort (sequence numbers) should be ascending (increasing order)
+      // For orderId sorting, secondary sort (sequence numbers) should be ascending (oldest to newest)
+      // For other columns, use the same direction as primary sort
+      if (aSecondaryVal !== undefined && bSecondaryVal !== undefined) {
+        let secondaryDirection;
+        if (sortColumn === 'date' || sortColumn === null) {
+          // When sorting by date (or default), sequence numbers should be ascending (000001, 000002, 000003...)
+          // This ensures orders on the same date are sorted: 000001, then 000002, then 000003, etc.
+          secondaryDirection = 'asc';
+        } else if (sortColumn === 'orderId') {
+          // When sorting by orderId, sequence numbers should be descending (newest to oldest)
+          // This ensures reverse chronological order: 000100, then 000010, then 000001, etc.
+          secondaryDirection = 'desc';
+        } else {
+          // For other columns, use same direction as primary
+          secondaryDirection = sortDirection;
+        }
+        if (aSecondaryVal < bSecondaryVal) {
+          return secondaryDirection === 'asc' ? -1 : 1;
+        }
+        if (aSecondaryVal > bSecondaryVal) {
+          return secondaryDirection === 'asc' ? 1 : -1;
+        }
+      }
+
+      return 0;
+    });
 
     return filtered;
   }, [
@@ -294,11 +445,13 @@ const AllOrdersDataTab = ({
 
   // Handle sort
   const handleSort = (column) => {
+    if (!column) return; // Ignore clicks on non-sortable columns
     if (sortColumn === column) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortColumn(column);
-      setSortDirection('asc');
+      // Default to descending for orderId (newest to oldest), descending for date, ascending for others
+      setSortDirection(column === 'orderId' ? 'desc' : column === 'date' ? 'desc' : 'asc');
     }
   };
 
@@ -351,13 +504,15 @@ const AllOrdersDataTab = ({
       case 'mode':
         setFilterMode('');
         break;
-      case 'month':
+      case 'month': {
         setAllOrdersFilterMonth('');
         if (setAllOrdersFilterMonth) setAllOrdersFilterMonth('');
         break;
-      case 'year':
+      }
+      case 'year': {
         setFilterYear('');
         break;
+      }
       case 'daterange':
         setDateRangeFrom('');
         setDateRangeTo('');
@@ -436,7 +591,8 @@ const AllOrdersDataTab = ({
         'Date,Address,Quantity,Amount,Mode,Status\n' +
         selectedOrders
           .map((o) => {
-            const date = parseOrderDate(o.createdAt || o.date || o.order_date);
+            // Never use createdAt (today's date) as fallback - only use actual order date
+            const date = parseOrderDate(o.date || o.order_date || null);
             return `"${date ? formatDate(date) : ''}","${
               o.deliveryAddress || o.customerAddress || o.address || 'N/A'
             }","${o.quantity || 1}","${o.total || o.totalAmount || 0}","${o.mode || 'N/A'}","${
@@ -450,59 +606,6 @@ const AllOrdersDataTab = ({
       link.download = `selected_orders_export_${new Date().toISOString().split('T')[0]}.csv`;
       link.click();
       if (showNotification) showNotification('Selected orders exported successfully', 'success');
-    }
-  };
-
-  const confirmBulkAction = async () => {
-    const selectedOrderIds = Array.from(selectedRows).map(
-      (idx) => filteredOrders[idx]._id || filteredOrders[idx].orderId
-    );
-
-    try {
-      if (bulkAction === 'delete') {
-        // Handle bulk delete
-        for (const id of selectedOrderIds) {
-          if (onDeleteOrder) await onDeleteOrder(id);
-        }
-        if (showNotification) showNotification('Selected orders deleted successfully', 'success');
-      } else if (bulkAction === 'paid' || bulkAction === 'pending') {
-        // Handle bulk status update
-        for (const id of selectedOrderIds) {
-          if (onUpdateOrderStatus) {
-            await onUpdateOrderStatus(id, bulkAction === 'paid' ? 'paid' : 'pending');
-          }
-        }
-        if (showNotification)
-          showNotification(`Selected orders marked as ${bulkAction}`, 'success');
-      } else if (bulkAction === 'export') {
-        // Handle bulk export
-        const selectedOrders = Array.from(selectedRows).map((idx) => filteredOrders[idx]);
-        const csvContent =
-          'Date,Address,Quantity,Amount,Mode,Status\n' +
-          selectedOrders
-            .map((o) => {
-              const date = parseOrderDate(o.createdAt || o.date || o.order_date);
-              return `"${date ? formatDate(date) : ''}","${
-                o.deliveryAddress || o.customerAddress || o.address || 'N/A'
-              }","${o.quantity || 1}","${o.total || o.totalAmount || 0}","${o.mode || 'N/A'}","${
-                o.status || 'N/A'
-              }"`;
-            })
-            .join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `selected_orders_export_${new Date().toISOString().split('T')[0]}.csv`;
-        link.click();
-        if (showNotification) showNotification('Selected orders exported successfully', 'success');
-      }
-      setSelectedRows(new Set());
-      setSelectAll(false);
-      setShowBulkActionsModal(false);
-      if (loadOrders) loadOrders();
-    } catch (error) {
-      console.error('Bulk action error:', error);
-      if (showNotification) showNotification('Error performing bulk action', 'error');
     }
   };
 
@@ -562,8 +665,8 @@ const AllOrdersDataTab = ({
             month = parseInt(o.billingMonth);
             year = parseInt(o.billingYear);
           } else if (date) {
-            month = date.getMonth() + 1;
-            year = date.getFullYear();
+            month = date.getUTCMonth() + 1;
+            year = date.getUTCFullYear();
           } else {
             month = null;
             year = null;
@@ -598,14 +701,6 @@ const AllOrdersDataTab = ({
 
   return (
     <div className='admin-content'>
-      {/* HEADER */}
-      <div className='dashboard-header'>
-        <div>
-          <h2>All Orders Data</h2>
-          <p>View and manage all orders</p>
-        </div>
-      </div>
-
       {/* TOP ACTION BAR */}
       <div className='action-bar'>
         <div className='search-input-wrapper'>
@@ -634,7 +729,7 @@ const AllOrdersDataTab = ({
             <i className='fa-solid fa-plus'></i> Add Order
           </button>
           <button
-            className='btn btn-danger btn-small'
+            className='btn btn-special danger btn-small'
             onClick={async () => {
               if (showConfirmation && onClearAllData) {
                 showConfirmation({
@@ -663,137 +758,147 @@ const AllOrdersDataTab = ({
         </div>
       </div>
 
-      {/* FILTERS PANEL (Collapsible) */}
-      <div className='dashboard-card' style={{ marginBottom: '24px' }}>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '16px',
-          }}
-        >
-          <h3 className='dashboard-section-title' style={{ marginBottom: 0 }}>
-            <i className='fa-solid fa-filter' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
-            Filters
-          </h3>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <button className='btn btn-ghost btn-small' onClick={clearAllFilters}>
-              Clear All
-            </button>
-            <button
-              className='btn btn-ghost btn-small'
-              onClick={() => setFiltersExpanded(!filtersExpanded)}
+      {/* COMPACT FILTER BAR */}
+      <div className='dashboard-card filter-bar-card'>
+        <div className='filter-bar-container'>
+          {/* Quick Filters - Always Visible */}
+          <div className='filter-bar-quick-filters'>
+            <select
+              className='input-field filter-select'
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              title='Filter by Status'
             >
-              <i className={`fa-solid fa-chevron-${filtersExpanded ? 'up' : 'down'}`}></i>
+              <option value=''>All Status</option>
+              {uniqueStatuses.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className='input-field filter-select'
+              value={filterMode}
+              onChange={(e) => setFilterMode(e.target.value)}
+              title='Filter by Mode'
+            >
+              <option value=''>All Modes</option>
+              {uniqueModes.map((mode) => (
+                <option key={mode} value={mode}>
+                  {mode}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className='input-field filter-select'
+              value={filterPayment}
+              onChange={(e) => setFilterPayment(e.target.value)}
+              title='Filter by Payment'
+            >
+              <option value=''>All Payment</option>
+              {uniquePaymentModes.map((pm) => (
+                <option key={pm} value={pm}>
+                  {pm}
+                </option>
+              ))}
+            </select>
+
+            {/* Advanced Filters Toggle */}
+            <button
+              onClick={() => setFiltersExpanded(!filtersExpanded)}
+              className={`btn btn-ghost btn-small filter-toggle-btn ${filtersExpanded ? 'active' : ''}`}
+            >
+              <i className='fa-solid fa-filter filter-toggle-icon'></i>
+              More Filters
+              <i
+                className={`fa-solid fa-chevron-${filtersExpanded ? 'up' : 'down'} filter-toggle-chevron`}
+              ></i>
             </button>
           </div>
+
+          {/* Clear Filters - Outside quick filters for better layout */}
+          {(filterStatus ||
+            filterMode ||
+            filterPayment ||
+            filterAddress ||
+            dateRangeFrom ||
+            dateRangeTo ||
+            allOrdersFilterMonth ||
+            filterYear) && (
+            <button className='btn btn-ghost btn-small filter-clear-btn' onClick={clearAllFilters}>
+              <i className='fa-solid fa-xmark filter-clear-icon'></i>
+              Clear
+            </button>
+          )}
         </div>
 
+        {/* Advanced Filters - Collapsible */}
         {filtersExpanded && (
-          <div className='form-grid'>
-            <div className='form-group'>
-              <label>Date Range</label>
-              <div style={{ display: 'flex', gap: '12px' }}>
+          <div className='advanced-filters-container'>
+            <div className='filter-field-group date-range'>
+              <label className='filter-label'>Date Range</label>
+              <div className='filter-input-group'>
                 <input
                   type='date'
-                  className='input-field'
+                  className='input-field filter-input'
                   value={dateRangeFrom}
                   onChange={(e) => setDateRangeFrom(e.target.value)}
-                  placeholder='From'
                 />
                 <input
                   type='date'
-                  className='input-field'
+                  className='input-field filter-input'
                   value={dateRangeTo}
                   onChange={(e) => setDateRangeTo(e.target.value)}
-                  placeholder='To'
                 />
               </div>
             </div>
 
-            <div className='form-group'>
-              <label>Status</label>
+            <div className='filter-field-group month'>
+              <label className='filter-label'>Month</label>
               <select
-                className='input-field'
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-              >
-                <option value=''>All</option>
-                {uniqueStatuses.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className='form-group'>
-              <label>Mode</label>
-              <select
-                className='input-field'
-                value={filterMode}
-                onChange={(e) => setFilterMode(e.target.value)}
-              >
-                <option value=''>All</option>
-                {uniqueModes.map((mode) => (
-                  <option key={mode} value={mode}>
-                    {mode}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className='form-group'>
-              <label>Payment</label>
-              <select
-                className='input-field'
-                value={filterPayment}
-                onChange={(e) => setFilterPayment(e.target.value)}
-              >
-                <option value=''>All</option>
-                {uniquePaymentModes.map((pm) => (
-                  <option key={pm} value={pm}>
-                    {pm}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className='form-group'>
-              <label>Month</label>
-              <select
-                className='input-field'
+                className='input-field filter-input'
                 value={allOrdersFilterMonth || ''}
                 onChange={(e) => {
                   setAllOrdersFilterMonth(e.target.value);
                   if (setAllOrdersFilterMonth) setAllOrdersFilterMonth(e.target.value);
                 }}
               >
-                <option value=''>All</option>
-                <option value="Jan'25">Jan'25</option>
-                <option value="Feb'25">Feb'25</option>
-                <option value="Mar'25">Mar'25</option>
-                <option value="Apr'25">Apr'25</option>
-                <option value="May'25">May'25</option>
-                <option value="Jun'25">Jun'25</option>
-                <option value="Jul'25">Jul'25</option>
-                <option value="Aug'25">Aug'25</option>
-                <option value="Sep'25">Sep'25</option>
-                <option value="Oct'25">Oct'25</option>
-                <option value="Nov'25">Nov'25</option>
-                <option value="Dec'25">Dec'25</option>
+                <option value=''>All Months</option>
+                {uniqueYears.flatMap((year) => {
+                  const yearStr = String(year).slice(-2);
+                  const monthNames = [
+                    'Jan',
+                    'Feb',
+                    'Mar',
+                    'Apr',
+                    'May',
+                    'Jun',
+                    'Jul',
+                    'Aug',
+                    'Sep',
+                    'Oct',
+                    'Nov',
+                    'Dec',
+                  ];
+                  return monthNames.map((month) => (
+                    <option key={`${month}'${yearStr}`} value={`${month}'${yearStr}`}>
+                      {month}&apos;{yearStr}
+                    </option>
+                  ));
+                })}
               </select>
             </div>
 
-            <div className='form-group'>
-              <label>Year</label>
+            <div className='filter-field-group year'>
+              <label className='filter-label'>Year</label>
               <select
-                className='input-field'
+                className='input-field filter-input'
                 value={filterYear}
                 onChange={(e) => setFilterYear(e.target.value)}
               >
-                <option value=''>All</option>
+                <option value=''>All Years</option>
                 {uniqueYears.map((year) => (
                   <option key={year} value={year}>
                     {year}
@@ -802,14 +907,14 @@ const AllOrdersDataTab = ({
               </select>
             </div>
 
-            <div className='form-group'>
-              <label>Address</label>
+            <div className='filter-field-group address'>
+              <label className='filter-label'>Address Search</label>
               <input
                 type='text'
-                className='input-field'
+                className='input-field filter-input'
                 value={filterAddress}
                 onChange={(e) => setFilterAddress(e.target.value)}
-                placeholder='Search address...'
+                placeholder='Search by address...'
               />
             </div>
           </div>
@@ -818,31 +923,16 @@ const AllOrdersDataTab = ({
 
       {/* ACTIVE FILTERS DISPLAY */}
       {activeFilters.length > 0 && (
-        <div
-          style={{
-            marginBottom: '16px',
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '8px',
-            alignItems: 'center',
-          }}
-        >
-          <span style={{ fontWeight: '600', color: 'var(--admin-text-secondary)' }}>Applied:</span>
+        <div className='active-filters-container'>
+          <span className='active-filters-label'>Applied:</span>
           {activeFilters.map((filter, idx) => (
             <span
               key={idx}
-              className='badge badge-info'
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '4px 12px',
-                cursor: 'pointer',
-              }}
+              className='badge badge-info active-filter-badge'
               onClick={() => removeFilter(filter)}
             >
               {filter.label}
-              <i className='fa-solid fa-times' style={{ fontSize: '0.75rem' }}></i>
+              <i className='fa-solid fa-times'></i>
             </span>
           ))}
         </div>
@@ -850,29 +940,22 @@ const AllOrdersDataTab = ({
 
       {/* BULK ACTIONS BAR */}
       {selectedRows.size > 0 && (
-        <div
-          className='action-bar'
-          style={{
-            background: 'var(--admin-accent-light)',
-            padding: '12px 16px',
-            borderRadius: '8px',
-            marginBottom: '16px',
-          }}
-        >
-          <span style={{ fontWeight: '600', color: 'var(--admin-accent)' }}>
-            {selectedRows.size} selected
-          </span>
+        <div className='action-bar bulk-actions-bar'>
+          <span className='bulk-actions-label'>{selectedRows.size} selected</span>
           <div className='action-buttons-group'>
             <button className='btn btn-success btn-small' onClick={() => handleBulkAction('paid')}>
               Mark as Paid
             </button>
             <button
-              className='btn btn-warning btn-small'
+              className='btn btn-secondary btn-small'
               onClick={() => handleBulkAction('pending')}
             >
               Mark as Pending
             </button>
-            <button className='btn btn-danger btn-small' onClick={() => handleBulkAction('delete')}>
+            <button
+              className='btn btn-special danger btn-small'
+              onClick={() => handleBulkAction('delete')}
+            >
               Delete Selected
             </button>
             <button
@@ -886,77 +969,70 @@ const AllOrdersDataTab = ({
       )}
 
       {/* DATA TABLE */}
-      <div className='dashboard-card'>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '16px',
-          }}
-        >
+      <div className='dashboard-card table-container-card'>
+        <div className='table-header-container'>
           <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <label className='select-all-container'>
               <input
                 type='checkbox'
                 checked={selectAll}
                 onChange={(e) => handleSelectAll(e.target.checked)}
               />
-              <span style={{ fontWeight: '600' }}>Select All</span>
+              <span className='select-all-label'>Select All</span>
             </label>
           </div>
-          <div style={{ color: 'var(--admin-text-secondary)', fontSize: '0.9rem' }}>
+          <div className='table-info-text'>
             Showing {startIndex + 1}-{Math.min(startIndex + recordsPerPage, filteredOrders.length)}{' '}
             of {filteredOrders.length} orders
           </div>
         </div>
 
-        <div className='orders-table-container'>
-          <table className='orders-table'>
+        <div className='orders-table-container table-wrapper'>
+          <table className='orders-table table-full-width'>
             <thead>
               <tr>
-                <th style={{ width: '40px' }}>
+                <th className='table-checkbox-header'>
                   <input
                     type='checkbox'
                     checked={selectAll}
                     onChange={(e) => handleSelectAll(e.target.checked)}
                   />
                 </th>
-                <th onClick={() => handleSort(null)} style={{ cursor: 'pointer' }}>
+                <th className='sortable-header' onClick={() => handleSort(null)}>
                   S.No {sortColumn === null && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('date')} style={{ cursor: 'pointer' }}>
+                <th className='sortable-header' onClick={() => handleSort('date')}>
                   Date {sortColumn === 'date' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('address')} style={{ cursor: 'pointer' }}>
+                <th className='sortable-header' onClick={() => handleSort('address')}>
                   Address {sortColumn === 'address' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('quantity')} style={{ cursor: 'pointer' }}>
+                <th className='sortable-header' onClick={() => handleSort('quantity')}>
                   Qty {sortColumn === 'quantity' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort(null)} style={{ cursor: 'pointer' }}>
+                <th className='sortable-header' onClick={() => handleSort(null)}>
                   Price
                 </th>
-                <th onClick={() => handleSort('total')} style={{ cursor: 'pointer' }}>
+                <th className='sortable-header' onClick={() => handleSort('total')}>
                   Total {sortColumn === 'total' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('mode')} style={{ cursor: 'pointer' }}>
+                <th className='sortable-header' onClick={() => handleSort('mode')}>
                   Mode {sortColumn === 'mode' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('status')} style={{ cursor: 'pointer' }}>
+                <th className='sortable-header' onClick={() => handleSort('status')}>
                   Status {sortColumn === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('payment')} style={{ cursor: 'pointer' }}>
+                <th className='sortable-header' onClick={() => handleSort('payment')}>
                   Payment {sortColumn === 'payment' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort(null)} style={{ cursor: 'pointer' }}>
+                <th className='sortable-header' onClick={() => handleSort(null)}>
                   Month
                 </th>
-                <th onClick={() => handleSort(null)} style={{ cursor: 'pointer' }}>
+                <th className='sortable-header' onClick={() => handleSort(null)}>
                   Year
                 </th>
-                <th onClick={() => handleSort(null)} style={{ cursor: 'pointer' }}>
-                  OrderID
+                <th className='sortable-header' onClick={() => handleSort('orderId')}>
+                  OrderID {sortColumn === 'orderId' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
                 <th>Actions</th>
               </tr>
@@ -964,21 +1040,18 @@ const AllOrdersDataTab = ({
             <tbody>
               {paginatedOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={14} style={{ textAlign: 'center', padding: '48px' }}>
+                  <td colSpan={14} className='empty-state-cell'>
                     <div className='empty-state'>
                       <i className='fa-solid fa-inbox empty-state-icon'></i>
                       <p>No orders found</p>
-                      <p style={{ color: 'var(--admin-text-light)', fontSize: '0.9rem' }}>
-                        Try adjusting your filters
-                      </p>
+                      <p className='empty-state-text'>Try adjusting your filters</p>
                     </div>
                   </td>
                 </tr>
               ) : (
                 paginatedOrders.map((order, idx) => {
-                  const orderDate = parseOrderDate(
-                    order.createdAt || order.date || order.order_date
-                  );
+                  // Never use createdAt (today's date) as fallback - only use actual order date
+                  const orderDate = parseOrderDate(order.date || order.order_date || null);
                   const dateStr = formatDate(orderDate);
                   // Use billingMonth/billingYear from order if available, otherwise extract from date
                   let month, year;
@@ -986,8 +1059,9 @@ const AllOrdersDataTab = ({
                     month = parseInt(order.billingMonth);
                     year = parseInt(order.billingYear);
                   } else if (orderDate) {
-                    month = orderDate.getMonth() + 1;
-                    year = orderDate.getFullYear();
+                    // Use UTC methods to match how dates are stored in MongoDB
+                    month = orderDate.getUTCMonth() + 1;
+                    year = orderDate.getUTCFullYear();
                   } else {
                     month = null;
                     year = null;
@@ -998,9 +1072,8 @@ const AllOrdersDataTab = ({
                   return (
                     <tr
                       key={order._id || order.orderId || idx}
-                      className={isSelected ? 'table-row-selected' : ''}
+                      className={`table-row-clickable ${isSelected ? 'table-row-selected' : ''}`}
                       onDoubleClick={() => onEditOrder && onEditOrder(order)}
-                      style={{ cursor: 'pointer' }}
                     >
                       <td>
                         <input
@@ -1017,7 +1090,14 @@ const AllOrdersDataTab = ({
                       </td>
                       <td>{order.quantity || 1}</td>
                       <td>₹{formatCurrency(order.unitPrice || 0)}</td>
-                      <td>₹{formatCurrency(order.total || order.totalAmount || 0)}</td>
+                      <td>
+                        ₹
+                        {formatCurrency(
+                          order.total ||
+                            order.totalAmount ||
+                            (order.quantity || 1) * (order.unitPrice || 0)
+                        )}
+                      </td>
                       <td>{order.mode || 'N/A'}</td>
                       <td>
                         <select
@@ -1066,11 +1146,9 @@ const AllOrdersDataTab = ({
                       <td>{order.paymentMode || 'N/A'}</td>
                       <td>{month ? formatBillingMonth(month, year) : 'N/A'}</td>
                       <td>{year || 'N/A'}</td>
-                      <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                        {order.orderId || 'N/A'}
-                      </td>
+                      <td className='monospace-text'>{order.orderId || 'N/A'}</td>
                       <td>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div className='action-buttons-cell'>
                           <button
                             className='action-icon-btn action-icon-edit'
                             onClick={(e) => {
@@ -1111,7 +1189,7 @@ const AllOrdersDataTab = ({
             >
               <i className='fa-solid fa-chevron-left'></i> Previous
             </button>
-            <span style={{ margin: '0 16px', fontWeight: '600' }}>
+            <span className='pagination-info'>
               Page {currentPage} of {totalPages || 1}
             </span>
             <button
@@ -1122,11 +1200,10 @@ const AllOrdersDataTab = ({
               Next <i className='fa-solid fa-chevron-right'></i>
             </button>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className='pagination-container'>
             <span>Show:</span>
             <select
-              className='input-field'
-              style={{ width: '80px', padding: '6px 8px' }}
+              className='input-field pagination-select'
               value={recordsPerPage}
               onChange={(e) => {
                 const value = parseInt(e.target.value);
@@ -1143,8 +1220,6 @@ const AllOrdersDataTab = ({
           </div>
         </div>
       </div>
-
-      {/* MODALS */}
     </div>
   );
 };

@@ -21,6 +21,8 @@ import menuRoutes from './routes/menu.js';
 import offersRoutes from './routes/offers.js';
 import orderRoutes from './routes/orders.js';
 import reviewRoutes from './routes/reviews.js';
+import galleryRoutes from './routes/gallery.js';
+import settingsRoutes from './routes/settings.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -73,6 +75,8 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/offers', offersRoutes);
+app.use('/api/gallery', galleryRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Global error handler - must come before static file serving
 app.use((err, req, res, next) => {

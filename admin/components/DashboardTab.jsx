@@ -1,7 +1,7 @@
-import PremiumLoader from './PremiumLoader.jsx';
 import { getFilteredOrdersByDate } from '../utils/calculations.js';
 import { formatDate, formatDateShort, parseOrderDate } from '../utils/dateUtils.js';
-import { formatCurrency, getTotalRevenue, isPendingStatus } from '../utils/orderUtils.js';
+import { formatCurrency, formatNumberIndian, getTotalRevenue, isPendingStatus } from '../utils/orderUtils.js';
+import PremiumLoader from './PremiumLoader.jsx';
 
 const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   const now = new Date();
@@ -14,11 +14,20 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   const currentMonthOrders = getFilteredOrdersByDate(orders, 'month', '', '');
   const currentMonthTotal = currentMonthOrders.length;
   const currentMonthRevenue = getTotalRevenue(currentMonthOrders);
+
+  // Calculate unpaid amount - ensure we handle both total and totalAmount fields correctly
   const currentMonthUnpaidAmount = currentMonthOrders
     .filter((o) => isPendingStatus(o.status))
     .reduce((sum, o) => {
-      const total = parseFloat(o.total || o.totalAmount || 0);
-      return sum + (isNaN(total) ? 0 : total);
+      // Try total first, then totalAmount, then calculate from quantity * unitPrice
+      let amount = parseFloat(o.total || o.totalAmount || 0);
+      if (isNaN(amount) || amount === 0) {
+        // Fallback: calculate from quantity * unitPrice if total is missing
+        const qty = parseFloat(o.quantity || 1);
+        const price = parseFloat(o.unitPrice || 0);
+        amount = qty * price;
+      }
+      return sum + (isNaN(amount) ? 0 : amount);
     }, 0);
   const unpaidOrdersCount = currentMonthOrders.filter((o) => isPendingStatus(o.status)).length;
 
@@ -34,7 +43,8 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
   const lastMonthOrders = orders.filter((o) => {
     try {
-      const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+      // Never use createdAt (today's date) as fallback - only use actual order date
+      const orderDate = parseOrderDate(o.date || o.order_date || null);
       return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === lastMonthYear;
     } catch (e) {
       return false;
@@ -45,15 +55,16 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     lastMonthRevenue > 0
       ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
       : currentMonthRevenue > 0
-      ? Infinity
-      : 0;
+        ? Infinity
+        : 0;
   const isNewGrowth = lastMonthRevenue === 0 && currentMonthRevenue > 0;
 
   // SECONDARY STATS
   // Today's Revenue
   const todayOrders = orders.filter((o) => {
     try {
-      const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+      // Never use createdAt (today's date) as fallback - only use actual order date
+      const orderDate = parseOrderDate(o.date || o.order_date || null);
       return orderDate >= today && orderDate < tomorrow;
     } catch (e) {
       return false;
@@ -68,7 +79,8 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   thisWeekStart.setHours(0, 0, 0, 0);
   const thisWeekOrders = orders.filter((o) => {
     try {
-      const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+      // Never use createdAt (today's date) as fallback - only use actual order date
+      const orderDate = parseOrderDate(o.date || o.order_date || null);
       return orderDate >= thisWeekStart;
     } catch (e) {
       return false;
@@ -101,20 +113,27 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
 
     const monthOrders = orders.filter((o) => {
       try {
-        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+        // Never use createdAt (today's date) as fallback - only use actual order date
+        const orderDate = parseOrderDate(o.date || o.order_date || null);
+        if (!orderDate) return false;
         return orderDate >= date && orderDate < nextMonth;
       } catch (e) {
         return false;
       }
     });
 
-    const monthName = formatDateShort(date);
+    // Format as "Feb 2025" (month abbreviation + year)
+    const monthName = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    const revenue = getTotalRevenue(monthOrders);
     last6MonthsRevenue.push({
       month: monthName,
-      revenue: getTotalRevenue(monthOrders),
+      revenue: revenue,
       orders: monthOrders.length,
     });
   }
+  
+  // Debug: Log revenue data
+  console.log('[DashboardTab] Last 6 Months Revenue:', last6MonthsRevenue);
 
   // Orders by Mode (Lunch vs Dinner)
   const ordersByMode = {
@@ -139,7 +158,9 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
 
     const dayOrders = currentMonthOrders.filter((o) => {
       try {
-        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+        // Never use createdAt (today's date) as fallback - only use actual order date
+        const orderDate = parseOrderDate(o.date || o.order_date || null);
+        if (!orderDate) return false;
         return orderDate >= date && orderDate < nextDay;
       } catch (e) {
         return false;
@@ -153,6 +174,10 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     });
   }
   const maxDailyOrders = Math.max(...dailyOrdersData.map((d) => d.orders), 1);
+  
+  // Debug: Log daily orders data
+  console.log('[DashboardTab] Daily Orders Data:', dailyOrdersData.slice(0, 5), '...', dailyOrdersData.slice(-5));
+  console.log('[DashboardTab] Max Daily Orders:', maxDailyOrders);
 
   // Payment Mode Split
   const paymentModeStats = {};
@@ -162,14 +187,22 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
       paymentModeStats[mode] = { count: 0, amount: 0 };
     }
     paymentModeStats[mode].count++;
-    paymentModeStats[mode].amount += parseFloat(o.total || o.totalAmount || 0);
+    // Try total first, then totalAmount, then calculate from quantity * unitPrice
+    let amount = parseFloat(o.total || o.totalAmount || 0);
+    if (isNaN(amount) || amount === 0) {
+      const qty = parseFloat(o.quantity || 1);
+      const price = parseFloat(o.unitPrice || 0);
+      amount = qty * price;
+    }
+    paymentModeStats[mode].amount += isNaN(amount) ? 0 : amount;
   });
 
   // RECENT ORDERS (Last 10)
   const recentOrders = [...orders]
     .sort((a, b) => {
-      const dateA = new Date(a.createdAt || a.date || a.order_date);
-      const dateB = new Date(b.createdAt || b.date || b.order_date);
+      // Never use createdAt (today's date) as fallback - only use actual order date
+      const dateA = new Date(a.date || a.order_date || 0);
+      const dateB = new Date(b.date || b.order_date || 0);
       return dateB - dateA;
     })
     .slice(0, 10);
@@ -213,42 +246,13 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
         <div className='dashboard-header'>
           <h2>Dashboard</h2>
         </div>
-        <PremiumLoader message="Loading dashboard data..." size="large" />
+        <PremiumLoader message='Loading dashboard data...' size='large' />
       </div>
     );
   }
 
   return (
     <div className='admin-content'>
-      {/* DASHBOARD HEADER */}
-      <div className='dashboard-header'>
-        <div>
-          <h2>Dashboard</h2>
-          <p>Overview of your business metrics</p>
-        </div>
-        <div
-          style={{
-            padding: '0.5rem 1rem',
-            borderRadius: '8px',
-            background:
-              monthLockStatus.status === 'LOCKED'
-                ? 'var(--admin-warning-light)'
-                : 'var(--admin-success-light)',
-            border: `2px solid ${
-              monthLockStatus.status === 'LOCKED' ? 'var(--admin-warning)' : 'var(--admin-success)'
-            }`,
-            fontSize: '0.875rem',
-            fontWeight: '600',
-            color:
-              monthLockStatus.status === 'LOCKED' ? 'var(--admin-warning)' : 'var(--admin-success)',
-          }}
-        >
-          {monthLockStatus.status === 'LOCKED' ? '🔒' : '🟢'} Current Month:{' '}
-          {monthLockStatus.status}
-          {monthLockStatus.lockedTill && ` (till ${monthLockStatus.lockedTill})`}
-        </div>
-      </div>
-
       {/* TOP STATS CARDS (4 columns) - Total Revenue, Total Orders, Pending Payments, Total Customers */}
       <div className='admin-stats'>
         <div className='stat-card'>
@@ -402,65 +406,85 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 marginTop: '0.5rem',
               }}
             >
-              {last6MonthsRevenue.map((month, idx) => {
-                const maxRevenue = Math.max(...last6MonthsRevenue.map((m) => m.revenue), 1);
-                return (
-                  <div
-                    key={idx}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: '100%',
-                        maxWidth: '80px',
-                        height: `${(month.revenue / maxRevenue) * 180}px`,
-                        minHeight: '10px',
-                        background: 'var(--admin-accent, #449031)',
-                        borderRadius: '8px 8px 0 0',
-                        display: 'flex',
-                        alignItems: 'flex-end',
-                        justifyContent: 'center',
-                        paddingBottom: '0.5rem',
-                        cursor: 'pointer',
-                        position: 'relative',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                      }}
-                      title={`${month.month}: ₹${formatCurrency(month.revenue)} (${
-                        month.orders
-                      } orders)`}
-                    >
-                      <span
+              {last6MonthsRevenue.length > 0 ? (
+                (() => {
+                  const maxRevenue = Math.max(...last6MonthsRevenue.map((m) => m.revenue), 1);
+                  return last6MonthsRevenue.map((month, idx) => {
+                    const barHeight = maxRevenue > 0 ? (month.revenue / maxRevenue) * 180 : 0;
+                    return (
+                      <div
+                        key={idx}
                         style={{
-                          color: 'white',
-                          fontSize: '0.75rem',
-                          fontWeight: '600',
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '0.5rem',
                         }}
                       >
-                        ₹{Math.round(month.revenue / 1000)}k
-                      </span>
-                    </div>
-                    <span
-                      style={{
-                        fontSize: '0.75rem',
-                        color: 'var(--admin-text-light)',
-                        textAlign: 'center',
-                        lineHeight: '1.2',
-                        fontWeight: '500',
-                      }}
-                    >
-                      {month.month.split(' ')[0]}
-                      <br />
-                      {month.month.split(' ')[1]}
-                    </span>
-                  </div>
-                );
-              })}
+                        <div
+                          style={{
+                            width: '100%',
+                            maxWidth: '80px',
+                            height: `${Math.max(barHeight, 10)}px`,
+                            minHeight: '10px',
+                            background: month.revenue > 0 ? 'var(--admin-accent, #449031)' : 'var(--admin-border, #e2e8f0)',
+                            borderRadius: '8px 8px 0 0',
+                            display: 'flex',
+                            alignItems: 'flex-end',
+                            justifyContent: 'center',
+                            paddingBottom: month.revenue > 0 ? '0.5rem' : '0',
+                            cursor: 'pointer',
+                            position: 'relative',
+                            boxShadow: month.revenue > 0 ? '0 2px 8px rgba(0, 0, 0, 0.1)' : 'none',
+                            transition: 'all 0.2s ease',
+                          }}
+                          title={`${month.month}: ₹${formatCurrency(month.revenue)} (${
+                            month.orders
+                          } orders)`}
+                          onMouseEnter={(e) => {
+                            if (month.revenue > 0) {
+                              e.currentTarget.style.transform = 'scaleY(1.05)';
+                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'scaleY(1)';
+                            e.currentTarget.style.boxShadow = month.revenue > 0 ? '0 2px 8px rgba(0, 0, 0, 0.1)' : 'none';
+                          }}
+                        >
+                          {month.revenue > 0 && (
+                            <span
+                              style={{
+                                color: 'white',
+                                fontSize: '0.75rem',
+                                fontWeight: '600',
+                              }}
+                            >
+                              ₹{formatNumberIndian(month.revenue)}
+                            </span>
+                          )}
+                        </div>
+                        <span
+                          style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--admin-text-light)',
+                            textAlign: 'center',
+                            lineHeight: '1.2',
+                            fontWeight: '500',
+                          }}
+                        >
+                          {month.month}
+                        </span>
+                      </div>
+                    );
+                  });
+                })()
+              ) : (
+                <div style={{ width: '100%', textAlign: 'center', padding: '2rem', color: 'var(--admin-text-light)' }}>
+                  No revenue data available
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -542,8 +566,8 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                             background: isLunch
                               ? 'var(--admin-success, #449031)'
                               : isDinner
-                              ? 'var(--admin-accent, #449031)'
-                              : 'var(--admin-border, #e2e8f0)',
+                                ? 'var(--admin-accent, #449031)'
+                                : 'var(--admin-border, #e2e8f0)',
                             borderRadius: '12px',
                             transition: 'width 0.5s ease',
                             boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.1)',
@@ -578,47 +602,64 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 marginTop: '0.5rem',
               }}
             >
-              {dailyOrdersData.map((dayData, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '0.25rem',
-                  }}
-                  title={`Day ${dayData.day}: ${dayData.orders} orders, ₹${formatCurrency(
-                    dayData.revenue
-                  )}`}
-                >
-                  <div
-                    style={{
-                      width: '100%',
-                      height: `${(dayData.orders / maxDailyOrders) * 180}px`,
-                      minHeight: '4px',
-                      background: 'var(--admin-accent, #449031)',
-                      borderRadius: '4px 4px 0 0',
-                      opacity: dayData.orders > 0 ? 1 : 0.3,
-                      cursor: 'pointer',
-                      transition: 'opacity 0.2s ease',
-                    }}
-                    onMouseEnter={(e) => (e.target.style.opacity = '0.8')}
-                    onMouseLeave={(e) => (e.target.style.opacity = dayData.orders > 0 ? 1 : 0.3)}
-                  />
-                  {dayData.day % 5 === 0 || dayData.day === 1 || dayData.day === daysInMonth ? (
-                    <span
+              {dailyOrdersData.length > 0 ? (
+                dailyOrdersData.map((dayData, idx) => {
+                  const barHeight = maxDailyOrders > 0 ? (dayData.orders / maxDailyOrders) * 180 : 0;
+                  return (
+                    <div
+                      key={idx}
                       style={{
-                        fontSize: '0.7rem',
-                        color: 'var(--admin-text-light)',
-                        fontWeight: '500',
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.25rem',
                       }}
+                      title={`Day ${dayData.day}: ${dayData.orders} orders, ₹${formatCurrency(
+                        dayData.revenue
+                      )}`}
                     >
-                      {dayData.day}
-                    </span>
-                  ) : null}
+                      <div
+                        style={{
+                          width: '100%',
+                          height: `${Math.max(barHeight, 4)}px`,
+                          minHeight: '4px',
+                          background: dayData.orders > 0 ? 'var(--admin-accent, #449031)' : 'var(--admin-border, #e2e8f0)',
+                          borderRadius: '4px 4px 0 0',
+                          opacity: dayData.orders > 0 ? 1 : 0.3,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (dayData.orders > 0) {
+                            e.currentTarget.style.opacity = '0.8';
+                            e.currentTarget.style.transform = 'scaleY(1.1)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.opacity = dayData.orders > 0 ? 1 : 0.3;
+                          e.currentTarget.style.transform = 'scaleY(1)';
+                        }}
+                      />
+                      {dayData.day % 5 === 0 || dayData.day === 1 || dayData.day === daysInMonth ? (
+                        <span
+                          style={{
+                            fontSize: '0.7rem',
+                            color: 'var(--admin-text-light)',
+                            fontWeight: '500',
+                          }}
+                        >
+                          {dayData.day}
+                        </span>
+                      ) : null}
+                    </div>
+                  );
+                })
+              ) : (
+                <div style={{ width: '100%', textAlign: 'center', padding: '2rem', color: 'var(--admin-text-light)' }}>
+                  No orders data available for this month
                 </div>
-              ))}
+              )}
             </div>
             <div
               style={{
@@ -787,7 +828,8 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                     <tbody>
                       {recentOrders.map((order, idx) => {
                         const orderDate = parseOrderDate(
-                          order.createdAt || order.date || order.order_date
+                          // Never use createdAt (today's date) as fallback - only use actual order date
+                          order.date || order.order_date || null
                         );
                         const dateStr = formatDate(orderDate);
                         const status = (order.status || '').toLowerCase();
@@ -802,7 +844,14 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                 'N/A'}
                             </td>
                             <td>{order.quantity || 1}</td>
-                            <td>₹{formatCurrency(order.total || order.totalAmount || 0)}</td>
+                            <td>
+                              ₹
+                              {formatCurrency(
+                                order.total ||
+                                  order.totalAmount ||
+                                  (order.quantity || 1) * (order.unitPrice || 0)
+                              )}
+                            </td>
                             <td>{order.mode || 'N/A'}</td>
                             <td>
                               <span
@@ -836,9 +885,12 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
               <button
                 className='btn btn-primary btn-small btn-full'
                 onClick={() => setActiveTab('currentMonthOrders')}
-                title='Add New Order'
+                title='Add New Order (Ctrl+N)'
               >
                 <i className='fa-solid fa-plus'></i> Add New Order
+                <span style={{ marginLeft: '8px', opacity: 0.7, fontSize: '0.75rem' }}>
+                  Ctrl+N
+                </span>
               </button>
               <button
                 className='btn btn-secondary btn-small btn-full'
@@ -848,7 +900,8 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                     orders
                       .slice(0, 100)
                       .map((o) => {
-                        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+                        // Never use createdAt (today's date) as fallback - only use actual order date
+      const orderDate = parseOrderDate(o.date || o.order_date || null);
                         return `"${formatDate(orderDate)}","${
                           o.deliveryAddress || o.customerAddress || o.address || 'N/A'
                         }","${o.quantity || 1}","${o.total || o.totalAmount || 0}","${

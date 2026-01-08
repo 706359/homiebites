@@ -1,13 +1,13 @@
 {
   "name": "HomieBites Admin Dashboard",
-  "short_name": "HB Admin",
+  "short_name": "HomieBites",
   "description": "Admin dashboard for managing HomieBites orders and business operations",
   "start_url": "/admin/dashboard",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#449031",
   "orientation": "portrait-primary",
-  "scope": "/",
+  "scope": "/admin/",
   "id": "/admin/dashboard",
   "icons": [
     {
@@ -42,4 +42,3 @@
     }
   ]
 }
-

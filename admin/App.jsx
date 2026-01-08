@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
 import AdminDashboard from "./AdminDashboard";
 import AdminForgotPassword from "./AdminForgotPassword";
@@ -13,18 +13,24 @@ function AdminRoutes() {
   useEffect(() => {
     // Check authentication status
     const checkAuth = () => {
-      const token = localStorage.getItem("homiebites_token");
-      const admin = localStorage.getItem("homiebites_admin");
-      const isAuth = token && admin === "true";
-      setIsAuthenticated(isAuth);
-      setLoading(false);
-
-      // Redirect based on auth status
-      const path = window.location.pathname;
-      if (isAuth && (path === "/" || path === "/admin" || path === "/admin/login")) {
-        navigate("/admin/dashboard", { replace: true });
-      } else if (!isAuth && path.startsWith("/admin/dashboard")) {
-        navigate("/admin/login", { replace: true });
+      try {
+        const token = localStorage.getItem("homiebites_token");
+        const admin = localStorage.getItem("homiebites_admin");
+        const isAuth = !!(token && admin === "true");
+        setIsAuthenticated(isAuth);
+        
+        // Redirect based on auth status
+        const path = window.location.pathname;
+        if (isAuth && (path === "/" || path === "/admin" || path === "/admin/login")) {
+          navigate("/admin/dashboard", { replace: true });
+        } else if (!isAuth && path.startsWith("/admin/dashboard")) {
+          navigate("/admin/login", { replace: true });
+        }
+        // If not authenticated and on login/forgot-password routes, allow them to stay
+      } catch (error) {
+        console.error("Error checking authentication:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -42,7 +48,8 @@ function AdminRoutes() {
         display: "flex", 
         justifyContent: "center", 
         alignItems: "center", 
-        height: "100vh" 
+        height: "100vh",
+        fontSize: "16px"
       }}>
         <div>Loading...</div>
       </div>
@@ -56,6 +63,7 @@ function AdminRoutes() {
       <Route path="/admin/dashboard" element={<AdminDashboard />} />
       <Route path="/" element={<AdminLogin onLoginSuccess={handleLoginSuccess} />} />
       <Route path="/admin" element={<AdminLogin onLoginSuccess={handleLoginSuccess} />} />
+      <Route path="*" element={<AdminLogin onLoginSuccess={handleLoginSuccess} />} />
     </Routes>
   );
 }

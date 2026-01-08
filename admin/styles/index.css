@@ -5,6 +5,7 @@
 @import './custom-overrides.css';
 @import './theme.css';
 @import './dashboard-enhancements.css';
+@import './settings-theme.css';
 
 /* Only Color Variables - No other design tokens */
 :root {
@@ -14,20 +15,20 @@
   --admin-success: #449031;
   --admin-warning: #f59e0b;
   --admin-danger: #dc2626;
-  
+
   /* Extended color palette - Default (overridden by theme) */
   --admin-accent-light: rgba(68, 144, 49, 0.12);
   --admin-secondary-light: rgba(196, 92, 45, 0.12);
   --admin-success-light: rgba(68, 144, 49, 0.12);
   --admin-warning-light: rgba(245, 158, 11, 0.15);
   --admin-danger-light: rgba(220, 38, 38, 0.12);
-  
+
   /* Text colors */
   --admin-text: #1a202c;
   --admin-text-primary: #1e293b;
   --admin-text-secondary: #64748b;
   --admin-text-light: #94a3b8;
-  
+
   /* Border and background */
   --admin-border: #e2e8f0;
   --admin-glass-bg: rgba(255, 255, 255, 0.9);
@@ -51,7 +52,7 @@
   --error-red-hover: #dc2626;
   --whatsapp-green: #25d366;
   --whatsapp-green-hover: #20ba5a;
-  
+
   /* Shadow variables */
   --shadow-green-light: rgba(68, 144, 49, 0.15);
   --shadow-green-medium: rgba(68, 144, 49, 0.3);

@@ -5,12 +5,6 @@ const Chatbot = () => {
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
-  const [userInfo, setUserInfo] = useState({
-    name: "",
-    phone: "",
-    address: "",
-    orderDetails: "",
-  });
   const [currentStep, setCurrentStep] = useState("greeting");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
@@ -73,65 +67,7 @@ const Chatbot = () => {
   };
 
   const processUserInput = (input) => {
-    // Handle order flow steps first (these take priority)
-    if (currentStep === "order_name") {
-      setUserInfo((prev) => ({ ...prev, name: input }));
-      setCurrentStep("order_phone");
-      addBotMessage(t("chatbot.orderPhone").replace("{name}", input));
-      return;
-    }
-
-    if (currentStep === "order_phone") {
-      const phone = input.replace(/\D/g, "");
-      if (phone.length < 10) {
-        addBotMessage(t("chatbot.invalidPhone"));
-        return;
-      }
-      setUserInfo((prev) => ({ ...prev, phone }));
-      setCurrentStep("order_address");
-      addBotMessage(t("chatbot.orderAddress") + " your delivery address?");
-      return;
-    }
-
-    if (currentStep === "order_address") {
-      setUserInfo((prev) => ({ ...prev, address: input }));
-      setCurrentStep("order_details");
-      addBotMessage(t("chatbot.orderDetails"));
-      return;
-    }
-
-    if (currentStep === "order_details") {
-      setUserInfo((prev) => ({ ...prev, orderDetails: input }));
-      setCurrentStep("order_confirm");
-      const orderSummary = `${t("chatbot.orderSummary")}:\n\n${t("common.name")}: ${userInfo.name}\n${t("common.phone")}: ${userInfo.phone}\n${t("common.address")}: ${userInfo.address}\n${t("order.orderItems")}: ${input}\n\n${t("chatbot.confirmOrder")}`;
-      addBotMessage(orderSummary);
-      return;
-    }
-
-    if (
-      currentStep === "order_confirm" &&
-      (input.includes("yes") ||
-        input.includes("confirm") ||
-        input.includes("send"))
-    ) {
-      sendOrderToWhatsApp();
-      return;
-    }
-
-    // Reset order flow if user says cancel/no
-    if (
-      (input.includes("cancel") ||
-        input.includes("no") ||
-        input.includes("stop")) &&
-      currentStep.startsWith("order_")
-    ) {
-      setCurrentStep("idle");
-      setUserInfo({ name: "", phone: "", address: "", orderDetails: "" });
-      addBotMessage(t("chatbot.orderCancelled"));
-      return;
-    }
-
-    // Comprehensive knowledge base - Order related
+    // Order related - redirect to WhatsApp (marketing site only)
     if (
       input.includes("order") ||
       input.includes("place order") ||
@@ -139,10 +75,10 @@ const Chatbot = () => {
       input.includes("purchase") ||
       input === "1"
     ) {
-      if (!currentStep.startsWith("order_")) {
-        setCurrentStep("order_name");
-        addBotMessage(t("chatbot.orderName"));
-      }
+      addBotMessage(t("chatbot.howToOrder") || "To place an order, please contact us directly on WhatsApp at +91-9958983578. We'll be happy to help you!");
+      setTimeout(() => {
+        window.open("https://wa.me/919958983578", "_blank", "noopener");
+      }, 1000);
       return;
     }
 
@@ -428,50 +364,7 @@ const Chatbot = () => {
       return;
     }
 
-    // Order flow steps
-    if (currentStep === "order_name") {
-      setUserInfo((prev) => ({ ...prev, name: input }));
-      setCurrentStep("order_phone");
-      addBotMessage(t("chatbot.orderPhone").replace("{name}", input));
-      return;
-    }
-
-    if (currentStep === "order_phone") {
-      const phone = input.replace(/\D/g, "");
-      if (phone.length < 10) {
-        addBotMessage(t("chatbot.invalidPhone"));
-        return;
-      }
-      setUserInfo((prev) => ({ ...prev, phone }));
-      setCurrentStep("order_address");
-      addBotMessage(t("chatbot.orderAddress") + " your delivery address?");
-      return;
-    }
-
-    if (currentStep === "order_address") {
-      setUserInfo((prev) => ({ ...prev, address: input }));
-      setCurrentStep("order_details");
-      addBotMessage(t("chatbot.orderDetails"));
-      return;
-    }
-
-    if (currentStep === "order_details") {
-      setUserInfo((prev) => ({ ...prev, orderDetails: input }));
-      setCurrentStep("order_confirm");
-      const orderSummary = `${t("chatbot.orderSummary")}:\n\n${t("common.name")}: ${userInfo.name}\n${t("common.phone")}: ${userInfo.phone}\n${t("common.address")}: ${userInfo.address}\n${t("order.orderItems")}: ${input}\n\n${t("chatbot.confirmOrder")}`;
-      addBotMessage(orderSummary);
-      return;
-    }
-
-    if (
-      currentStep === "order_confirm" &&
-      (input.includes("yes") ||
-        input.includes("confirm") ||
-        input.includes("send"))
-    ) {
-      sendOrderToWhatsApp();
-      return;
-    }
+    // Order flow removed - marketing site only, redirects to WhatsApp
 
     // Helper function to navigate to links
     const navigateToLink = (url, message) => {
@@ -491,7 +384,7 @@ const Chatbot = () => {
       input.includes("view menu") ||
       input.includes("go to menu")
     ) {
-      navigateToLink("/menu", t("chatbot.openingMenu"));
+      navigateToLink("/#gallery", t("chatbot.openingMenu"));
       return;
     }
 
@@ -543,30 +436,8 @@ const Chatbot = () => {
     addBotMessage(t("chatbot.defaultResponse"));
   };
 
-  const sendOrderToWhatsApp = () => {
-    const message = `🍽️ *${t("chatbot.orderFromChatbot")}*
-
-👤 *${t("chatbot.customerDetails")}:*
-${t("common.name")}: ${userInfo.name}
-${t("common.phone")}: ${userInfo.phone}
-${t("common.address")}: ${userInfo.address}
-
-📋 *${t("order.orderItems")}:*
-${userInfo.orderDetails}
-
-${t("chatbot.pleaseConfirm")}`;
-
-    const encodedMessage = encodeURIComponent(message);
-    window.open(
-      `https://wa.me/919958983578?text=${encodedMessage}`,
-      "_blank",
-      "noopener",
-    );
-
-    addBotMessage(t("chatbot.orderSent"));
-    setCurrentStep("idle");
-    setUserInfo({ name: "", phone: "", address: "", orderDetails: "" });
-  };
+  // Removed sendOrderToWhatsApp - website is marketing only
+  // Users should contact directly via WhatsApp
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -583,7 +454,7 @@ ${t("chatbot.pleaseConfirm")}`;
     { text: t("chatbot.quickOrder"), action: () => handleSendMessage("order") },
     {
       text: t("chatbot.quickMenu"),
-      action: () => (window.location.href = "/menu"),
+      action: () => (window.location.href = "/#gallery"),
     },
     {
       text: t("chatbot.quickDelivery"),

@@ -1,8 +1,7 @@
 // Tab 3: Current Month Data - Following FULL_DASHBOARD_PLAN.md structure
 // This file has been recreated from scratch to match the plan exactly
 
-import { useMemo, useState } from 'react';
-import PremiumLoader from './PremiumLoader.jsx';
+import { useEffect, useMemo, useState } from 'react';
 import { getFilteredOrdersByDate } from '../utils/calculations.js';
 import { formatDate, parseOrderDate } from '../utils/dateUtils.js';
 import {
@@ -13,6 +12,7 @@ import {
 } from '../utils/orderUtils.js';
 import EmptyState from './EmptyState.jsx';
 import OrderModal from './OrderModal.jsx';
+import PremiumLoader from './PremiumLoader.jsx';
 
 const CurrentMonthOrdersTab = ({
   orders = [],
@@ -50,6 +50,33 @@ const CurrentMonthOrdersTab = ({
     paymentMode: 'Online',
   });
 
+  // Keyboard shortcut for new order (Ctrl+N / Cmd+N) and custom event listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Only handle if not typing in an input/textarea/select
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        e.key === 'n' &&
+        !['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)
+      ) {
+        e.preventDefault();
+        setShowAddOrderModal(true);
+      }
+    };
+
+    const handleOpenModalEvent = () => {
+      setShowAddOrderModal(true);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('openNewOrderModal', handleOpenModalEvent);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('openNewOrderModal', handleOpenModalEvent);
+    };
+  }, []);
+
   // Get current month orders
   const currentMonthOrders = useMemo(() => {
     return getFilteredOrdersByDate(orders, 'month', '', '');
@@ -61,7 +88,15 @@ const CurrentMonthOrdersTab = ({
     const total = currentMonthOrders.length;
     const pending = currentMonthOrders.filter((o) => isPendingStatus(o.status));
     const pendingAmount = pending.reduce((sum, o) => {
-      return sum + parseFloat(o.total || o.totalAmount || 0);
+      // Try total first, then totalAmount, then calculate from quantity * unitPrice
+      let amount = parseFloat(o.total || o.totalAmount || 0);
+      if (isNaN(amount) || amount === 0) {
+        // Fallback: calculate from quantity * unitPrice if total is missing
+        const qty = parseFloat(o.quantity || 1);
+        const price = parseFloat(o.unitPrice || 0);
+        amount = qty * price;
+      }
+      return sum + (isNaN(amount) ? 0 : amount);
     }, 0);
 
     // Calculate month-over-month growth
@@ -71,7 +106,8 @@ const CurrentMonthOrdersTab = ({
     const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
     const lastMonthOrders = orders.filter((o) => {
       try {
-        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+        // Never use createdAt (today's date) as fallback - only use actual order date
+        const orderDate = parseOrderDate(o.date || o.order_date || null);
         return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === lastMonthYear;
       } catch (e) {
         return false;
@@ -82,8 +118,8 @@ const CurrentMonthOrdersTab = ({
       lastMonthRevenue > 0
         ? ((revenue - lastMonthRevenue) / lastMonthRevenue) * 100
         : revenue > 0
-        ? Infinity
-        : 0;
+          ? Infinity
+          : 0;
 
     return {
       revenue,
@@ -115,7 +151,8 @@ const CurrentMonthOrdersTab = ({
       case 'today':
         filtered = filtered.filter((o) => {
           try {
-            const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+            // Never use createdAt (today's date) as fallback - only use actual order date
+            const orderDate = parseOrderDate(o.date || o.order_date || null);
             return orderDate >= today && orderDate < tomorrow;
           } catch (e) {
             return false;
@@ -125,7 +162,8 @@ const CurrentMonthOrdersTab = ({
       case 'yesterday':
         filtered = filtered.filter((o) => {
           try {
-            const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+            // Never use createdAt (today's date) as fallback - only use actual order date
+            const orderDate = parseOrderDate(o.date || o.order_date || null);
             return orderDate >= yesterday && orderDate < today;
           } catch (e) {
             return false;
@@ -135,7 +173,8 @@ const CurrentMonthOrdersTab = ({
       case 'thisWeek':
         filtered = filtered.filter((o) => {
           try {
-            const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+            // Never use createdAt (today's date) as fallback - only use actual order date
+            const orderDate = parseOrderDate(o.date || o.order_date || null);
             return orderDate >= thisWeekStart;
           } catch (e) {
             return false;
@@ -160,7 +199,8 @@ const CurrentMonthOrdersTab = ({
   const quickFilterCounts = useMemo(() => {
     const todayOrders = currentMonthOrders.filter((o) => {
       try {
-        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+        // Never use createdAt (today's date) as fallback - only use actual order date
+        const orderDate = parseOrderDate(o.date || o.order_date || null);
         return orderDate >= today && orderDate < tomorrow;
       } catch (e) {
         return false;
@@ -169,7 +209,8 @@ const CurrentMonthOrdersTab = ({
 
     const yesterdayOrders = currentMonthOrders.filter((o) => {
       try {
-        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+        // Never use createdAt (today's date) as fallback - only use actual order date
+        const orderDate = parseOrderDate(o.date || o.order_date || null);
         return orderDate >= yesterday && orderDate < today;
       } catch (e) {
         return false;
@@ -178,7 +219,8 @@ const CurrentMonthOrdersTab = ({
 
     const thisWeekOrders = currentMonthOrders.filter((o) => {
       try {
-        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+        // Never use createdAt (today's date) as fallback - only use actual order date
+        const orderDate = parseOrderDate(o.date || o.order_date || null);
         return orderDate >= thisWeekStart;
       } catch (e) {
         return false;
@@ -259,24 +301,13 @@ const CurrentMonthOrdersTab = ({
         <div className='dashboard-header'>
           <h2>Current Month Orders</h2>
         </div>
-        <PremiumLoader message="Loading orders..." size="large" />
+        <PremiumLoader message='Loading orders...' size='large' />
       </div>
     );
   }
 
   return (
     <div className='admin-content'>
-      {/* HEADER */}
-      <div className='dashboard-header'>
-        <div>
-          <h2>Current Month: {currentMonthName}</h2>
-          <p>Manage orders for the current billing month</p>
-        </div>
-        <button className='btn btn-primary' onClick={() => setShowAddOrderModal(true)}>
-          <i className='fa-solid fa-plus'></i> Add New Order
-        </button>
-      </div>
-
       {/* STATS ROW */}
       <div className='admin-stats'>
         <div className='stat-card'>
@@ -336,123 +367,146 @@ const CurrentMonthOrdersTab = ({
         </div>
       </div>
 
-      {/* ACTION BAR */}
-      <div className='action-bar' style={{ marginBottom: '24px' }}>
-        <div className='search-input-wrapper'>
-          <i className='fa-solid fa-search search-input-icon'></i>
-          <input
-            type='text'
-            className='input-field search-input-with-icon'
-            placeholder='Search this month...'
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ flex: 1 }}
-          />
-        </div>
-        <div className='action-buttons-group'>
+      {/* FILTER & ACTION BAR */}
+      <div className='dashboard-card dashboard-card-spaced'>
+        {/* Quick Filter Buttons */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
           <button
-            className='btn btn-secondary btn-small'
-            title='Upload CSV'
+            className={`btn ${quickFilter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-small`}
             onClick={() => {
-              // TODO: Open CSV upload modal
-              if (showNotification) showNotification('CSV upload coming soon', 'info');
+              setQuickFilter('all');
+              if (onPageChange) onPageChange(1);
+            }}
+            style={{ fontSize: '13px', padding: '8px 16px' }}
+          >
+            All ({quickFilterCounts.all})
+          </button>
+          <button
+            className={`btn ${quickFilter === 'today' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+            onClick={() => {
+              setQuickFilter('today');
+              if (onPageChange) onPageChange(1);
+            }}
+            style={{ fontSize: '13px', padding: '8px 16px' }}
+          >
+            <i className='fa-solid fa-calendar-day' style={{ marginRight: '6px' }}></i>
+            Today ({quickFilterCounts.today})
+          </button>
+          <button
+            className={`btn ${quickFilter === 'yesterday' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+            onClick={() => {
+              setQuickFilter('yesterday');
+              if (onPageChange) onPageChange(1);
+            }}
+            style={{ fontSize: '13px', padding: '8px 16px' }}
+          >
+            <i className='fa-solid fa-calendar' style={{ marginRight: '6px' }}></i>
+            Yesterday ({quickFilterCounts.yesterday})
+          </button>
+          <button
+            className={`btn ${quickFilter === 'thisWeek' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+            onClick={() => {
+              setQuickFilter('thisWeek');
+              if (onPageChange) onPageChange(1);
+            }}
+            style={{ fontSize: '13px', padding: '8px 16px' }}
+          >
+            <i className='fa-solid fa-calendar-week' style={{ marginRight: '6px' }}></i>
+            This Week ({quickFilterCounts.thisWeek})
+          </button>
+          <button
+            className={`btn ${quickFilter === 'pending' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+            onClick={() => {
+              setQuickFilter('pending');
+              if (onPageChange) onPageChange(1);
+            }}
+            style={{
+              fontSize: '13px',
+              padding: '8px 16px',
+              color: quickFilter === 'pending' ? 'var(--admin-warning)' : undefined,
             }}
           >
-            <i className='fa-solid fa-upload'></i> Upload CSV
+            <i className='fa-solid fa-exclamation-triangle' style={{ marginRight: '6px' }}></i>
+            Pending ({quickFilterCounts.pending})
           </button>
           <button
-            className='btn btn-secondary btn-small'
-            title='Export Month'
+            className={`btn ${quickFilter === 'paid' ? 'btn-primary' : 'btn-ghost'} btn-small`}
             onClick={() => {
-              const csvContent =
-                'Date,Address,Quantity,Amount,Mode,Status,Payment\n' +
-                filteredOrders
-                  .map((o) => {
-                    const date = new Date(o.createdAt || o.date || o.order_date);
-                    const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
-                    return `"${formatDate(orderDate)}","${
-                      o.deliveryAddress || o.customerAddress || o.address || 'N/A'
-                    }","${o.quantity || 1}","${o.total || o.totalAmount || 0}","${
-                      o.mode || 'N/A'
-                    }","${o.status || 'N/A'}","${o.paymentMode || 'N/A'}"`;
-                  })
-                  .join('\n');
-              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-              const link = document.createElement('a');
-              link.href = URL.createObjectURL(blob);
-              link.download = `current_month_export_${new Date().toISOString().split('T')[0]}.csv`;
-              link.click();
-              if (showNotification) showNotification('Month data exported successfully', 'success');
+              setQuickFilter('paid');
+              if (onPageChange) onPageChange(1);
+            }}
+            style={{
+              fontSize: '13px',
+              padding: '8px 16px',
+              color: quickFilter === 'paid' ? 'var(--admin-success)' : undefined,
             }}
           >
-            <i className='fa-solid fa-download'></i> Export Month
-          </button>
-          <button
-            className='btn btn-ghost btn-small'
-            title='Refresh'
-            onClick={() => loadOrders && loadOrders()}
-          >
-            <i className='fa-solid fa-refresh'></i> Refresh
+            <i className='fa-solid fa-check-circle' style={{ marginRight: '6px' }}></i>
+            Paid ({quickFilterCounts.paid})
           </button>
         </div>
-      </div>
 
-      {/* QUICK FILTERS */}
-      <div className='action-bar' style={{ marginBottom: '24px', flexWrap: 'wrap', gap: '8px' }}>
-        <button
-          className={`btn ${quickFilter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-          onClick={() => {
-            setQuickFilter('all');
-            if (onPageChange) onPageChange(1);
-          }}
-        >
-          All ({quickFilterCounts.all})
-        </button>
-        <button
-          className={`btn ${quickFilter === 'today' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-          onClick={() => {
-            setQuickFilter('today');
-            if (onPageChange) onPageChange(1);
-          }}
-        >
-          Today ({quickFilterCounts.today})
-        </button>
-        <button
-          className={`btn ${quickFilter === 'yesterday' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-          onClick={() => {
-            setQuickFilter('yesterday');
-            if (onPageChange) onPageChange(1);
-          }}
-        >
-          Yesterday ({quickFilterCounts.yesterday})
-        </button>
-        <button
-          className={`btn ${quickFilter === 'thisWeek' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-          onClick={() => {
-            setQuickFilter('thisWeek');
-            if (onPageChange) onPageChange(1);
-          }}
-        >
-          This Week ({quickFilterCounts.thisWeek})
-        </button>
-        <button
-          className={`btn ${quickFilter === 'pending' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-          onClick={() => {
-            setQuickFilter('pending');
-            if (onPageChange) onPageChange(1);
-          }}
-        >
-          Pending ({quickFilterCounts.pending})
-        </button>
-        <button
-          className={`btn ${quickFilter === 'paid' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-          onClick={() => {
-            setQuickFilter('paid');
-            if (onPageChange) onPageChange(1);
-          }}
-        >
-          Paid ({quickFilterCounts.paid})
-        </button>
+        {/* Search and Actions */}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className='search-input-wrapper' style={{ flex: 1, minWidth: '250px' }}>
+            <i className='fa-solid fa-search search-input-icon'></i>
+            <input
+              type='text'
+              className='input-field search-input-with-icon'
+              placeholder='Search by address, order ID...'
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className='action-buttons-group'>
+            <button
+              className='btn btn-secondary btn-small'
+              title='Upload CSV'
+              onClick={() => {
+                // TODO: Open CSV upload modal
+                if (showNotification) showNotification('CSV upload coming soon', 'info');
+              }}
+            >
+              <i className='fa-solid fa-upload'></i> Upload CSV
+            </button>
+            <button
+              className='btn btn-secondary btn-small'
+              title='Export Month'
+              onClick={() => {
+                const csvContent =
+                  'Date,Address,Quantity,Amount,Mode,Status,Payment\n' +
+                  filteredOrders
+                    .map((o) => {
+                      // Never use createdAt (today's date) as fallback - only use actual order date
+                      const date = new Date(o.date || o.order_date || 0);
+                      const orderDate = parseOrderDate(o.date || o.order_date || null);
+                      return `"${formatDate(orderDate)}","${
+                        o.deliveryAddress || o.customerAddress || o.address || 'N/A'
+                      }","${o.quantity || 1}","${o.total || o.totalAmount || 0}","${
+                        o.mode || 'N/A'
+                      }","${o.status || 'N/A'}","${o.paymentMode || 'N/A'}"`;
+                    })
+                    .join('\n');
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `current_month_export_${new Date().toISOString().split('T')[0]}.csv`;
+                link.click();
+                if (showNotification)
+                  showNotification('Month data exported successfully', 'success');
+              }}
+            >
+              <i className='fa-solid fa-download'></i> Export Month
+            </button>
+            <button
+              className='btn btn-ghost btn-small'
+              title='Refresh'
+              onClick={() => loadOrders && loadOrders()}
+            >
+              <i className='fa-solid fa-refresh'></i> Refresh
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* DATA TABLE */}
@@ -476,7 +530,7 @@ const CurrentMonthOrdersTab = ({
             icon='fa-solid fa-inbox'
             title='No orders found'
             message='Try adjusting your filters or add a new order'
-            actionLabel='Add New Order'
+            actionLabel='Add New Order (Ctrl+N)'
             onAction={() => setShowAddOrderModal(true)}
           />
         ) : (
@@ -501,7 +555,8 @@ const CurrentMonthOrdersTab = ({
                 <tbody>
                   {paginatedOrders.map((order, idx) => {
                     const orderDate = parseOrderDate(
-                      order.createdAt || order.date || order.order_date
+                      // Never use createdAt (today's date) as fallback - only use actual order date
+                      order.date || order.order_date || null
                     );
                     const dateStr = formatDate(orderDate);
                     const isPaid = isPaidStatus(order.status);
@@ -543,9 +598,7 @@ const CurrentMonthOrdersTab = ({
                           </select>
                         </td>
                         <td>{order.paymentMode || 'N/A'}</td>
-                        <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                          {order.orderId || 'N/A'}
-                        </td>
+                        <td className='monospace-text'>{order.orderId || 'N/A'}</td>
                         <td>
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <button

@@ -95,10 +95,7 @@ const ConfirmationModal = ({
         <div className="modal-footer">
           <button
             className="btn btn-ghost"
-            onClick={() => {
-              if (onCancelCallback) onCancelCallback();
-              if (onCancel) onCancel();
-            }}
+            onClick={onCancel}
             disabled={isLoading}
           >
             {cancelText}

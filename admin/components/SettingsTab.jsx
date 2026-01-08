@@ -1,7 +1,7 @@
 // Tab 8: Settings - Following FULL_DASHBOARD_PLAN.md structure
 // This file has been recreated from scratch to match the plan exactly
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
 
 const SettingsTab = ({
@@ -64,8 +64,10 @@ const SettingsTab = ({
 
   const [themeSettings, setThemeSettings] = useState({
     theme: settings?.theme || localStorage.getItem('homiebites_theme') || 'light',
-    primaryColor: settings?.primaryColor || localStorage.getItem('homiebites_primary_color') || '#449031',
+    primaryColor:
+      settings?.primaryColor || localStorage.getItem('homiebites_primary_color') || '#449031',
     fontSize: settings?.fontSize || localStorage.getItem('homiebites_font_size') || 'medium',
+    fontFamily: settings?.fontFamily || localStorage.getItem('homiebites_font_family') || 'Baloo 2',
   });
 
   // showClearDataModal removed - using showConfirmation from parent
@@ -82,49 +84,67 @@ const SettingsTab = ({
       : null;
   };
 
-  // Apply theme function
+  // Apply theme function - SCOPED TO ADMIN DASHBOARD ONLY
   const applyTheme = (theme) => {
     try {
-      const root = document.documentElement;
-      
-      // Apply primary color
+      const adminDashboard = document.querySelector('.admin-dashboard');
+      if (!adminDashboard) {
+        console.warn('Admin dashboard element not found');
+        return;
+      }
+
+      // Apply primary color - scoped to admin-dashboard
       if (theme && theme.primaryColor) {
-        root.style.setProperty('--admin-accent', theme.primaryColor);
-        
+        adminDashboard.style.setProperty('--admin-accent', theme.primaryColor);
+
         // Calculate light variant
         const rgb = hexToRgb(theme.primaryColor);
         if (rgb) {
-          root.style.setProperty('--admin-accent-light', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`);
+          adminDashboard.style.setProperty(
+            '--admin-accent-light',
+            `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`
+          );
         }
       }
-      
-      // Apply font size
+
+      // Apply font size - SCOPED TO ADMIN DASHBOARD ONLY
       if (theme && theme.fontSize) {
         const fontSizeMap = {
           small: '14px',
           medium: '16px',
           large: '18px',
+          'extra-large': '20px',
         };
-        root.style.setProperty('--admin-base-font-size', fontSizeMap[theme.fontSize] || '16px');
-        document.body.style.fontSize = fontSizeMap[theme.fontSize] || '16px';
+        const fontSize = fontSizeMap[theme.fontSize] || '16px';
+        // Set CSS variable on admin-dashboard element
+        adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
+        // Apply font size to admin-dashboard
+        adminDashboard.style.fontSize = fontSize;
       }
-      
-      // Apply theme (light/dark/auto)
+
+      // Apply font family - SCOPED TO ADMIN DASHBOARD ONLY
+      if (theme && theme.fontFamily) {
+        const fontFamily = `'${theme.fontFamily}', sans-serif`;
+        adminDashboard.style.setProperty('--admin-font-family', fontFamily);
+        adminDashboard.style.fontFamily = fontFamily;
+      }
+
+      // Apply theme (light/dark/auto) - SCOPED TO ADMIN DASHBOARD ONLY
       if (theme && theme.theme === 'dark') {
-        document.documentElement.classList.add('dark-theme');
-        document.documentElement.classList.remove('light-theme');
+        adminDashboard.classList.add('dark-theme');
+        adminDashboard.classList.remove('light-theme');
       } else if (theme && theme.theme === 'light') {
-        document.documentElement.classList.add('light-theme');
-        document.documentElement.classList.remove('dark-theme');
+        adminDashboard.classList.add('light-theme');
+        adminDashboard.classList.remove('dark-theme');
       } else if (theme && theme.theme === 'auto') {
         // Auto theme based on system preference
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         if (prefersDark) {
-          document.documentElement.classList.add('dark-theme');
-          document.documentElement.classList.remove('light-theme');
+          adminDashboard.classList.add('dark-theme');
+          adminDashboard.classList.remove('light-theme');
         } else {
-          document.documentElement.classList.add('light-theme');
-          document.documentElement.classList.remove('dark-theme');
+          adminDashboard.classList.add('light-theme');
+          adminDashboard.classList.remove('dark-theme');
         }
       }
     } catch (error) {
@@ -134,60 +154,137 @@ const SettingsTab = ({
 
   // Apply theme on mount and handle auto theme listener
   useEffect(() => {
-    if (themeSettings) {
-      applyTheme(themeSettings);
-    }
+    // Wait for admin-dashboard to be available
+    const applyThemeWhenReady = () => {
+      const adminDashboard = document.querySelector('.admin-dashboard');
+      if (adminDashboard && themeSettings) {
+        applyTheme(themeSettings);
+      } else if (!adminDashboard) {
+        // Retry after a short delay if element not found
+        setTimeout(applyThemeWhenReady, 100);
+      }
+    };
+
+    applyThemeWhenReady();
 
     // Set up auto theme listener if needed
     if (themeSettings?.theme === 'auto') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleChange = (e) => {
-        if (e.matches) {
-          document.documentElement.classList.add('dark-theme');
-          document.documentElement.classList.remove('light-theme');
-        } else {
-          document.documentElement.classList.add('light-theme');
-          document.documentElement.classList.remove('dark-theme');
+        const adminDashboard = document.querySelector('.admin-dashboard');
+        if (adminDashboard) {
+          if (e.matches) {
+            adminDashboard.classList.add('dark-theme');
+            adminDashboard.classList.remove('light-theme');
+          } else {
+            adminDashboard.classList.add('light-theme');
+            adminDashboard.classList.remove('dark-theme');
+          }
         }
       };
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [themeSettings]); // Added themeSettings as dependency
 
   // Handle save functions
   const handleSaveBusinessInfo = () => {
-    if (onUpdateSettings) {
-      onUpdateSettings({ businessInfo });
-      if (showNotification) showNotification('Business information saved successfully', 'success');
+    if (showConfirmation) {
+      showConfirmation({
+        title: 'Save Business Information',
+        message: 'Are you sure you want to save changes to business information?',
+        type: 'info',
+        confirmText: 'Save',
+        onConfirm: () => {
+          if (onUpdateSettings) {
+            onUpdateSettings({ businessInfo });
+          }
+        },
+      });
+    } else {
+      if (onUpdateSettings) {
+        onUpdateSettings({ businessInfo });
+      }
     }
   };
 
   const handleSavePricing = () => {
-    if (onUpdateSettings) {
-      onUpdateSettings({ pricing });
-      if (showNotification) showNotification('Pricing configuration saved successfully', 'success');
+    if (showConfirmation) {
+      showConfirmation({
+        title: 'Save Pricing Configuration',
+        message: 'Are you sure you want to save changes to pricing settings?',
+        type: 'info',
+        confirmText: 'Save',
+        onConfirm: () => {
+          if (onUpdateSettings) {
+            onUpdateSettings({ pricing });
+          }
+        },
+      });
+    } else {
+      if (onUpdateSettings) {
+        onUpdateSettings({ pricing });
+      }
     }
   };
 
   const handleSaveOrderSettings = () => {
-    if (onUpdateSettings) {
-      onUpdateSettings({ orderSettings });
-      if (showNotification) showNotification('Order settings saved successfully', 'success');
+    if (showConfirmation) {
+      showConfirmation({
+        title: 'Save Order Settings',
+        message: 'Are you sure you want to save changes to order settings?',
+        type: 'info',
+        confirmText: 'Save',
+        onConfirm: () => {
+          if (onUpdateSettings) {
+            onUpdateSettings({ orderSettings });
+          }
+        },
+      });
+    } else {
+      if (onUpdateSettings) {
+        onUpdateSettings({ orderSettings });
+      }
     }
   };
 
   const handleSaveNotificationPrefs = () => {
-    if (onUpdateSettings) {
-      onUpdateSettings({ notificationPrefs });
-      if (showNotification) showNotification('Notification preferences saved successfully', 'success');
+    if (showConfirmation) {
+      showConfirmation({
+        title: 'Save Notification Preferences',
+        message: 'Are you sure you want to save changes to notification preferences?',
+        type: 'info',
+        confirmText: 'Save',
+        onConfirm: () => {
+          if (onUpdateSettings) {
+            onUpdateSettings({ notificationPrefs });
+          }
+        },
+      });
+    } else {
+      if (onUpdateSettings) {
+        onUpdateSettings({ notificationPrefs });
+      }
     }
   };
 
   const handleSaveDataSettings = () => {
-    if (onUpdateSettings) {
-      onUpdateSettings({ dataSettings });
-      if (showNotification) showNotification('Data settings saved successfully', 'success');
+    if (showConfirmation) {
+      showConfirmation({
+        title: 'Save Data Settings',
+        message: 'Are you sure you want to save changes to data settings?',
+        type: 'info',
+        confirmText: 'Save',
+        onConfirm: () => {
+          if (onUpdateSettings) {
+            onUpdateSettings({ dataSettings });
+          }
+        },
+      });
+    } else {
+      if (onUpdateSettings) {
+        onUpdateSettings({ dataSettings });
+      }
     }
   };
 
@@ -196,28 +293,64 @@ const SettingsTab = ({
       if (showNotification) showNotification('Passwords do not match', 'error');
       return;
     }
-    if (onUpdateSettings) {
-      onUpdateSettings({ userProfile });
-      if (showNotification) showNotification('Profile updated successfully', 'success');
+
+    if (showConfirmation) {
+      showConfirmation({
+        title: 'Update Profile',
+        message: 'Are you sure you want to save changes to your profile?',
+        type: 'info',
+        confirmText: 'Save',
+        onConfirm: () => {
+          if (onUpdateSettings) {
+            onUpdateSettings({ userProfile });
+          }
+        },
+      });
+    } else {
+      if (onUpdateSettings) {
+        onUpdateSettings({ userProfile });
+      }
     }
   };
 
   const handleSaveTheme = () => {
-    // Apply theme immediately
-    applyTheme(themeSettings);
-    
-    // Save to localStorage
-    localStorage.setItem('homiebites_theme', themeSettings.theme);
-    localStorage.setItem('homiebites_primary_color', themeSettings.primaryColor);
-    localStorage.setItem('homiebites_font_size', themeSettings.fontSize);
-    
-    // Save to settings via callback
-    if (onUpdateSettings) {
-      onUpdateSettings({ themeSettings });
-    }
-    
-    if (showNotification) {
-      showNotification('Theme applied successfully', 'success');
+    if (showConfirmation) {
+      showConfirmation({
+        title: 'Apply Theme',
+        message:
+          'Are you sure you want to apply this theme? The changes will be saved immediately.',
+        type: 'info',
+        confirmText: 'Apply',
+        onConfirm: () => {
+          // Apply theme immediately
+          applyTheme(themeSettings);
+
+          // Save to localStorage
+          localStorage.setItem('homiebites_theme', themeSettings.theme);
+          localStorage.setItem('homiebites_primary_color', themeSettings.primaryColor);
+          localStorage.setItem('homiebites_font_size', themeSettings.fontSize);
+          localStorage.setItem('homiebites_font_family', themeSettings.fontFamily);
+
+          // Save to settings via callback
+          if (onUpdateSettings) {
+            onUpdateSettings({ themeSettings });
+          }
+        },
+      });
+    } else {
+      // Apply theme immediately
+      applyTheme(themeSettings);
+
+      // Save to localStorage
+      localStorage.setItem('homiebites_theme', themeSettings.theme);
+      localStorage.setItem('homiebites_primary_color', themeSettings.primaryColor);
+      localStorage.setItem('homiebites_font_size', themeSettings.fontSize);
+      localStorage.setItem('homiebites_font_family', themeSettings.fontFamily);
+
+      // Save to settings via callback
+      if (onUpdateSettings) {
+        onUpdateSettings({ themeSettings });
+      }
     }
   };
 
@@ -225,49 +358,78 @@ const SettingsTab = ({
   const handleThemeChange = (updates) => {
     const newTheme = { ...themeSettings, ...updates };
     setThemeSettings(newTheme);
-    // Apply immediately for preview
-    applyTheme(newTheme);
+    // Apply immediately for preview - with retry mechanism
+    const applyWithRetry = () => {
+      const adminDashboard = document.querySelector('.admin-dashboard');
+      if (adminDashboard) {
+        applyTheme(newTheme);
+      } else {
+        setTimeout(applyWithRetry, 50);
+      }
+    };
+    applyWithRetry();
   };
 
   // Handle backup
   const handleBackup = async () => {
-    if (onBackup) {
-      await onBackup();
-      if (showNotification) showNotification('Backup created successfully', 'success');
+    if (showConfirmation) {
+      showConfirmation({
+        title: 'Create Backup',
+        message: 'Are you sure you want to create a backup of all data?',
+        type: 'info',
+        confirmText: 'Create Backup',
+        onConfirm: async () => {
+          if (onBackup) {
+            await onBackup();
+            if (showNotification) showNotification('Backup created successfully', 'success');
+          }
+        },
+      });
+    } else {
+      if (onBackup) {
+        await onBackup();
+        if (showNotification) showNotification('Backup created successfully', 'success');
+      }
     }
   };
 
   // Handle restore
   const handleRestore = async () => {
-    if (onRestore) {
-      await onRestore();
-      if (showNotification) showNotification('Data restored successfully', 'success');
+    if (showConfirmation) {
+      showConfirmation({
+        title: 'Restore Data',
+        message:
+          'Are you sure you want to restore data from backup? This will overwrite current data.',
+        type: 'warning',
+        confirmText: 'Restore',
+        onConfirm: async () => {
+          if (onRestore) {
+            await onRestore();
+            if (showNotification) showNotification('Data restored successfully', 'success');
+          }
+        },
+      });
+    } else {
+      if (onRestore) {
+        await onRestore();
+        if (showNotification) showNotification('Data restored successfully', 'success');
+      }
     }
   };
 
   if (loading) {
     return (
       <div className='admin-content'>
-        <div className='dashboard-header'>
-          <h2>Settings</h2>
-        </div>
-        <PremiumLoader message="Loading settings..." size="large" />
+        <PremiumLoader message='Loading settings...' size='large' />
       </div>
     );
   }
 
   return (
     <div className='admin-content'>
-      {/* HEADER */}
-      <div className='dashboard-header'>
-        <div>
-          <h2>Settings</h2>
-          <p>Configure your application settings</p>
-        </div>
-      </div>
 
       {/* SETTINGS TABS */}
-      <div className='action-bar' style={{ marginBottom: '24px', flexWrap: 'wrap', gap: '8px' }}>
+      <div className='action-bar action-bar-spaced'>
         <button
           className={`btn ${activeTab === 'general' ? 'btn-primary' : 'btn-ghost'} btn-small`}
           onClick={() => setActiveTab('general')}
@@ -308,11 +470,16 @@ const SettingsTab = ({
 
       {/* TAB CONTENT */}
       {activeTab === 'general' && (
-        <div className='dashboard-grid-layout'>
+        <div className='dashboard-grid-layout settings-general-grid'>
           {/* Business Information */}
-          <div className='dashboard-grid-item half-width'>
-            <div className='dashboard-card'>
-              <h3 className='dashboard-section-title'>Business Information</h3>
+          <div className='dashboard-grid-item settings-card'>
+            <div className='dashboard-card settings-card-content'>
+              <div className='settings-card-header'>
+                <div className='settings-card-icon'>
+                  <i className='fa-solid fa-building'></i>
+                </div>
+                <h3 className='dashboard-section-title'>Business Information</h3>
+              </div>
               <div className='form-grid'>
                 <div className='form-group'>
                   <label>Business Name</label>
@@ -320,7 +487,9 @@ const SettingsTab = ({
                     type='text'
                     className='input-field'
                     value={businessInfo.businessName}
-                    onChange={(e) => setBusinessInfo({ ...businessInfo, businessName: e.target.value })}
+                    onChange={(e) =>
+                      setBusinessInfo({ ...businessInfo, businessName: e.target.value })
+                    }
                   />
                 </div>
                 <div className='form-group'>
@@ -351,7 +520,7 @@ const SettingsTab = ({
                     rows={3}
                   />
                 </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1' }}>
+                <div className='form-group settings-action-group'>
                   <button className='btn btn-primary' onClick={handleSaveBusinessInfo}>
                     <i className='fa-solid fa-save'></i> Save Changes
                   </button>
@@ -361,9 +530,14 @@ const SettingsTab = ({
           </div>
 
           {/* Pricing Configuration */}
-          <div className='dashboard-grid-item half-width'>
-            <div className='dashboard-card'>
-              <h3 className='dashboard-section-title'>Pricing Configuration</h3>
+          <div className='dashboard-grid-item settings-card'>
+            <div className='dashboard-card settings-card-content'>
+              <div className='settings-card-header'>
+                <div className='settings-card-icon'>
+                  <i className='fa-solid fa-indian-rupee-sign'></i>
+                </div>
+                <h3 className='dashboard-section-title'>Pricing Configuration</h3>
+              </div>
               <div className='form-grid'>
                 <div className='form-group'>
                   <label>Default Unit Price</label>
@@ -371,7 +545,9 @@ const SettingsTab = ({
                     type='number'
                     className='input-field'
                     value={pricing.defaultUnitPrice}
-                    onChange={(e) => setPricing({ ...pricing, defaultUnitPrice: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setPricing({ ...pricing, defaultUnitPrice: parseFloat(e.target.value) || 0 })
+                    }
                   />
                 </div>
                 <div className='form-group'>
@@ -380,7 +556,9 @@ const SettingsTab = ({
                     type='number'
                     className='input-field'
                     value={pricing.lunchPrice}
-                    onChange={(e) => setPricing({ ...pricing, lunchPrice: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setPricing({ ...pricing, lunchPrice: parseFloat(e.target.value) || 0 })
+                    }
                   />
                 </div>
                 <div className='form-group'>
@@ -389,7 +567,9 @@ const SettingsTab = ({
                     type='number'
                     className='input-field'
                     value={pricing.dinnerPrice}
-                    onChange={(e) => setPricing({ ...pricing, dinnerPrice: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setPricing({ ...pricing, dinnerPrice: parseFloat(e.target.value) || 0 })
+                    }
                   />
                 </div>
                 <div className='form-group'>
@@ -398,11 +578,13 @@ const SettingsTab = ({
                     type='number'
                     className='input-field'
                     value={pricing.minimumOrderQty}
-                    onChange={(e) => setPricing({ ...pricing, minimumOrderQty: parseInt(e.target.value) || 1 })}
+                    onChange={(e) =>
+                      setPricing({ ...pricing, minimumOrderQty: parseInt(e.target.value) || 1 })
+                    }
                     min={1}
                   />
                 </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1' }}>
+                <div className='form-group settings-action-group'>
                   <button className='btn btn-primary' onClick={handleSavePricing}>
                     <i className='fa-solid fa-save'></i> Update Pricing
                   </button>
@@ -423,42 +605,61 @@ const SettingsTab = ({
                 type='text'
                 className='input-field'
                 value={orderSettings.orderIdPrefix}
-                onChange={(e) => setOrderSettings({ ...orderSettings, orderIdPrefix: e.target.value })}
+                onChange={(e) =>
+                  setOrderSettings({ ...orderSettings, orderIdPrefix: e.target.value })
+                }
               />
             </div>
             <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <label
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+              >
                 <input
                   type='checkbox'
                   checked={orderSettings.autoGenerateOrderId}
-                  onChange={(e) => setOrderSettings({ ...orderSettings, autoGenerateOrderId: e.target.checked })}
+                  onChange={(e) =>
+                    setOrderSettings({ ...orderSettings, autoGenerateOrderId: e.target.checked })
+                  }
                 />
                 <span>Auto-generate Order ID</span>
               </label>
             </div>
             <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <label
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+              >
                 <input
                   type='checkbox'
                   checked={orderSettings.allowDuplicateAddress}
-                  onChange={(e) => setOrderSettings({ ...orderSettings, allowDuplicateAddress: e.target.checked })}
+                  onChange={(e) =>
+                    setOrderSettings({ ...orderSettings, allowDuplicateAddress: e.target.checked })
+                  }
                 />
                 <span>Allow Duplicate Address</span>
               </label>
             </div>
             <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <label
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+              >
                 <input
                   type='checkbox'
                   checked={orderSettings.requirePaymentConfirmation}
-                  onChange={(e) => setOrderSettings({ ...orderSettings, requirePaymentConfirmation: e.target.checked })}
+                  onChange={(e) =>
+                    setOrderSettings({
+                      ...orderSettings,
+                      requirePaymentConfirmation: e.target.checked,
+                    })
+                  }
                 />
                 <span>Require Payment Confirmation</span>
               </label>
             </div>
             <div className='form-group' style={{ gridColumn: '1 / -1' }}>
               <label>Status Options</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+              <div
+                style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}
+              >
                 {orderSettings.statusOptions.map((status, idx) => (
                   <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span>• {status}</span>
@@ -469,7 +670,7 @@ const SettingsTab = ({
                 </button>
               </div>
             </div>
-            <div className='form-group' style={{ gridColumn: '1 / -1' }}>
+            <div className='form-group settings-action-group'>
               <button className='btn btn-primary' onClick={handleSaveOrderSettings}>
                 <i className='fa-solid fa-save'></i> Save Settings
               </button>
@@ -483,44 +684,66 @@ const SettingsTab = ({
           <h3 className='dashboard-section-title'>Notification Preferences</h3>
           <div className='form-grid'>
             <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-              <label style={{ fontWeight: '600', marginBottom: '12px', display: 'block' }}>Email Notifications:</label>
+              <label style={{ fontWeight: '600', marginBottom: '12px', display: 'block' }}>
+                Email Notifications:
+              </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <label
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                >
                   <input
                     type='checkbox'
                     checked={notificationPrefs.emailDailySummary}
                     onChange={(e) =>
-                      setNotificationPrefs({ ...notificationPrefs, emailDailySummary: e.target.checked })
+                      setNotificationPrefs({
+                        ...notificationPrefs,
+                        emailDailySummary: e.target.checked,
+                      })
                     }
                   />
                   <span>Daily Summary</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <label
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                >
                   <input
                     type='checkbox'
                     checked={notificationPrefs.emailNewOrderAlert}
                     onChange={(e) =>
-                      setNotificationPrefs({ ...notificationPrefs, emailNewOrderAlert: e.target.checked })
+                      setNotificationPrefs({
+                        ...notificationPrefs,
+                        emailNewOrderAlert: e.target.checked,
+                      })
                     }
                   />
                   <span>New Order Alert</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <label
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                >
                   <input
                     type='checkbox'
                     checked={notificationPrefs.emailPaymentReceived}
                     onChange={(e) =>
-                      setNotificationPrefs({ ...notificationPrefs, emailPaymentReceived: e.target.checked })
+                      setNotificationPrefs({
+                        ...notificationPrefs,
+                        emailPaymentReceived: e.target.checked,
+                      })
                     }
                   />
                   <span>Payment Received</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <label
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                >
                   <input
                     type='checkbox'
                     checked={notificationPrefs.emailLowOrderDayWarning}
                     onChange={(e) =>
-                      setNotificationPrefs({ ...notificationPrefs, emailLowOrderDayWarning: e.target.checked })
+                      setNotificationPrefs({
+                        ...notificationPrefs,
+                        emailLowOrderDayWarning: e.target.checked,
+                      })
                     }
                   />
                   <span>Low Order Day Warning</span>
@@ -528,31 +751,43 @@ const SettingsTab = ({
               </div>
             </div>
             <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-              <label style={{ fontWeight: '600', marginBottom: '12px', display: 'block' }}>SMS Notifications:</label>
+              <label style={{ fontWeight: '600', marginBottom: '12px', display: 'block' }}>
+                SMS Notifications:
+              </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <label
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                >
                   <input
                     type='checkbox'
                     checked={notificationPrefs.smsPaymentReminders}
                     onChange={(e) =>
-                      setNotificationPrefs({ ...notificationPrefs, smsPaymentReminders: e.target.checked })
+                      setNotificationPrefs({
+                        ...notificationPrefs,
+                        smsPaymentReminders: e.target.checked,
+                      })
                     }
                   />
                   <span>Payment Reminders</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <label
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                >
                   <input
                     type='checkbox'
                     checked={notificationPrefs.smsOrderConfirmations}
                     onChange={(e) =>
-                      setNotificationPrefs({ ...notificationPrefs, smsOrderConfirmations: e.target.checked })
+                      setNotificationPrefs({
+                        ...notificationPrefs,
+                        smsOrderConfirmations: e.target.checked,
+                      })
                     }
                   />
                   <span>Order Confirmations</span>
                 </label>
               </div>
             </div>
-            <div className='form-group' style={{ gridColumn: '1 / -1' }}>
+            <div className='form-group settings-action-group'>
               <button className='btn btn-primary' onClick={handleSaveNotificationPrefs}>
                 <i className='fa-solid fa-save'></i> Save Preferences
               </button>
@@ -585,11 +820,15 @@ const SettingsTab = ({
               </div>
             </div>
             <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <label
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+              >
                 <input
                   type='checkbox'
                   checked={dataSettings.autoBackup}
-                  onChange={(e) => setDataSettings({ ...dataSettings, autoBackup: e.target.checked })}
+                  onChange={(e) =>
+                    setDataSettings({ ...dataSettings, autoBackup: e.target.checked })
+                  }
                 />
                 <span>Auto Backup: Daily at {dataSettings.autoBackupTime}</span>
               </label>
@@ -602,7 +841,8 @@ const SettingsTab = ({
                   if (showConfirmation && onClearAllData) {
                     showConfirmation({
                       title: 'Clear All Data',
-                      message: 'Are you sure you want to clear ALL data? This action cannot be undone and will permanently delete all orders and settings.',
+                      message:
+                        'Are you sure you want to clear ALL data? This action cannot be undone and will permanently delete all orders and settings.',
                       type: 'danger',
                       confirmText: 'Clear All Data',
                       onConfirm: async () => {
@@ -617,7 +857,9 @@ const SettingsTab = ({
               >
                 <i className='fa-solid fa-trash'></i> Clear All Data
               </button>
-              <p style={{ color: 'var(--admin-text-light)', fontSize: '0.85rem', marginTop: '8px' }}>
+              <p
+                style={{ color: 'var(--admin-text-light)', fontSize: '0.85rem', marginTop: '8px' }}
+              >
                 This action cannot be undone
               </p>
             </div>
@@ -666,7 +908,9 @@ const SettingsTab = ({
                 type='password'
                 className='input-field'
                 value={userProfile.currentPassword}
-                onChange={(e) => setUserProfile({ ...userProfile, currentPassword: e.target.value })}
+                onChange={(e) =>
+                  setUserProfile({ ...userProfile, currentPassword: e.target.value })
+                }
                 placeholder='********'
               />
             </div>
@@ -686,11 +930,13 @@ const SettingsTab = ({
                 type='password'
                 className='input-field'
                 value={userProfile.confirmPassword}
-                onChange={(e) => setUserProfile({ ...userProfile, confirmPassword: e.target.value })}
+                onChange={(e) =>
+                  setUserProfile({ ...userProfile, confirmPassword: e.target.value })
+                }
                 placeholder='********'
               />
             </div>
-            <div className='form-group' style={{ gridColumn: '1 / -1' }}>
+            <div className='form-group settings-action-group'>
               <button className='btn btn-primary' onClick={handleSaveUserProfile}>
                 <i className='fa-solid fa-save'></i> Update Profile
               </button>
@@ -700,13 +946,20 @@ const SettingsTab = ({
       )}
 
       {activeTab === 'theme' && (
-        <div className='dashboard-card'>
-          <h3 className='dashboard-section-title'>Appearance</h3>
-          <div className='form-grid'>
-            <div className='form-group' style={{ gridColumn: '1 / -1' }}>
+        <div className='dashboard-card settings-theme-card'>
+          <div className='settings-card-header'>
+            <div className='settings-card-icon'>
+              <i className='fa-solid fa-palette'></i>
+            </div>
+            <h3 className='dashboard-section-title'>Appearance</h3>
+          </div>
+          <div className='form-grid settings-theme-grid'>
+            <div className='form-group'>
               <label>Theme</label>
-              <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '12px', borderRadius: '8px', border: `2px solid ${themeSettings.theme === 'light' ? 'var(--admin-accent)' : 'transparent'}`, background: themeSettings.theme === 'light' ? 'var(--admin-accent-light)' : 'transparent', transition: 'all 0.2s ease' }}>
+              <div className='theme-options-group'>
+                <label
+                  className={`theme-option ${themeSettings.theme === 'light' ? 'active' : ''}`}
+                >
                   <input
                     type='radio'
                     name='theme'
@@ -714,10 +967,10 @@ const SettingsTab = ({
                     checked={themeSettings.theme === 'light'}
                     onChange={(e) => handleThemeChange({ theme: e.target.value })}
                   />
-                  <i className='fa-solid fa-sun' style={{ color: themeSettings.theme === 'light' ? 'var(--admin-accent)' : 'var(--admin-text-secondary)' }}></i>
+                  <i className='fa-solid fa-sun'></i>
                   <span>Light</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '12px', borderRadius: '8px', border: `2px solid ${themeSettings.theme === 'dark' ? 'var(--admin-accent)' : 'transparent'}`, background: themeSettings.theme === 'dark' ? 'var(--admin-accent-light)' : 'transparent', transition: 'all 0.2s ease' }}>
+                <label className={`theme-option ${themeSettings.theme === 'dark' ? 'active' : ''}`}>
                   <input
                     type='radio'
                     name='theme'
@@ -725,10 +978,10 @@ const SettingsTab = ({
                     checked={themeSettings.theme === 'dark'}
                     onChange={(e) => handleThemeChange({ theme: e.target.value })}
                   />
-                  <i className='fa-solid fa-moon' style={{ color: themeSettings.theme === 'dark' ? 'var(--admin-accent)' : 'var(--admin-text-secondary)' }}></i>
+                  <i className='fa-solid fa-moon'></i>
                   <span>Dark</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '12px', borderRadius: '8px', border: `2px solid ${themeSettings.theme === 'auto' ? 'var(--admin-accent)' : 'transparent'}`, background: themeSettings.theme === 'auto' ? 'var(--admin-accent-light)' : 'transparent', transition: 'all 0.2s ease' }}>
+                <label className={`theme-option ${themeSettings.theme === 'auto' ? 'active' : ''}`}>
                   <input
                     type='radio'
                     name='theme'
@@ -736,23 +989,23 @@ const SettingsTab = ({
                     checked={themeSettings.theme === 'auto'}
                     onChange={(e) => handleThemeChange({ theme: e.target.value })}
                   />
-                  <i className='fa-solid fa-circle-half-stroke' style={{ color: themeSettings.theme === 'auto' ? 'var(--admin-accent)' : 'var(--admin-text-secondary)' }}></i>
+                  <i className='fa-solid fa-circle-half-stroke'></i>
                   <span>Auto</span>
                 </label>
               </div>
             </div>
             <div className='form-group'>
               <label>Primary Color</label>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <div className='color-picker-group'>
                 <input
                   type='color'
                   value={themeSettings.primaryColor}
                   onChange={(e) => handleThemeChange({ primaryColor: e.target.value })}
-                  style={{ width: '60px', height: '40px', borderRadius: '8px', border: '1px solid var(--admin-border)', cursor: 'pointer' }}
+                  className='color-picker-input'
                 />
                 <input
                   type='text'
-                  className='input-field'
+                  className='input-field color-input'
                   value={themeSettings.primaryColor}
                   onChange={(e) => {
                     const color = e.target.value;
@@ -763,26 +1016,18 @@ const SettingsTab = ({
                     }
                   }}
                   placeholder='#449031'
-                  style={{ flex: 1 }}
                 />
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
-                  {['#449031', '#c45c2d', '#3b82f6', '#8b5cf6', '#ef4444', '#10b981'].map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => handleThemeChange({ primaryColor: color })}
-                      style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '8px',
-                        background: color,
-                        border: `2px solid ${themeSettings.primaryColor === color ? '#fff' : 'transparent'}`,
-                        cursor: 'pointer',
-                        boxShadow: themeSettings.primaryColor === color ? '0 0 0 2px var(--admin-accent)' : 'none',
-                      }}
-                      title={color}
-                    />
-                  ))}
-                </div>
+              </div>
+              <div className='color-presets'>
+                {['#449031', '#c45c2d', '#3b82f6', '#8b5cf6', '#ef4444', '#10b981'].map((color) => (
+                  <button
+                    key={color}
+                    className={`color-preset ${themeSettings.primaryColor === color ? 'active' : ''}`}
+                    onClick={() => handleThemeChange({ primaryColor: color })}
+                    style={{ background: color }}
+                    title={color}
+                  />
+                ))}
               </div>
             </div>
             <div className='form-group'>
@@ -790,19 +1035,104 @@ const SettingsTab = ({
               <select
                 className='input-field'
                 value={themeSettings.fontSize}
-                onChange={(e) => handleThemeChange({ fontSize: e.target.value })}
+                onChange={(e) => {
+                  const newFontSize = e.target.value;
+                  handleThemeChange({ fontSize: newFontSize });
+                  // Apply font size immediately - SCOPED TO ADMIN DASHBOARD
+                  const applyFontSize = () => {
+                    const adminDashboard = document.querySelector('.admin-dashboard');
+                    if (adminDashboard) {
+                      const fontSizeMap = {
+                        small: '14px',
+                        medium: '16px',
+                        large: '18px',
+                        'extra-large': '20px',
+                      };
+                      const fontSize = fontSizeMap[newFontSize] || '16px';
+                      adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
+                      adminDashboard.style.fontSize = fontSize;
+                      // Force reflow to ensure changes apply
+                      adminDashboard.offsetHeight;
+                    } else {
+                      setTimeout(applyFontSize, 50);
+                    }
+                  };
+                  applyFontSize();
+                }}
               >
                 <option value='small'>Small (14px)</option>
                 <option value='medium'>Medium (16px)</option>
                 <option value='large'>Large (18px)</option>
+                <option value='extra-large'>Extra Large (20px)</option>
               </select>
-              <div style={{ marginTop: '12px', padding: '12px', background: 'var(--admin-glass-border)', borderRadius: '8px' }}>
-                <p style={{ fontSize: themeSettings.fontSize === 'small' ? '14px' : themeSettings.fontSize === 'large' ? '18px' : '16px', margin: 0 }}>
+              <div className='preview-box'>
+                <p
+                  style={{
+                    fontSize:
+                      themeSettings.fontSize === 'small'
+                        ? '14px'
+                        : themeSettings.fontSize === 'large'
+                          ? '18px'
+                          : themeSettings.fontSize === 'extra-large'
+                            ? '20px'
+                            : '16px',
+                    margin: 0,
+                  }}
+                >
                   Preview: This is how text will look with {themeSettings.fontSize} font size.
                 </p>
               </div>
             </div>
-            <div className='form-group' style={{ gridColumn: '1 / -1' }}>
+            <div className='form-group'>
+              <label>Font Family</label>
+              <select
+                className='input-field'
+                value={themeSettings.fontFamily}
+                onChange={(e) => {
+                  const newFontFamily = e.target.value;
+                  handleThemeChange({ fontFamily: newFontFamily });
+                  // Apply font family immediately - SCOPED TO ADMIN DASHBOARD
+                  const applyFontFamily = () => {
+                    const adminDashboard = document.querySelector('.admin-dashboard');
+                    if (adminDashboard) {
+                      const fontFamily = `'${newFontFamily}', sans-serif`;
+                      adminDashboard.style.setProperty('--admin-font-family', fontFamily);
+                      adminDashboard.style.fontFamily = fontFamily;
+                      // Force reflow to ensure changes apply
+                      adminDashboard.offsetHeight;
+                    } else {
+                      setTimeout(applyFontFamily, 50);
+                    }
+                  };
+                  applyFontFamily();
+                }}
+              >
+                <option value='Baloo 2'>Baloo 2 (Default)</option>
+                <option value='Inter'>Inter</option>
+                <option value='Poppins'>Poppins</option>
+                <option value='Roboto'>Roboto</option>
+                <option value='Open Sans'>Open Sans</option>
+                <option value='Lato'>Lato</option>
+                <option value='Montserrat'>Montserrat</option>
+                <option value='Nunito'>Nunito</option>
+                <option value='Raleway'>Raleway</option>
+                <option value='Ubuntu'>Ubuntu</option>
+                <option value='Al Bayan'>Al Bayan</option>
+                <option value='Chalkboard'>Chalkboard</option>
+                <option value='Cavolini'>Cavolini</option>
+              </select>
+              <div className='preview-box'>
+                <p
+                  style={{
+                    fontFamily: `'${themeSettings.fontFamily}', sans-serif`,
+                    margin: 0,
+                  }}
+                >
+                  Preview: This is how text will look with {themeSettings.fontFamily} font.
+                </p>
+              </div>
+            </div>
+            <div className='form-group settings-action-group'>
               <button className='btn btn-primary' onClick={handleSaveTheme}>
                 <i className='fa-solid fa-save'></i> Apply Theme
               </button>

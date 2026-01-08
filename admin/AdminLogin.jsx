@@ -40,7 +40,8 @@ const AdminLogin = ({ onLoginSuccess }) => {
           if (onLoginSuccess) {
             onLoginSuccess();
           } else {
-            window.location.href = "/admin/dashboard";
+            // Fallback: redirect using window.location if router not available
+            window.location.href = "/dashboard";
           }
           return;
         } else {
@@ -230,31 +231,6 @@ const AdminLogin = ({ onLoginSuccess }) => {
                 <strong>Admin Access Required</strong>
               </p>
               <p className="admin-login-info-text">Authorized personnel only</p>
-              {(import.meta.env.DEV ||
-                process.env.NODE_ENV === "development") && (
-                <details className="admin-login-dev-details">
-                  <summary className="admin-login-dev-summary">
-                    Forgot Password?
-                  </summary>
-                  <div className="admin-login-dev-content">
-                    <p className="admin-login-dev-item">
-                      <strong>Quick Access:</strong>
-                    </p>
-                    <p className="admin-login-dev-item">
-                      Mobile: <code>8958111112</code>
-                    </p>
-                    <p className="admin-login-dev-item admin-login-dev-item-last">
-                      Password: <code>Bless@@!!##12</code>
-                    </p>
-                    <p className="admin-login-dev-note">
-                      <strong>Note:</strong> For production, reset password via
-                      backend database. See{" "}
-                      <code>docs/ADMIN_PASSWORD_RECOVERY.md</code> for detailed
-                      instructions.
-                    </p>
-                  </div>
-                </details>
-              )}
             </div>
           </div>
         </div>

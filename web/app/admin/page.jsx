@@ -1,23 +1,25 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import AdminLogin from "../../../admin/AdminLogin";
-import { NotificationProvider } from "../../contexts/NotificationContext";
-import NotificationWrapper from "../../components/NotificationWrapper";
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import AdminLogin from '../../../admin/AdminLogin';
+import NotificationWrapper from '../../components/NotificationWrapper';
+import { NotificationProvider } from '../../contexts/NotificationContext';
 
 export default function Admin() {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     // Check if already logged in
-    const admin = localStorage.getItem("homiebites_admin");
-    const user = localStorage.getItem("homiebites_user");
-    if (admin === "true" || (user && JSON.parse(user).role === "admin")) {
-      navigate("/admin/dashboard");
+    const admin = localStorage.getItem('homiebites_admin');
+    const user = localStorage.getItem('homiebites_user');
+    if (admin === 'true' || (user && JSON.parse(user).role === 'admin')) {
+      router.replace('/admin/dashboard');
     }
-  }, [navigate]);
+  }, [router]);
 
   const handleLoginSuccess = () => {
-    navigate("/admin/dashboard");
+    router.replace('/admin/dashboard');
   };
 
   return (
