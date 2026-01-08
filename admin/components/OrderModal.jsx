@@ -396,7 +396,6 @@ const OrderModal = ({
             }
 
             if (attempts >= maxAttempts) {
-              console.error('Unable to generate unique order ID after multiple attempts');
               throw new Error('Unable to generate unique order ID. Please try again.');
             }
           }
@@ -482,7 +481,6 @@ const OrderModal = ({
         }, 1500);
       }
     } catch (error) {
-      console.error('Error saving order:', error);
       setIsSaving(false);
       setSaveSuccess(false);
 
@@ -568,7 +566,6 @@ const OrderModal = ({
     // Don't process if we're in the middle of clicking a suggestion
     // UNLESS the value is being cleared (empty string) - then allow it
     if (isClickingSuggestion && value.trim().length > 0) {
-      console.log('Blocking handleAddressChange during suggestion click, value:', value);
       return;
     }
 
@@ -675,9 +672,6 @@ const OrderModal = ({
     const normalizedAddr = addr.trim().toLowerCase();
     const trimmedAddr = addr.trim();
 
-    // Debug: Log the selection
-    console.log('Selected address:', trimmedAddr);
-
     // Store in ref to prevent clearing
     selectedAddressRef.current = trimmedAddr;
 
@@ -709,11 +703,8 @@ const OrderModal = ({
           ? editingOrder.deliveryAddress || ''
           : newOrder.deliveryAddress || '';
 
-        console.log('Input value after hiding suggestions:', currentValue);
-
         // If address was cleared, restore it
         if (!currentValue || currentValue !== selectedAddressRef.current) {
-          console.warn('Address was cleared! Restoring from ref...');
           onNewOrderChange('deliveryAddress', selectedAddressRef.current);
           // Also update input directly as backup
           if (input) {
@@ -1010,7 +1001,6 @@ const OrderModal = ({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log('Suggestion clicked:', addr); // Debug
                         // CRITICAL: Call handler to update address state
                         handleSuggestionClick(addr);
                       }}

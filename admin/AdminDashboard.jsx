@@ -152,10 +152,20 @@ const AdminDashboard = () => {
       : null;
   };
 
-  // Handle logout
+  // Handle logout with confirmation
   const handleLogout = () => {
-    logout();
-    router.replace('/login');
+    showConfirmation({
+      title: 'Logout',
+      message:
+        'Are you sure you want to logout? You will need to login again to access the dashboard.',
+      type: 'warning',
+      confirmText: 'Logout',
+      cancelText: 'Cancel',
+      onConfirm: () => {
+        logout();
+        router.replace('/login');
+      },
+    });
   };
 
   // Handle add order - using fast sync
@@ -954,7 +964,7 @@ const AdminDashboard = () => {
           show={showCSVUploadModal}
           onClose={() => setShowCSVUploadModal(false)}
           onUploadSuccess={(data) => {
-            console.log('Upload success:', data);
+            // Upload successful
           }}
           showNotification={showNotification}
           loadOrders={loadOrders}

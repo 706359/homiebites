@@ -64,24 +64,11 @@ export const useAdminData = () => {
         return;
       }
 
-      console.log("[useAdminData] Loading orders from backend...", {
-        hasToken: !!token,
-        isAdmin,
-        apiUrl: api.baseURL,
-      });
-
       try {
         // Load ALL orders from backend (filters are applied in UI)
         const response = await api.getAllOrders({});
-        console.log("[useAdminData] API response:", {
-          success: response.success,
-          dataLength: response.data ? response.data.length : 0,
-        });
 
         if (response.success && response.data) {
-          console.log(
-            `[useAdminData] Successfully loaded ${response.data.length} orders from backend`,
-          );
           const nextOrders = Array.isArray(response.data) ? response.data : [];
           // IMPORTANT: avoid re-render loops when backend legitimately returns 0 orders.
           // If we keep setting a brand new [] each time, downstream effects that depend on

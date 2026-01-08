@@ -40,25 +40,15 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     setLoadingMenu(true);
     try {
       // Load menu categories from backend
-      console.log('[Menu Load] Fetching menu from backend...');
       const response = await api.getMenu();
-      console.log('[Menu Load] API response:', response);
 
       if (response.success && response.data && Array.isArray(response.data)) {
-        console.log('[Menu Load] Received categories:', response.data.length);
         // Store original categories structure for preserving metadata
         setOriginalCategories(response.data);
 
         // Flatten categories into individual items with category info
         const flattenedItems = [];
         response.data.forEach((category) => {
-          console.log(
-            '[Menu Load] Processing category:',
-            category.category,
-            'with',
-            category.items?.length || 0,
-            'items'
-          );
           if (category.items && Array.isArray(category.items)) {
             category.items.forEach((item) => {
               flattenedItems.push({
@@ -73,14 +63,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           }
         });
 
-        console.log('[Menu Load] Flattened items count:', flattenedItems.length);
         setMenuItems(flattenedItems);
 
         // Extract unique categories for dropdown
         const uniqueCategories = [...new Set(flattenedItems.map((item) => item.category))];
         if (uniqueCategories.length > 0) {
           setCategories(uniqueCategories);
-          console.log('[Menu Load] Categories found:', uniqueCategories);
         }
       } else {
         console.warn('[Menu Load] Invalid response structure:', response);
@@ -141,14 +129,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
   // Sync menu items with images to gallery
   const syncMenuItemsToGallery = async (items) => {
     try {
-      console.log('[Gallery Sync] Starting sync of menu items to gallery...');
-      console.log('[Gallery Sync] Total menu items:', items.length);
-
       // Get current gallery items
       let galleryResponse;
       try {
         galleryResponse = await api.getGallery();
-        console.log('[Gallery Sync] Gallery API response:', galleryResponse);
       } catch (error) {
         console.error('[Gallery Sync] Error fetching gallery:', error);
         throw new Error('Failed to fetch gallery: ' + (error.message || 'Unknown error'));
@@ -156,7 +140,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
       const existingGalleryItems =
         galleryResponse.success && galleryResponse.data ? galleryResponse.data : [];
-      console.log('[Gallery Sync] Found', existingGalleryItems.length, 'existing gallery items');
 
       // Filter menu items that have imageUrl and price
       const itemsToSync = items.filter((item) => {
@@ -164,16 +147,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         const hasPrice = item.price && item.price > 0;
         return hasImage && hasPrice;
       });
-
-      console.log(
-        '[Gallery Sync] Found',
-        itemsToSync.length,
-        'menu items to sync (with image and price)'
-      );
-      console.log(
-        '[Gallery Sync] Items to sync:',
-        itemsToSync.map((i) => ({ name: i.name, imageUrl: i.imageUrl, price: i.price }))
-      );
 
       // Create/update gallery items for each menu item
       let created = 0;
@@ -203,9 +176,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
               existingItem._id || existingItem.id,
               galleryItemData
             );
-            console.log('[Gallery Sync] Update response for', item.name, ':', updateResponse);
             updated++;
-            console.log('[Gallery Sync] Updated gallery item:', item.name);
           } catch (error) {
             console.error('[Gallery Sync] Error updating gallery item', item.name, ':', error);
             throw error;
@@ -214,9 +185,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           // Create new gallery item
           try {
             const createResponse = await api.createGalleryItem(galleryItemData);
-            console.log('[Gallery Sync] Create response for', item.name, ':', createResponse);
             created++;
-            console.log('[Gallery Sync] Created gallery item:', item.name);
           } catch (error) {
             console.error('[Gallery Sync] Error creating gallery item', item.name, ':', error);
             throw error;
@@ -233,18 +202,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         if (!menuItemKeys.has(key) && galleryItem.isActive) {
           await api.updateGalleryItem(galleryItem._id || galleryItem.id, { isActive: false });
           deactivated++;
-          console.log('[Gallery Sync] Deactivated gallery item:', galleryItem.name);
         }
       }
 
-      console.log(
-        '[Gallery Sync] Sync complete! Created:',
-        created,
-        'Updated:',
-        updated,
-        'Deactivated:',
-        deactivated
-      );
+      // Sync complete
 
       if (showNotification) {
         showNotification(
@@ -268,17 +229,11 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
   const saveMenuItemsToBackend = async (items) => {
     try {
       const categories = convertItemsToCategories(items);
-      console.log('[Menu Save] Saving categories to backend:', JSON.stringify(categories, null, 2));
-      console.log('[Menu Save] Number of items:', items.length);
 
       const response = await api.updateMenu(categories);
-      console.log('[Menu Save] Backend save response:', response);
 
       if (response && response.success) {
-        console.log('[Menu Save] Menu saved successfully!');
-
         // Sync menu items with images to gallery
-        console.log('[Menu Save] Starting gallery sync...');
         await syncMenuItemsToGallery(items);
 
         // Reload menu items after saving to get updated data

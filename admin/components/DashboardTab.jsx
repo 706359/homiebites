@@ -132,8 +132,6 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     });
   }
   
-  // Debug: Log revenue data
-  console.log('[DashboardTab] Last 6 Months Revenue:', last6MonthsRevenue);
 
   // Orders by Mode (Lunch vs Dinner)
   const ordersByMode = {
@@ -175,9 +173,6 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   }
   const maxDailyOrders = Math.max(...dailyOrdersData.map((d) => d.orders), 1);
   
-  // Debug: Log daily orders data
-  console.log('[DashboardTab] Daily Orders Data:', dailyOrdersData.slice(0, 5), '...', dailyOrdersData.slice(-5));
-  console.log('[DashboardTab] Max Daily Orders:', maxDailyOrders);
 
   // Payment Mode Split
   const paymentModeStats = {};

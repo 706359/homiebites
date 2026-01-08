@@ -22,7 +22,7 @@ if (typeof window !== 'undefined') {
     
     // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
-      console.log('PWA is already installed');
+      // PWA is already installed
     }
   }
 }

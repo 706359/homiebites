@@ -30,12 +30,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
           localStorage.setItem("homiebites_user", JSON.stringify(data.user));
           localStorage.setItem("homiebites_admin", "true");
 
-          console.log("[AdminLogin] ✅ Successfully logged in via API:", {
-            user: data.user.name,
-            role: data.user.role,
-            hasToken: !!data.token,
-            tokenLength: data.token?.length || 0,
-          });
+          // Successfully logged in
 
           if (onLoginSuccess) {
             onLoginSuccess();

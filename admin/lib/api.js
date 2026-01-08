@@ -36,17 +36,9 @@ if (isProduction) {
   }
 }
 
-// Debug log to verify API URL
+// API URL configuration
 if (typeof window !== 'undefined') {
-  console.log(
-    '[API] Using backend URL:',
-    resolvedApiUrl,
-    '(mode:',
-    isProduction ? 'production' : 'development',
-    ', env:',
-    process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'default',
-    ')'
-  );
+  // Backend URL configured - no debug logging
 }
 
 export const api = {
@@ -176,10 +168,6 @@ export const api = {
       username: emailOrUsername?.trim() || emailOrUsername,
       password: password?.trim() || password,
     };
-    console.log('[API] Sending login request:', {
-      username: loginData.username,
-      hasPassword: !!loginData.password,
-    });
     return this.request('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify(loginData),

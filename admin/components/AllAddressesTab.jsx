@@ -27,20 +27,9 @@ const AllAddressesTab = ({
   // Calculate customer stats
   const customerStats = useMemo(() => {
     if (!orders || orders.length === 0) {
-      console.log('[AllAddressesTab] No orders provided');
       return [];
     }
 
-    console.log('[AllAddressesTab] Processing', orders.length, 'orders');
-    if (orders.length > 0) {
-      console.log('[AllAddressesTab] Sample order:', {
-        orderId: orders[0].orderId || orders[0]._id,
-        deliveryAddress: orders[0].deliveryAddress,
-        customerAddress: orders[0].customerAddress,
-        address: orders[0].address,
-        allKeys: Object.keys(orders[0]),
-      });
-    }
 
     const customerMap = {};
     const now = new Date();
@@ -62,15 +51,6 @@ const AllAddressesTab = ({
 
       if (!address || !address.trim()) {
         ordersWithoutAddresses++;
-        if (idx < 3) {
-          console.log('[AllAddressesTab] Order without address:', {
-            orderId: order.orderId || order._id,
-            keys: Object.keys(order),
-            deliveryAddress: order.deliveryAddress,
-            customerAddress: order.customerAddress,
-            address: order.address,
-          });
-        }
         return;
       }
 
@@ -170,13 +150,6 @@ const AllAddressesTab = ({
         isInactive,
       };
     });
-
-    console.log('[AllAddressesTab] Orders with addresses:', ordersWithAddresses);
-    console.log('[AllAddressesTab] Orders without addresses:', ordersWithoutAddresses);
-    console.log('[AllAddressesTab] Total customers found:', customers.length);
-    if (customers.length > 0) {
-      console.log('[AllAddressesTab] Sample customer:', customers[0]);
-    }
 
     return customers;
   }, [orders]);
