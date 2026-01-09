@@ -2,7 +2,7 @@
  * Next.js API Route: Upload Excel File
  * Migrated from Express backend - Full implementation matching backend/HomieBites/controllers/uploadExcelController.js
  */
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import connectDB from '../../../../lib/db.js';
 import { createErrorResponse, isAdmin } from '../../../../lib/middleware/auth.js';
 import Order from '../../../../lib/models/Order.js';
@@ -24,31 +24,73 @@ export async function POST(request) {
 
     let workbook;
     try {
-      workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true });
+      workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
     } catch (err) {
+      console.error('[uploadExcel] Error loading Excel file:', err);
       return Response.json({ success: false, error: 'Invalid Excel file' }, { status: 400 });
     }
 
-    const sheetNameCandidates = workbook.SheetNames || [];
-    let sheetName = sheetNameCandidates.find(
-      (s) =>
-        String(s || '')
-          .toLowerCase()
-          .replace(/\s+/g, '') === 'alldata'
+    // Find the worksheet - prefer "AllData" sheet, otherwise use first sheet
+    let worksheet = null;
+    const allDataSheet = workbook.worksheets.find(
+      (ws) => ws.name.toLowerCase().replace(/\s+/g, '') === 'alldata'
     );
-    if (!sheetName) sheetName = sheetNameCandidates[0];
-    const worksheet = workbook.Sheets[sheetName];
+    if (allDataSheet) {
+      worksheet = allDataSheet;
+    } else if (workbook.worksheets.length > 0) {
+      worksheet = workbook.worksheets[0];
+    }
 
     if (!worksheet) {
       return Response.json({ success: false, error: 'Sheet not found' }, { status: 400 });
     }
 
-    // Parse with cellDates: true to get Date objects directly from Excel
-    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-      header: 1,
-      defval: '',
-      raw: false, // Convert dates to strings/Date objects
-      cellDates: true, // Get Date objects for date cells
+    // Convert worksheet to JSON array of arrays
+    const jsonData = [];
+    let maxColumnCount = 0;
+    
+    // First pass: find the maximum column count
+    worksheet.eachRow((row, rowNumber) => {
+      const columnCount = row.cellCount;
+      if (columnCount > maxColumnCount) {
+        maxColumnCount = columnCount;
+      }
+    });
+    
+    // Second pass: extract all row data
+    worksheet.eachRow((row, rowNumber) => {
+      const rowData = [];
+      
+      // Get all cells in this row, ensuring we have maxColumnCount columns
+      for (let colNumber = 1; colNumber <= maxColumnCount; colNumber++) {
+        const cell = row.getCell(colNumber);
+        let value = '';
+        
+        if (cell.value !== null && cell.value !== undefined) {
+          // Handle different cell value types
+          if (cell.value instanceof Date) {
+            value = cell.value;
+          } else if (typeof cell.value === 'object') {
+            // Handle rich text, formulas, etc.
+            if (cell.value.text !== undefined) {
+              value = cell.value.text;
+            } else if (cell.value.result !== undefined) {
+              // Formula result
+              value = cell.value.result;
+            } else if (cell.value.richText) {
+              // Rich text array
+              value = cell.value.richText.map((rt) => rt.text).join('');
+            } else {
+              value = String(cell.value);
+            }
+          } else {
+            value = cell.value;
+          }
+        }
+        rowData.push(value);
+      }
+      jsonData.push(rowData);
     });
 
     if (!jsonData || jsonData.length < 2) {

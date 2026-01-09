@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import * as XLSX from 'xlsx';
 import api from '../../lib/api-admin.js';
 
 const CSVUploadModal = ({
@@ -138,75 +137,23 @@ const CSVUploadModal = ({
       };
       reader.readAsText(selectedFile);
     } else {
-      // For Excel files, parse client-side using xlsx library
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array', cellDates: true });
-
-          // Get first sheet
-          const firstSheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[firstSheetName];
-
-          // Convert to JSON with header row
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-            header: 1, // Array of arrays
-            defval: '', // Default value for empty cells
-            raw: false, // Convert dates to strings
-          });
-
-          if (jsonData.length > 0) {
-            // First row is headers
-            const headers = jsonData[0].map((h) => String(h || '').trim());
-
-            // Get first data row only (skip header row)
-            const previewRows = jsonData.slice(1, 2).map((row) => {
-              const rowObj = {};
-              headers.forEach((header, idx) => {
-                let cellValue = row[idx];
-                // Handle date objects
-                if (cellValue instanceof Date) {
-                  // Format date as YYYY-MM-DD for display
-                  const year = cellValue.getFullYear();
-                  const month = String(cellValue.getMonth() + 1).padStart(2, '0');
-                  const day = String(cellValue.getDate()).padStart(2, '0');
-                  cellValue = `${year}-${month}-${day}`;
-                } else {
-                  cellValue = String(cellValue || '').trim();
-                }
-                rowObj[header] = cellValue;
-              });
-              return rowObj;
-            });
-
-            // Count total data rows (excluding header and empty rows)
-            const dataRows = jsonData.slice(1).filter((row) => {
-              // Check if row has at least one non-empty value
-              return row.some((cell) => String(cell || '').trim().length > 0);
-            });
-            const totalRows = dataRows.length;
-
-            setPreviewData({ headers, rows: previewRows, totalRows, isExcel: true });
-            validateCSVData(headers, previewRows);
-          } else {
-            setPreviewData({ headers: [], rows: [], totalRows: 0, isExcel: true });
-          }
-        } catch (error) {
-          console.error('Error parsing Excel:', error);
-          if (showNotification) {
-            showNotification('Error parsing Excel file. Please check the file format.', 'error');
-          }
-          setPreviewData({ headers: [], rows: [], totalRows: 0, isExcel: true });
-        }
-      };
-      reader.onerror = () => {
-        if (showNotification) {
-          showNotification('Error reading Excel file', 'error');
-        }
-        setPreviewData({ headers: [], rows: [], totalRows: 0, isExcel: true });
-      };
-      reader.readAsArrayBuffer(selectedFile);
+      // For Excel files, we don't parse client-side for security reasons
+      // The file will be parsed on the server during upload using exceljs
+      setPreviewData({
+        headers: [],
+        rows: [],
+        totalRows: 0,
+        isExcel: true,
+        fileName: selectedFile.name,
+        fileSize: selectedFile.size,
+      });
+      
+      if (showNotification) {
+        showNotification(
+          'Excel file selected. File will be validated during upload.',
+          'info'
+        );
+      }
     }
   };
 
