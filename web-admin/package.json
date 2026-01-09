@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev -p 3000",
+    "dev": "next dev -p 5050",
     "build": "next build",
-    "start": "next start -p 3000",
-    "stop": "lsof -ti:3000 | xargs kill -9 2>/dev/null || echo 'No process found on port 3000'",
+    "start": "next start -p 5050",
+    "stop": "lsof -ti:5050 | xargs kill -9 2>/dev/null || echo 'No process found on port 5050'",
     "lint": "next lint",
     "vite:dev": "vite",
     "vite:build": "vite build",
