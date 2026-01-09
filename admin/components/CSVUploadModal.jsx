@@ -422,10 +422,17 @@ const CSVUploadModal = ({
             } else {
               // Non-200 status code
               setUploadStatus('error');
+              console.error('[CSVUpload] Upload failed:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                response: response,
+                responseText: xhr.responseText,
+              });
               if (showNotification) {
                 const errorMsg =
-                  response.error ||
-                  response.message ||
+                  response?.error ||
+                  response?.message ||
+                  xhr.responseText ||
                   `Upload failed: Server returned status ${xhr.status}`;
                 showNotification(errorMsg, 'error');
               }
@@ -458,8 +465,9 @@ const CSVUploadModal = ({
         const token =
           typeof window !== 'undefined' ? localStorage.getItem('homiebites_token') : null;
 
-        // Start upload
-        const apiUrl = api.baseURL || 'http://127.0.0.1:3001';
+        // Start upload - use relative URL for Next.js API routes
+        // api.baseURL is empty for Next.js API routes (they run on the same server)
+        const apiUrl = api.baseURL || '';
         xhr.open('POST', `${apiUrl}/api/orders/upload-excel`);
 
         // Set authorization header if token exists

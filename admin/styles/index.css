@@ -9,35 +9,35 @@
 
 /* Only Color Variables - No other design tokens */
 :root {
-  /* Accent Colors - Default (overridden by theme) */
-  --admin-accent: #449031;
-  --admin-secondary: #c45c2d;
-  --admin-success: #449031;
-  --admin-warning: #f59e0b;
-  --admin-danger: #dc2626;
+  /* Accent Colors - Default (overridden by theme) - Light Clean */
+  --admin-accent: #2563eb; /* Primary blue */
+  --admin-secondary: #3b82f6; /* Secondary blue */
+  --admin-success: #16a34a; /* Success green */
+  --admin-warning: #f59e0b; /* Warning amber */
+  --admin-danger: #dc2626; /* Danger red */
 
   /* Extended color palette - Default (overridden by theme) */
-  --admin-accent-light: rgba(68, 144, 49, 0.12);
-  --admin-secondary-light: rgba(196, 92, 45, 0.12);
-  --admin-success-light: rgba(68, 144, 49, 0.12);
+  --admin-accent-light: rgba(37, 99, 235, 0.1);
+  --admin-secondary-light: rgba(59, 130, 246, 0.12);
+  --admin-success-light: rgba(22, 163, 74, 0.1);
   --admin-warning-light: rgba(245, 158, 11, 0.15);
   --admin-danger-light: rgba(220, 38, 38, 0.12);
 
-  /* Text colors */
-  --admin-text: #1a202c;
-  --admin-text-primary: #1e293b;
-  --admin-text-secondary: #64748b;
-  --admin-text-light: #94a3b8;
+  /* Text colors - Light Clean */
+  --admin-text: #111827; /* Primary text */
+  --admin-text-primary: #111827;
+  --admin-text-secondary: #6b7280; /* Muted text */
+  --admin-text-light: #9ca3af;
 
-  /* Border and background */
-  --admin-border: #e2e8f0;
+  /* Border and background - Light Clean */
+  --admin-border: #e5e7eb;
   --admin-glass-bg: rgba(255, 255, 255, 0.9);
   --admin-glass-border: rgba(0, 0, 0, 0.06);
   --admin-glass-overlay: rgba(255, 255, 255, 0.5);
 
-  /* Button System Variables */
-  --primary-green: #449031;
-  --primary-orange: #c45c2d;
+  /* Button System Variables - Updated to Professional Palette */
+  --primary-green: #2563eb; /* Blue primary */
+  --primary-orange: #3b82f6; /* Blue secondary */
   --text-white: #ffffff;
   --text-primary: #1a202c;
   --gray-lighter: #f3f4f6;
@@ -53,12 +53,12 @@
   --whatsapp-green: #25d366;
   --whatsapp-green-hover: #20ba5a;
 
-  /* Shadow variables */
-  --shadow-green-light: rgba(68, 144, 49, 0.15);
-  --shadow-green-medium: rgba(68, 144, 49, 0.3);
-  --shadow-green: rgba(68, 144, 49, 0.2);
-  --shadow-orange-light: rgba(196, 92, 45, 0.15);
-  --shadow-orange-medium: rgba(196, 92, 45, 0.3);
+  /* Shadow variables - Updated to Professional Palette */
+  --shadow-green-light: rgba(37, 99, 235, 0.15);
+  --shadow-green-medium: rgba(37, 99, 235, 0.3);
+  --shadow-green: rgba(37, 99, 235, 0.2);
+  --shadow-orange-light: rgba(59, 130, 246, 0.15);
+  --shadow-orange-medium: rgba(59, 130, 246, 0.3);
 }
 
 /* Tailwind CSS Directives */

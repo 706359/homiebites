@@ -1,40 +1,10 @@
 // Centralized API configuration and utilities
 
 // Determine API base URL
-// In production (served from Express), use relative URLs
-// In development (Next.js dev server), use absolute URL to backend
-const isProduction = typeof window !== 'undefined' 
-  ? (process.env.NODE_ENV === 'production' || window.location.hostname !== 'localhost')
-  : process.env.NODE_ENV === 'production';
-const isDevelopment = !isProduction;
-
-let resolvedApiUrl;
-
-if (isProduction) {
-  // Production: Use relative URLs since Express serves both API and frontend
-  resolvedApiUrl = '/api';
-} else {
-  // Development: Use absolute URL to backend server
-  // Force backend API URL to port 3001 (backend server port)
-  // Admin runs on 3002, backend API runs on 3001
-  const API_BASE_URL =
-    (typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL : null) ||
-    process.env.API_URL ||
-    process.env.VITE_API_URL ||
-    'http://localhost:3001';
-
-  resolvedApiUrl = API_BASE_URL;
-  if (resolvedApiUrl.includes(':3000') || resolvedApiUrl.includes(':3002')) {
-    resolvedApiUrl = resolvedApiUrl.replace(':3000', ':3001').replace(':3002', ':3001');
-  }
-  
-  // Ensure we're always using port 3001 in development
-  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-    if (!resolvedApiUrl.includes('localhost:3001') && !resolvedApiUrl.includes('127.0.0.1:3001')) {
-      resolvedApiUrl = 'http://localhost:3001';
-    }
-  }
-}
+// All APIs are now in Next.js - use relative URLs for both development and production
+// Next.js API routes run on the same server as the frontend
+// Endpoints already include '/api/' prefix, so base URL should be empty
+let resolvedApiUrl = '';
 
 // API URL configuration
 if (typeof window !== 'undefined') {
