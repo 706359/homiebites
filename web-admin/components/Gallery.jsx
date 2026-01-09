@@ -75,14 +75,6 @@ const Gallery = () => {
                 });
               }
               
-              // Default details if not provided
-              const defaultDetails = [
-                'Dry Sabji',
-                'Gravy Sabji',
-                '4 Roti (6 without Rice)',
-                'Rice'
-              ];
-
               return {
                 id: item._id || item.id,
                 name: item.name,
@@ -91,7 +83,7 @@ const Gallery = () => {
                 category: item.category,
                 details: (item.details && Array.isArray(item.details) && item.details.length > 0) 
                   ? item.details 
-                  : defaultDetails, // Use default details if not provided
+                  : null, // Only include details if they exist
                 alt: item.alt || item.name || 'Gallery item',
                 caption: item.caption || (item.price ? `${item.name} - ₹${item.price}` : item.name),
               };
@@ -347,6 +339,7 @@ const Gallery = () => {
                     <div className='gallery-item-price'>₹{item.price}</div>
                   )}
                 </div>
+                {/* Only show details overlay if item has actual details */}
                 {item.details && Array.isArray(item.details) && item.details.length > 0 && (
                   <div className='gallery-details'>
                     <ul className='gallery-details-list'>
