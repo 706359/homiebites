@@ -169,3 +169,5 @@ export const triggerDataSync = () => {
     window.dispatchEvent(new CustomEvent("menuDataUpdated"));
   }
 };
+
+

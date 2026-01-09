@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:3001";
+// Use relative URL for Next.js API routes (same server)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || '';
 
 export default function FontSettingsLoader() {
   useEffect(() => {

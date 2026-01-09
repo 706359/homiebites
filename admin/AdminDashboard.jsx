@@ -19,6 +19,8 @@ import ReportsTab from './components/ReportsTab.jsx';
 import SettingsTab from './components/SettingsTab.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import TopNav from './components/TopNav.jsx';
+import KeyboardShortcuts from './components/KeyboardShortcuts.jsx';
+import HelpCenter from './components/HelpCenter.jsx';
 import { useNotification } from './contexts/NotificationContext.jsx';
 import { useFastDataSync } from './hooks/useFastDataSync.js';
 import api from './lib/api.js';
@@ -63,6 +65,8 @@ const AdminDashboard = () => {
   const [allOrdersFilterPaymentStatus, setAllOrdersFilterPaymentStatus] = useState('');
   const [dismissedNotifications, setDismissedNotifications] = useState([]);
   const [showOverdueFilter, setShowOverdueFilter] = useState(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+  const [showHelpCenter, setShowHelpCenter] = useState(false);
 
   // Load data using fast sync hook for optimized operations
   const {
@@ -422,6 +426,83 @@ const AdminDashboard = () => {
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem('homiebites_dismissed_notifications') || '[]');
     setDismissedNotifications(stored);
+  }, []);
+
+  // Global keyboard shortcuts handler
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Don't trigger shortcuts when typing in inputs
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+        // Allow Escape to close modals even when typing
+        if (e.key === 'Escape') {
+          if (showKeyboardShortcuts) {
+            setShowKeyboardShortcuts(false);
+            return;
+          }
+          if (showHelpCenter) {
+            setShowHelpCenter(false);
+            return;
+          }
+        }
+        // Allow ? to show shortcuts even when typing
+        if (e.key === '?' && !e.shiftKey) {
+          e.preventDefault();
+          setShowKeyboardShortcuts(true);
+          return;
+        }
+        return;
+      }
+
+      // Keyboard shortcuts
+      if (e.key === '?' && !e.shiftKey) {
+        e.preventDefault();
+        setShowKeyboardShortcuts(true);
+      } else if (e.key === 'Escape') {
+        if (showKeyboardShortcuts) {
+          setShowKeyboardShortcuts(false);
+        } else if (showHelpCenter) {
+          setShowHelpCenter(false);
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+        e.preventDefault();
+        setShowHelpCenter(true);
+      } else if (e.key === 'g' && !e.ctrlKey && !e.metaKey) {
+        // G key pressed, wait for second key
+        const handleSecondKey = (e2) => {
+          if (e2.key === 'd' || e2.key === 'D') {
+            e2.preventDefault();
+            setActiveTab('dashboard');
+          } else if (e2.key === 'o' || e2.key === 'O') {
+            e2.preventDefault();
+            setActiveTab('allOrdersData');
+          } else if (e2.key === 'a' || e2.key === 'A') {
+            e2.preventDefault();
+            setActiveTab('analytics');
+          } else if (e2.key === 'c' || e2.key === 'C') {
+            e2.preventDefault();
+            setActiveTab('customers');
+          } else if (e2.key === 's' || e2.key === 'S') {
+            e2.preventDefault();
+            setActiveTab('settings');
+          }
+          document.removeEventListener('keydown', handleSecondKey);
+        };
+        document.addEventListener('keydown', handleSecondKey);
+        setTimeout(() => document.removeEventListener('keydown', handleSecondKey), 1000);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showKeyboardShortcuts, showHelpCenter, setActiveTab]);
+
+  // Listen for help center event from TopNav
+  useEffect(() => {
+    const handleShowHelpCenter = () => {
+      setShowHelpCenter(true);
+    };
+    window.addEventListener('showHelpCenter', handleShowHelpCenter);
+    return () => window.removeEventListener('showHelpCenter', handleShowHelpCenter);
   }, []);
 
   // Handle view order
@@ -987,6 +1068,16 @@ const AdminDashboard = () => {
 
       {/* PWA Install Prompt */}
       <InstallPrompt />
+
+      {/* Keyboard Shortcuts Modal */}
+      {showKeyboardShortcuts && (
+        <KeyboardShortcuts onClose={() => setShowKeyboardShortcuts(false)} />
+      )}
+
+      {/* Help Center Modal */}
+      {showHelpCenter && (
+        <HelpCenter onClose={() => setShowHelpCenter(false)} />
+      )}
     </div>
   );
 };

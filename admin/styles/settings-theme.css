@@ -10,15 +10,15 @@
   gap: 12px;
   margin-bottom: 18px;
   padding-bottom: 14px;
-  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
 }
 
 .settings-theme-card .settings-card-icon {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
-  color: var(--admin-accent, #449031);
+  background: var(--admin-accent-light, rgba(37, 99, 235, 0.1));
+  color: var(--admin-accent, #2563eb);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -30,7 +30,7 @@
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--admin-text-primary, #1a202c);
+  color: var(--admin-text-primary, #111827);
 }
 
 .settings-theme-grid {
@@ -63,13 +63,13 @@
 }
 
 .theme-option:hover {
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.05));
-  border-color: var(--admin-border, #e2e8f0);
+  background: var(--admin-accent-light, rgba(37, 99, 235, 0.05));
+  border-color: var(--admin-border, #e5e7eb);
 }
 
 .theme-option.active {
-  border-color: var(--admin-accent, #449031);
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  border-color: var(--admin-accent, #2563eb);
+  background: var(--admin-accent-light, rgba(37, 99, 235, 0.1));
 }
 
 .theme-option input[type='radio'] {
@@ -79,18 +79,18 @@
 
 .theme-option i {
   font-size: 16px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   transition: color 0.2s ease;
 }
 
 .theme-option.active i {
-  color: var(--admin-accent, #449031);
+  color: var(--admin-accent, #2563eb);
 }
 
 .theme-option span {
   font-size: 14px;
   font-weight: 500;
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
 }
 
 /* Color Picker Group */
@@ -105,7 +105,7 @@
   width: 50px;
   height: 38px;
   border-radius: 8px;
-  border: 1px solid var(--admin-border, #e2e8f0);
+  border: 1px solid var(--admin-border, #e5e7eb);
   cursor: pointer;
   padding: 0;
   flex-shrink: 0;
@@ -123,7 +123,7 @@
   flex-wrap: wrap;
   width: 100%;
   padding-top: 8px;
-  border-top: 1px solid var(--admin-border, #e2e8f0);
+  border-top: 1px solid var(--admin-border, #e5e7eb);
 }
 
 .color-preset {
@@ -144,22 +144,22 @@
 }
 
 .color-preset.active {
-  border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 2px var(--admin-accent-light, rgba(68, 144, 49, 0.3));
+  border-color: var(--admin-accent, #2563eb);
+  box-shadow: 0 0 0 2px var(--admin-accent-light, rgba(37, 99, 235, 0.3));
 }
 
 /* Preview Box */
 .preview-box {
   margin-top: 10px;
   padding: 10px 12px;
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.05));
+  background: var(--admin-accent-light, rgba(37, 99, 235, 0.05));
   border-radius: 8px;
-  border: 1px solid var(--admin-border, #e2e8f0);
+  border: 1px solid var(--admin-border, #e5e7eb);
 }
 
 .preview-box p {
   font-size: 13px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   margin: 0;
   line-height: 1.5;
 }
@@ -171,7 +171,7 @@
   gap: 10px;
   margin-top: 8px;
   padding-top: 14px;
-  border-top: 1px solid var(--admin-border, #e2e8f0);
+  border-top: 1px solid var(--admin-border, #e5e7eb);
 }
 
 .settings-action-group .btn {
@@ -198,24 +198,24 @@
 
 /* Dark Theme Support */
 :root.dark-theme .theme-option {
-  border-color: var(--admin-border, #3d4558);
+  border-color: var(--admin-border, #1f2937);
 }
 
 :root.dark-theme .theme-option:hover {
-  background: var(--admin-accent-light, rgba(92, 184, 92, 0.1));
-  border-color: var(--admin-accent-light, rgba(92, 184, 92, 0.3));
+  background: var(--admin-accent-light, rgba(59, 130, 246, 0.1));
+  border-color: var(--admin-accent-light, rgba(59, 130, 246, 0.3));
 }
 
 :root.dark-theme .theme-option.active {
-  border-color: var(--admin-accent, #5cb85c);
-  background: var(--admin-accent-light, rgba(92, 184, 92, 0.15));
+  border-color: var(--admin-accent, #3b82f6);
+  background: var(--admin-accent-light, rgba(59, 130, 246, 0.15));
 }
 
 :root.dark-theme .preview-box {
-  background: var(--admin-accent-light, rgba(92, 184, 92, 0.08));
-  border-color: var(--admin-border, #3d4558);
+  background: var(--admin-accent-light, rgba(59, 130, 246, 0.08));
+  border-color: var(--admin-border, #1f2937);
 }
 
 :root.dark-theme .settings-action-group {
-  border-top-color: var(--admin-border, #3d4558);
+  border-top-color: var(--admin-border, #1f2937);
 }

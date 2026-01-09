@@ -18,19 +18,19 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--admin-accent, #449031);
+  background: var(--admin-accent, #2563eb);
   border-radius: 10px;
   border: 2px solid var(--admin-glass-bg, rgba(255, 255, 255, 0.5));
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a7a29;
+  background: #1d4ed8;
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--admin-accent, #449031) var(--admin-glass-bg, rgba(255, 255, 255, 0.5));
+  scrollbar-color: var(--admin-accent, #2563eb) var(--admin-glass-bg, rgba(255, 255, 255, 0.5));
 }
 
 /* Custom scrollbar for specific containers */
@@ -94,20 +94,20 @@
 
 /* Better focus indicators for keyboard navigation */
 *:focus-visible {
-  outline: 3px solid var(--admin-accent, #449031);
+  outline: 3px solid var(--admin-accent, #2563eb);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 .btn:focus-visible {
-  outline: 3px solid var(--admin-accent, #449031);
+  outline: 3px solid var(--admin-accent, #2563eb);
   outline-offset: 2px;
 }
 
 .input-field:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid var(--admin-accent, #449031);
+  outline: 3px solid var(--admin-accent, #2563eb);
   outline-offset: 2px;
 }
 
@@ -116,7 +116,7 @@ textarea:focus-visible {
   position: absolute;
   top: -40px;
   left: 0;
-  background: var(--admin-accent, #449031);
+  background: var(--admin-accent, #2563eb);
   color: white;
   padding: 8px 16px;
   text-decoration: none;
@@ -136,7 +136,7 @@ input[type='radio'] {
   appearance: none;
   width: 20px;
   height: 20px;
-  border: 2px solid var(--admin-border, #e2e8f0);
+  border: 2px solid var(--admin-border, #e5e7eb);
   border-radius: 4px;
   background: var(--admin-glass-bg, rgba(255, 255, 255, 0.9));
   cursor: pointer;
@@ -151,8 +151,8 @@ input[type='radio'] {
 
 input[type='checkbox']:checked,
 input[type='radio']:checked {
-  background: var(--admin-accent, #449031);
-  border-color: var(--admin-accent, #449031);
+  background: var(--admin-accent, #2563eb);
+  border-color: var(--admin-accent, #2563eb);
 }
 
 input[type='checkbox']:checked::after {
@@ -180,8 +180,8 @@ input[type='radio']:checked::after {
 
 input[type='checkbox']:hover,
 input[type='radio']:hover {
-  border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
+  border-color: var(--admin-accent, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 input[type='checkbox']:disabled,
@@ -204,17 +204,17 @@ input[type='file'] {
   gap: 8px;
   padding: 10px 20px;
   background: var(--admin-glass-bg, rgba(255, 255, 255, 0.9));
-  border: 2px dashed var(--admin-border, #e2e8f0);
+  border: 2px dashed var(--admin-border, #e5e7eb);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-weight: 600;
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
 }
 
 .file-input-label:hover {
-  border-color: var(--admin-accent, #449031);
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  border-color: var(--admin-accent, #2563eb);
+  background: var(--admin-accent-light, rgba(37, 99, 235, 0.1));
 }
 
 .file-input-label:active {
@@ -229,7 +229,7 @@ input[type='range'] {
   width: 100%;
   height: 6px;
   border-radius: 3px;
-  background: var(--admin-border, #e2e8f0);
+  background: var(--admin-border, #e5e7eb);
   outline: none;
   -webkit-appearance: none;
 }
@@ -240,7 +240,7 @@ input[type='range']::-webkit-slider-thumb {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--admin-accent, #449031);
+  background: var(--admin-accent, #2563eb);
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
@@ -248,14 +248,14 @@ input[type='range']::-webkit-slider-thumb {
 
 input[type='range']::-webkit-slider-thumb:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(68, 144, 49, 0.4);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
 input[type='range']::-moz-range-thumb {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--admin-accent, #449031);
+  background: var(--admin-accent, #2563eb);
   cursor: pointer;
   border: none;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
@@ -272,7 +272,7 @@ input[type='range']::-moz-range-thumb:hover {
 input[type='color'] {
   width: 60px;
   height: 40px;
-  border: 2px solid var(--admin-border, #e2e8f0);
+  border: 2px solid var(--admin-border, #e5e7eb);
   border-radius: 8px;
   cursor: pointer;
   padding: 2px;
@@ -281,8 +281,8 @@ input[type='color'] {
 }
 
 input[type='color']:hover {
-  border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
+  border-color: var(--admin-accent, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 input[type='color']::-webkit-color-swatch-wrapper {
@@ -350,13 +350,13 @@ input[type='color']::-webkit-color-swatch {
    ============================================ */
 
 ::selection {
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.3));
-  color: var(--admin-text, #1a202c);
+  background: var(--admin-accent-light, rgba(37, 99, 235, 0.3));
+  color: var(--admin-text, #111827);
 }
 
 ::-moz-selection {
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.3));
-  color: var(--admin-text, #1a202c);
+  background: var(--admin-accent-light, rgba(37, 99, 235, 0.3));
+  color: var(--admin-text, #111827);
 }
 
 /* ============================================
@@ -423,8 +423,8 @@ textarea:disabled {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid var(--admin-border, #e2e8f0);
-  border-top-color: var(--admin-accent, #449031);
+  border: 4px solid var(--admin-border, #e5e7eb);
+  border-top-color: var(--admin-accent, #2563eb);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -482,12 +482,12 @@ textarea.error {
 .input-field.success,
 select.success,
 textarea.success {
-  border-color: var(--admin-success, #449031);
-  background: rgba(68, 144, 49, 0.05);
+  border-color: var(--admin-success, #16a34a);
+  background: rgba(37, 99, 235, 0.05);
 }
 
 .input-field.success:focus {
-  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .error-message {
@@ -500,7 +500,7 @@ textarea.success {
 }
 
 .success-message {
-  color: var(--admin-success, #449031);
+  color: var(--admin-success, #16a34a);
   font-size: 12px;
   margin-top: 4px;
   display: flex;
@@ -513,8 +513,8 @@ textarea.success {
    ============================================ */
 
 .drag-over {
-  border: 2px dashed var(--admin-accent, #449031) !important;
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1)) !important;
+  border: 2px dashed var(--admin-accent, #2563eb) !important;
+  background: var(--admin-accent-light, rgba(37, 99, 235, 0.1)) !important;
 }
 
 .dragging {
@@ -557,12 +557,12 @@ textarea.success {
   align-items: center;
   gap: 10px;
   font-size: 14px;
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
 }
 
 .context-menu-item:hover {
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
-  color: var(--admin-accent, #449031);
+  background: var(--admin-accent-light, rgba(37, 99, 235, 0.1));
+  color: var(--admin-accent, #2563eb);
 }
 
 .context-menu-item.danger:hover {
@@ -572,7 +572,7 @@ textarea.success {
 
 .context-menu-divider {
   height: 1px;
-  background: var(--admin-border, #e2e8f0);
+  background: var(--admin-border, #e5e7eb);
   margin: 4px 0;
 }
 
@@ -618,7 +618,7 @@ textarea.success {
 }
 
 .toast.success {
-  border-left: 4px solid var(--admin-success, #449031);
+  border-left: 4px solid var(--admin-success, #16a34a);
 }
 
 .toast.error {
@@ -630,7 +630,7 @@ textarea.success {
 }
 
 .toast.info {
-  border-left: 4px solid var(--admin-accent, #449031);
+  border-left: 4px solid var(--admin-accent, #2563eb);
 }
 
 .toast-icon {
@@ -646,12 +646,12 @@ textarea.success {
   font-weight: 600;
   font-size: 14px;
   margin-bottom: 4px;
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
 }
 
 .toast-message {
   font-size: 13px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
 }
 
 .toast-close {
@@ -673,7 +673,7 @@ textarea.success {
 
 .toast-close:hover {
   background: rgba(0, 0, 0, 0.05);
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
 }
 
 @keyframes toastSlideIn {
@@ -748,7 +748,7 @@ input[type='time']::-webkit-calendar-picker-indicator:hover {
 
 @media (prefers-contrast: high) {
   .dashboard-card {
-    border: 2px solid var(--admin-text, #1a202c);
+    border: 2px solid var(--admin-text, #111827);
   }
 
   .btn {

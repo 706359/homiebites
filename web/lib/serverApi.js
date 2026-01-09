@@ -3,17 +3,16 @@
  * Uses Next.js API routes or direct backend calls
  */
 
-const BACKEND_API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001';
+// All APIs are now in Next.js - use relative URLs (empty string means same origin)
+const BACKEND_API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || '';
 
 /**
  * Fetch menu data (for Server Components)
  */
 export async function getMenuDataServer() {
   try {
-    // Use Next.js API route if available, otherwise direct backend call
-    const apiUrl = process.env.NEXT_PUBLIC_USE_API_ROUTES === 'true' 
-      ? '/api/menu'
-      : `${BACKEND_API_URL}/api/menu`;
+    // All APIs are now in Next.js - use relative URL
+    const apiUrl = `${BACKEND_API_URL}/api/menu`;
 
     const response = await fetch(apiUrl, {
       method: 'GET',
@@ -45,9 +44,8 @@ export async function getMenuDataServer() {
  */
 export async function getOffersDataServer() {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_USE_API_ROUTES === 'true'
-      ? '/api/offers'
-      : `${BACKEND_API_URL}/api/offers`;
+    // All APIs are now in Next.js - use relative URL
+    const apiUrl = `${BACKEND_API_URL}/api/offers`;
 
     const response = await fetch(apiUrl, {
       method: 'GET',
@@ -89,9 +87,8 @@ export async function getOffersDataServer() {
  */
 export async function getReviewsServer(featured = false, limit = 10) {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_USE_API_ROUTES === 'true'
-      ? `/api/reviews?featured=${featured}&limit=${limit}`
-      : `${BACKEND_API_URL}/api/reviews?featured=${featured}&limit=${limit}`;
+    // All APIs are now in Next.js - use relative URL
+    const apiUrl = `${BACKEND_API_URL}/api/reviews?featured=${featured}&limit=${limit}`;
 
     const response = await fetch(apiUrl, {
       method: 'GET',

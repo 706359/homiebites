@@ -1,39 +1,61 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     './app/**/*.{js,ts,jsx,tsx}',
     './components/**/*.{js,ts,jsx,tsx}',
     './domains/**/*.{js,ts,jsx,tsx}',
+    './AdminDashboard.jsx',
+    './AdminLogin.jsx',
+    './AdminForgotPassword.jsx',
     './**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {
       colors: {
-        // Map existing design tokens to Tailwind
-        primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6', // Main Brand Color
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-        },
-        secondary: {
-          500: '#10b981', // Success/Green
-        },
-        warning: {
-          500: '#f59e0b', // Warning/Orange
-        },
-        danger: {
-          500: '#ef4444', // Error/Red
-        },
-        info: {
-          500: '#06b6d4', // Info/Cyan
-        },
+        // Theme Token Colors (Single Source of Truth)
+        bg: 'var(--bg)',
+        surface: 'var(--surface)',
+        text: 'var(--text)',
+        textSecondary: 'var(--text-secondary)',
+        border: 'var(--border)',
+        
+        // Primary & Status Colors
+        primary: 'var(--primary)',
+        success: 'var(--success)',
+        warning: 'var(--warning)',
+        danger: 'var(--danger)',
+        
+        // Light Variants
+        'primary-light': 'var(--primary-light)',
+        'success-light': 'var(--success-light)',
+        'warning-light': 'var(--warning-light)',
+        'danger-light': 'var(--danger-light)',
+        
+        // Secondary
+        secondary: 'var(--secondary)',
+        'secondary-light': 'var(--secondary-light)',
+        
+        // Legacy Admin Variables (for backward compatibility)
+        'admin-bg': 'var(--admin-bg)',
+        'admin-bg-secondary': 'var(--admin-bg-secondary)',
+        'admin-text': 'var(--admin-text)',
+        'admin-text-primary': 'var(--admin-text-primary)',
+        'admin-text-secondary': 'var(--admin-text-secondary)',
+        'admin-text-light': 'var(--admin-text-light)',
+        'admin-border': 'var(--admin-border)',
+        'admin-accent': 'var(--admin-accent)',
+        'admin-accent-light': 'var(--admin-accent-light)',
+        'admin-secondary': 'var(--admin-secondary)',
+        'admin-secondary-light': 'var(--admin-secondary-light)',
+        'admin-success': 'var(--admin-success)',
+        'admin-success-light': 'var(--admin-success-light)',
+        'admin-warning': 'var(--admin-warning)',
+        'admin-warning-light': 'var(--admin-warning-light)',
+        'admin-danger': 'var(--admin-danger)',
+        'admin-danger-light': 'var(--admin-danger-light)',
+        
+        // Extended color palette (for backward compatibility)
         gray: {
           50: '#f9fafb',
           100: '#f3f4f6',
@@ -89,9 +111,12 @@ export default {
         sm: '0.25rem', // 4px
         md: '0.375rem', // 6px
         lg: '0.5rem', // 8px
-        xl: '0.75rem', // 12px
+        xl: 'var(--radius)', // 0.75rem from theme tokens
         '2xl': '1rem', // 16px
         full: '9999px', // Circular
+      },
+      transitionDuration: {
+        theme: 'var(--transition)', // 150ms ease from theme tokens
       },
       boxShadow: {
         sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',

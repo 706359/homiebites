@@ -1,11 +1,20 @@
 /* Admin Dashboard Styles - Premium Design */
 
-/* Component Styles - Import must be first */
+/* Tailwind CSS Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme Tokens - Single Source of Truth (MUST BE FIRST) */
+@import './themes.css';
+
+/* Component Styles - Import after themes */
 @import './tailwind-components.css';
 @import './custom-overrides.css';
 @import './theme.css';
 @import './dashboard-enhancements.css';
 @import './settings-theme.css';
+@import './animations.css';
 
 /* Only Color Variables - No other design tokens */
 :root {
@@ -39,7 +48,7 @@
   --primary-green: #2563eb; /* Blue primary */
   --primary-orange: #3b82f6; /* Blue secondary */
   --text-white: #ffffff;
-  --text-primary: #1a202c;
+  --text-primary: #111827;
   --gray-lighter: #f3f4f6;
   --gray-light: #e5e7eb;
   --gray-dark: #1f2937;

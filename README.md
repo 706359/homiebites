@@ -50,47 +50,36 @@ npm install
 
 ### Running the Project
 
-#### Development Mode (All Services)
+#### Development Mode (Unified Application)
 
 ```bash
-# From root directory
-npm run dev:full
-# Runs Web (port 3000) + Backend API (port 3001)
+# From root directory - runs everything on port 3000
+npm run dev
+# or
+npm run admin
+# or
+npm run web
+# All run the same unified application
 
-# Or run all services including admin:
-npm run dev:all
-# Runs Web (port 3000) + Admin Dashboard (port 3002) + Backend API (port 3001)
+# Access points:
+# - Website: http://localhost:3000
+# - Admin Login: http://localhost:3000/admin
+# - Admin Dashboard: http://localhost:3000/admin/dashboard
 ```
 
-#### Individual Services
-
-**Web Application (Vite/React):**
+#### Quick Start
 
 ```bash
-npm run web
-# or
-cd web && npm run dev
+# Install dependencies
+cd web && npm install
+
+# Run the application
+npm run dev
+
 # Access at http://localhost:3000
 ```
 
-**Admin Dashboard (Vite/React):**
-
-```bash
-npm run admin
-# or
-cd admin && npm run dev
-# Access at http://localhost:3002 (or http://0.0.0.0:3002)
-# Admin runs on a separate host/port from the website
-```
-
-**Backend API:**
-
-```bash
-npm run backend
-# or
-cd backend && node server.js
-# API at http://localhost:3001
-```
+**Note**: The admin dashboard is now merged into the web application. Both run on the same port (3000). No separate admin server needed!
 
 ## 📱 Technology Stack
 

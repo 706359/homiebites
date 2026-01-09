@@ -1,5 +1,5 @@
 export default function sitemap() {
-  const baseUrl = import.meta.env.VITE_SITE_URL || "https://homiebites.com";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VITE_SITE_URL || "https://homiebites.com";
 
   const routes = ["", "/menu", "/support", "/faq", "/search"];
 

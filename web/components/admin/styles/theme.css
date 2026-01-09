@@ -1,0 +1,173 @@
+/* Theme System - Light/Dark Mode Support */
+
+/* Light Theme (Default) - Light Clean (Best for Business & Finance) */
+:root.light-theme,
+:root:not(.dark-theme) {
+  /* Background Colors - Clean and bright */
+  --admin-bg: #ffffff; /* Cards */
+  --admin-bg-secondary: #f9fafb; /* Main background */
+
+  /* Text Colors - High contrast for readability */
+  --admin-text: #111827; /* Primary text */
+  --admin-text-primary: #111827;
+  --admin-text-secondary: #6b7280; /* Muted text */
+  --admin-text-light: #9ca3af;
+
+  /* Border Colors - Clear separation */
+  --admin-border: #e5e7eb;
+  --admin-glass-bg: rgba(255, 255, 255, 0.95);
+  --admin-glass-border: rgba(0, 0, 0, 0.08);
+  --admin-glass-overlay: rgba(255, 255, 255, 0.6);
+
+  /* Accent Colors - Professional Blue */
+  --admin-accent: #2563eb; /* Primary blue */
+  --admin-accent-light: rgba(37, 99, 235, 0.1);
+  --admin-success: #16a34a; /* Success green */
+  --admin-success-light: rgba(22, 163, 74, 0.1);
+
+  /* Warning & Danger - High visibility */
+  --admin-warning: #f59e0b; /* Warning amber */
+  --admin-warning-light: rgba(245, 158, 11, 0.15);
+  --admin-danger: #dc2626; /* Danger red */
+  --admin-danger-light: rgba(220, 38, 38, 0.12);
+
+  /* Secondary color - Blue variant */
+  --admin-secondary: #3b82f6; /* Secondary blue */
+  --admin-secondary-light: rgba(59, 130, 246, 0.12);
+}
+
+/* Dark Theme - Dark Professional (Optimized for Long Usage) */
+:root.dark-theme {
+  /* Background Colors - Dark Professional Palette */
+  --admin-bg: #111827; /* Cards */
+  --admin-bg-secondary: #0f172a; /* Main background - dark slate */
+
+  /* Text Colors - High contrast for readability */
+  --admin-text: #e5e7eb; /* Primary text */
+  --admin-text-primary: #e5e7eb;
+  --admin-text-secondary: #9ca3af; /* Muted text */
+  --admin-text-light: #6b7280;
+
+  /* Border Colors - Subtle but visible */
+  --admin-border: #1f2937; /* Card borders */
+  --admin-glass-bg: rgba(17, 24, 39, 0.95);
+  --admin-glass-border: rgba(255, 255, 255, 0.1);
+  --admin-glass-overlay: rgba(15, 23, 42, 0.8);
+
+  /* Accent Colors - Professional Blue & Cyan */
+  --admin-accent: #3b82f6; /* Primary blue */
+  --admin-accent-light: rgba(59, 130, 246, 0.15);
+  --admin-success: #16a34a; /* Success green */
+  --admin-success-light: rgba(22, 163, 74, 0.15);
+
+  /* Warning & Danger - High visibility */
+  --admin-warning: #f59e0b; /* Warning amber */
+  --admin-warning-light: rgba(245, 158, 11, 0.2);
+  --admin-danger: #ef4444; /* Danger red */
+  --admin-danger-light: rgba(239, 68, 68, 0.2);
+
+  /* Secondary color - Cyan accent */
+  --admin-secondary: #22d3ee; /* Cyan accent */
+  --admin-secondary-light: rgba(34, 211, 238, 0.15);
+}
+
+/* Apply background colors - SCOPED TO ADMIN DASHBOARD */
+body {
+  background-color: var(--admin-bg-secondary);
+  color: var(--admin-text);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* Theme classes scoped to admin-dashboard only */
+.admin-dashboard {
+  background-color: var(--admin-bg-secondary);
+  color: var(--admin-text);
+}
+
+/* Dark theme - scoped to admin-dashboard - Dark Professional */
+.admin-dashboard.dark-theme {
+  --admin-bg: #111827; /* Cards */
+  --admin-bg-secondary: #0f172a; /* Main background - dark slate */
+  --admin-text: #e5e7eb; /* Primary text */
+  --admin-text-primary: #e5e7eb;
+  --admin-text-secondary: #9ca3af; /* Muted text */
+  --admin-text-light: #6b7280;
+  --admin-border: #1f2937; /* Card borders */
+  --admin-glass-bg: rgba(17, 24, 39, 0.95);
+  --admin-glass-border: rgba(255, 255, 255, 0.1);
+  --admin-glass-overlay: rgba(15, 23, 42, 0.8);
+  --admin-accent: #3b82f6; /* Primary blue */
+  --admin-accent-light: rgba(59, 130, 246, 0.15);
+  --admin-success: #16a34a; /* Success green */
+  --admin-success-light: rgba(22, 163, 74, 0.15);
+  --admin-warning: #f59e0b; /* Warning amber */
+  --admin-warning-light: rgba(245, 158, 11, 0.2);
+  --admin-danger: #ef4444; /* Danger red */
+  --admin-danger-light: rgba(239, 68, 68, 0.2);
+  --admin-secondary: #22d3ee; /* Cyan accent */
+  --admin-secondary-light: rgba(34, 211, 238, 0.15);
+}
+
+/* Light theme - scoped to admin-dashboard - Light Clean */
+.admin-dashboard.light-theme {
+  --admin-bg: #ffffff; /* Cards */
+  --admin-bg-secondary: #f9fafb; /* Main background */
+  --admin-text: #111827; /* Primary text */
+  --admin-text-primary: #111827;
+  --admin-text-secondary: #6b7280; /* Muted text */
+  --admin-text-light: #9ca3af;
+  --admin-border: #e5e7eb;
+  --admin-glass-bg: rgba(255, 255, 255, 0.95);
+  --admin-glass-border: rgba(0, 0, 0, 0.08);
+  --admin-glass-overlay: rgba(255, 255, 255, 0.6);
+  --admin-accent: #2563eb; /* Primary blue */
+  --admin-accent-light: rgba(37, 99, 235, 0.1);
+  --admin-success: #16a34a; /* Success green */
+  --admin-success-light: rgba(22, 163, 74, 0.1);
+  --admin-warning: #f59e0b; /* Warning amber */
+  --admin-warning-light: rgba(245, 158, 11, 0.15);
+  --admin-danger: #dc2626; /* Danger red */
+  --admin-danger-light: rgba(220, 38, 38, 0.12);
+  --admin-secondary: #3b82f6; /* Secondary blue */
+  --admin-secondary-light: rgba(59, 130, 246, 0.12);
+}
+
+.admin-content {
+  background-color: var(--admin-bg-secondary);
+  color: var(--admin-text);
+}
+
+.dashboard-card {
+  background-color: var(--admin-bg);
+  border-color: var(--admin-border);
+  color: var(--admin-text);
+}
+
+.admin-sidebar {
+  background-color: var(--admin-bg);
+  border-color: var(--admin-border);
+}
+
+.admin-top-nav {
+  background-color: var(--admin-bg);
+  border-color: var(--admin-border);
+}
+
+/* Font Size Variables - SCOPED TO ADMIN DASHBOARD ONLY */
+:root {
+  --admin-base-font-size: 16px;
+  --admin-font-family: 'Baloo 2', sans-serif;
+}
+
+/* Font size and theme are scoped to .admin-dashboard only */
+/* This ensures website is not affected */
+
+/* Smooth transitions for theme changes */
+* {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
+}

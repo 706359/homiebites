@@ -183,6 +183,17 @@ const TopNav = ({
               </span>
             )}
           </button>
+          <button
+            className='top-nav-notification-btn'
+            onClick={() => {
+              // Dispatch event to show help center
+              window.dispatchEvent(new CustomEvent('showHelpCenter'));
+            }}
+            title='Help Center (Ctrl+H)'
+            aria-label='Help Center'
+          >
+            <i className='fa-solid fa-question-circle'></i>
+          </button>
         </div>
       </div>
 

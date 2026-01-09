@@ -1,0 +1,185 @@
+/* =====================================================
+   THEME TOKENS - Single Source of Truth
+   Admin Dashboard Theme System
+===================================================== */
+
+/* =====================================================
+   BASE TOKENS (LIGHT DEFAULT)
+===================================================== */
+:root {
+  /* Background Colors */
+  --bg: #F9FAFB;
+  --surface: #FFFFFF;
+  
+  /* Text Colors */
+  --text: #111827;
+  --text-secondary: #6B7280;
+  
+  /* Border Colors */
+  --border: #E5E7EB;
+  
+  /* Primary Color - Blue Neutral (default) */
+  --primary: #2563EB;
+  
+  /* Status Colors */
+  --success: #16A34A;
+  --warning: #F59E0B;
+  --danger: #DC2626;
+  
+  /* Design Tokens */
+  --radius: 0.75rem;
+  --transition: 150ms ease;
+  
+  /* Light Variants (for backgrounds) */
+  --primary-light: rgba(37, 99, 235, 0.1);
+  --success-light: rgba(22, 163, 74, 0.1);
+  --warning-light: rgba(245, 158, 11, 0.15);
+  --danger-light: rgba(220, 38, 38, 0.12);
+  
+  /* Secondary Color */
+  --secondary: #3B82F6;
+  --secondary-light: rgba(59, 130, 246, 0.12);
+  
+  /* Legacy Admin Variables (for backward compatibility) */
+  --admin-bg: var(--surface);
+  --admin-bg-secondary: var(--bg);
+  --admin-text: var(--text);
+  --admin-text-primary: var(--text);
+  --admin-text-secondary: var(--text-secondary);
+  --admin-text-light: #9CA3AF;
+  --admin-border: var(--border);
+  --admin-accent: var(--primary);
+  --admin-accent-light: var(--primary-light);
+  --admin-secondary: var(--secondary);
+  --admin-secondary-light: var(--secondary-light);
+  --admin-success: var(--success);
+  --admin-success-light: var(--success-light);
+  --admin-warning: var(--warning);
+  --admin-warning-light: var(--warning-light);
+  --admin-danger: var(--danger);
+  --admin-danger-light: var(--danger-light);
+}
+
+/* =====================================================
+   DARK MODE
+===================================================== */
+.dark,
+.dark-theme {
+  /* Background Colors */
+  --bg: #0F172A;
+  --surface: #111827;
+  
+  /* Text Colors */
+  --text: #E5E7EB;
+  --text-secondary: #9CA3AF;
+  
+  /* Border Colors */
+  --border: #1F2937;
+  
+  /* Status Colors - Dark Mode Adjustments */
+  --danger: #EF4444;
+  
+  /* Light Variants (darker for dark mode) */
+  --primary-light: rgba(59, 130, 246, 0.15);
+  --success-light: rgba(22, 163, 74, 0.15);
+  --warning-light: rgba(245, 158, 11, 0.2);
+  --danger-light: rgba(239, 68, 68, 0.2);
+  
+  /* Secondary Color - Cyan for dark mode */
+  --secondary: #22D3EE;
+  --secondary-light: rgba(34, 211, 238, 0.15);
+  
+  /* Legacy Admin Variables (for backward compatibility) */
+  --admin-bg: var(--surface);
+  --admin-bg-secondary: var(--bg);
+  --admin-text: var(--text);
+  --admin-text-primary: var(--text);
+  --admin-text-secondary: var(--text-secondary);
+  --admin-text-light: #6B7280;
+  --admin-border: var(--border);
+  --admin-accent: var(--primary);
+  --admin-accent-light: var(--primary-light);
+  --admin-secondary: var(--secondary);
+  --admin-secondary-light: var(--secondary-light);
+  --admin-success: var(--success);
+  --admin-success-light: var(--success-light);
+  --admin-warning: var(--warning);
+  --admin-warning-light: var(--warning-light);
+  --admin-danger: var(--danger);
+  --admin-danger-light: var(--danger-light);
+}
+
+/* =====================================================
+   PALETTES
+===================================================== */
+
+/* Blue Neutral (default) */
+.theme-blue {
+  --primary: #2563EB;
+}
+.dark.theme-blue,
+.dark-theme.theme-blue {
+  --primary: #3B82F6;
+}
+
+/* Slate Gray */
+.theme-slate {
+  --primary: #374151;
+}
+.dark.theme-slate,
+.dark-theme.theme-slate {
+  --primary: #CBD5E1;
+}
+
+/* Indigo Tech */
+.theme-indigo {
+  --primary: #4F46E5;
+}
+.dark.theme-indigo,
+.dark-theme.theme-indigo {
+  --primary: #6366F1;
+}
+
+/* Emerald Clean */
+.theme-emerald {
+  --primary: #16A34A;
+}
+.dark.theme-emerald,
+.dark-theme.theme-emerald {
+  --primary: #22C55E;
+}
+
+/* Dark Pro + Neon */
+.theme-neon {
+  --primary: #0EA5E9;
+}
+.dark.theme-neon,
+.dark-theme.theme-neon {
+  --primary: #22D3EE;
+}
+
+/* =====================================================
+   GLOBAL TRANSITIONS
+===================================================== */
+* {
+  transition:
+    background-color var(--transition),
+    color var(--transition),
+    border-color var(--transition);
+}
+
+/* =====================================================
+   ADMIN DASHBOARD SPECIFIC
+===================================================== */
+.admin-dashboard {
+  /* Ensure theme variables are available */
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.admin-dashboard.dark,
+.admin-dashboard.dark-theme {
+  background-color: var(--bg);
+  color: var(--text);
+}
+

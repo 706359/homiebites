@@ -1,34 +1,16 @@
 // Centralized API configuration and utilities
 
-// Force backend API URL to port 3001 (backend server port)
-// Frontend runs on 3000, backend API runs on 3001
-// Use 127.0.0.1 instead of localhost to avoid Next.js dev server interception
+// All APIs are now in Next.js - use relative URLs for both development and production
+// Next.js API routes run on the same server as the frontend
+// Endpoints already include '/api/' prefix, so base URL should be empty
 const API_BASE_URL =
   (typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL : null) ||
   process.env.API_URL ||
   process.env.VITE_API_URL ||
-  'http://127.0.0.1:3001';
+  '';
 
-// Ensure we're using the correct backend port and 127.0.0.1
+// Use relative URL (empty string means same origin)
 let resolvedApiUrl = API_BASE_URL;
-if (resolvedApiUrl.includes(':3000')) {
-  resolvedApiUrl = resolvedApiUrl.replace(':3000', ':3001');
-}
-// Replace localhost with 127.0.0.1 to avoid dev server interception
-if (resolvedApiUrl.includes('localhost')) {
-  resolvedApiUrl = resolvedApiUrl.replace('localhost', '127.0.0.1');
-}
-
-// Debug log to verify API URL (remove in production if needed)
-if (typeof window !== 'undefined') {
-  console.log(
-    '[API] Using backend URL:',
-    resolvedApiUrl,
-    '(from env:',
-    process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'default',
-    ')'
-  );
-}
 
 export const api = {
   baseURL: resolvedApiUrl,
@@ -127,10 +109,6 @@ export const api = {
       username: emailOrUsername?.trim() || emailOrUsername,
       password: password?.trim() || password,
     };
-    console.log('[API] Sending login request:', {
-      username: loginData.username,
-      hasPassword: !!loginData.password,
-    });
     return this.request('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify(loginData),

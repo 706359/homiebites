@@ -1,0 +1,914 @@
+/* ============================================
+   PREMIUM ANIMATIONS FOR ADMIN DASHBOARD
+   Smooth, Professional, Performance-Optimized
+   ============================================ */
+
+/* ================= KEYFRAMES ================= */
+
+/* Fade In Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Slide Animations */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Scale Animations */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+/* Pulse Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(37, 99, 235, 0);
+  }
+}
+
+/* Shake Animation */
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+/* Bounce Animation */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Spin Animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Ripple Effect */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Shimmer Loading */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Progress Bar Animation */
+@keyframes progressBar {
+  from {
+    width: 0%;
+  }
+}
+
+/* Counter Animation */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================= PAGE LOAD ANIMATIONS ================= */
+
+/* Staggered Card Entrance */
+.dashboard-card {
+  animation: fadeInUp 0.5s ease backwards;
+}
+
+.dashboard-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.dashboard-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dashboard-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.dashboard-card:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.dashboard-card:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+.dashboard-card:nth-child(n+6) {
+  animation-delay: 0.6s;
+}
+
+/* Stat Card Entrance */
+.stat-card {
+  animation: fadeInUp 0.6s ease backwards;
+}
+
+.stat-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.stat-card:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.stat-card:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.stat-card:nth-child(4) {
+  animation-delay: 0.25s;
+}
+
+.stat-card:nth-child(5) {
+  animation-delay: 0.3s;
+}
+
+/* ================= ENHANCED CARD ANIMATIONS ================= */
+
+.dashboard-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+}
+
+.dashboard-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.dashboard-card:active {
+  transform: translateY(-2px);
+}
+
+.stat-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0) scale(1);
+}
+
+.stat-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(37, 99, 235, 0.15);
+}
+
+.stat-card .stat-icon {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card:hover .stat-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* ================= BUTTON ANIMATIONS ================= */
+
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-public,
+.btn-special {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+  transition: all 0.1s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  animation: pulseGlow 2s ease infinite;
+}
+
+/* Ripple Effect on Button Click */
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* ================= TABLE ANIMATIONS ================= */
+
+.orders-table tbody tr {
+  transition: all 0.2s ease;
+  animation: fadeIn 0.3s ease backwards;
+}
+
+.orders-table tbody tr:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.orders-table tbody tr:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.orders-table tbody tr:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.orders-table tbody tr:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.orders-table tbody tr:nth-child(n+5) {
+  animation-delay: 0.25s;
+}
+
+.orders-table tbody tr:hover {
+  transform: scale(1.01);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+}
+
+.orders-table tbody tr:active {
+  transform: scale(0.99);
+}
+
+/* Table Row Selection Animation */
+.orders-table tbody tr.selected {
+  animation: pulseGlow 2s ease infinite;
+}
+
+/* ================= MODAL ANIMATIONS ================= */
+
+.modal-overlay {
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-content.closing {
+  animation: scaleOut 0.2s ease forwards;
+}
+
+/* ================= NOTIFICATION ANIMATIONS ================= */
+
+.admin-notification {
+  animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.admin-notification.closing {
+  animation: slideOutRight 0.3s ease forwards;
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+.notification-card-grid {
+  animation: fadeInUp 0.4s ease backwards;
+}
+
+.notification-card-grid:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.notification-card-grid:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.notification-card-grid:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.notification-card-grid:hover {
+  transform: translateX(4px);
+  transition: transform 0.2s ease;
+}
+
+/* ================= FORM ANIMATIONS ================= */
+
+.input-field,
+.select-field,
+.textarea-field {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-field:focus,
+.select-field:focus,
+.textarea-field:focus {
+  transform: scale(1.01);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.input-field.error {
+  animation: shake 0.5s ease;
+}
+
+/* Label Float Animation */
+.form-group {
+  position: relative;
+}
+
+.form-group label {
+  transition: all 0.3s ease;
+}
+
+.input-field:focus + label,
+.input-field:not(:placeholder-shown) + label {
+  transform: translateY(-2px);
+  color: var(--admin-accent, #2563eb);
+}
+
+/* ================= SIDEBAR ANIMATIONS ================= */
+
+.admin-sidebar {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-item {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.sidebar-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: var(--admin-accent, #2563eb);
+  transition: width 0.3s ease;
+}
+
+.sidebar-item.active::before {
+  width: 3px;
+}
+
+.sidebar-item:hover {
+  transform: translateX(4px);
+}
+
+.sidebar-item i {
+  transition: all 0.2s ease;
+}
+
+.sidebar-item:hover i {
+  transform: scale(1.2);
+}
+
+/* ================= LOADING ANIMATIONS ================= */
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+.skeleton-loader {
+  background: linear-gradient(
+    90deg,
+    var(--admin-bg, #ffffff) 0%,
+    var(--admin-border, #e5e7eb) 50%,
+    var(--admin-bg, #ffffff) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ================= PROGRESS BAR ANIMATIONS ================= */
+
+.progress-bar-fill {
+  animation: progressBar 1s ease-out;
+}
+
+/* ================= STAT COUNTER ANIMATIONS ================= */
+
+.stat-card h3 {
+  animation: countUp 0.6s ease backwards;
+}
+
+.stat-card h3:nth-child(1) {
+  animation-delay: 0.2s;
+}
+
+/* ================= BADGE ANIMATIONS ================= */
+
+.badge,
+.top-nav-badge {
+  animation: bounceIn 0.5s ease;
+}
+
+.badge.pulse {
+  animation: pulse 2s ease infinite;
+}
+
+/* ================= ICON ANIMATIONS ================= */
+
+.icon-spin {
+  animation: spin 1s linear infinite;
+}
+
+.icon-bounce {
+  animation: bounce 1s ease infinite;
+}
+
+.icon-pulse {
+  animation: pulse 2s ease infinite;
+}
+
+/* ================= TOOLTIP ANIMATIONS ================= */
+
+.tooltip {
+  animation: fadeInUp 0.2s ease;
+}
+
+/* ================= DROPDOWN ANIMATIONS ================= */
+
+.dropdown-menu {
+  animation: fadeInDown 0.2s ease;
+}
+
+.dropdown-menu.closing {
+  animation: fadeInUp 0.2s ease reverse;
+}
+
+/* ================= CHART ANIMATIONS ================= */
+
+.chart-container {
+  animation: fadeIn 0.6s ease;
+}
+
+.chart-bar {
+  animation: slideInUp 0.6s ease backwards;
+}
+
+.chart-bar:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.chart-bar:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.chart-bar:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.chart-bar:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.chart-bar:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+/* ================= SEARCH ANIMATIONS ================= */
+
+.global-search-input:focus {
+  animation: pulseGlow 2s ease infinite;
+}
+
+.global-search-item {
+  animation: fadeInLeft 0.2s ease backwards;
+}
+
+.global-search-item:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.global-search-item:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.global-search-item:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.global-search-item:hover {
+  transform: translateX(4px);
+}
+
+/* ================= FILTER ANIMATIONS ================= */
+
+.filter-bar {
+  animation: slideInDown 0.3s ease;
+}
+
+.filter-toggle-btn {
+  transition: all 0.2s ease;
+}
+
+.filter-toggle-btn:hover {
+  transform: scale(1.05);
+}
+
+.filter-toggle-btn.active {
+  animation: pulseGlow 2s ease infinite;
+}
+
+/* ================= PAGINATION ANIMATIONS ================= */
+
+.pagination-btn {
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+}
+
+.pagination-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* ================= SMOOTH SCROLL ================= */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ================= TOP NAVIGATION ANIMATIONS ================= */
+
+.top-nav-search-btn,
+.top-nav-notification-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(1);
+}
+
+.top-nav-search-btn:hover,
+.top-nav-notification-btn:hover {
+  transform: scale(1.1) translateY(-2px);
+  animation: pulseGlow 2s ease infinite;
+}
+
+.top-nav-search-btn:active,
+.top-nav-notification-btn:active {
+  transform: scale(0.95);
+}
+
+.top-nav-badge {
+  animation: bounceIn 0.5s ease, pulse 2s ease infinite;
+}
+
+/* ================= STAT CARD NUMBER ANIMATIONS ================= */
+
+.stat-card h3 {
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover h3 {
+  transform: scale(1.1);
+  color: var(--admin-accent, #2563eb);
+}
+
+/* ================= FILTER CHIP ANIMATIONS ================= */
+
+.filter-chip {
+  transition: all 0.2s ease;
+  animation: scaleIn 0.2s ease;
+}
+
+.filter-chip:hover {
+  transform: scale(1.05);
+}
+
+.filter-chip.active {
+  animation: pulseGlow 2s ease infinite;
+}
+
+/* ================= TAB ANIMATIONS ================= */
+
+.tab-button {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.tab-button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--admin-accent, #2563eb);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.tab-button.active::after {
+  transform: scaleX(1);
+}
+
+.tab-button:hover {
+  transform: translateY(-2px);
+}
+
+/* ================= TOAST NOTIFICATION ANIMATIONS ================= */
+
+.toast {
+  animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toast.success {
+  animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), pulseGlow 2s ease infinite;
+}
+
+.toast.error {
+  animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), shake 0.5s ease;
+}
+
+/* ================= CONFIRMATION MODAL ANIMATIONS ================= */
+
+.confirmation-modal {
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.confirmation-modal.closing {
+  animation: scaleOut 0.2s ease forwards;
+}
+
+/* ================= SEARCH RESULTS ANIMATIONS ================= */
+
+.search-result-item {
+  animation: fadeInLeft 0.2s ease backwards;
+}
+
+.search-result-item:hover {
+  transform: translateX(8px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+/* ================= LOADING SKELETON ANIMATIONS ================= */
+
+.skeleton-card {
+  animation: shimmer 1.5s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    var(--admin-bg, #ffffff) 0%,
+    var(--admin-border, #e5e7eb) 50%,
+    var(--admin-bg, #ffffff) 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* ================= CHART TOOLTIP ANIMATIONS ================= */
+
+.chart-tooltip {
+  animation: fadeInUp 0.2s ease;
+}
+
+/* ================= DRAG AND DROP ANIMATIONS ================= */
+
+.draggable-item {
+  transition: all 0.2s ease;
+}
+
+.draggable-item.dragging {
+  opacity: 0.5;
+  transform: rotate(5deg);
+}
+
+.draggable-item.drag-over {
+  animation: pulseGlow 1s ease infinite;
+}
+
+/* ================= EXPANDABLE SECTION ANIMATIONS ================= */
+
+.expandable-section {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.expandable-section.expanding {
+  animation: slideInDown 0.3s ease;
+}
+
+.expandable-section.collapsing {
+  animation: slideInUp 0.3s ease reverse;
+}
+
+/* ================= REDUCE MOTION (ACCESSIBILITY) ================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ================= PERFORMANCE OPTIMIZATIONS ================= */
+
+/* Use GPU acceleration for smooth animations */
+.dashboard-card,
+.stat-card,
+.btn,
+.orders-table tbody tr,
+.sidebar-item {
+  will-change: transform;
+}
+
+/* Remove will-change after animation completes */
+.dashboard-card:hover,
+.stat-card:hover,
+.btn:hover {
+  will-change: auto;
+}
+

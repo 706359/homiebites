@@ -2,9 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import AdminLogin from '../../../admin/AdminLogin';
-import NotificationWrapper from '../../components/NotificationWrapper';
-import { NotificationProvider } from '../../contexts/NotificationContext';
+import AdminLogin from '../../components/admin/AdminLogin';
+import NotificationWrapper from '../../components/admin/NotificationWrapper.jsx';
+import { NotificationProvider } from '../../components/admin/contexts/NotificationContext.jsx';
 
 export default function Admin() {
   const router = useRouter();

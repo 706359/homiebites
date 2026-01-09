@@ -24,9 +24,12 @@ const nextConfig = {
   },
   
   // Environment variables (will be available on both server and client)
+  // All APIs are now in Next.js - no external backend needed
   env: {
-    API_URL: process.env.API_URL || 'http://127.0.0.1:3001',
-    VITE_API_URL: process.env.VITE_API_URL || 'http://127.0.0.1:3001',
+    // Keep for backward compatibility, but APIs use relative URLs
+    API_URL: process.env.API_URL || '',
+    VITE_API_URL: process.env.VITE_API_URL || '',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || '',
   },
   
   // Output configuration

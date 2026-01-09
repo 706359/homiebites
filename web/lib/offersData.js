@@ -160,3 +160,5 @@ export const triggerOffersDataSync = () => {
     window.dispatchEvent(new CustomEvent("offersDataUpdated"));
   }
 };
+
+

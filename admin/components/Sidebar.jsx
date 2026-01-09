@@ -95,20 +95,22 @@ const Sidebar = ({
             onClick={() => setShowProfileDropdown(!showProfileDropdown)}
             title={sidebarCollapsed ? "Profile" : ""}
           >
-            <div className="sidebar-profile-avatar">
-              {currentUser?.name ? (
-                <span>
-                  {currentUser.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .toUpperCase()
-                    .slice(0, 2)}
-                </span>
-              ) : (
-                <i className="fa-solid fa-user"></i>
-              )}
-            </div>
+            {!sidebarCollapsed && (
+              <div className="sidebar-profile-avatar">
+                {currentUser?.name ? (
+                  <span>
+                    {currentUser.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </span>
+                ) : (
+                  <i className="fa-solid fa-user"></i>
+                )}
+              </div>
+            )}
             {!sidebarCollapsed && (
               <div className="sidebar-profile-info">
                 <div className="sidebar-profile-name">

@@ -24,7 +24,7 @@
   /* Font size - scoped to admin dashboard only */
   font-size: var(--admin-base-font-size, 16px) !important;
   line-height: 1.6;
-  color: #1a202c;
+  color: var(--admin-text, #111827);
   isolation: isolate;
   position: relative;
   z-index: 1;
@@ -317,7 +317,9 @@
   width: 240px;
   height: 100vh;
   background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
-  border-right: 1px solid var(--admin-border, #e2e8f0);
+  border-right: 1px solid var(--admin-border, #e5e7eb);
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
   box-shadow:
     2px 0 12px rgba(0, 0, 0, 0.08),
     0 0 1px rgba(0, 0, 0, 0.05);
@@ -334,7 +336,7 @@
 
 .sidebar-header {
   padding: 32px 24px;
-  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -355,7 +357,7 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    var(--admin-border, #e2e8f0) 50%,
+    var(--admin-border, #e5e7eb) 50%,
     transparent 100%
   );
 }
@@ -461,7 +463,7 @@
   gap: 14px;
   padding: 12px 16px;
   background: transparent;
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
   font-size: 14px;
   font-weight: 500;
   line-height: 1.5;
@@ -482,7 +484,7 @@
   font-size: 18px;
   width: 24px;
   text-align: center;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   flex-shrink: 0;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -531,7 +533,7 @@
   transform: translateX(0);
   padding-left: 16px;
   box-shadow:
-    0 2px 8px rgba(68, 144, 49, 0.15),
+    0 2px 8px rgba(37, 99, 235, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   position: relative;
 }
@@ -559,9 +561,27 @@
   font-size: 22px;
 }
 
+/* Profile button when collapsed - hide avatar completely */
+.admin-sidebar.collapsed .sidebar-profile-btn {
+  justify-content: center;
+  padding: 12px;
+  gap: 0;
+}
+
+.admin-sidebar.collapsed .sidebar-profile-btn .sidebar-profile-avatar,
+.admin-sidebar.collapsed .sidebar-profile-section .sidebar-profile-avatar {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 .sidebar-footer {
   padding: 20px 16px;
-  border-top: 1px solid var(--admin-border, #e2e8f0);
+  border-top: 1px solid var(--admin-border, #e5e7eb);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -581,7 +601,7 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    var(--admin-border, #e2e8f0) 50%,
+    var(--admin-border, #e5e7eb) 50%,
     transparent 100%
   );
 }
@@ -604,8 +624,14 @@
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
   position: relative;
+}
+
+/* Ensure profile avatar text is white, not inheriting from button */
+.sidebar-profile-btn .sidebar-profile-avatar,
+.sidebar-profile-btn .sidebar-profile-avatar span {
+  color: #ffffff !important;
 }
 
 .sidebar-profile-btn:hover {
@@ -619,7 +645,7 @@
   height: 44px;
   border-radius: 12px;
   background: linear-gradient(135deg, var(--admin-accent, #2563eb) 0%, #1d4ed8 100%);
-  color: white;
+  color: #ffffff !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -646,6 +672,9 @@
   line-height: 1;
   margin: 0;
   padding: 0;
+  color: #ffffff !important;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .sidebar-profile-btn:hover .sidebar-profile-avatar {
@@ -665,7 +694,7 @@
 .sidebar-profile-name {
   font-weight: 600;
   font-size: 14px;
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -675,7 +704,7 @@
 
 .sidebar-profile-email {
   font-size: 12px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -695,7 +724,7 @@
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.12),
     0 4px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--admin-border, #e2e8f0);
+  border: 1px solid var(--admin-border, #e5e7eb);
   overflow: hidden;
   z-index: 100;
   margin-bottom: 8px;
@@ -707,7 +736,7 @@
   padding: 12px 16px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -724,7 +753,7 @@
   width: 18px;
   text-align: center;
   font-size: 16px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   transition: all 0.2s ease;
 }
 
@@ -756,7 +785,7 @@
 
 .sidebar-profile-divider {
   height: 1px;
-  background: var(--admin-border, #e2e8f0);
+  background: var(--admin-border, #e5e7eb);
   margin: 6px 8px;
   border: none;
 }
@@ -768,7 +797,7 @@
   padding: 10px;
   background: var(--admin-bg, #ffffff);
   border-radius: 4px;
-  border: 1px solid var(--admin-border, #e2e8f0);
+  border: 1px solid var(--admin-border, #e5e7eb);
   margin: 8px 0;
   transition: background-color 0.2s ease;
 }
@@ -812,21 +841,21 @@
 .profile-name {
   font-size: 15px;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--admin-text, #111827);
   line-height: 1.3;
 }
 
 .profile-role {
   font-size: 12px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--admin-text-secondary, #6b7280);
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
 .sidebar-toggle-btn {
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   font-weight: 500;
 }
 
@@ -838,7 +867,7 @@
 }
 
 .sidebar-toggle-btn i {
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -887,7 +916,7 @@
   background: var(--admin-glass-bg, rgba(255, 255, 255, 0.95));
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
   padding: 12px 20px;
   display: flex;
   align-items: center;
@@ -917,7 +946,7 @@
 
 .top-nav-subtitle {
   font-size: 12px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   margin: 0;
   line-height: 1.3;
   font-weight: 500;
@@ -939,7 +968,7 @@
 
 .top-nav-toggle {
   padding: 8px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   cursor: pointer;
   border-radius: 8px;
   transition: all 0.2s ease;
@@ -961,7 +990,7 @@
 .top-nav-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
   margin: 0;
   letter-spacing: -0.01em;
   line-height: 1.3;
@@ -982,11 +1011,11 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   cursor: pointer;
   border-radius: 10px;
   background: var(--admin-bg-secondary, #f8f9fa);
-  border: 1.5px solid var(--admin-border, #e2e8f0);
+  border: 1.5px solid var(--admin-border, #e5e7eb);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 14px;
   font-weight: 500;
@@ -1020,7 +1049,7 @@
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'Courier New', monospace;
   font-weight: 600;
   color: var(--admin-text, #1e293b);
-  border: 1px solid var(--admin-border, #e2e8f0);
+  border: 1px solid var(--admin-border, #e5e7eb);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   letter-spacing: 0.3px;
 }
@@ -1028,7 +1057,7 @@
 .top-nav-notification-btn {
   position: relative;
   padding: 10px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   cursor: pointer;
   border-radius: 10px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1039,7 +1068,7 @@
   align-items: center;
   justify-content: center;
   background: var(--admin-bg-secondary, #f8f9fa);
-  border: 1.5px solid var(--admin-border, #e2e8f0);
+  border: 1.5px solid var(--admin-border, #e5e7eb);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
@@ -1127,7 +1156,7 @@
   -webkit-backdrop-filter: blur(8px);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--admin-border, #e2e8f0);
+  border: 1px solid var(--admin-border, #e5e7eb);
   min-width: 240px;
   z-index: 50;
   overflow: hidden;
@@ -1135,7 +1164,7 @@
 
 .dropdown-header {
   padding: 16px;
-  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
   background: var(--admin-glass-bg, rgba(255, 255, 255, 0.9));
 }
 
@@ -1156,14 +1185,14 @@
 
 .dropdown-name {
   font-weight: 700;
-  color: #1a202c;
+  color: var(--admin-text, #111827);
   font-size: 15px;
   margin-bottom: 4px;
 }
 
 .dropdown-email {
   font-size: 13px;
-  color: #64748b;
+  color: var(--admin-text-secondary, #6b7280);
 }
 
 .dropdown-divider {
@@ -1273,28 +1302,28 @@ a.btn,
 .btn-secondary {
   background: var(--admin-bg, #ffffff) !important;
   color: var(--admin-accent, #2563eb) !important;
-  border: 1px solid var(--admin-text, #1a202c) !important;
+  border: 1px solid var(--admin-text, #111827) !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .btn-secondary:hover:not(:disabled) {
   background: var(--admin-accent, #2563eb) !important;
   color: white !important;
-  border-color: var(--admin-accent, #449031) !important;
+  border-color: var(--admin-accent, #2563eb) !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 /* 3. GHOST - Light background, dark border */
 .btn-ghost {
   background-color: var(--admin-bg, #ffffff) !important;
-  color: var(--admin-text, #1a202c) !important;
-  border: 1px solid var(--admin-text, #1a202c) !important;
+  color: var(--admin-text, #111827) !important;
+  border: 1px solid var(--admin-text, #111827) !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btn-ghost:hover:not(:disabled) {
   background-color: var(--admin-accent-light, rgba(37, 99, 235, 0.1)) !important;
-  border-color: var(--admin-text, #1a202c) !important;
+  border-color: var(--admin-text, #111827) !important;
   color: var(--admin-accent, #2563eb) !important;
   box-shadow: 0 2px 4px rgba(37, 99, 235, 0.15);
 }
@@ -1316,8 +1345,8 @@ a.btn,
 /* 5. WARNING - Light orange background, dark border */
 .btn-warning {
   background-color: var(--admin-warning, #f59e0b) !important;
-  color: #1a202c !important;
-  border: 1px solid var(--admin-text, #1a202c) !important;
+  color: var(--admin-text, #111827) !important;
+  border: 1px solid var(--admin-text, #111827) !important;
   box-shadow: 0 1px 3px rgba(245, 158, 11, 0.3);
   font-weight: 700;
 }
@@ -1345,9 +1374,9 @@ a.btn,
 
 /* 7. SPECIAL - Customizable button with modifiers */
 .btn-special {
-  background-color: var(--btn-bg, var(--admin-accent, #449031)) !important;
+  background-color: var(--btn-bg, var(--admin-accent, #2563eb)) !important;
   color: var(--btn-color, white) !important;
-  border: 1px solid var(--btn-border, var(--admin-accent, #449031)) !important;
+  border: 1px solid var(--btn-border, var(--admin-accent, #2563eb)) !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
@@ -1440,9 +1469,9 @@ a.btn,
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 2px solid var(--admin-border, #e2e8f0);
+  border: 2px solid var(--admin-border, #e5e7eb);
   background: var(--admin-glass-bg, rgba(255, 255, 255, 0.9));
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
   font-size: 18px;
   font-weight: 500;
   display: flex;
@@ -1487,7 +1516,7 @@ a.btn,
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.04),
     0 1px 2px rgba(0, 0, 0, 0.02);
-  border: 1px solid var(--admin-border, #e2e8f0);
+  border: 1px solid var(--admin-border, #e5e7eb);
   display: flex;
   align-items: center;
   gap: 16px;
@@ -1557,14 +1586,14 @@ a.btn,
 .stat-card h3 {
   font-size: 24px;
   font-weight: 600;
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
   margin: 0;
   line-height: 1.3;
 }
 
 .stat-card p {
   font-size: 14px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   margin: 0;
   font-weight: 500;
   line-height: 1.5;
@@ -1575,7 +1604,7 @@ a.btn,
   border-radius: 4px;
   padding: 24px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--admin-border, #e2e8f0);
+  border: 1px solid var(--admin-border, #e5e7eb);
   transition: border-color 0.15s ease;
 }
 
@@ -1731,7 +1760,7 @@ a.btn,
   border-radius: 10px;
   padding: 14px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-  border: 1px solid var(--admin-border, #e2e8f0);
+  border: 1px solid var(--admin-border, #e5e7eb);
   margin-bottom: 12px;
 }
 
@@ -1776,7 +1805,7 @@ a.btn,
   background: var(--admin-bg, #ffffff);
   padding: 10px 14px;
   border-radius: 8px;
-  border: 1px solid var(--admin-border, #e2e8f0);
+  border: 1px solid var(--admin-border, #e5e7eb);
   margin-bottom: 24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   display: flex;
@@ -1803,7 +1832,7 @@ a.btn,
 .input-field {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid var(--admin-border, #e2e8f0);
+  border: 2px solid var(--admin-border, #e5e7eb);
   border-radius: 10px;
   font-size: 15px;
   background: var(--admin-bg, #ffffff);
@@ -1866,7 +1895,7 @@ select.input-field:hover {
 /* Option styling - remove any browser patterns and ensure clean background */
 select.input-field option {
   background: var(--admin-bg, #ffffff) !important;
-  color: var(--admin-text, #1a202c) !important;
+  color: var(--admin-text, #111827) !important;
   padding: 10px 14px;
   border: none;
   outline: none;
@@ -1888,7 +1917,7 @@ select.input-field option:hover {
 
 /* Dark theme select styling */
 :root.dark-theme select.input-field {
-  background-color: var(--admin-bg, #1a1f2e);
+  background-color: var(--admin-bg, #111827);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23b0b8c4' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
@@ -1896,7 +1925,7 @@ select.input-field option:hover {
 }
 
 :root.dark-theme select.input-field:focus {
-  background-color: var(--admin-bg, #1a1f2e);
+  background-color: var(--admin-bg, #111827);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235cb85c' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
@@ -1904,19 +1933,19 @@ select.input-field option:hover {
 }
 
 :root.dark-theme select.input-field:hover {
-  background-color: var(--admin-bg, #1a1f2e);
+  background-color: var(--admin-bg, #111827);
 }
 
 :root.dark-theme select.input-field option {
-  background: var(--admin-bg, #1a1f2e) !important;
-  color: var(--admin-text, #e8eaed) !important;
+  background: var(--admin-bg, #111827) !important;
+  color: var(--admin-text, #e5e7eb) !important;
   background-image: none !important;
 }
 
 :root.dark-theme select.input-field option:checked,
 :root.dark-theme select.input-field option:focus {
-  background: var(--admin-accent-light, rgba(92, 184, 92, 0.2)) !important;
-  color: var(--admin-accent, #5cb85c) !important;
+  background: var(--admin-accent-light, rgba(59, 130, 246, 0.2)) !important;
+  color: var(--admin-accent, #3b82f6) !important;
   background-image: none !important;
 }
 
@@ -1977,7 +2006,7 @@ select.input-field option:hover {
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
-  border: 1px solid rgba(68, 144, 49, 0.2);
+  border: 1px solid rgba(37, 99, 235, 0.2);
 }
 
 /* ============================================
@@ -2028,7 +2057,7 @@ select.input-field option:hover {
   -webkit-backdrop-filter: blur(12px);
   border-radius: 10px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-  border: 1px solid var(--admin-border, #e2e8f0);
+  border: 1px solid var(--admin-border, #e5e7eb);
   overflow: hidden;
   transition: all 0.3s ease;
   margin-bottom: 14px;
@@ -2057,10 +2086,10 @@ select.input-field option:hover {
   text-align: left;
   font-size: 12px;
   font-weight: 700;
-  color: var(--admin-text-primary, #1a202c);
+  color: var(--admin-text-primary, #111827);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  border-bottom: 2px solid var(--admin-border, #e2e8f0);
+  border-bottom: 2px solid var(--admin-border, #e5e7eb);
   background: #ffffff;
   white-space: nowrap;
   user-select: none;
@@ -2075,14 +2104,14 @@ select.input-field option:hover {
 .orders-table td {
   padding: 12px 14px;
   font-size: 13px;
-  color: var(--admin-text, #1a202c);
-  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  color: var(--admin-text, #111827);
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
   vertical-align: middle;
 }
 
 .orders-table tbody tr {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
 }
 
 .orders-table tbody tr:last-child {
@@ -2146,7 +2175,7 @@ select.input-field option:hover {
 
 .date-error-original {
   font-size: 12px;
-  color: #64748b;
+  color: var(--admin-text-secondary, #6b7280);
 }
 
 /* ============================================
@@ -2180,7 +2209,7 @@ select.input-field option:hover {
   max-height: 90vh;
   overflow-y: auto;
   z-index: 50;
-  border: 1px solid var(--admin-border, #e2e8f0);
+  border: 1px solid var(--admin-border, #e5e7eb);
   animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -2227,7 +2256,7 @@ select.input-field option:hover {
   align-items: center;
   justify-content: space-between;
   padding: 24px 28px;
-  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
   background: var(--admin-bg, #ffffff);
   border-radius: 16px 16px 0 0;
   position: sticky;
@@ -2252,7 +2281,7 @@ select.input-field option:hover {
   border: none;
   cursor: pointer;
   padding: 8px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   border-radius: 8px;
   transition: all 0.2s ease;
   font-size: 18px;
@@ -2323,7 +2352,7 @@ select.input-field option:hover {
   justify-content: flex-end;
   gap: 12px;
   padding: 20px 28px;
-  border-top: 1px solid var(--admin-border, #e2e8f0);
+  border-top: 1px solid var(--admin-border, #e5e7eb);
   background: var(--admin-bg, #ffffff);
   border-radius: 0 0 16px 16px;
   position: sticky;
@@ -2379,7 +2408,7 @@ select.input-field option:hover {
 }
 
 .global-search-icon {
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   font-size: 16px;
   flex-shrink: 0;
 }
@@ -2419,7 +2448,7 @@ select.input-field option:hover {
 .global-search-section h4 {
   font-size: 11px;
   font-weight: 700;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 12px;
@@ -2450,7 +2479,7 @@ select.input-field option:hover {
 }
 
 .global-search-item i {
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   font-size: 16px;
   width: 20px;
   flex-shrink: 0;
@@ -2572,7 +2601,7 @@ select.input-field option:hover {
   justify-content: center;
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.05);
-  color: #64748b;
+  color: var(--admin-text-secondary, #6b7280);
   font-size: 22px;
   cursor: pointer;
   border: none;
@@ -2581,7 +2610,7 @@ select.input-field option:hover {
 
 .confirm-modal-close:hover {
   background: rgba(0, 0, 0, 0.1);
-  color: #1a202c;
+  color: var(--admin-text, #111827);
   transform: rotate(90deg);
 }
 
@@ -2593,7 +2622,7 @@ select.input-field option:hover {
 .confirm-modal-title {
   font-size: 24px;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--admin-text, #111827);
   margin: 0 0 12px;
   line-height: 1.3;
   letter-spacing: -0.01em;
@@ -2601,7 +2630,7 @@ select.input-field option:hover {
 
 .confirm-modal-message {
   font-size: 15px;
-  color: #64748b;
+  color: var(--admin-text-secondary, #6b7280);
   line-height: 1.6;
   margin: 0 0 32px;
 }
@@ -2617,15 +2646,15 @@ select.input-field option:hover {
 
 .confirm-modal-btn-cancel {
   background: transparent;
-  color: var(--admin-text-secondary, #64748b);
-  border: 1px solid var(--admin-border, #e2e8f0);
+  color: var(--admin-text-secondary, #6b7280);
+  border: 1px solid var(--admin-border, #e5e7eb);
   box-shadow: none;
   transition: all 0.2s ease;
 }
 
 .confirm-modal-btn-cancel:hover {
   background: var(--admin-glass-border, rgba(0, 0, 0, 0.06));
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
   border-color: var(--admin-text-light, #94a3b8);
 }
 
@@ -2778,7 +2807,7 @@ select.input-field option:hover {
 
 .admin-notification-message {
   font-size: 14px;
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
   font-weight: 500;
   line-height: 1.5;
   word-wrap: break-word;
@@ -2808,7 +2837,7 @@ select.input-field option:hover {
 
 .admin-notification-close:hover {
   background: rgba(0, 0, 0, 0.06);
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
   opacity: 1;
 }
 
@@ -2867,15 +2896,15 @@ select.input-field option:hover {
 
 /* Dark theme support */
 :root.dark-theme .admin-notification {
-  background: var(--admin-bg, #1a1f2e);
-  border-color: var(--admin-border, #3d4558);
+  background: var(--admin-bg, #111827);
+  border-color: var(--admin-border, #1f2937);
   box-shadow:
     0 4px 20px rgba(0, 0, 0, 0.3),
     0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 :root.dark-theme .admin-notification-message {
-  color: var(--admin-text, #e8eaed);
+  color: var(--admin-text, #e5e7eb);
 }
 
 :root.dark-theme .admin-notification-close {
@@ -2884,7 +2913,7 @@ select.input-field option:hover {
 
 :root.dark-theme .admin-notification-close:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: var(--admin-text, #e8eaed);
+  color: var(--admin-text, #e5e7eb);
 }
 
 /* Mobile responsive */
@@ -2980,7 +3009,7 @@ select.input-field option:hover {
 
 .helper-text {
   font-size: 12px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   margin-top: 4px;
   display: block;
   font-weight: 400;
@@ -3020,7 +3049,7 @@ select.input-field option:hover {
 .input-field[readonly],
 .input-field:disabled {
   background-color: var(--admin-bg-secondary, #f7f9fc);
-  border-color: var(--admin-border, #e2e8f0);
+  border-color: var(--admin-border, #e5e7eb);
   cursor: not-allowed;
   opacity: 0.85;
 }
@@ -3053,7 +3082,7 @@ select.input-field option:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
 }
 
 .address-suggestion-item:last-child {
@@ -3081,7 +3110,7 @@ select.input-field:hover {
 
 select.input-field:focus {
   border-color: var(--admin-accent, #2563eb);
-  box-shadow: 0 0 0 4px var(--admin-accent-light, rgba(68, 144, 49, 0.12));
+  box-shadow: 0 0 0 4px var(--admin-accent-light, rgba(37, 99, 235, 0.12));
 }
 
 select.input-field option {
@@ -3096,8 +3125,8 @@ select.input-field option {
 }
 
 :root.dark-theme select.input-field option {
-  background: var(--admin-bg, #1a1f2e);
-  color: var(--admin-text, #e8eaed);
+  background: var(--admin-bg, #111827);
+  color: var(--admin-text, #e5e7eb);
 }
 
 /* ============================================
@@ -3164,7 +3193,7 @@ select.input-field option {
 .skeleton-header-cell {
   flex: 1;
   height: 24px;
-  background: #e2e8f0;
+  background: var(--admin-border, #e5e7eb);
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s ease-in-out infinite;
   border-radius: 8px;
@@ -3180,7 +3209,7 @@ select.input-field option {
 .skeleton-cell {
   flex: 1;
   height: 20px;
-  background: #e2e8f0;
+  background: var(--admin-border, #e5e7eb);
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s ease-in-out infinite;
   border-radius: 8px;
@@ -3203,7 +3232,7 @@ select.input-field option {
 
 .skeleton-line {
   height: 20px;
-  background: #e2e8f0;
+  background: var(--admin-border, #e5e7eb);
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s ease-in-out infinite;
   border-radius: 8px;
@@ -3300,7 +3329,7 @@ select.input-field option {
 
 /* Rotating spinner circle */
 .premium-loader-spinner {
-  border: 3px solid var(--admin-border, #e2e8f0);
+  border: 3px solid var(--admin-border, #e5e7eb);
   border-top-color: var(--admin-accent, #2563eb);
   border-radius: 50%;
   animation: premium-loader-spin 0.8s linear infinite;
@@ -3337,7 +3366,7 @@ select.input-field option {
 
 /* Loading text */
 .premium-loader-text {
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   font-weight: 500;
   font-size: 14px;
   text-align: center;
@@ -3358,12 +3387,12 @@ select.input-field option {
 
 /* Dark theme support */
 :root.dark-theme .premium-loader-spinner {
-  border-color: rgba(92, 184, 92, 0.2);
-  border-top-color: var(--admin-accent, #5cb85c);
+  border-color: rgba(59, 130, 246, 0.2);
+  border-top-color: var(--admin-accent, #3b82f6);
 }
 
 :root.dark-theme .premium-loader-logo-fallback {
-  background: var(--admin-accent, #5cb85c);
+  background: var(--admin-accent, #3b82f6);
 }
 
 /* Responsive adjustments */
@@ -3428,7 +3457,7 @@ select.input-field option {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   font-weight: 500;
 }
 
@@ -3458,7 +3487,7 @@ select.input-field option {
 .badge-success {
   background: rgba(37, 99, 235, 0.1);
   color: var(--admin-success, #16a34a);
-  border: 1px solid rgba(68, 144, 49, 0.2);
+  border: 1px solid rgba(37, 99, 235, 0.2);
 }
 
 .badge-warning {
@@ -3558,29 +3587,29 @@ select.input-field option {
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 1px solid var(--admin-text, #1a202c) !important;
+  border: 1px solid var(--admin-text, #111827) !important;
   background: var(--admin-bg, #ffffff) !important;
-  color: var(--admin-text-secondary, #64748b) !important;
+  color: var(--admin-text-secondary, #6b7280) !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .action-icon-btn:hover {
   background: rgba(0, 0, 0, 0.05) !important;
-  color: var(--admin-text, #1a202c) !important;
-  border-color: var(--admin-text, #1a202c) !important;
+  color: var(--admin-text, #111827) !important;
+  border-color: var(--admin-text, #111827) !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .action-icon-edit:hover {
-  background: rgba(68, 144, 49, 0.1) !important;
-  color: var(--admin-success, #449031) !important;
-  border-color: var(--admin-text, #1a202c) !important;
+  background: rgba(37, 99, 235, 0.1) !important;
+  color: var(--admin-success, #16a34a) !important;
+  border-color: var(--admin-text, #111827) !important;
 }
 
 .action-icon-delete:hover {
   background: rgba(239, 68, 68, 0.1) !important;
   color: var(--admin-danger, #ef4444) !important;
-  border-color: var(--admin-text, #1a202c) !important;
+  border-color: var(--admin-text, #111827) !important;
 }
 
 /* ============================================
@@ -3672,7 +3701,7 @@ select.input-field option {
   text-align: left;
   font-size: 12px;
   font-weight: 700;
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   border-bottom: 2px solid rgba(0, 0, 0, 0.06);
@@ -3821,10 +3850,10 @@ select.input-field option {
 .input-field {
   width: 100%;
   padding: 10px 14px;
-  border: 1px solid var(--admin-border, #e2e8f0);
+  border: 1px solid var(--admin-border, #e5e7eb);
   border-radius: 8px;
   background: var(--admin-glass-bg, rgba(255, 255, 255, 0.9));
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
   font-size: 14px;
   transition: all 0.2s ease;
 }
@@ -3865,7 +3894,7 @@ select.input-field {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border-top: 1px solid var(--admin-border, #e2e8f0);
+  border-top: 1px solid var(--admin-border, #e5e7eb);
   margin-top: 16px;
   flex-wrap: wrap;
   gap: 16px;
@@ -3881,7 +3910,7 @@ select.input-field {
 .orders-table-container {
   overflow-x: auto;
   border-radius: 12px;
-  border: 1px solid var(--admin-border, #e2e8f0);
+  border: 1px solid var(--admin-border, #e5e7eb);
   max-height: 600px;
   overflow-y: auto;
 }
@@ -3905,10 +3934,10 @@ select.input-field {
   text-align: left;
   font-size: 12px;
   font-weight: 700;
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  border-bottom: 2px solid var(--admin-border, #e2e8f0);
+  border-bottom: 2px solid var(--admin-border, #e5e7eb);
   background: #ffffff;
   white-space: nowrap;
   user-select: none;
@@ -3918,7 +3947,7 @@ select.input-field {
   padding: 12px 16px;
   font-size: 14px;
   color: var(--admin-text, #2d3748);
-  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
 }
 
 .orders-table tbody tr {
@@ -3978,14 +4007,14 @@ select.input-field {
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
 }
 
 .modal-header h2 {
   margin: 0;
   font-size: 20px;
   font-weight: 700;
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
 }
 
 .modal-close {
@@ -3997,7 +4026,7 @@ select.input-field {
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   border: none;
   background: transparent;
 }
@@ -4018,7 +4047,7 @@ select.input-field {
   justify-content: flex-end;
   gap: 20px;
   padding: 16px 24px;
-  border-top: 1px solid var(--admin-border, #e2e8f0);
+  border-top: 1px solid var(--admin-border, #e5e7eb);
 }
 
 /* Form Grid Enhancements */
@@ -4043,7 +4072,7 @@ select.input-field {
 .form-group label {
   font-size: 14px;
   font-weight: 600;
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
 }
 
 /* Empty State Enhancements */
@@ -4066,14 +4095,14 @@ select.input-field {
 .empty-state p {
   font-size: 16px;
   font-weight: 600;
-  color: var(--admin-text, #1a202c);
+  color: var(--admin-text, #111827);
   margin-bottom: 8px;
 }
 
 .empty-state p:last-of-type {
   font-size: 14px;
   font-weight: 400;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   margin-bottom: 0;
 }
 
@@ -4137,7 +4166,7 @@ select.input-field {
 .loader-spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid var(--admin-border, #e2e8f0);
+  border: 4px solid var(--admin-border, #e5e7eb);
   border-top-color: var(--admin-accent, #2563eb);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -4781,7 +4810,7 @@ select.input-field {
 .important-notifications-banner {
   padding: 12px 20px;
   background: var(--admin-bg, #ffffff);
-  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
   z-index: 10;
 }
 
@@ -4838,7 +4867,7 @@ select.input-field {
 
 .important-notification-message {
   font-size: 14px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #6b7280);
   line-height: 1.5;
 }
 
