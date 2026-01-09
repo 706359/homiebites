@@ -1,0 +1,69 @@
+/* Admin Dashboard Styles - Premium Design */
+
+/* Component Styles - Import must be first */
+@import './tailwind-components.css';
+@import './custom-overrides.css';
+@import './theme.css';
+@import './dashboard-enhancements.css';
+@import './settings-theme.css';
+@import './mobile-compatibility.css';
+@import './spacing-fixes.css';
+
+/* Only Color Variables - No other design tokens */
+:root {
+  /* Accent Colors - Default (overridden by theme) - Light Clean */
+  --admin-accent: #2563eb; /* Primary blue */
+  --admin-secondary: #3b82f6; /* Secondary blue */
+  --admin-success: #16a34a; /* Success green */
+  --admin-warning: #f59e0b; /* Warning amber */
+  --admin-danger: #dc2626; /* Danger red */
+
+  /* Extended color palette - Default (overridden by theme) */
+  --admin-accent-light: rgba(37, 99, 235, 0.1);
+  --admin-secondary-light: rgba(59, 130, 246, 0.12);
+  --admin-success-light: rgba(22, 163, 74, 0.1);
+  --admin-warning-light: rgba(245, 158, 11, 0.15);
+  --admin-danger-light: rgba(220, 38, 38, 0.12);
+
+  /* Text colors - Light Clean */
+  --admin-text: #111827; /* Primary text */
+  --admin-text-primary: #111827;
+  --admin-text-secondary: #6b7280; /* Muted text */
+  --admin-text-light: #9ca3af;
+
+  /* Border and background - Light Clean */
+  --admin-border: #e5e7eb;
+  --admin-glass-bg: rgba(255, 255, 255, 0.9);
+  --admin-glass-border: rgba(0, 0, 0, 0.06);
+  --admin-glass-overlay: rgba(255, 255, 255, 0.5);
+
+  /* Button System Variables - Updated to Professional Palette */
+  --primary-green: #2563eb; /* Blue primary */
+  --primary-orange: #3b82f6; /* Blue secondary */
+  --text-white: #ffffff;
+  --text-primary: #1a202c;
+  --gray-lighter: #f3f4f6;
+  --gray-light: #e5e7eb;
+  --gray-dark: #1f2937;
+  --neutral-200: #f3f4f6;
+  --neutral-300: #e5e7eb;
+  --neutral-900: #1f2937;
+  --light-gray: #f3f4f6;
+  --white: #ffffff;
+  --error-red: #ef4444;
+  --error-red-hover: #dc2626;
+  --whatsapp-green: #25d366;
+  --whatsapp-green-hover: #20ba5a;
+
+  /* Shadow variables - Updated to Professional Palette */
+  --shadow-green-light: rgba(37, 99, 235, 0.15);
+  --shadow-green-medium: rgba(37, 99, 235, 0.3);
+  --shadow-green: rgba(37, 99, 235, 0.2);
+  --shadow-orange-light: rgba(59, 130, 246, 0.15);
+  --shadow-orange-medium: rgba(59, 130, 246, 0.3);
+}
+
+/* Tailwind CSS Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

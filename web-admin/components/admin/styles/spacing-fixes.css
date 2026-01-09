@@ -1,0 +1,507 @@
+/* ============================================
+   SPACING FIXES - Consistent Spacing System
+   ============================================ */
+
+/* Form Elements - Consistent Spacing */
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1a202c);
+  margin-bottom: 0;
+  display: block;
+}
+
+.form-group .input-field,
+.form-group select,
+.form-group textarea {
+  margin-top: 0;
+}
+
+.form-group .input-field:not(:last-child),
+.form-group select:not(:last-child),
+.form-group textarea:not(:last-child) {
+  margin-bottom: 0;
+}
+
+/* Input Groups - Consistent Spacing */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.input-group:last-child {
+  margin-bottom: 0;
+}
+
+.input-group-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.input-group-row .form-group,
+.input-group-row .input-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* Button Groups - Consistent Spacing */
+.btn-group {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-group .btn {
+  margin: 0;
+}
+
+.btn-group-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Action Buttons Group - Consistent Spacing */
+.action-buttons-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-buttons-group .action-button,
+.action-buttons-group .action-icon-btn {
+  margin: 0;
+}
+
+/* Card Spacing - Consistent Padding */
+.dashboard-card {
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.dashboard-card:last-child {
+  margin-bottom: 0;
+}
+
+.dashboard-section {
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.dashboard-section:last-child {
+  margin-bottom: 0;
+}
+
+.dashboard-section-title {
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--admin-text-primary, #1a202c);
+}
+
+.dashboard-section-title:last-child {
+  margin-bottom: 0;
+}
+
+/* Table Spacing - Consistent Cell Padding */
+.orders-table th {
+  padding: 14px 16px;
+}
+
+.orders-table td {
+  padding: 14px 16px;
+}
+
+.orders-table-container {
+  margin-bottom: 20px;
+}
+
+.orders-table-container:last-child {
+  margin-bottom: 0;
+}
+
+/* Modal Spacing - Consistent Padding */
+.modal-header {
+  padding: 24px 28px;
+}
+
+.modal-body {
+  padding: 28px;
+}
+
+.modal-body .form-group:first-child {
+  margin-top: 0;
+}
+
+.modal-body .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.modal-footer {
+  padding: 20px 28px;
+  gap: 12px;
+}
+
+.modal-footer .btn {
+  margin: 0;
+}
+
+/* Action Bar Spacing */
+.action-bar {
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+
+.action-bar:last-child {
+  margin-bottom: 0;
+}
+
+/* Filter Panel Spacing */
+.filter-panel {
+  padding: 20px;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.filter-panel:last-child {
+  margin-bottom: 0;
+}
+
+.filter-panel .form-group {
+  margin-bottom: 16px;
+}
+
+.filter-panel .form-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Settings Tab Content Spacing */
+.settings-tab-content {
+  padding: 24px;
+}
+
+.settings-tab-content .form-group {
+  margin-bottom: 20px;
+}
+
+.settings-tab-content .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.settings-tab-content .dashboard-section {
+  margin-bottom: 24px;
+}
+
+.settings-tab-content .dashboard-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Grid Layout Spacing */
+.dashboard-grid-layout {
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.dashboard-grid-layout:last-child {
+  margin-bottom: 0;
+}
+
+.dashboard-grid-item {
+  margin-bottom: 0;
+}
+
+/* Stat Cards Spacing */
+.stat-card {
+  padding: 20px 24px;
+  margin-bottom: 0;
+}
+
+.stat-cards-grid {
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.stat-cards-grid:last-child {
+  margin-bottom: 0;
+}
+
+/* Pagination Spacing */
+.pagination-controls {
+  margin-top: 24px;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+/* Search Input Wrapper Spacing */
+.search-input-wrapper {
+  margin-bottom: 0;
+}
+
+.search-input-wrapper + .btn,
+.search-input-wrapper + .action-buttons-group {
+  margin-left: 12px;
+}
+
+/* Section Headers Spacing */
+.section-header {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.section-header:last-child {
+  margin-bottom: 0;
+}
+
+.section-header h3,
+.section-header h2 {
+  margin: 0;
+}
+
+/* List Items Spacing */
+.list-item {
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+}
+
+.list-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Badge Spacing */
+.badge {
+  margin: 0 4px;
+}
+
+.badge:first-child {
+  margin-left: 0;
+}
+
+.badge:last-child {
+  margin-right: 0;
+}
+
+/* Icon Button Spacing */
+.icon-btn {
+  padding: 8px;
+  margin: 0;
+}
+
+.icon-btn + .icon-btn {
+  margin-left: 8px;
+}
+
+/* Responsive Spacing Adjustments */
+@media (max-width: 768px) {
+  .dashboard-card {
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .dashboard-section {
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .dashboard-section-title {
+    margin-bottom: 16px;
+    font-size: 18px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .input-group {
+    margin-bottom: 16px;
+  }
+
+  .input-group-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .btn-group {
+    gap: 8px;
+  }
+
+  .action-bar {
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    gap: 8px;
+  }
+
+  .modal-header {
+    padding: 20px 24px;
+  }
+
+  .modal-body {
+    padding: 24px;
+  }
+
+  .modal-footer {
+    padding: 16px 20px;
+    gap: 8px;
+  }
+
+  .orders-table th,
+  .orders-table td {
+    padding: 12px 14px;
+  }
+
+  .dashboard-grid-layout {
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .stat-cards-grid {
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .pagination-controls {
+    margin-top: 20px;
+    gap: 8px;
+    padding: 12px 0;
+  }
+
+  .settings-tab-content {
+    padding: 20px;
+  }
+
+  .filter-panel {
+    padding: 16px;
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-card {
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .dashboard-section {
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .dashboard-section-title {
+    margin-bottom: 12px;
+    font-size: 16px;
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  .input-group {
+    margin-bottom: 14px;
+  }
+
+  .btn-group {
+    gap: 6px;
+    width: 100%;
+  }
+
+  .btn-group .btn {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .action-bar {
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    gap: 6px;
+  }
+
+  .modal-header {
+    padding: 16px 20px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .modal-footer {
+    padding: 14px 16px;
+    gap: 6px;
+    flex-direction: column;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+    margin: 0;
+  }
+
+  .orders-table th,
+  .orders-table td {
+    padding: 10px 12px;
+  }
+
+  .dashboard-grid-layout {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .stat-cards-grid {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .pagination-controls {
+    margin-top: 16px;
+    gap: 6px;
+    padding: 10px 0;
+    flex-direction: column;
+  }
+
+  .settings-tab-content {
+    padding: 16px;
+  }
+
+  .filter-panel {
+    padding: 12px;
+    margin-bottom: 12px;
+    gap: 10px;
+  }
+}
+
+/* Dark Theme Spacing (no changes, just ensuring consistency) */
+:root.dark-theme .form-group,
+:root.dark-theme .input-group,
+:root.dark-theme .btn-group,
+:root.dark-theme .action-buttons-group,
+:root.dark-theme .dashboard-card,
+:root.dark-theme .dashboard-section,
+:root.dark-theme .orders-table-container,
+:root.dark-theme .modal-header,
+:root.dark-theme .modal-body,
+:root.dark-theme .modal-footer,
+:root.dark-theme .action-bar,
+:root.dark-theme .filter-panel,
+:root.dark-theme .settings-tab-content {
+  /* Spacing values remain the same in dark theme */
+}
+

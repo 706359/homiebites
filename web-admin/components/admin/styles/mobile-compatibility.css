@@ -1,0 +1,512 @@
+/* ============================================
+   MOBILE COMPATIBILITY ENHANCEMENTS
+   Comprehensive device compatibility fixes
+   ============================================ */
+
+/* Global Mobile Optimizations - Scoped to Admin Dashboard */
+.admin-dashboard * {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Allow text selection in inputs and textareas */
+.admin-dashboard input,
+.admin-dashboard textarea,
+.admin-dashboard select,
+.admin-dashboard [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Prevent text selection on buttons and icons */
+.admin-dashboard button,
+.admin-dashboard .btn,
+.admin-dashboard i,
+.admin-dashboard .icon {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Safe Area Insets for Modern Devices */
+.admin-dashboard {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Touch Target Sizes - WCAG 2.1 AA Compliance */
+button,
+.btn,
+a,
+input[type="button"],
+input[type="submit"],
+input[type="radio"],
+select,
+.sidebar-item,
+.settings-tab-item {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Input fields should be at least 44px for mobile */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+textarea,
+select {
+  min-height: 44px;
+  font-size: 16px; /* Prevents iOS zoom on focus */
+}
+
+/* Smooth Scrolling */
+.admin-dashboard,
+.admin-content,
+.login-page-wrapper {
+  -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
+}
+
+/* Mobile Sidebar Enhancements */
+@media (max-width: 1024px) {
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Sidebar overlay */
+  .admin-sidebar::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .admin-sidebar.open::before {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .sidebar-item {
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 15px;
+  }
+
+  .sidebar-item i {
+    min-width: 24px;
+    font-size: 18px;
+  }
+}
+
+/* Top Navigation Mobile */
+@media (max-width: 768px) {
+  .admin-top-nav {
+    padding: 12px 16px;
+    min-height: 56px;
+  }
+
+  .top-nav-search,
+  .top-nav-actions {
+    gap: 8px;
+  }
+
+  .top-nav-button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+  }
+}
+
+/* Tables - Horizontal Scroll on Mobile */
+@media (max-width: 768px) {
+  .admin-content table,
+  .dashboard-table,
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+
+  .admin-content table thead,
+  .dashboard-table thead,
+  table thead {
+    display: block;
+  }
+
+  .admin-content table tbody,
+  .dashboard-table tbody,
+  table tbody {
+    display: block;
+  }
+
+  .admin-content table tr,
+  .dashboard-table tr,
+  table tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  /* Alternative: Card-based table on very small screens */
+  @media (max-width: 480px) {
+    .admin-content table,
+    .dashboard-table,
+    table {
+      display: block;
+    }
+
+    .admin-content table thead,
+    .dashboard-table thead,
+    table thead {
+      display: none;
+    }
+
+    .admin-content table tbody,
+    .dashboard-table tbody,
+    table tbody {
+      display: block;
+    }
+
+    .admin-content table tr,
+    .dashboard-table tr,
+    table tr {
+      display: block;
+      margin-bottom: 16px;
+      border: 1px solid var(--admin-border, #e2e8f0);
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--admin-bg, #ffffff);
+    }
+
+    .admin-content table td,
+    .dashboard-table td,
+    table td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border: none;
+      text-align: left;
+    }
+
+    .admin-content table td::before,
+    .dashboard-table td::before,
+    table td::before {
+      content: attr(data-label) ': ';
+      font-weight: 600;
+      color: var(--admin-text-secondary, #6b7280);
+      margin-right: 12px;
+    }
+  }
+}
+
+/* Modals - Mobile Optimized */
+@media (max-width: 768px) {
+  .modal-container,
+  .modal-overlay {
+    padding: 16px;
+    margin: 0;
+  }
+
+  .modal-content {
+    max-width: 100%;
+    max-height: 90vh;
+    max-height: 90dvh;
+    margin: 0;
+    border-radius: 16px 16px 0 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-header {
+    padding: 16px;
+    min-height: 56px;
+  }
+
+  .modal-body {
+    padding: 16px;
+    max-height: calc(90vh - 120px);
+    max-height: calc(90dvh - 120px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-footer {
+    padding: 16px;
+    min-height: 64px;
+    gap: 8px;
+  }
+
+  .modal-footer button {
+    flex: 1;
+    min-height: 48px;
+  }
+}
+
+/* Forms - Mobile Optimized */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .form-group {
+    width: 100%;
+  }
+
+  .input-field,
+  .form-control {
+    width: 100%;
+    min-height: 48px;
+    font-size: 16px;
+    padding: 12px 16px;
+  }
+
+  .form-actions,
+  .settings-action-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .form-actions button,
+  .settings-action-group button {
+    width: 100%;
+    min-height: 48px;
+  }
+}
+
+/* Cards - Mobile Stacking */
+@media (max-width: 768px) {
+  .dashboard-grid-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .dashboard-grid-item {
+    width: 100%;
+  }
+
+  .dashboard-card {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+}
+
+/* Buttons - Touch Optimized */
+@media (hover: none) and (pointer: coarse) {
+  .btn:hover {
+    transform: none;
+  }
+
+  .btn:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+
+  button:hover {
+    transform: none;
+  }
+
+  button:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Settings Tabs - Mobile Scrollable */
+@media (max-width: 768px) {
+  .settings-tab-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: 4px;
+  }
+
+  .settings-tab-item {
+    min-width: 120px;
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+}
+
+/* Notification Wrapper - Mobile */
+@media (max-width: 768px) {
+  .admin-notification-container {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    max-width: 100%;
+  }
+
+  .admin-notification {
+    padding: 12px 16px;
+    font-size: 14px;
+    min-height: 48px;
+  }
+}
+
+/* Charts and Graphs - Mobile */
+@media (max-width: 768px) {
+  .chart-container,
+  canvas {
+    max-width: 100%;
+    height: auto !important;
+    max-height: 300px;
+  }
+}
+
+/* Filter Bars - Mobile */
+@media (max-width: 768px) {
+  .filter-bar {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .filter-bar-item {
+    width: 100%;
+  }
+
+  .filter-bar-item select,
+  .filter-bar-item input {
+    width: 100%;
+    min-height: 48px;
+  }
+}
+
+/* Pagination - Mobile */
+@media (max-width: 768px) {
+  .pagination {
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .pagination button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 12px;
+  }
+}
+
+/* Search and Filters - Mobile */
+@media (max-width: 768px) {
+  .search-bar {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .search-input {
+    width: 100%;
+    min-height: 48px;
+    font-size: 16px;
+  }
+}
+
+/* Dropdowns - Mobile */
+@media (max-width: 768px) {
+  .dropdown-menu {
+    max-width: calc(100vw - 32px);
+    max-height: 50vh;
+    max-height: 50dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dropdown-item {
+    min-height: 44px;
+    padding: 12px 16px;
+  }
+}
+
+/* Loading States - Mobile */
+@media (max-width: 768px) {
+  .loading-spinner,
+  .premium-loader {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Landscape Orientation */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .admin-dashboard {
+    min-height: auto;
+  }
+
+  .modal-content {
+    max-height: 85vh;
+    max-height: 85dvh;
+  }
+}
+
+/* Very Small Devices (320px and below) */
+@media (max-width: 320px) {
+  .admin-content {
+    padding: 12px;
+  }
+
+  .dashboard-card {
+    padding: 12px;
+  }
+
+  button,
+  .btn {
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .login-page-wrapper {
+    padding: 8px;
+  }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .admin-dashboard {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .admin-sidebar,
+  .admin-top-nav,
+  .btn,
+  button:not(.print-visible) {
+    display: none !important;
+  }
+
+  .admin-content {
+    width: 100%;
+    padding: 0;
+  }
+}
+
