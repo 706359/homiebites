@@ -26,6 +26,7 @@ import { useNotification } from './contexts/NotificationContext.jsx';
 import { useFastDataSync } from './hooks/useFastDataSync.js';
 import dataSyncManager from './utils/dataSyncManager.js';
 import { getNotificationDuration, getNotificationMessage } from './utils/notificationMessages.js';
+import { autoFixThemeOnLoad, watchThemeChanges, fixTheme } from './utils/themeFixer.js';
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -133,23 +134,56 @@ const AdminDashboard = () => {
     root.style.setProperty('--admin-base-font-size', fontSizeMap[savedFontSize] || '16px');
     document.body.style.fontSize = fontSizeMap[savedFontSize] || '16px';
 
-    // Apply theme
+    // Apply theme to both root and admin-dashboard for consistency
+    const adminDashboard = document.querySelector('.admin-dashboard');
+    
     if (savedTheme === 'dark') {
       document.documentElement.classList.add('dark-theme');
       document.documentElement.classList.remove('light-theme');
+      if (adminDashboard) {
+        adminDashboard.classList.add('dark-theme');
+        adminDashboard.classList.remove('light-theme');
+      }
     } else if (savedTheme === 'light') {
       document.documentElement.classList.add('light-theme');
       document.documentElement.classList.remove('dark-theme');
+      if (adminDashboard) {
+        adminDashboard.classList.add('light-theme');
+        adminDashboard.classList.remove('dark-theme');
+      }
     } else if (savedTheme === 'auto') {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       if (prefersDark) {
         document.documentElement.classList.add('dark-theme');
         document.documentElement.classList.remove('light-theme');
+        if (adminDashboard) {
+          adminDashboard.classList.add('dark-theme');
+          adminDashboard.classList.remove('light-theme');
+        }
       } else {
         document.documentElement.classList.add('light-theme');
         document.documentElement.classList.remove('dark-theme');
+        if (adminDashboard) {
+          adminDashboard.classList.add('light-theme');
+          adminDashboard.classList.remove('dark-theme');
+        }
       }
     }
+    
+    // Auto-fix theme issues after a short delay to ensure DOM is ready
+    setTimeout(() => {
+      autoFixThemeOnLoad(5, 200);
+    }, 100);
+    
+    // Watch for theme changes and auto-fix
+    const themeWatcher = watchThemeChanges();
+    
+    return () => {
+      // Cleanup theme watcher on unmount
+      if (themeWatcher && themeWatcher.disconnect) {
+        themeWatcher.disconnect();
+      }
+    };
   }, []);
 
   // Helper function to convert hex to RGB

@@ -6,21 +6,24 @@
 @import './theme.css';
 @import './dashboard-enhancements.css';
 @import './settings-theme.css';
+@import './theme-utilities.css';
 @import './mobile-compatibility.css';
+@import './device-guaranteed.css';
 @import './spacing-fixes.css';
 
 /* Only Color Variables - No other design tokens */
+/* Admin Dashboard Color System - Scoped to prevent conflicts */
 :root {
-  /* Accent Colors - Default (overridden by theme) - Light Clean */
-  --admin-accent: #2563eb; /* Primary blue */
-  --admin-secondary: #3b82f6; /* Secondary blue */
+  /* Accent Colors - Default (overridden by theme) - Brand Colors */
+  --admin-accent: #449031; /* Primary green */
+  --admin-secondary: #c45c2d; /* Secondary orange */
   --admin-success: #16a34a; /* Success green */
   --admin-warning: #f59e0b; /* Warning amber */
   --admin-danger: #dc2626; /* Danger red */
 
   /* Extended color palette - Default (overridden by theme) */
-  --admin-accent-light: rgba(37, 99, 235, 0.1);
-  --admin-secondary-light: rgba(59, 130, 246, 0.12);
+  --admin-accent-light: rgba(68, 144, 49, 0.1);
+  --admin-secondary-light: rgba(196, 92, 45, 0.12);
   --admin-success-light: rgba(22, 163, 74, 0.1);
   --admin-warning-light: rgba(245, 158, 11, 0.15);
   --admin-danger-light: rgba(220, 38, 38, 0.12);
@@ -36,10 +39,13 @@
   --admin-glass-bg: rgba(255, 255, 255, 0.9);
   --admin-glass-border: rgba(0, 0, 0, 0.06);
   --admin-glass-overlay: rgba(255, 255, 255, 0.5);
+}
 
-  /* Button System Variables - Updated to Professional Palette */
-  --primary-green: #2563eb; /* Blue primary */
-  --primary-orange: #3b82f6; /* Blue secondary */
+/* Override shared variables ONLY within admin dashboard to prevent color mixing */
+.admin-dashboard {
+  /* Button System Variables - Override shared variables to use theme colors */
+  --primary-green: var(--admin-accent, #449031); /* Use theme accent instead of shared green */
+  --primary-orange: var(--admin-secondary, #c45c2d); /* Use theme secondary instead of shared orange */
   --text-white: #ffffff;
   --text-primary: #1a202c;
   --gray-lighter: #f3f4f6;
@@ -55,12 +61,12 @@
   --whatsapp-green: #25d366;
   --whatsapp-green-hover: #20ba5a;
 
-  /* Shadow variables - Updated to Professional Palette */
-  --shadow-green-light: rgba(37, 99, 235, 0.15);
-  --shadow-green-medium: rgba(37, 99, 235, 0.3);
-  --shadow-green: rgba(37, 99, 235, 0.2);
-  --shadow-orange-light: rgba(59, 130, 246, 0.15);
-  --shadow-orange-medium: rgba(59, 130, 246, 0.3);
+  /* Shadow variables - Use theme colors */
+  --shadow-green-light: var(--admin-accent-light, rgba(68, 144, 49, 0.15));
+  --shadow-green-medium: var(--admin-accent-light, rgba(68, 144, 49, 0.3));
+  --shadow-green: var(--admin-accent-light, rgba(68, 144, 49, 0.2));
+  --shadow-orange-light: var(--admin-secondary-light, rgba(196, 92, 45, 0.15));
+  --shadow-orange-medium: var(--admin-secondary-light, rgba(196, 92, 45, 0.3));
 }
 
 /* Tailwind CSS Directives */

@@ -63,6 +63,8 @@ const SettingsTab = ({
     theme: settings?.theme || localStorage.getItem('homiebites_theme') || 'light',
     primaryColor:
       settings?.primaryColor || localStorage.getItem('homiebites_primary_color') || '#449031',
+    secondaryColor:
+      settings?.secondaryColor || localStorage.getItem('homiebites_secondary_color') || '#c45c2d',
     fontSize: settings?.fontSize || localStorage.getItem('homiebites_font_size') || 'medium',
     fontFamily: settings?.fontFamily || localStorage.getItem('homiebites_font_family') || 'Baloo 2',
   });
@@ -99,6 +101,20 @@ const SettingsTab = ({
           adminDashboard.style.setProperty(
             '--admin-accent-light',
             `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`
+          );
+        }
+      }
+
+      // Apply secondary color (for logo theme) - scoped to admin-dashboard
+      if (theme && theme.secondaryColor) {
+        adminDashboard.style.setProperty('--admin-secondary', theme.secondaryColor);
+
+        // Calculate light variant
+        const rgb = hexToRgb(theme.secondaryColor);
+        if (rgb) {
+          adminDashboard.style.setProperty(
+            '--admin-secondary-light',
+            `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.12)`
           );
         }
       }
@@ -324,8 +340,18 @@ const SettingsTab = ({
           // Save to localStorage
           localStorage.setItem('homiebites_theme', themeSettings.theme);
           localStorage.setItem('homiebites_primary_color', themeSettings.primaryColor);
+          if (themeSettings.secondaryColor) {
+            localStorage.setItem('homiebites_secondary_color', themeSettings.secondaryColor);
+          }
           localStorage.setItem('homiebites_font_size', themeSettings.fontSize);
           localStorage.setItem('homiebites_font_family', themeSettings.fontFamily);
+
+          // Auto-fix any theme issues after saving
+          setTimeout(() => {
+            import('./utils/themeFixer.js').then(({ fixTheme }) => {
+              fixTheme({ silent: true });
+            });
+          }, 100);
 
           // Save to settings via callback
           if (onUpdateSettings) {
@@ -343,6 +369,13 @@ const SettingsTab = ({
       localStorage.setItem('homiebites_font_size', themeSettings.fontSize);
       localStorage.setItem('homiebites_font_family', themeSettings.fontFamily);
 
+      // Auto-fix any theme issues after saving
+      setTimeout(() => {
+        import('./utils/themeFixer.js').then(({ fixTheme }) => {
+          fixTheme({ silent: true });
+        });
+      }, 100);
+
       // Save to settings via callback
       if (onUpdateSettings) {
         onUpdateSettings({ themeSettings });
@@ -351,6 +384,21 @@ const SettingsTab = ({
   };
 
   // Apply theme when settings change (for preview)
+  const handleLogoTheme = () => {
+    // Apply logo theme colors: Green #449031 and Orange #c45c2d
+    const logoTheme = {
+      primaryColor: '#449031',
+      secondaryColor: '#c45c2d'
+    };
+    setThemeSettings({ ...themeSettings, ...logoTheme });
+    handleThemeChange(logoTheme);
+    
+    // Show notification
+    if (showNotification) {
+      showNotification('Logo theme applied! Click "Apply Theme" to save.', 'success');
+    }
+  };
+
   const handleThemeChange = (updates) => {
     const newTheme = { ...themeSettings, ...updates };
     setThemeSettings(newTheme);
@@ -464,16 +512,7 @@ const SettingsTab = ({
       </div>
 
       {/* TAB CONTENT */}
-      <div
-        style={{
-          background: 'var(--admin-bg, #ffffff)',
-          border: '1px solid var(--admin-border, #e2e8f0)',
-          borderTop: 'none',
-          borderRadius: '0 0 8px 8px',
-          padding: '24px',
-          marginTop: '-1px',
-        }}
-      >
+      <div className="settings-tab-content">
         {activeTab === 'general' && (
           <div className='dashboard-grid-layout settings-general-grid'>
             {/* Business Information */}
@@ -1049,7 +1088,56 @@ const SettingsTab = ({
                 </div>
               </div>
               <div className='form-group'>
-                <label>Primary Color</label>
+                <label>Color Theme</label>
+                <div style={{ marginBottom: '12px' }}>
+                  <button
+                    className={`btn btn-secondary`}
+                    onClick={handleLogoTheme}
+                    style={{
+                      width: '100%',
+                      background: 'linear-gradient(135deg, #449031 0%, #449031 50%, #c45c2d 50%, #c45c2d 100%)',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '10px 16px',
+                      borderRadius: '8px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: themeSettings.primaryColor === '#449031' && themeSettings.secondaryColor === '#c45c2d' 
+                        ? '0 0 0 3px rgba(68, 144, 49, 0.3)' 
+                        : 'none'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.02)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(68, 144, 49, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.boxShadow = themeSettings.primaryColor === '#449031' && themeSettings.secondaryColor === '#c45c2d' 
+                        ? '0 0 0 3px rgba(68, 144, 49, 0.3)' 
+                        : 'none';
+                    }}
+                  >
+                    <i className="fa-solid fa-image"></i>
+                    <span>Apply Logo Theme</span>
+                    {themeSettings.primaryColor === '#449031' && themeSettings.secondaryColor === '#c45c2d' && (
+                      <i className="fa-solid fa-check" style={{ marginLeft: '4px' }}></i>
+                    )}
+                  </button>
+                  <p style={{ 
+                    fontSize: '12px', 
+                    color: 'var(--admin-text-secondary, #6b7280)', 
+                    marginTop: '8px',
+                    textAlign: 'center'
+                  }}>
+                    Uses exact logo colors: Green (#449031) & Orange (#c45c2d)
+                  </p>
+                </div>
+                <label style={{ marginTop: '16px', display: 'block' }}>Primary Color</label>
                 <div className='color-picker-group'>
                   <input
                     type='color'
@@ -1071,6 +1159,38 @@ const SettingsTab = ({
                     }}
                     placeholder='#449031'
                   />
+                </div>
+                <div style={{ marginBottom: '12px' }}>
+                  <button
+                    className={`btn btn-secondary`}
+                    onClick={handleLogoTheme}
+                    style={{
+                      width: '100%',
+                      background: 'linear-gradient(135deg, #449031 0%, #449031 50%, #c45c2d 50%, #c45c2d 100%)',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '10px 16px',
+                      borderRadius: '8px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.02)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(68, 144, 49, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    <i className="fa-solid fa-image"></i>
+                    <span>Apply Logo Theme</span>
+                  </button>
                 </div>
                 <div className='color-presets'>
                   {['#449031', '#c45c2d', '#3b82f6', '#8b5cf6', '#ef4444', '#10b981'].map(

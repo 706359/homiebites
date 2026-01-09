@@ -1,0 +1,214 @@
+/**
+ * Theme Utilities - Best Practices for Theme Consistency
+ * 
+ * This file provides reusable CSS classes that ensure theme consistency
+ * across all admin components. Use these classes instead of inline styles.
+ * 
+ * PRINCIPLES:
+ * 1. Always use CSS variables (--admin-*) instead of hardcoded colors
+ * 2. Use utility classes instead of inline styles
+ * 3. All colors must respect light/dark theme
+ * 4. Use semantic color names (accent, success, warning, danger, secondary)
+ */
+
+/* ============================================
+   STAT CARD UTILITIES - Theme Consistent
+   ============================================ */
+
+/* Stat Card Subtitle/Metadata - Consistent styling */
+.stat-card-subtitle {
+  font-size: 0.85rem !important;
+  margin-top: 0.25rem !important;
+  color: var(--admin-text-light, #9ca3af) !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
+}
+
+/* Stat Card Icon Colors - Theme Consistent */
+.stat-card-icon-warning {
+  color: var(--admin-warning, #f59e0b) !important;
+}
+
+.stat-card-icon-success {
+  color: var(--admin-success, #16a34a) !important;
+}
+
+.stat-card-icon-accent {
+  color: var(--admin-accent, #449031) !important;
+}
+
+.stat-card-icon-secondary {
+  color: var(--admin-secondary, #c45c2d) !important;
+}
+
+.stat-card-icon-danger {
+  color: var(--admin-danger, #dc2626) !important;
+}
+
+/* ============================================
+   TEXT UTILITIES - Theme Consistent
+   ============================================ */
+
+/* Text color utilities */
+.text-primary {
+  color: var(--admin-text, #111827) !important;
+}
+
+.text-secondary {
+  color: var(--admin-text-secondary, #6b7280) !important;
+}
+
+.text-light {
+  color: var(--admin-text-light, #9ca3af) !important;
+}
+
+.text-accent {
+  color: var(--admin-accent, #449031) !important;
+}
+
+.text-success {
+  color: var(--admin-success, #16a34a) !important;
+}
+
+.text-warning {
+  color: var(--admin-warning, #f59e0b) !important;
+}
+
+.text-danger {
+  color: var(--admin-danger, #dc2626) !important;
+}
+
+.text-secondary-color {
+  color: var(--admin-secondary, #c45c2d) !important;
+}
+
+/* ============================================
+   BACKGROUND UTILITIES - Theme Consistent
+   ============================================ */
+
+.bg-primary {
+  background-color: var(--admin-bg, #ffffff) !important;
+}
+
+.bg-secondary {
+  background-color: var(--admin-bg-secondary, #f9fafb) !important;
+}
+
+.bg-accent {
+  background-color: var(--admin-accent, #449031) !important;
+}
+
+.bg-accent-light {
+  background-color: var(--admin-accent-light, rgba(68, 144, 49, 0.1)) !important;
+}
+
+.bg-success-light {
+  background-color: var(--admin-success-light, rgba(22, 163, 74, 0.1)) !important;
+}
+
+.bg-warning-light {
+  background-color: var(--admin-warning-light, rgba(245, 158, 11, 0.15)) !important;
+}
+
+.bg-danger-light {
+  background-color: var(--admin-danger-light, rgba(220, 38, 38, 0.12)) !important;
+}
+
+.bg-secondary-light {
+  background-color: var(--admin-secondary-light, rgba(196, 92, 45, 0.12)) !important;
+}
+
+/* ============================================
+   BORDER UTILITIES - Theme Consistent
+   ============================================ */
+
+.border-primary {
+  border-color: var(--admin-border, #e5e7eb) !important;
+}
+
+.border-accent {
+  border-color: var(--admin-accent, #449031) !important;
+}
+
+.border-success {
+  border-color: var(--admin-success, #16a34a) !important;
+}
+
+.border-warning {
+  border-color: var(--admin-warning, #f59e0b) !important;
+}
+
+.border-danger {
+  border-color: var(--admin-danger, #dc2626) !important;
+}
+
+.border-secondary {
+  border-color: var(--admin-secondary, #c45c2d) !important;
+}
+
+/* ============================================
+   SPACING UTILITIES - Consistent
+   ============================================ */
+
+.mt-subtitle {
+  margin-top: 0.25rem !important;
+}
+
+.mb-subtitle {
+  margin-bottom: 0.25rem !important;
+}
+
+/* ============================================
+   EMPTY STATE UTILITIES - Theme Consistent
+   ============================================ */
+
+.empty-state-text {
+  width: 100% !important;
+  text-align: center !important;
+  padding: 2rem !important;
+  color: var(--admin-text-light, #9ca3af) !important;
+  font-size: 0.9rem !important;
+}
+
+/* ============================================
+   ICON UTILITIES - Theme Consistent
+   ============================================ */
+
+.icon-accent {
+  color: var(--admin-accent, #449031) !important;
+}
+
+.icon-success {
+  color: var(--admin-success, #16a34a) !important;
+}
+
+.icon-warning {
+  color: var(--admin-warning, #f59e0b) !important;
+}
+
+.icon-danger {
+  color: var(--admin-danger, #dc2626) !important;
+}
+
+.icon-secondary {
+  color: var(--admin-secondary, #c45c2d) !important;
+}
+
+/* ============================================
+   DARK THEME OVERRIDES
+   ============================================ */
+
+:root.dark-theme .stat-card-subtitle,
+.admin-dashboard.dark-theme .stat-card-subtitle {
+  color: var(--admin-text-light, #6b7280) !important;
+}
+
+:root.dark-theme .text-light,
+.admin-dashboard.dark-theme .text-light {
+  color: var(--admin-text-light, #6b7280) !important;
+}
+
+:root.dark-theme .empty-state-text,
+.admin-dashboard.dark-theme .empty-state-text {
+  color: var(--admin-text-light, #6b7280) !important;
+}

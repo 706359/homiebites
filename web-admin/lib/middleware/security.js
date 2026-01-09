@@ -75,7 +75,7 @@ export function validateOrigin(request) {
   const origin = request.headers.get('origin') || request.headers.get('referer');
   const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
-    : ['http://localhost:3000', 'https://homiebites.com'];
+    : ['http://localhost:5050', 'https://homiebites.com'];
 
   if (!origin) {
     return true;

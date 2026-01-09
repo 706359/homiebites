@@ -84,26 +84,13 @@ export const getMenuData = async () => {
         Array.isArray(response.data) &&
         response.data.length > 0
       ) {
-        // Cache in localStorage for offline access
-        localStorage.setItem(MENU_DATA_KEY, JSON.stringify(response.data));
-        localStorage.setItem("homiebites_menu_version", "api");
+        // Don't cache to localStorage - always fetch from backend
         return response.data;
       }
     } catch (apiError) {
-      console.warn("API fetch failed, using cached data:", apiError.message);
-    }
-
-    // Fallback to localStorage - only return what's saved from admin
-    const stored = localStorage.getItem(MENU_DATA_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
-      } catch (e) {
-        console.warn("Error parsing menu data from localStorage:", e);
-      }
+      console.error("API fetch failed:", apiError.message);
+      // Don't use localStorage fallback - return empty array
+      // Menu data must come from backend only
     }
 
     // Return empty array if no menu data exists (admin must add items first)
@@ -114,46 +101,31 @@ export const getMenuData = async () => {
   }
 };
 
-// Synchronous version for backward compatibility (uses cached data)
+// Synchronous version for backward compatibility
+// Note: This no longer uses localStorage - returns empty array
+// Use getMenuData() async version to fetch from backend
 export const getMenuDataSync = () => {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const stored = localStorage.getItem(MENU_DATA_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
-      } catch (e) {
-        console.warn("Error parsing menu data from localStorage:", e);
-      }
-    }
-    // Return empty array if no menu data exists (admin must add items first)
-    return [];
-  } catch (error) {
-    console.error("Error accessing localStorage:", error);
-    return [];
-  }
+  // Always return empty - data must come from backend via getMenuData()
+  return [];
 };
 
 export const saveMenuData = async (data) => {
-  // Save to localStorage immediately for instant UI update
-  localStorage.setItem(MENU_DATA_KEY, JSON.stringify(data));
-
-  // Try to sync to API (admin only)
+  // Save directly to backend only - no localStorage
   try {
     const token = localStorage.getItem("homiebites_token");
     if (token) {
       await api.updateMenu(data);
-      localStorage.setItem("homiebites_menu_version", "api");
+      // Clear any old localStorage cache to ensure fresh data
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(MENU_DATA_KEY);
+        localStorage.removeItem("homiebites_menu_version");
+      }
+    } else {
+      throw new Error('Not authenticated. Please login to save menu data.');
     }
   } catch (error) {
-    console.warn("Failed to sync menu to API, saved locally:", error.message);
-    // Data is already saved to localStorage, so it's not lost
+    console.error("Failed to save menu to API:", error.message);
+    throw error; // Re-throw so caller can handle the error
   }
 };
 

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
-import { getFilteredOrdersByDate } from './utils/calculations.js';
+import { getFilteredOrdersByDate, getProfitStats } from './utils/calculations.js';
 import { parseOrderDate } from './utils/dateUtils.js';
-import { formatCurrency, formatNumberIndian, getTotalRevenue } from './utils/orderUtils.js';
+import { formatCurrency, formatNumberIndian, getTotalRevenue, isPendingStatus } from './utils/orderUtils.js';
 import PremiumLoader from './PremiumLoader.jsx';
 
 const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
@@ -38,18 +38,19 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     }
   }, [orders, period, customFrom, customTo]);
 
-  // Key Metrics
+  // Key Metrics - Only Important Ones
   const keyMetrics = useMemo(() => {
     const totalRevenue = getTotalRevenue(periodOrders);
-
-    // Calculate growth rate (simplified - compare with previous period)
+    const totalOrders = periodOrders.length;
+    
+    // Calculate growth rate for indicator
     let previousPeriodOrders = [];
     if (period === 'thisMonth') {
       const lastMonth = new Date(now);
       lastMonth.setMonth(lastMonth.getMonth() - 1);
       previousPeriodOrders = orders.filter((o) => {
         try {
-          const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+          const orderDate = parseOrderDate(o.date || o.order_date || null);
           if (!orderDate) return false;
           return (
             orderDate.getMonth() === lastMonth.getMonth() &&
@@ -63,7 +64,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
       const lastYear = now.getFullYear() - 1;
       previousPeriodOrders = orders.filter((o) => {
         try {
-          const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+          const orderDate = parseOrderDate(o.date || o.order_date || null);
           if (!orderDate) return false;
           return orderDate.getFullYear() === lastYear;
         } catch (e) {
@@ -79,25 +80,39 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           ? Infinity
           : 0;
 
-    // Calculate retention rate (simplified - customers who ordered more than once)
-    const customerOrders = {};
-    periodOrders.forEach((o) => {
-      const addr = o.deliveryAddress || o.customerAddress || o.address;
-      if (addr) {
-        if (!customerOrders[addr]) customerOrders[addr] = 0;
-        customerOrders[addr]++;
+    // Calculate pending payments
+    const pendingOrders = periodOrders.filter((o) => isPendingStatus(o.status));
+    const pendingAmount = pendingOrders.reduce((sum, o) => {
+      let amount = parseFloat(o.total || o.totalAmount || 0);
+      if (isNaN(amount) || amount === 0) {
+        const qty = parseFloat(o.quantity || 1);
+        const price = parseFloat(o.unitPrice || 0);
+        amount = qty * price;
       }
-    });
-    const returningCustomers = Object.values(customerOrders).filter((count) => count > 1).length;
-    const totalCustomers = Object.keys(customerOrders).length;
-    const retentionRate = totalCustomers > 0 ? (returningCustomers / totalCustomers) * 100 : 0;
-    const churnRate = 100 - retentionRate;
+      return sum + (isNaN(amount) ? 0 : amount);
+    }, 0);
+
+    // Total customers (unique addresses)
+    const uniqueAddresses = new Set(
+      periodOrders.map((o) => o.deliveryAddress || o.customerAddress || o.address).filter(Boolean)
+    );
+    const totalCustomers = uniqueAddresses.size;
+
+    // Average order value
+    const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
+
+    // Calculate profit statistics
+    const profitStats = getProfitStats(totalRevenue, 70, 30);
 
     return {
       totalRevenue,
+      totalOrders,
+      pendingAmount,
+      pendingOrdersCount: pendingOrders.length,
+      totalCustomers,
+      avgOrderValue,
       growthRate,
-      retentionRate,
-      churnRate,
+      profitStats,
     };
   }, [periodOrders, orders, period, now]);
 
@@ -480,8 +495,10 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
 
   return (
     <div className='admin-content'>
-      {/* TIME PERIOD SELECTOR */}
-      <div className='dashboard-card dashboard-card-spaced'>
+      <div className='dashboard-with-sidebar'>
+        <div className='dashboard-main-content'>
+          {/* TIME PERIOD SELECTOR */}
+          <div className='dashboard-card dashboard-card-spaced'>
         <div className='filter-container'>
           <div className='filter-field-group-standard min-width-160'>
             <label className='filter-label-standard'>
@@ -523,47 +540,77 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         </div>
       </div>
 
-      {/* KEY METRICS GRID */}
+      {/* KEY METRICS GRID - Only Important Metrics */}
       <div className='admin-stats'>
         <div className='stat-card'>
           <i className='fa-solid fa-rupee-sign'></i>
           <div>
             <h3>₹{formatCurrency(keyMetrics.totalRevenue)}</h3>
             <p>Total Revenue</p>
+            {keyMetrics.growthRate !== 0 && (
+              <p className='stat-card-subtitle'>
+                {keyMetrics.growthRate === Infinity
+                  ? 'New ↑'
+                  : `${keyMetrics.growthRate >= 0 ? '+' : ''}${keyMetrics.growthRate.toFixed(1)}% ${keyMetrics.growthRate >= 0 ? '↑' : '↓'}`}
+              </p>
+            )}
           </div>
         </div>
         <div className='stat-card'>
-          <i className='fa-solid fa-chart-line' style={{ color: 'var(--admin-success)' }}></i>
+          <i className='fa-solid fa-shopping-cart' style={{ color: 'var(--admin-accent)' }}></i>
           <div>
-            <h3>
-              {keyMetrics.growthRate === Infinity
-                ? 'New'
-                : `${keyMetrics.growthRate >= 0 ? '+' : ''}${keyMetrics.growthRate.toFixed(1)}%`}
-            </h3>
-            <p>Growth Rate</p>
-            <p
-              style={{
-                fontSize: '0.85rem',
-                marginTop: '0.25rem',
-                color: 'var(--admin-text-light)',
-              }}
-            >
-              {keyMetrics.growthRate >= 0 ? '↑' : '↓'}
+            <h3>{keyMetrics.totalOrders}</h3>
+            <p>Total Orders</p>
+            <p className='stat-card-subtitle'>
+              {period === 'thisMonth' ? 'Current month' : period === 'thisYear' ? 'This year' : 'Selected period'}
+            </p>
+          </div>
+        </div>
+        <div className='stat-card'>
+          <i className='fa-solid fa-exclamation-triangle' style={{ color: 'var(--admin-warning)' }}></i>
+          <div>
+            <h3>₹{formatCurrency(keyMetrics.pendingAmount)}</h3>
+            <p>Pending Payments</p>
+            <p className='stat-card-subtitle'>
+              {keyMetrics.pendingOrdersCount} {keyMetrics.pendingOrdersCount === 1 ? 'order' : 'orders'}
             </p>
           </div>
         </div>
         <div className='stat-card'>
           <i className='fa-solid fa-users' style={{ color: 'var(--admin-accent)' }}></i>
           <div>
-            <h3>{keyMetrics.retentionRate.toFixed(1)}%</h3>
-            <p>Retention Rate</p>
+            <h3>{keyMetrics.totalCustomers}</h3>
+            <p>Total Customers</p>
+            <p className='stat-card-subtitle'>
+              Unique addresses
+            </p>
           </div>
         </div>
         <div className='stat-card'>
-          <i className='fa-solid fa-user-slash' style={{ color: 'var(--admin-danger)' }}></i>
+          <i className='fa-solid fa-chart-line' style={{ color: 'var(--admin-success)' }}></i>
           <div>
-            <h3>{keyMetrics.churnRate.toFixed(1)}%</h3>
-            <p>Churn Rate</p>
+            <h3>₹{formatCurrency(keyMetrics.avgOrderValue)}</h3>
+            <p>Avg Order Value</p>
+          </div>
+        </div>
+        <div className='stat-card'>
+          <i className='fa-solid fa-chart-line stat-card-icon-success'></i>
+          <div>
+            <h3>₹{formatCurrency(keyMetrics.profitStats.profit)}</h3>
+            <p>Profit After Expenses</p>
+            <p className='stat-card-subtitle'>
+              {keyMetrics.profitStats.profitMarginPercent.toFixed(1)}% margin
+            </p>
+          </div>
+        </div>
+        <div className='stat-card'>
+          <i className='fa-solid fa-percent stat-card-icon-secondary'></i>
+          <div>
+            <h3>{keyMetrics.profitStats.profitMarginPercent.toFixed(1)}%</h3>
+            <p>Profit Margin</p>
+            <p className='stat-card-subtitle'>
+              Target: {keyMetrics.profitStats.targetProfitMargin}%
+            </p>
           </div>
         </div>
       </div>
@@ -751,275 +798,6 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           </div>
         </div>
 
-        {/* Orders by Day */}
-        <div className='dashboard-grid-item half-width'>
-          <div className='dashboard-card'>
-            <h3 className='dashboard-section-title'>
-              <i
-                className='fa-solid fa-calendar-week'
-                style={{ fontSize: '1rem', opacity: 0.7 }}
-              ></i>
-              Orders by Day
-            </h3>
-            <div
-              style={{
-                padding: '16px',
-                borderTop: '2px solid var(--admin-border)',
-                marginTop: '0.5rem',
-              }}
-            >
-              {maxDayOrders === 0 ? (
-                <div
-                  style={{
-                    textAlign: 'center',
-                    padding: '48px',
-                    color: 'var(--admin-text-light)',
-                  }}
-                >
-                  <i className='fa-solid fa-inbox' style={{ fontSize: '48px', opacity: 0.3 }}></i>
-                  <p style={{ marginTop: '16px' }}>No orders data available</p>
-                </div>
-              ) : (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    gap: '0.75rem',
-                    minHeight: '150px',
-                  }}
-                >
-                  {ordersByDay.map((day, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: '100%',
-                          height: `${(day.count / maxDayOrders) * 140}px`,
-                          minHeight: day.count > 0 ? '20px' : '4px',
-                          background:
-                            day.count > 0 ? 'var(--admin-accent)' : 'var(--admin-glass-border)',
-                          borderRadius: '4px 4px 0 0',
-                          display: 'flex',
-                          alignItems: 'flex-end',
-                          justifyContent: 'center',
-                          paddingBottom: '0.25rem',
-                          cursor: 'pointer',
-                          transition: 'opacity 0.2s ease',
-                          opacity: day.count > 0 ? 1 : 0.3,
-                        }}
-                        onMouseEnter={(e) => {
-                          if (day.count > 0) e.currentTarget.style.opacity = '0.8';
-                        }}
-                        onMouseLeave={(e) => {
-                          if (day.count > 0) e.currentTarget.style.opacity = '1';
-                        }}
-                        title={`${day.day}: ${day.count} orders`}
-                      >
-                        {day.count > 0 && (
-                          <span style={{ color: 'white', fontSize: '0.7rem', fontWeight: '600' }}>
-                            {day.count}
-                          </span>
-                        )}
-                      </div>
-                      <span
-                        style={{
-                          fontSize: '0.75rem',
-                          color: 'var(--admin-text-light)',
-                          fontWeight: '500',
-                        }}
-                      >
-                        {day.day}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Order Frequency Distribution */}
-        <div className='dashboard-grid-item half-width'>
-          <div className='dashboard-card'>
-            <h3
-              className='dashboard-section-title'
-              style={{ wordBreak: 'break-word', lineHeight: '1.4' }}
-            >
-              <i className='fa-solid fa-user-group' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
-              Order Frequency Distribution
-            </h3>
-            <div
-              style={{
-                padding: '16px',
-                borderTop: '2px solid var(--admin-border)',
-                marginTop: '0.5rem',
-              }}
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '12px',
-                    background: 'var(--admin-glass-border)',
-                    borderRadius: '8px',
-                    gap: '8px',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontWeight: '600',
-                      color: 'var(--admin-text)',
-                      fontSize: '0.95rem',
-                      flex: '1',
-                      minWidth: 0,
-                    }}
-                  >
-                    <i
-                      className='fa-solid fa-user-plus'
-                      style={{ marginRight: '8px', color: 'var(--admin-accent)' }}
-                    ></i>
-                    <span style={{ wordBreak: 'break-word' }}>One-time customers</span>
-                  </span>
-                  <span
-                    style={{
-                      fontWeight: '700',
-                      color: 'var(--admin-accent)',
-                      fontSize: '1rem',
-                      whiteSpace: 'nowrap',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {frequencyDistribution.oneTime}
-                  </span>
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '12px',
-                    background: 'var(--admin-glass-border)',
-                    borderRadius: '8px',
-                    gap: '8px',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontWeight: '600',
-                      color: 'var(--admin-text)',
-                      fontSize: '0.95rem',
-                      flex: '1',
-                      minWidth: 0,
-                    }}
-                  >
-                    <i
-                      className='fa-solid fa-chart-line'
-                      style={{ marginRight: '8px', color: 'var(--admin-success)' }}
-                    ></i>
-                    <span style={{ wordBreak: 'break-word' }}>Regular customers (₹2k-₹8k)</span>
-                  </span>
-                  <span
-                    style={{
-                      fontWeight: '700',
-                      color: 'var(--admin-accent)',
-                      fontSize: '1rem',
-                      whiteSpace: 'nowrap',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {frequencyDistribution.regular}
-                  </span>
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '12px',
-                    background: 'var(--admin-glass-border)',
-                    borderRadius: '8px',
-                    gap: '8px',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontWeight: '600',
-                      color: 'var(--admin-text)',
-                      fontSize: '0.95rem',
-                      flex: '1',
-                      minWidth: 0,
-                    }}
-                  >
-                    <i
-                      className='fa-solid fa-star'
-                      style={{ marginRight: '8px', color: 'var(--admin-warning)' }}
-                    ></i>
-                    <span style={{ wordBreak: 'break-word' }}>VIP customers (₹8k-₹15k)</span>
-                  </span>
-                  <span
-                    style={{
-                      fontWeight: '700',
-                      color: 'var(--admin-accent)',
-                      fontSize: '1rem',
-                      whiteSpace: 'nowrap',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {frequencyDistribution.vip}
-                  </span>
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '12px',
-                    background: 'var(--admin-glass-border)',
-                    borderRadius: '8px',
-                    gap: '8px',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontWeight: '600',
-                      color: 'var(--admin-text)',
-                      fontSize: '0.95rem',
-                      flex: '1',
-                      minWidth: 0,
-                    }}
-                  >
-                    <i
-                      className='fa-solid fa-crown'
-                      style={{ marginRight: '8px', color: 'var(--admin-warning)' }}
-                    ></i>
-                    <span style={{ wordBreak: 'break-word' }}>Super VIP customers (≥₹15k)</span>
-                  </span>
-                  <span
-                    style={{
-                      fontWeight: '700',
-                      color: 'var(--admin-accent)',
-                      fontSize: '1rem',
-                      whiteSpace: 'nowrap',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {frequencyDistribution.superVip}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Payment Mode Trends */}
         <div className='dashboard-grid-item full-width'>
@@ -1195,9 +973,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                                 ? '0 4px 12px rgba(68, 144, 49, 0.3)'
                                 : '0 2px 8px rgba(0, 0, 0, 0.1)';
                           }}
-                          title={`Click to view orders for ${day.formattedDate}: ₹${formatCurrency(day.revenue)} (${
-                            day.orders
-                          } ${day.orders === 1 ? 'order' : 'orders'})`}
+                          title={`Click to view orders for ${day.formattedDate}: ₹${formatCurrency(day.revenue)} (${day.orders} ${day.orders === 1 ? 'order' : 'orders'})`}
                         >
                           {idx < 3 && (
                             <span
@@ -1325,25 +1101,9 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           </div>
         </div>
       </div>
-
-      {/* DOWNLOADABLE REPORTS */}
-      <div className='dashboard-card'>
-        <h3 className='dashboard-section-title'>
-          <i className='fa-solid fa-download' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
-          Downloadable Reports
-        </h3>
-        <div className='action-buttons-group' style={{ marginTop: '16px' }}>
-          <button className='btn btn-secondary' onClick={() => handleExportReport('monthly')}>
-            <i className='fa-solid fa-file-alt'></i> Monthly Summary
-          </button>
-          <button className='btn btn-secondary' onClick={() => handleExportReport('quarterly')}>
-            <i className='fa-solid fa-chart-bar'></i> Quarterly Report
-          </button>
-          <button className='btn btn-secondary' onClick={() => handleExportReport('annual')}>
-            <i className='fa-solid fa-chart-line'></i> Annual Report
-          </button>
-        </div>
       </div>
+      </div>
+
     </div>
   );
 };

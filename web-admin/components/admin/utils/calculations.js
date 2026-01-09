@@ -363,3 +363,149 @@ export const getAllCustomers = (ordersList = []) => {
     return [];
   }
 };
+
+/**
+ * Calculate total expenses based on revenue
+ * Uses configurable expense percentage (default 70% for food business)
+ * This includes COGS, operational costs, delivery, etc.
+ * @param {number} revenue - Total revenue
+ * @param {number} expensePercentage - Percentage of revenue that goes to expenses (default: 70)
+ * @returns {number} Total expenses
+ */
+export const calculateTotalExpenses = (revenue, expensePercentage = 70) => {
+  try {
+    const revenueNum = parseFloat(revenue) || 0;
+    const expensePercent = parseFloat(expensePercentage) || 70;
+    return (revenueNum * expensePercent) / 100;
+  } catch (error) {
+    console.error("Error calculating total expenses:", error);
+    return 0;
+  }
+};
+
+/**
+ * Calculate profit after expenses
+ * @param {number} revenue - Total revenue
+ * @param {number} expenses - Total expenses (optional, will calculate if not provided)
+ * @param {number} expensePercentage - Percentage of revenue for expenses (default: 70)
+ * @returns {number} Profit after expenses
+ */
+export const calculateProfit = (
+  revenue,
+  expenses = null,
+  expensePercentage = 70,
+) => {
+  try {
+    const revenueNum = parseFloat(revenue) || 0;
+    const expensesNum =
+      expenses !== null
+        ? parseFloat(expenses)
+        : calculateTotalExpenses(revenueNum, expensePercentage);
+    return Math.max(0, revenueNum - expensesNum);
+  } catch (error) {
+    console.error("Error calculating profit:", error);
+    return 0;
+  }
+};
+
+/**
+ * Calculate profit with 30% margin
+ * This represents the profit after covering all expenses, with a 30% margin on the profit
+ * @param {number} revenue - Total revenue
+ * @param {number} expenses - Total expenses (optional, will calculate if not provided)
+ * @param {number} expensePercentage - Percentage of revenue for expenses (default: 70)
+ * @param {number} profitMargin - Profit margin percentage (default: 30)
+ * @returns {number} Profit with margin applied
+ */
+export const calculateProfitWithMargin = (
+  revenue,
+  expenses = null,
+  expensePercentage = 70,
+  profitMargin = 30,
+) => {
+  try {
+    const profit = calculateProfit(revenue, expenses, expensePercentage);
+    const marginPercent = parseFloat(profitMargin) || 30;
+    return (profit * marginPercent) / 100;
+  } catch (error) {
+    console.error("Error calculating profit with margin:", error);
+    return 0;
+  }
+};
+
+/**
+ * Calculate profit margin percentage
+ * @param {number} revenue - Total revenue
+ * @param {number} expenses - Total expenses (optional, will calculate if not provided)
+ * @param {number} expensePercentage - Percentage of revenue for expenses (default: 70)
+ * @returns {number} Profit margin as percentage
+ */
+export const calculateProfitMarginPercentage = (
+  revenue,
+  expenses = null,
+  expensePercentage = 70,
+) => {
+  try {
+    const revenueNum = parseFloat(revenue) || 0;
+    if (revenueNum === 0) return 0;
+    const profit = calculateProfit(revenue, expenses, expensePercentage);
+    return (profit / revenueNum) * 100;
+  } catch (error) {
+    console.error("Error calculating profit margin percentage:", error);
+    return 0;
+  }
+};
+
+/**
+ * Get comprehensive profit statistics
+ * @param {number} revenue - Total revenue
+ * @param {number} expensePercentage - Percentage of revenue for expenses (default: 70)
+ * @param {number} targetProfitMargin - Target profit margin percentage (default: 30)
+ * @returns {Object} Object containing all profit-related statistics
+ */
+export const getProfitStats = (
+  revenue,
+  expensePercentage = 70,
+  targetProfitMargin = 30,
+) => {
+  try {
+    const revenueNum = parseFloat(revenue) || 0;
+    const expenses = calculateTotalExpenses(revenueNum, expensePercentage);
+    const profit = calculateProfit(revenueNum, expenses, expensePercentage);
+    const profitWithMargin = calculateProfitWithMargin(
+      revenueNum,
+      expenses,
+      expensePercentage,
+      targetProfitMargin,
+    );
+    const profitMarginPercent = calculateProfitMarginPercentage(
+      revenueNum,
+      expenses,
+      expensePercentage,
+    );
+    const targetProfit = (revenueNum * targetProfitMargin) / 100;
+
+    return {
+      revenue: revenueNum,
+      expenses: expenses,
+      profit: profit,
+      profitWithMargin: profitWithMargin,
+      profitMarginPercent: profitMarginPercent,
+      targetProfit: targetProfit,
+      targetProfitMargin: targetProfitMargin,
+      expensePercentage: expensePercentage,
+    };
+  } catch (error) {
+    console.error("Error calculating profit stats:", error);
+    return {
+      revenue: 0,
+      expenses: 0,
+      profit: 0,
+      profitWithMargin: 0,
+      profitMarginPercent: 0,
+      targetProfit: 0,
+      targetProfitMargin: targetProfitMargin || 30,
+      expensePercentage: expensePercentage || 70,
+    };
+  }
+};

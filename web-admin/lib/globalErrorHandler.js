@@ -77,6 +77,16 @@ const handleError = (event) => {
 
   const error = event.error || event.reason || event;
 
+  // Ignore empty objects - these are false positives
+  if (error && typeof error === 'object' && Object.keys(error).length === 0) {
+    return true; // Silently ignore empty error objects
+  }
+
+  // Ignore if error is null, undefined, or empty string
+  if (!error || (typeof error === 'string' && error.trim() === '')) {
+    return true; // Silently ignore
+  }
+
   // Ignore PWA install prompt warnings (expected behavior)
   if (error && typeof error === 'object' && error.message) {
     const message = String(error.message).toLowerCase();
@@ -102,11 +112,30 @@ const handleError = (event) => {
     }
   }
 
+  // Only process if we have a real error with meaningful information
+  const hasErrorMessage = error && (
+    (typeof error === 'object' && (error.message || error.stack || error.name)) ||
+    (typeof error === 'string' && error.trim() !== '')
+  );
+
+  if (!hasErrorMessage) {
+    // Not a real error - silently ignore
+    return true;
+  }
+
   const errorMessage = formatErrorMessage(error);
 
-  // Log error for debugging
+  // Log error for debugging (only real errors)
   if (process.env.NODE_ENV === 'development') {
-    console.error('[Global Error Handler]', error);
+    console.error('[Global Error Handler] Error:', {
+      message: error.message || error,
+      stack: error.stack,
+      name: error.name,
+      eventType: event.type,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    });
   }
 
   // Show notification if available
@@ -141,6 +170,16 @@ const handleUnhandledRejection = (event) => {
 
   const error = event.reason || event;
 
+  // Ignore empty objects - these are false positives
+  if (error && typeof error === 'object' && Object.keys(error).length === 0) {
+    return; // Silently ignore empty error objects
+  }
+
+  // Ignore if error is null, undefined, or empty string
+  if (!error || (typeof error === 'string' && error.trim() === '')) {
+    return; // Silently ignore
+  }
+
   // Ignore PWA install prompt warnings (expected behavior)
   if (error && typeof error === 'object' && error.message) {
     const message = String(error.message).toLowerCase();
@@ -166,11 +205,27 @@ const handleUnhandledRejection = (event) => {
     }
   }
 
+  // Only process if we have a real error with meaningful information
+  const hasErrorMessage = error && (
+    (typeof error === 'object' && (error.message || error.stack || error.name)) ||
+    (typeof error === 'string' && error.trim() !== '')
+  );
+
+  if (!hasErrorMessage) {
+    // Not a real error - silently ignore
+    return;
+  }
+
   const errorMessage = formatErrorMessage(error);
 
-  // Log error for debugging
+  // Log error for debugging (only real errors)
   if (process.env.NODE_ENV === 'development') {
-    console.error('[Global Error Handler] Unhandled Promise Rejection:', error);
+    console.error('[Global Error Handler] Unhandled Promise Rejection:', {
+      message: error.message || error,
+      stack: error.stack,
+      name: error.name,
+      reason: event.reason,
+    });
   }
 
   // Show notification if available

@@ -174,6 +174,12 @@ export const api = {
     });
   },
 
+  async deleteMenu() {
+    return this.request('/api/menu', {
+      method: 'DELETE',
+    });
+  },
+
   // Order endpoints
   async createOrder(orderData) {
     return this.request('/api/orders', {

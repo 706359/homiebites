@@ -1,4 +1,4 @@
-import { getFilteredOrdersByDate } from './utils/calculations.js';
+import { getFilteredOrdersByDate, getProfitStats } from './utils/calculations.js';
 import { formatDate, formatDateShort, parseOrderDate } from './utils/dateUtils.js';
 import { formatCurrency, formatNumberIndian, getTotalRevenue, isPendingStatus, sortOrdersByOrderId } from './utils/orderUtils.js';
 import PremiumLoader from './PremiumLoader.jsx';
@@ -14,6 +14,9 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   const currentMonthOrders = getFilteredOrdersByDate(orders, 'month', '', '');
   const currentMonthTotal = currentMonthOrders.length;
   const currentMonthRevenue = getTotalRevenue(currentMonthOrders);
+
+  // PROFIT STATISTICS (30% margin after expenses)
+  const profitStats = getProfitStats(currentMonthRevenue, 70, 30);
 
   // Calculate unpaid amount - ensure we handle both total and totalAmount fields correctly
   const currentMonthUnpaidAmount = currentMonthOrders
@@ -241,140 +244,82 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
 
   return (
     <div className='admin-content'>
-      {/* TOP STATS CARDS (4 columns) - Total Revenue, Total Orders, Pending Payments, Total Customers */}
+      <div className='dashboard-with-sidebar'>
+        <div className='dashboard-main-content'>
+          {/* KEY METRICS - Only Important Ones */}
       <div className='admin-stats'>
         <div className='stat-card'>
           <i className='fa-solid fa-rupee-sign'></i>
           <div>
             <h3>₹{formatCurrency(currentMonthRevenue)}</h3>
             <p>Total Revenue</p>
-            <p
-              style={{
-                fontSize: '0.85rem',
-                marginTop: '0.25rem',
-                color: 'var(--admin-text-light)',
-              }}
-            >
+            <p className='stat-card-subtitle'>
               {isNewGrowth
-                ? 'New'
-                : `${monthOverMonthGrowth >= 0 ? '+' : ''}${monthOverMonthGrowth.toFixed(1)}%`}{' '}
-              {monthOverMonthGrowth >= 0 ? '↑' : '↓'}
+                ? 'New ↑'
+                : `${monthOverMonthGrowth >= 0 ? '+' : ''}${monthOverMonthGrowth.toFixed(1)}% ${monthOverMonthGrowth >= 0 ? '↑' : '↓'}`}
             </p>
           </div>
         </div>
         <div className='stat-card'>
-          <i className='fa-solid fa-shopping-cart'></i>
+          <i className='fa-solid fa-shopping-cart' style={{ color: 'var(--admin-accent)' }}></i>
           <div>
             <h3>{currentMonthTotal}</h3>
             <p>Total Orders</p>
-            <p
-              style={{
-                fontSize: '0.85rem',
-                marginTop: '0.25rem',
-                color: 'var(--admin-text-light)',
-              }}
-            >
+            <p className='stat-card-subtitle'>
               Current month
             </p>
           </div>
         </div>
         <div className='stat-card'>
-          <i
-            className='fa-solid fa-exclamation-triangle'
-            style={{ color: 'var(--admin-warning)' }}
-          ></i>
+          <i className='fa-solid fa-exclamation-triangle stat-card-icon-warning'></i>
           <div>
             <h3>₹{formatCurrency(currentMonthUnpaidAmount)}</h3>
             <p>Pending Payments</p>
-            <p
-              style={{
-                fontSize: '0.85rem',
-                marginTop: '0.25rem',
-                color: 'var(--admin-text-light)',
-              }}
-            >
-              {unpaidOrdersCount} orders
+            <p className='stat-card-subtitle'>
+              {unpaidOrdersCount} {unpaidOrdersCount === 1 ? 'order' : 'orders'}
             </p>
           </div>
         </div>
         <div className='stat-card'>
-          <i className='fa-solid fa-users'></i>
+          <i className='fa-solid fa-users' style={{ color: 'var(--admin-accent)' }}></i>
           <div>
             <h3>{allUniqueAddresses}</h3>
             <p>Total Customers</p>
-            <p
-              style={{
-                fontSize: '0.85rem',
-                marginTop: '0.25rem',
-                color: 'var(--admin-text-light)',
-              }}
-            >
+            <p className='stat-card-subtitle'>
               Unique addresses
             </p>
           </div>
         </div>
-      </div>
-
-      {/* SECONDARY STATS CARDS (4 columns) - Today's Revenue, This Week Revenue, Avg Order Value, Cancel Rate */}
-      <div className='admin-stats'>
         <div className='stat-card'>
-          <i className='fa-solid fa-calendar-day' style={{ color: 'var(--admin-accent)' }}></i>
-          <div>
-            <h3>₹{formatCurrency(todayRevenue)}</h3>
-            <p>Today's Revenue</p>
-            <p
-              style={{
-                fontSize: '0.85rem',
-                marginTop: '0.25rem',
-                color: 'var(--admin-text-light)',
-              }}
-            >
-              {todayOrdersCount} orders
-            </p>
-          </div>
-        </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-calendar-week' style={{ color: 'var(--admin-secondary)' }}></i>
-          <div>
-            <h3>₹{formatCurrency(thisWeekRevenue)}</h3>
-            <p>This Week Revenue</p>
-            <p
-              style={{
-                fontSize: '0.85rem',
-                marginTop: '0.25rem',
-                color: 'var(--admin-text-light)',
-              }}
-            >
-              {thisWeekOrdersCount} orders
-            </p>
-          </div>
-        </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-chart-line' style={{ color: 'var(--admin-success)' }}></i>
+          <i className='fa-solid fa-chart-line stat-card-icon-success'></i>
           <div>
             <h3>₹{formatCurrency(currentMonthAvgOrderValue)}</h3>
             <p>Avg Order Value</p>
           </div>
         </div>
         <div className='stat-card'>
-          <i className='fa-solid fa-times-circle' style={{ color: 'var(--admin-danger)' }}></i>
+          <i className='fa-solid fa-chart-line stat-card-icon-success'></i>
           <div>
-            <h3>{cancelRate.toFixed(1)}%</h3>
-            <p>Cancel Rate</p>
-            <p
-              style={{
-                fontSize: '0.85rem',
-                marginTop: '0.25rem',
-                color: 'var(--admin-text-light)',
-              }}
-            >
-              {cancelledOrders.length} orders
+            <h3>₹{formatCurrency(profitStats.profit)}</h3>
+            <p>Profit After Expenses</p>
+            <p className='stat-card-subtitle'>
+              {profitStats.profitMarginPercent.toFixed(1)}% margin
+            </p>
+          </div>
+        </div>
+        <div className='stat-card'>
+          <i className='fa-solid fa-percent stat-card-icon-secondary'></i>
+          <div>
+            <h3>{profitStats.profitMarginPercent.toFixed(1)}%</h3>
+            <p>Profit Margin</p>
+            <p className='stat-card-subtitle'>
+              Target: {profitStats.targetProfitMargin}%
             </p>
           </div>
         </div>
       </div>
 
-      {/* CHARTS SECTION (2 columns) */}
+      {/* CHARTS SECTION - Essential Visualizations Only */}
       <div className='dashboard-grid-layout'>
         {/* Revenue Trend (Last 6 Months) */}
         <div className='dashboard-grid-item two-thirds'>
@@ -469,7 +414,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                   });
                 })()
               ) : (
-                <div style={{ width: '100%', textAlign: 'center', padding: '2rem', color: 'var(--admin-text-light)' }}>
+                <div className='empty-state-text'>
                   No revenue data available
                 </div>
               )}
@@ -477,193 +422,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
           </div>
         </div>
 
-        {/* Orders by Mode (Lunch vs Dinner) */}
-        <div className='dashboard-grid-item third-width'>
-          <div className='dashboard-card'>
-            <h3 className='dashboard-section-title'>
-              <i className='fa-solid fa-chart-pie' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
-              Orders by Mode
-            </h3>
-            <div
-              style={{
-                padding: '1.5rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1rem',
-                borderTop: '2px solid var(--admin-border)',
-                marginTop: '0.5rem',
-              }}
-            >
-              {Object.entries(ordersByMode)
-                .filter(([mode]) => mode !== 'Not Set' || ordersByMode[mode] > 0)
-                .map(([mode, count]) => {
-                  const total = Object.values(ordersByMode).reduce((sum, c) => sum + c, 0);
-                  // Calculate percentage: (count / total) * 100, with accuracy based on total records / 100
-                  const percentage =
-                    total > 0 ? Math.min(100, parseFloat(((count / total) * 100).toFixed(2))) : 0;
-                  const isLunch = mode === 'Lunch';
-                  const isDinner = mode === 'Dinner';
-                  return (
-                    <div
-                      key={mode}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.5rem',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontWeight: '600',
-                            color: 'var(--admin-text)',
-                          }}
-                        >
-                          {mode}
-                        </span>
-                        <span
-                          style={{
-                            fontWeight: '700',
-                            color: 'var(--admin-accent)',
-                            fontSize: '1.1rem',
-                          }}
-                        >
-                          {count} ({percentage.toFixed(2)}%)
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          width: '100%',
-                          height: '24px',
-                          background: 'var(--admin-glass-border)',
-                          borderRadius: '12px',
-                          overflow: 'hidden',
-                          position: 'relative',
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: `${percentage}%`,
-                            height: '100%',
-                            background: isLunch
-                              ? 'var(--admin-success, #449031)'
-                              : isDinner
-                                ? 'var(--admin-accent, #449031)'
-                                : 'var(--admin-border, #e2e8f0)',
-                            borderRadius: '12px',
-                            transition: 'width 0.5s ease',
-                            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.1)',
-                          }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* DAILY ORDERS & PAYMENT MODE SPLIT - Side by Side */}
-      <div className='dashboard-grid-layout'>
-        {/* Daily Orders This Month - Area Chart */}
-        <div className='dashboard-grid-item two-thirds'>
-          <div className='dashboard-card'>
-            <h3 className='dashboard-section-title'>
-              <i className='fa-solid fa-chart-area' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
-              Daily Orders This Month
-            </h3>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'flex-end',
-                gap: '0.5rem',
-                minHeight: '200px',
-                padding: '1rem',
-                borderTop: '2px solid var(--admin-border)',
-                marginTop: '0.5rem',
-              }}
-            >
-              {dailyOrdersData.length > 0 ? (
-                dailyOrdersData.map((dayData, idx) => {
-                  const barHeight = maxDailyOrders > 0 ? (dayData.orders / maxDailyOrders) * 180 : 0;
-                  return (
-                    <div
-                      key={idx}
-                      style={{
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '0.25rem',
-                      }}
-                      title={`Day ${dayData.day}: ${dayData.orders} orders, ₹${formatCurrency(
-                        dayData.revenue
-                      )}`}
-                    >
-                      <div
-                        style={{
-                          width: '100%',
-                          height: `${Math.max(barHeight, 4)}px`,
-                          minHeight: '4px',
-                          background: dayData.orders > 0 ? 'var(--admin-accent, #449031)' : 'var(--admin-border, #e2e8f0)',
-                          borderRadius: '4px 4px 0 0',
-                          opacity: dayData.orders > 0 ? 1 : 0.3,
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                          if (dayData.orders > 0) {
-                            e.currentTarget.style.opacity = '0.8';
-                            e.currentTarget.style.transform = 'scaleY(1.1)';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.opacity = dayData.orders > 0 ? 1 : 0.3;
-                          e.currentTarget.style.transform = 'scaleY(1)';
-                        }}
-                      />
-                      {dayData.day % 5 === 0 || dayData.day === 1 || dayData.day === daysInMonth ? (
-                        <span
-                          style={{
-                            fontSize: '0.7rem',
-                            color: 'var(--admin-text-light)',
-                            fontWeight: '500',
-                          }}
-                        >
-                          {dayData.day}
-                        </span>
-                      ) : null}
-                    </div>
-                  );
-                })
-              ) : (
-                <div style={{ width: '100%', textAlign: 'center', padding: '2rem', color: 'var(--admin-text-light)' }}>
-                  No orders data available for this month
-                </div>
-              )}
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                marginTop: '0.5rem',
-                fontSize: '0.85rem',
-                color: 'var(--admin-text-light)',
-              }}
-            >
-              Daily order count for current month
-            </div>
-          </div>
-        </div>
-
-        {/* Payment Mode Split - Bar Chart */}
+        {/* Payment Mode Split */}
         <div className='dashboard-grid-item third-width'>
           <div className='dashboard-card'>
             <h3 className='dashboard-section-title'>
@@ -687,7 +446,6 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                     (sum, s) => sum + s.count,
                     0
                   );
-                  // Calculate percentage: (count / total) * 100, with accuracy based on total records / 100
                   const percentage =
                     totalCount > 0
                       ? Math.min(100, parseFloat(((stats.count / totalCount) * 100).toFixed(2)))
@@ -779,11 +537,8 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
         </div>
       </div>
 
-      {/* RECENT ORDERS TABLE & QUICK ACTIONS - Side by Side */}
-      <div className='dashboard-grid-layout'>
-        {/* RECENT ORDERS TABLE */}
-        {recentOrders.length > 0 && (
-          <div className='dashboard-grid-item two-thirds'>
+          {/* RECENT ORDERS TABLE */}
+          {recentOrders.length > 0 && (
             <div className='dashboard-section'>
               <div className='recent-orders-header'>
                 <h3 className='dashboard-section-title' style={{ marginBottom: 0 }}>
@@ -856,77 +611,10 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* QUICK ACTIONS PANEL */}
-        <div className='dashboard-grid-item third-width'>
-          <div className='dashboard-section'>
-            <h3 className='dashboard-section-title'>
-              <i
-                className='fa-solid fa-bolt'
-                style={{ fontSize: '1rem', opacity: 0.7, color: 'var(--admin-accent)' }}
-              ></i>
-              Quick Actions
-            </h3>
-            <div className='quick-actions-panel'>
-              <button
-                className='btn btn-primary btn-small btn-full'
-                onClick={() => setActiveTab('currentMonthOrders')}
-                title='Add New Order (Ctrl+N)'
-              >
-                <i className='fa-solid fa-plus'></i> Add New Order
-                <span style={{ marginLeft: '8px', opacity: 0.7, fontSize: '0.75rem' }}>
-                  Ctrl+N
-                </span>
-              </button>
-              <button
-                className='btn btn-secondary btn-small btn-full'
-                onClick={() => {
-                  const csvContent =
-                    'Date,Address,Quantity,Amount,Mode,Status\n' +
-                    orders
-                      .slice(0, 100)
-                      .map((o) => {
-                        // Never use createdAt (today's date) as fallback - only use actual order date
-      const orderDate = parseOrderDate(o.date || o.order_date || null);
-                        return `"${formatDate(orderDate)}","${
-                          o.deliveryAddress || o.customerAddress || o.address || 'N/A'
-                        }","${o.quantity || 1}","${o.total || o.totalAmount || 0}","${
-                          o.mode || 'N/A'
-                        }","${o.status || 'N/A'}"`;
-                      })
-                      .join('\n');
-                  const blob = new Blob([csvContent], {
-                    type: 'text/csv;charset=utf-8;',
-                  });
-                  const link = document.createElement('a');
-                  link.href = URL.createObjectURL(blob);
-                  link.download = `dashboard_export_${new Date().toISOString().split('T')[0]}.csv`;
-                  link.click();
-                }}
-                title='Export Data'
-              >
-                <i className='fa-solid fa-download'></i> Export Data
-              </button>
-              <button
-                className='btn btn-secondary btn-small btn-full'
-                onClick={() => setActiveTab('pendingAmounts')}
-                title='View Pending Payments'
-              >
-                <i className='fa-solid fa-money-bill-wave'></i> Pending Payments
-              </button>
-              <button
-                className='btn btn-ghost btn-small btn-full'
-                onClick={() => setActiveTab('reports')}
-                title='Generate Report'
-              >
-                <i className='fa-solid fa-chart-bar'></i> Generate Report
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       </div>
+
     </div>
   );
 };

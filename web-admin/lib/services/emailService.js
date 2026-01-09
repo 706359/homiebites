@@ -1,0 +1,121 @@
+/**
+ * Email Service Utility - Gmail Only
+ * FREE OTP delivery via Gmail SMTP using Nodemailer
+ * Configured for Gmail App Passwords
+ */
+
+/**
+ * Send email using Gmail SMTP (Nodemailer)
+ * @param {string} to - Recipient email address
+ * @param {string} subject - Email subject
+ * @param {string} html - HTML email body
+ * @param {string} text - Plain text email body (optional)
+ * @returns {Promise<{success: boolean, messageId?: string, error?: string}>}
+ */
+export async function sendEmail(to, subject, html, text = null) {
+  // In development, just log if not enabled
+  if (process.env.NODE_ENV === 'development' && !process.env.ENABLE_EMAIL_IN_DEV) {
+    console.log(`[Email Service] Development mode - Email sending is disabled.`);
+    console.log(`[Email Service] To enable emails in development, set ENABLE_EMAIL_IN_DEV=true in your .env file`);
+    console.log(`[Email Service] Email would be sent to ${to}:`);
+    console.log(`[Email Service] Subject: ${subject}`);
+    // Return success but indicate it's dev mode
+    return { success: true, messageId: 'dev-mode', devMode: true };
+  }
+
+  try {
+    return await sendViaGmail(to, subject, html, text);
+  } catch (error) {
+    console.error('[Email Service] Error sending email:', error);
+    return { success: false, error: error.message || 'Failed to send email' };
+  }
+}
+
+/**
+ * Send email via Gmail SMTP using Nodemailer
+ */
+async function sendViaGmail(to, subject, html, text) {
+  // Dynamic import to avoid requiring nodemailer if not needed
+  const nodemailer = await import('nodemailer');
+  
+  // Gmail SMTP configuration from environment
+  const smtpConfig = {
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for 587
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD || process.env.SMTP_APP_PASSWORD, // Gmail App Password
+    },
+  };
+
+  if (!smtpConfig.auth.user || !smtpConfig.auth.pass) {
+    throw new Error('Gmail SMTP credentials not configured. Please set SMTP_USER and SMTP_PASSWORD (App Password) in your .env file');
+  }
+
+  const transporter = nodemailer.default.createTransport(smtpConfig);
+
+  const mailOptions = {
+    from: process.env.SMTP_FROM || smtpConfig.auth.user,
+    to,
+    subject,
+    html,
+    text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML if no text provided
+  };
+
+  const info = await transporter.sendMail(mailOptions);
+
+  return {
+    success: true,
+    messageId: info.messageId,
+  };
+}
+
+/**
+ * Send OTP email with formatted message
+ * @param {string} email - Recipient email address
+ * @param {string} otp - 6-digit OTP code
+ * @param {string} serviceName - Service name (default: 'HomieBites')
+ * @returns {Promise<{success: boolean, messageId?: string, error?: string}>}
+ */
+export async function sendOTPEmail(email, otp, serviceName = 'HomieBites') {
+  const subject = `${serviceName} - Password Recovery OTP`;
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #449031; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { padding: 20px; background-color: #f9f9f9; }
+        .otp-box { background-color: #fff; border: 2px solid #449031; padding: 15px; text-align: center; margin: 20px 0; font-size: 24px; font-weight: bold; letter-spacing: 5px; border-radius: 8px; }
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+        .warning { color: #d32f2f; font-weight: bold; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>${serviceName}</h1>
+        </div>
+        <div class="content">
+          <h2>Password Recovery OTP</h2>
+          <p>You have requested to reset your password. Use the OTP below to proceed:</p>
+          <div class="otp-box">${otp}</div>
+          <p><strong>This OTP is valid for 10 minutes.</strong></p>
+          <p class="warning">⚠️ Do not share this OTP with anyone. ${serviceName} will never ask for your OTP.</p>
+          <p>If you did not request this password reset, please ignore this email.</p>
+        </div>
+        <div class="footer">
+          <p>This is an automated message. Please do not reply to this email.</p>
+          <p>&copy; ${new Date().getFullYear()} ${serviceName}. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return await sendEmail(email, subject, html);
+}

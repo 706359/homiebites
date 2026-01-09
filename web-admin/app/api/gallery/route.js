@@ -36,7 +36,7 @@ export async function POST(request) {
   try {
     await connectDB();
     await isAdmin(request);
-    const { name, imageUrl, alt, caption, price, category, order, isActive } = await request.json();
+    const { name, imageUrl, alt, caption, price, category, details, order, isActive } = await request.json();
 
     if (!name || !imageUrl) {
       return Response.json(
@@ -52,6 +52,7 @@ export async function POST(request) {
       caption: caption || '',
       price: price || null,
       category: category || null,
+      details: details || [],
       order: order || 0,
       isActive: isActive !== undefined ? isActive : true,
     });

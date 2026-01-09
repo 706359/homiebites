@@ -16,6 +16,15 @@
   overflow-y: auto;
 }
 
+/* Ensure modal is centered on all screen sizes */
+@media (max-width: 768px) {
+  .order-modal-overlay {
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+}
+
 .order-modal {
   background: var(--bg-white);
   border-radius: 16px;

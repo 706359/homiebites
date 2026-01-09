@@ -16,7 +16,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
     const applyThemeSettings = () => {
       try {
         // Get theme settings from localStorage
-        const primaryColor = localStorage.getItem('homiebites_primary_color') || '#2563eb';
+        const primaryColor = localStorage.getItem('homiebites_primary_color') || '#449031';
         const fontFamily = localStorage.getItem('homiebites_font_family') || 'Baloo 2';
         const fontSize = localStorage.getItem('homiebites_font_size') || 'medium';
         const theme = localStorage.getItem('homiebites_theme') || 'light';
@@ -201,77 +201,16 @@ const AdminLogin = ({ onLoginSuccess }) => {
         }
       }
 
-      // Fallback to hardcoded admin credentials if API failed (network/connection errors only)
-      // This only runs if API failed due to network issues, not credential errors
-      // Support both username and mobile number for login
-      // Note: Password should match backend .env ADMIN_PASSWORD (currently "Bless@@!!##12")
-      const isAdminLogin =
-        (username === "adminHomieBites" || username === "8958111112") &&
-        password === "Bless@@!!##12";
-      if (isAdminLogin) {
-        const adminUser = {
-          id: "admin",
-          name: "Admin",
-          email: "admin@homiebites.com",
-          role: "admin",
-          isAdmin: true,
-        };
-
-        // Store user data and admin flag
-        localStorage.setItem("homiebites_user", JSON.stringify(adminUser));
-        localStorage.setItem("homiebites_admin", "true");
-
-        // Generate a dev token for fallback (simple JWT-like string)
-        // Note: Backend API calls will still fail, but dashboard UI will work
-        const devToken = "dev-fallback-token-" + Date.now();
-        localStorage.setItem("homiebites_token", devToken);
-
-        if (onLoginSuccess) {
-          onLoginSuccess();
-        } else {
-          window.location.href = "/admin/dashboard";
-        }
-        setLoading(false);
-        return;
-      } else {
-        showError(
-          "Invalid credentials. Please check your username and password.",
-        );
-        setLoading(false);
-      }
+      // No fallback - API must be working for authentication
+      showError(
+        "Invalid credentials. Please check your username and password.",
+      );
+      setLoading(false);
     } catch (err) {
-      // Final fallback for unexpected errors
-      // Only try fallback if credentials match and it's a connection/network error
-      // Support both username and mobile number for login
-      // Note: Password should match backend .env ADMIN_PASSWORD (currently "Bless@@!!##12")
-      const isAdminLogin =
-        (username === "adminHomieBites" || username === "8958111112") &&
-        password === "Bless@@!!##12";
-      if (isAdminLogin) {
-        const adminUser = {
-          id: "admin",
-          name: "Admin",
-          email: "admin@homiebites.com",
-          role: "admin",
-          isAdmin: true,
-        };
-        localStorage.setItem("homiebites_user", JSON.stringify(adminUser));
-        localStorage.setItem("homiebites_admin", "true");
-
-        // Generate dev token for fallback
-        const devToken = "dev-fallback-token-" + Date.now();
-        localStorage.setItem("homiebites_token", devToken);
-
-        if (onLoginSuccess) {
-          onLoginSuccess();
-        } else {
-          window.location.href = "/admin/dashboard";
-        }
-      } else {
-        showError(
-          "Login failed. Please check your credentials and ensure the backend server is running.",
-        );
-      }
+      // No fallback credentials - API must be working
+      showError(
+        "Login failed. Please check your credentials and ensure the backend server is running.",
+      );
     } finally {
       setLoading(false);
     }

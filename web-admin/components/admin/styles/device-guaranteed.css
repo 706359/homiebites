@@ -1,0 +1,988 @@
+/* ============================================
+   DEVICE GUARANTEED CSS - 100% COMPATIBILITY
+   Universal mobile CSS that works on ALL devices
+   ============================================ */
+
+/* ============================================
+   GLOBAL RESETS & FOUNDATION
+   ============================================ */
+
+/* Box-sizing for all elements */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Prevent horizontal scroll on all devices */
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  position: relative;
+}
+
+/* ============================================
+   VIEWPORT & SAFE AREA HANDLING
+   ============================================ */
+
+/* Safe area insets for notched devices (iPhone X+) - Mobile only */
+@media (max-width: 768px) {
+  .admin-dashboard,
+  .admin-content,
+  .filter-bar-card,
+  .dashboard-card {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+/* ============================================
+   TOUCH TARGETS - WCAG 2.1 AA COMPLIANCE
+   ============================================ */
+
+/* Minimum 44x44px touch targets for ALL interactive elements - Mobile only */
+@media (max-width: 768px) {
+  button,
+  .btn,
+  a[role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  input[type="checkbox"],
+  input[type="radio"],
+  select,
+  .filter-select,
+  .filter-toggle-btn,
+  .sidebar-item,
+  .settings-tab-item,
+  .action-icon-btn,
+  .pagination button {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation; /* Prevents double-tap zoom */
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* ============================================
+   INPUT FIELDS - PREVENT iOS ZOOM
+   ============================================ */
+
+/* 16px font size prevents iOS auto-zoom on focus - Mobile only */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="time"],
+  input[type="search"],
+  input[type="url"],
+  textarea,
+  select,
+  .filter-select,
+  .filter-select-compact,
+  .search-input-with-icon {
+    font-size: 16px !important; /* Critical: Prevents iOS zoom */
+    min-height: 44px;
+    padding: 10px 12px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 8px;
+  }
+}
+
+/* ============================================
+   FILTER BAR - MOBILE OPTIMIZED
+   ============================================ */
+
+/* Base filter bar - desktop default */
+.filter-bar-container,
+.filter-bar-container-compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.filter-bar-quick-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1 1 auto;
+  box-sizing: border-box;
+}
+
+/* Filter selects - desktop default (auto width) */
+.filter-select,
+.filter-toggle-btn {
+  flex: 0 1 auto;
+  min-width: 140px;
+  max-width: 200px;
+  box-sizing: border-box;
+}
+
+/* Filter selects - full width on mobile only */
+@media (max-width: 768px) {
+  .filter-select,
+  .filter-toggle-btn {
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+  }
+}
+
+/* ============================================
+   BULK ACTIONS - DESKTOP DEFAULT
+   ============================================ */
+
+.bulk-actions-bar-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-left: auto;
+  box-sizing: border-box;
+}
+
+.bulk-actions-bar-inline .bulk-actions-label {
+  font-weight: 600;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.bulk-actions-bar-inline .action-buttons-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
+.bulk-actions-bar-inline .action-buttons-group .btn {
+  flex: 0 1 auto;
+  min-width: auto;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+/* Mobile-only bulk actions styles */
+@media (max-width: 768px) {
+  .bulk-actions-bar-inline {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bulk-actions-bar-inline .bulk-actions-label {
+    width: 100%;
+    text-align: center;
+    padding: 8px 0;
+  }
+
+  .bulk-actions-bar-inline .action-buttons-group {
+    width: 100%;
+    max-width: 100%;
+    flex-direction: column;
+  }
+
+  .bulk-actions-bar-inline .action-buttons-group .btn {
+    flex: 1 1 auto;
+    min-width: calc(50% - 4px); /* Two buttons per row on mobile */
+    max-width: 100%;
+    min-height: 44px;
+    font-size: 14px;
+    padding: 10px 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS - ALL DEVICES
+   ============================================ */
+
+/* Extra Small Devices (Phones, 320px and up) */
+@media (max-width: 480px) {
+  .filter-bar-card,
+  .dashboard-card {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .filter-bar-container,
+  .filter-bar-container-compact {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .filter-bar-quick-filters {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .filter-select,
+  .filter-toggle-btn,
+  .filter-select-compact {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    min-height: 44px;
+    font-size: 16px !important;
+    padding: 10px 12px;
+  }
+
+  .bulk-actions-bar-inline {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-left: 0 !important;
+    padding-top: 12px;
+    border-top: 1px solid var(--admin-border, #e2e8f0);
+  }
+
+  .bulk-actions-bar-inline .action-buttons-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .bulk-actions-bar-inline .action-buttons-group .btn {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    min-height: 44px;
+  }
+
+  .bulk-actions-label {
+    font-size: 14px;
+    padding: 8px 0;
+  }
+
+  /* Input fields */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+
+  /* Buttons */
+  .btn,
+  button {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .btn-small {
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Small Devices (Phones, 481px to 640px) */
+@media (min-width: 481px) and (max-width: 640px) {
+  .filter-bar-container,
+  .filter-bar-container-compact {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .filter-bar-quick-filters {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .filter-select,
+  .filter-toggle-btn {
+    flex: 1 1 calc(50% - 5px);
+    min-width: calc(50% - 5px);
+    max-width: calc(50% - 5px);
+  }
+
+  .bulk-actions-bar-inline {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-left: 0 !important;
+    padding-top: 12px;
+    border-top: 1px solid var(--admin-border, #e2e8f0);
+  }
+
+  .bulk-actions-bar-inline .action-buttons-group {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .bulk-actions-bar-inline .action-buttons-group .btn {
+    flex: 1 1 calc(50% - 4px);
+    min-width: calc(50% - 4px);
+    max-width: calc(50% - 4px);
+  }
+}
+
+/* Medium Devices (Tablets, 641px to 768px) */
+@media (min-width: 641px) and (max-width: 768px) {
+  .filter-bar-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .filter-bar-quick-filters {
+    flex: 1 1 auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .filter-select,
+  .filter-toggle-btn {
+    flex: 0 1 auto;
+    min-width: 140px;
+    max-width: 180px;
+  }
+
+  .bulk-actions-bar-inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .bulk-actions-bar-inline .action-buttons-group {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .bulk-actions-bar-inline .action-buttons-group .btn {
+    flex: 0 1 auto;
+    min-width: auto;
+    max-width: none;
+  }
+}
+
+/* Large Devices (Tablets, 769px to 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .filter-bar-container {
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .filter-bar-quick-filters {
+    flex: 1 1 auto;
+  }
+
+  .bulk-actions-bar-inline {
+    margin-left: auto;
+  }
+}
+
+/* Extra Large Devices (Desktops, 1025px and up) */
+@media (min-width: 1025px) {
+  .filter-bar-container {
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .filter-bar-quick-filters {
+    flex: 0 1 auto;
+  }
+
+  .bulk-actions-bar-inline {
+    margin-left: auto;
+  }
+}
+
+/* ============================================
+   ORIENTATION SPECIFIC STYLES
+   ============================================ */
+
+/* Landscape orientation on mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .filter-bar-card {
+    padding: 10px;
+  }
+
+  .filter-bar-container {
+    gap: 8px;
+  }
+
+  .filter-select,
+  .filter-toggle-btn {
+    min-height: 40px;
+    padding: 8px 10px;
+  }
+
+  .bulk-actions-bar-inline .action-buttons-group .btn {
+    min-height: 40px;
+    padding: 8px 12px;
+  }
+}
+
+/* Portrait orientation */
+@media (max-width: 768px) and (orientation: portrait) {
+  .filter-bar-card {
+    padding: 12px;
+  }
+
+  .filter-bar-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* ============================================
+   DEVICE SPECIFIC FIXES
+   ============================================ */
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important; /* Prevents zoom */
+    -webkit-appearance: none;
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+  }
+}
+
+/* Android Chrome specific fixes */
+@supports (-webkit-appearance: none) and (not (-webkit-touch-callout: none)) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* ============================================
+   OVERFLOW PREVENTION
+   ============================================ */
+
+/* Prevent horizontal overflow */
+.filter-bar-card,
+.filter-bar-container,
+.filter-bar-quick-filters,
+.bulk-actions-bar-inline,
+.bulk-actions-bar-inline .action-buttons-group {
+  overflow-x: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Prevent text overflow */
+.filter-select,
+.filter-toggle-btn,
+.btn,
+.bulk-actions-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Allow wrapping for long text in buttons */
+.bulk-actions-bar-inline .action-buttons-group .btn {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* ============================================
+   TOUCH OPTIMIZATIONS
+   ============================================ */
+
+/* Smooth scrolling */
+.filter-bar-card,
+.dashboard-card,
+.admin-content {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Disable text selection on buttons */
+.btn,
+button,
+.filter-toggle-btn {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection in inputs */
+input,
+select,
+textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* ============================================
+   ACCESSIBILITY & PERFORMANCE
+   ============================================ */
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .filter-bar-container,
+  .bulk-actions-bar-inline,
+  .btn,
+  button {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .filter-select,
+  .filter-toggle-btn,
+  .btn {
+    border-width: 2px;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .filter-bar-card,
+  .bulk-actions-bar-inline {
+    display: none;
+  }
+}
+
+/* ============================================
+   FALLBACKS FOR OLDER BROWSERS
+   ============================================ */
+
+/* Fallback for browsers without flexbox support */
+@supports not (display: flex) {
+  .filter-bar-container,
+  .filter-bar-quick-filters,
+  .bulk-actions-bar-inline,
+  .action-buttons-group {
+    display: block;
+  }
+
+  .filter-select,
+  .filter-toggle-btn,
+  .btn {
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}
+
+/* ============================================
+   CRITICAL FIXES - ALWAYS APPLIED
+   ============================================ */
+
+/* Ensure no element exceeds viewport - Mobile only */
+@media (max-width: 768px) {
+  .filter-bar-card *,
+  .dashboard-card *,
+  .admin-content *,
+  .admin-dashboard * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* Prevent layout shifts */
+.filter-bar-container,
+.bulk-actions-bar-inline,
+.filter-bar-quick-filters,
+.action-buttons-group {
+  contain: layout style;
+}
+
+/* Force hardware acceleration for smooth scrolling */
+.filter-bar-card,
+.dashboard-card,
+.admin-content,
+.admin-dashboard {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: scroll-position;
+}
+
+/* ============================================
+   ADDITIONAL BROWSER-SPECIFIC FIXES
+   ============================================ */
+
+/* Firefox specific fixes */
+@-moz-document url-prefix() {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  .filter-select,
+  .filter-toggle-btn {
+    -moz-appearance: none;
+  }
+}
+
+/* Edge/IE specific fixes */
+@supports (-ms-ime-align: auto) {
+  .filter-bar-container,
+  .bulk-actions-bar-inline {
+    display: -ms-flexbox;
+    display: flex;
+  }
+
+  .filter-bar-quick-filters,
+  .action-buttons-group {
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+  }
+}
+
+/* Opera specific fixes */
+@media all and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
+  .filter-select,
+  .filter-toggle-btn {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+}
+
+/* ============================================
+   DEVICE-SPECIFIC FIXES (Samsung, Xiaomi, etc.)
+   ============================================ */
+
+/* Samsung Internet Browser */
+@supports (-webkit-appearance: none) {
+  .filter-bar-card,
+  .dashboard-card {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* High DPI displays (Retina, etc.) */
+@media (-webkit-min-device-pixel-ratio: 2),
+       (min-resolution: 192dpi),
+       (min-resolution: 2dppx) {
+  .filter-select,
+  .filter-toggle-btn,
+  .btn {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ============================================
+   VIEWPORT HEIGHT FIXES (iOS Safari, etc.)
+   ============================================ */
+
+/* Fix for iOS Safari viewport height issues */
+@supports (-webkit-touch-callout: none) {
+  .admin-dashboard,
+  .admin-content {
+    min-height: -webkit-fill-available;
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height */
+  }
+
+  .filter-bar-card,
+  .dashboard-card {
+    min-height: auto;
+  }
+}
+
+/* Fix for Android Chrome viewport height */
+@supports (height: 100dvh) {
+  .admin-dashboard,
+  .admin-content {
+    min-height: 100dvh;
+  }
+}
+
+/* Fallback for older browsers */
+@supports not (height: 100dvh) {
+  .admin-dashboard,
+  .admin-content {
+    min-height: 100vh;
+  }
+}
+
+/* ============================================
+   ADDITIONAL OVERFLOW PREVENTION
+   ============================================ */
+
+/* Prevent any element from causing horizontal scroll - Mobile only */
+@media (max-width: 768px) {
+  * {
+    max-width: 100vw;
+  }
+}
+
+/* Specific overflow fixes - Mobile only */
+@media (max-width: 768px) {
+  body,
+  html,
+  .admin-dashboard,
+  .admin-content,
+  .filter-bar-card,
+  .dashboard-card,
+  .filter-bar-container,
+  .filter-bar-quick-filters,
+  .bulk-actions-bar-inline,
+  .action-buttons-group {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* Prevent table overflow - Mobile only */
+@media (max-width: 768px) {
+  table,
+  .orders-table,
+  .orders-table-container {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    display: block;
+    width: 100%;
+  }
+}
+
+/* ============================================
+   ADDITIONAL TOUCH OPTIMIZATIONS
+   ============================================ */
+
+/* Prevent 300ms click delay on mobile */
+a,
+button,
+.btn,
+input[type="button"],
+input[type="submit"],
+select {
+  touch-action: manipulation;
+  -ms-touch-action: manipulation;
+}
+
+/* Improve touch response */
+.filter-select,
+.filter-toggle-btn,
+.btn,
+button {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   ADDITIONAL INPUT FIXES
+   ============================================ */
+
+/* Ensure all inputs are properly sized */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="search"]:focus,
+textarea:focus,
+select:focus {
+  font-size: 16px !important;
+  min-height: 44px;
+  outline: none;
+  border: 2px solid var(--admin-accent, #449031);
+}
+
+/* Remove autofill styling issues */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  -webkit-text-fill-color: var(--admin-text, #111827) !important;
+  font-size: 16px !important;
+}
+
+/* ============================================
+   ADDITIONAL RESPONSIVE FIXES
+   ============================================ */
+
+/* Very small devices (320px and below) */
+@media (max-width: 320px) {
+  .filter-bar-card,
+  .dashboard-card {
+    padding: 8px;
+  }
+
+  .filter-select,
+  .filter-toggle-btn,
+  .btn {
+    font-size: 13px;
+    padding: 8px 10px;
+    min-height: 44px;
+  }
+
+  .bulk-actions-label {
+    font-size: 13px;
+  }
+}
+
+/* Large phones in landscape (568px to 667px) */
+@media (min-width: 568px) and (max-width: 667px) and (orientation: landscape) {
+  .filter-bar-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .filter-select,
+  .filter-toggle-btn {
+    flex: 1 1 calc(33.333% - 7px);
+    min-width: calc(33.333% - 7px);
+  }
+}
+
+/* ============================================
+   ADDITIONAL ACCESSIBILITY FIXES
+   ============================================ */
+
+/* Focus visible for keyboard navigation */
+.filter-select:focus-visible,
+.filter-toggle-btn:focus-visible,
+.btn:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--admin-accent, #449031);
+  outline-offset: 2px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .filter-select,
+  .filter-toggle-btn,
+  .btn {
+    border-width: 2px;
+    border-style: solid;
+  }
+
+  .bulk-actions-bar-inline {
+    border-top-width: 2px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .filter-bar-card,
+  .dashboard-card {
+    background: var(--admin-bg-dark, #1a202c);
+    color: var(--admin-text-dark, #ffffff);
+  }
+
+  .filter-select,
+  .filter-toggle-btn {
+    background: var(--admin-bg-dark, #1a202c);
+    color: var(--admin-text-dark, #ffffff);
+    border-color: var(--admin-border-dark, #374151);
+  }
+}
+
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* GPU acceleration for animations */
+.filter-bar-card,
+.dashboard-card,
+.filter-bar-container,
+.bulk-actions-bar-inline {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+/* Optimize repaints */
+.filter-select,
+.filter-toggle-btn,
+.btn,
+button {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* ============================================
+   FINAL SAFETY NETS
+   ============================================ */
+
+/* Absolute fallback - if nothing else works */
+@media (max-width: 768px) {
+  .filter-bar-card,
+  .dashboard-card {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: env(safe-area-inset-left, 12px) !important;
+    padding-right: env(safe-area-inset-right, 12px) !important;
+  }
+
+  .filter-bar-container,
+  .filter-bar-quick-filters,
+  .bulk-actions-bar-inline,
+  .action-buttons-group {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-shrink: 0 !important;
+  }
+
+  .filter-select,
+  .filter-toggle-btn,
+  .btn,
+  button,
+  input,
+  select,
+  textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}

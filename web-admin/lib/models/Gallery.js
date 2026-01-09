@@ -9,6 +9,7 @@ const GallerySchema = new mongoose.Schema(
     caption: { type: String, default: '' },
     price: { type: Number }, // Optional price if it's a menu item
     category: { type: String }, // Optional category
+    details: { type: [String], default: [] }, // Array of detail strings (e.g., ["Dry Sabji", "Gravy Sabji", "4 Roti (6 without Rice)", "Rice"])
     order: { type: Number, default: 0 }, // For ordering gallery items
     isActive: { type: Boolean, default: true }, // To show/hide items
   },

@@ -202,17 +202,17 @@
 }
 
 :root.dark-theme .theme-option:hover {
-  background: var(--admin-accent-light, rgba(92, 184, 92, 0.1));
-  border-color: var(--admin-accent-light, rgba(92, 184, 92, 0.3));
+  background: var(--admin-accent-light, rgba(59, 130, 246, 0.1));
+  border-color: var(--admin-accent-light, rgba(59, 130, 246, 0.3));
 }
 
 :root.dark-theme .theme-option.active {
-  border-color: var(--admin-accent, #5cb85c);
-  background: var(--admin-accent-light, rgba(92, 184, 92, 0.15));
+  border-color: var(--admin-accent, #449031);
+  background: var(--admin-accent-light, rgba(59, 130, 246, 0.15));
 }
 
 :root.dark-theme .preview-box {
-  background: var(--admin-accent-light, rgba(92, 184, 92, 0.08));
+  background: var(--admin-accent-light, rgba(59, 130, 246, 0.08));
   border-color: var(--admin-border, #3d4558);
 }
 

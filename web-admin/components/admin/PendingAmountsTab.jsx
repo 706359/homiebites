@@ -625,7 +625,7 @@ const PendingAmountsTab = ({
                         width: '100%',
                         height: `${(day.collection / maxTimelineCollection) * 180}px`,
                         minHeight: '4px',
-                        background: 'var(--admin-success, #449031)',
+                        background: 'var(--admin-success, #16a34a)',
                         borderRadius: '4px 4px 0 0',
                         cursor: 'pointer',
                         transition: 'opacity 0.2s ease',

@@ -102,7 +102,7 @@ const InstallPrompt = () => {
           maxWidth: 'calc(100% - 40px)',
           width: '400px',
           background: '#ffffff',
-          border: '2px solid #449031',
+          border: '2px solid var(--admin-accent, #449031)',
           borderRadius: '12px',
           padding: '24px',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',

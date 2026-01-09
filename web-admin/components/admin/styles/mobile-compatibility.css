@@ -35,31 +35,33 @@
   padding-right: env(safe-area-inset-right);
 }
 
-/* Touch Target Sizes - WCAG 2.1 AA Compliance */
-button,
-.btn,
-a,
-input[type="button"],
-input[type="submit"],
-input[type="radio"],
-select,
-.sidebar-item,
-.settings-tab-item {
-  min-height: 44px;
-  min-width: 44px;
-}
+/* Touch Target Sizes - WCAG 2.1 AA Compliance - Mobile only */
+@media (max-width: 768px) {
+  button,
+  .btn,
+  a,
+  input[type="button"],
+  input[type="submit"],
+  input[type="radio"],
+  select,
+  .sidebar-item,
+  .settings-tab-item {
+    min-height: 44px;
+    min-width: 44px;
+  }
 
-/* Input fields should be at least 44px for mobile */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-input[type="tel"],
-input[type="date"],
-textarea,
-select {
-  min-height: 44px;
-  font-size: 16px; /* Prevents iOS zoom on focus */
+  /* Input fields should be at least 44px for mobile */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="date"],
+  textarea,
+  select {
+    min-height: 44px;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
 }
 
 /* Smooth Scrolling */
@@ -336,13 +338,29 @@ select {
   }
 }
 
-/* Settings Tabs - Mobile Scrollable */
+/* Settings Tabs - Mobile Scrollable - Refined */
 @media (max-width: 768px) {
   .settings-tab-nav {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    padding-bottom: 4px;
+    padding-bottom: 0;
+    /* Show subtle scroll indicator */
+    scrollbar-color: var(--admin-border, #e2e8f0) transparent;
+  }
+
+  .settings-tab-nav::-webkit-scrollbar {
+    height: 4px;
+    display: block;
+  }
+
+  .settings-tab-nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .settings-tab-nav::-webkit-scrollbar-thumb {
+    background: var(--admin-border, #e2e8f0);
+    border-radius: 2px;
   }
 
   .settings-tab-item {
@@ -351,6 +369,12 @@ select {
     padding: 12px 16px;
     font-size: 14px;
     flex-shrink: 0;
+    touch-action: manipulation;
+  }
+
+  .settings-tab-content {
+    padding: 20px 16px;
+    border-radius: 0 0 8px 8px;
   }
 }
 

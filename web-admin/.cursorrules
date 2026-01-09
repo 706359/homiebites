@@ -1,0 +1,172 @@
+# Cursor AI Rules - HomieBites
+
+## 🔒 BUTTON SYSTEM LOCK
+
+**CRITICAL**: Only 5 button variants exist. Creating new button styles is FORBIDDEN.
+
+### Allowed Button Classes:
+
+- `.btn` (base - required)
+- `.btn-primary`
+- `.btn-secondary`
+- `.btn-ghost`
+- `.btn-public`
+- `.btn-special` (with modifiers: `.whatsapp`, `.danger`, `.admin`)
+
+### Allowed Size Modifiers:
+
+- `.btn-small`
+- `.btn-large`
+- `.btn-full`
+- `.btn-icon`
+- `.btn-qty` (special exception - circular buttons)
+
+### FORBIDDEN:
+
+- Any other `.btn-*` class
+- Creating new button variants
+- Admin-specific button classes
+- Inline styles overriding button colors
+
+### If you need a custom button:
+
+Use `.btn-special` with CSS variables:
+
+```css
+.custom-btn {
+  --btn-bg: #your-color;
+  --btn-bg-hover: #your-hover-color;
+}
+```
+
+**Reference**: `docs/BUTTON_VARIANTS_GUIDE.md` and `docs/BUTTON_SYSTEM_LOCK.md`
+
+---
+
+## Code Style
+
+- Use TypeScript/JavaScript best practices
+- Follow existing code patterns
+- Use shared components from `shared/` directory
+- Follow the 5-button system for all buttons
+
+---
+
+## File Structure
+
+- `web/` - Web frontend (React/Next.js)
+- `admin/` - Admin dashboard components
+- `backend/` - Backend API (Node.js/Express)
+- `shared/` - Shared styles and utilities
+- `docs/` - Documentation
+
+---
+
+## Important Notes
+
+- Button system is FROZEN - changes require design-system review
+- Legacy CSS will be removed after v1.2.0
+- Always check `docs/BUTTON_SYSTEM_LOCK.md` before adding buttons
+
+---
+
+## 🔍 Build & Lint Error Checking
+
+**CRITICAL RULE**: Always check for build and lint errors after making code changes.
+
+### Required Steps:
+
+1. **After Every Code Change:**
+   - Run `read_lints` tool on all modified files
+   - Fix all linting errors before completing the task
+   - Check for TypeScript/JavaScript errors
+   - Verify no console errors or warnings
+
+2. **Before Marking Tasks Complete:**
+   - Ensure all lint errors are resolved
+   - Verify no build errors exist
+   - Check that modified files pass linting rules
+   - Confirm button system compliance (if adding buttons)
+
+3. **Error Types to Check:**
+   - Linting errors (ESLint, style warnings)
+   - Type errors (TypeScript)
+   - Build errors (compilation failures)
+   - Button system violations
+   - Unused variables or imports
+   - Missing dependencies
+
+4. **Files to Always Check:**
+   - All modified files in the current session
+   - Related files that might be affected
+   - Configuration files if changed
+
+### Example Workflow:
+
+```javascript
+// After making changes:
+1. Make code changes
+2. Run read_lints on modified files
+3. Fix any errors found
+4. Re-run read_lints to verify fixes
+5. Only then mark task as complete
+```
+
+**NEVER** complete a task without checking for and fixing build/lint errors.
+
+---
+
+## 🎨 Professional Design & Best Practices
+
+**CRITICAL RULE**: Always use professional, best-practice approaches for all implementations. Avoid lightweight or minimal designs that lack substance.
+
+### Design Principles:
+
+1. **Professional Quality First**
+   - Use robust, well-tested solutions
+   - Implement comprehensive error handling
+   - Add proper loading states and feedback
+   - Include detailed logging and debugging capabilities
+
+2. **Substantial Design Approach**
+   - Avoid overly minimal or "lightweight" designs and fluffy.
+   - Use proper spacing, padding, and visual hierarchy
+   - Implement rich UI components with adequate visual weight
+   - Ensure components feel substantial and professional
+
+3. **Best Practices Always**
+   - Follow industry-standard patterns and conventions
+   - Use proper TypeScript/JavaScript patterns
+   - Implement comprehensive validation and error handling
+   - Add proper documentation and comments
+   - Use established libraries and proven solutions
+
+4. **User Experience**
+   - Provide clear, informative feedback
+   - Include helpful error messages with guidance
+   - Add proper loading indicators
+   - Ensure responsive and accessible design
+
+5. **Code Quality**
+   - Write maintainable, readable code
+   - Use proper abstractions and patterns
+   - Implement comprehensive error handling
+   - Add logging for debugging and monitoring
+
+### Examples of Professional Approach:
+
+✅ **DO:**
+
+- Comprehensive error handling with specific error messages
+- Detailed logging for debugging
+- Rich UI components with proper spacing and visual weight
+- Professional loading states and feedback
+- Well-documented code with clear comments
+
+❌ **DON'T:**
+
+- Minimal error handling or generic messages
+- Lightweight designs that lack visual substance
+- Sparse UI with minimal spacing
+- Quick fixes without proper validation
+- Minimal logging or debugging capabilities

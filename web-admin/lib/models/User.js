@@ -12,6 +12,15 @@ const UserSchema = new mongoose.Schema(
     role: { type: String, default: 'user' },
     firstName: { type: String },
     lastName: { type: String },
+    // Password recovery fields
+    adminId: { type: String },
+    panCard: { type: String },
+    otp: { type: String },
+    otpExpiresAt: { type: Date },
+    verificationToken: { type: String },
+    verificationTokenExpiresAt: { type: Date },
+    resetToken: { type: String },
+    resetTokenExpiresAt: { type: Date },
   },
   { timestamps: true }
 );

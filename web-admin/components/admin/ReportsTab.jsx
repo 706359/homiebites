@@ -466,162 +466,195 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
 
   return (
     <div className='admin-content'>
+      {/* QUICK ACTION BUTTONS */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '12px',
+          marginBottom: '24px',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+        }}
+      >
+        <button
+          className='btn btn-primary'
+          onClick={() => setShowGenerator(true)}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+          <i className='fa-solid fa-file-alt'></i>
+          Generate Report
+        </button>
+        <button
+          className='btn btn-secondary'
+          onClick={handleGenerateReport}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          disabled={!selectedReportType}
+        >
+          <i className='fa-solid fa-download'></i>
+          Download Report
+        </button>
+        <button
+          className='btn btn-outline'
+          onClick={() => {
+            setSelectedReportType('Sales Report');
+            setShowGenerator(true);
+          }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+          <i className='fa-solid fa-chart-bar'></i>
+          Sales Report
+        </button>
+        <button
+          className='btn btn-outline'
+          onClick={() => {
+            setSelectedReportType('Payment Report');
+            setShowGenerator(true);
+          }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+          <i className='fa-solid fa-money-bill-wave'></i>
+          Payment Report
+        </button>
+      </div>
+
       {/* REPORT TYPES */}
       <div className='dashboard-grid-layout' style={{ marginBottom: '32px' }}>
         <div className='dashboard-grid-item third-width'>
           <div
             className='dashboard-card'
-            style={{ textAlign: 'center', cursor: 'pointer' }}
-            onClick={() => {
-              setSelectedReportType('Sales Report');
-              setShowGenerator(true);
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
+            style={{ textAlign: 'center' }}
           >
             <i
               className='fa-solid fa-chart-bar'
               style={{ fontSize: '32px', color: 'var(--admin-accent)', marginBottom: '12px' }}
             ></i>
-            <h3 style={{ marginBottom: '10px', fontSize: '14px', fontWeight: '600' }}>
+            <button
+              className='btn btn-primary'
+              style={{ width: '100%', marginTop: '8px' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedReportType('Sales Report');
+                setShowGenerator(true);
+              }}
+            >
               Sales Report
-            </h3>
-            <button className='btn btn-primary btn-small'>Generate</button>
+            </button>
           </div>
         </div>
 
         <div className='dashboard-grid-item third-width'>
           <div
             className='dashboard-card'
-            style={{ textAlign: 'center', cursor: 'pointer' }}
-            onClick={() => {
-              setSelectedReportType('Payment Report');
-              setShowGenerator(true);
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
+            style={{ textAlign: 'center' }}
           >
             <i
               className='fa-solid fa-money-bill-wave'
               style={{ fontSize: '32px', color: 'var(--admin-success)', marginBottom: '12px' }}
             ></i>
-            <h3 style={{ marginBottom: '10px', fontSize: '14px', fontWeight: '600' }}>
+            <button
+              className='btn btn-primary'
+              style={{ width: '100%', marginTop: '8px' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedReportType('Payment Report');
+                setShowGenerator(true);
+              }}
+            >
               Payment Report
-            </h3>
-            <button className='btn btn-primary btn-small'>Generate</button>
+            </button>
           </div>
         </div>
 
         <div className='dashboard-grid-item third-width'>
           <div
             className='dashboard-card'
-            style={{ textAlign: 'center', cursor: 'pointer' }}
-            onClick={() => {
-              setSelectedReportType('Monthly Statement');
-              setShowGenerator(true);
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
+            style={{ textAlign: 'center' }}
           >
             <i
               className='fa-solid fa-calendar-alt'
               style={{ fontSize: '32px', color: 'var(--admin-secondary)', marginBottom: '12px' }}
             ></i>
-            <h3 style={{ marginBottom: '10px', fontSize: '14px', fontWeight: '600' }}>
+            <button
+              className='btn btn-primary'
+              style={{ width: '100%', marginTop: '8px' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedReportType('Monthly Statement');
+                setShowGenerator(true);
+              }}
+            >
               Monthly Statement
-            </h3>
-            <button className='btn btn-primary btn-small'>Generate</button>
+            </button>
           </div>
         </div>
 
         <div className='dashboard-grid-item third-width'>
           <div
             className='dashboard-card'
-            style={{ textAlign: 'center', cursor: 'pointer' }}
-            onClick={() => {
-              setSelectedReportType('Area-wise Report');
-              setGroupByArea(true);
-              setShowGenerator(true);
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
+            style={{ textAlign: 'center' }}
           >
             <i
               className='fa-solid fa-map-marker-alt'
               style={{ fontSize: '32px', color: 'var(--admin-accent)', marginBottom: '12px' }}
             ></i>
-            <h3 style={{ marginBottom: '10px', fontSize: '14px', fontWeight: '600' }}>
+            <button
+              className='btn btn-primary'
+              style={{ width: '100%', marginTop: '8px' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedReportType('Area-wise Report');
+                setGroupByArea(true);
+                setShowGenerator(true);
+              }}
+            >
               Area-wise Report
-            </h3>
-            <button className='btn btn-primary btn-small'>Generate</button>
+            </button>
           </div>
         </div>
 
         <div className='dashboard-grid-item third-width'>
           <div
             className='dashboard-card'
-            style={{ textAlign: 'center', cursor: 'pointer' }}
-            onClick={() => {
-              setSelectedReportType('Customer Report');
-              setShowGenerator(true);
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
+            style={{ textAlign: 'center' }}
           >
             <i
               className='fa-solid fa-users'
               style={{ fontSize: '32px', color: 'var(--admin-accent)', marginBottom: '12px' }}
             ></i>
-            <h3 style={{ marginBottom: '10px', fontSize: '14px', fontWeight: '600' }}>
+            <button
+              className='btn btn-primary'
+              style={{ width: '100%', marginTop: '8px' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedReportType('Customer Report');
+                setShowGenerator(true);
+              }}
+            >
               Customer Report
-            </h3>
-            <button className='btn btn-primary btn-small'>Generate</button>
+            </button>
           </div>
         </div>
 
         <div className='dashboard-grid-item third-width'>
           <div
             className='dashboard-card'
-            style={{ textAlign: 'center', cursor: 'pointer' }}
-            onClick={() => {
-              setSelectedReportType('Growth Report');
-              setShowGenerator(true);
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
+            style={{ textAlign: 'center' }}
           >
             <i
               className='fa-solid fa-chart-line'
               style={{ fontSize: '32px', color: 'var(--admin-success)', marginBottom: '12px' }}
             ></i>
-            <h3 style={{ marginBottom: '10px', fontSize: '14px', fontWeight: '600' }}>
+            <button
+              className='btn btn-primary'
+              style={{ width: '100%', marginTop: '8px' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedReportType('Growth Report');
+                setShowGenerator(true);
+              }}
+            >
               Growth Report
-            </h3>
-            <button className='btn btn-primary btn-small'>Generate</button>
+            </button>
           </div>
         </div>
       </div>
@@ -827,101 +860,113 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         </div>
       )}
 
-      {/* SCHEDULED REPORTS */}
-      <div className='dashboard-card margin-bottom-24'>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '16px',
-          }}
-        >
-          <h3 className='dashboard-section-title' style={{ marginBottom: 0 }}>
-            <i className='fa-solid fa-clock' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
-            Automated Reports
-          </h3>
-          <button className='btn btn-primary btn-small'>
-            <i className='fa-solid fa-plus'></i> Add Scheduled Report
-          </button>
-        </div>
-        <div className='orders-table-container'>
-          <table className='orders-table'>
-            <thead>
-              <tr>
-                <th>Report</th>
-                <th>Schedule</th>
-                <th>Format</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {scheduledReports.map((report) => (
-                <tr key={report.id}>
-                  <td>{report.name}</td>
-                  <td>{report.schedule}</td>
-                  <td>{report.format}</td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button className='action-icon-btn action-icon-edit' title='Edit'>
-                        <i className='fa-solid fa-pencil'></i>
-                      </button>
-                      <button className='action-icon-btn action-icon-delete' title='Delete'>
-                        <i className='fa-solid fa-trash'></i>
-                      </button>
-                    </div>
-                  </td>
+      {/* SCHEDULED REPORTS AND REPORT HISTORY - SIDE BY SIDE */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '24px',
+          marginBottom: '24px',
+        }}
+        className='reports-side-by-side-container'
+      >
+        {/* SCHEDULED REPORTS */}
+        <div className='dashboard-card'>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '16px',
+            }}
+          >
+            <h3 className='dashboard-section-title' style={{ marginBottom: 0 }}>
+              <i className='fa-solid fa-clock' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
+              Automated Reports
+            </h3>
+            <button className='btn btn-primary btn-small'>
+              <i className='fa-solid fa-plus'></i> Add Scheduled Report
+            </button>
+          </div>
+          <div className='orders-table-container'>
+            <table className='orders-table'>
+              <thead>
+                <tr>
+                  <th>Report</th>
+                  <th>Schedule</th>
+                  <th>Format</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {scheduledReports.map((report) => (
+                  <tr key={report.id}>
+                    <td>{report.name}</td>
+                    <td>{report.schedule}</td>
+                    <td>{report.format}</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button className='action-icon-btn action-icon-edit' title='Edit'>
+                          <i className='fa-solid fa-pencil'></i>
+                        </button>
+                        <button className='action-icon-btn action-icon-delete' title='Delete'>
+                          <i className='fa-solid fa-trash'></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* REPORT HISTORY */}
+        <div className='dashboard-card'>
+          <h3 className='dashboard-section-title'>
+            <i className='fa-solid fa-history' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
+            Recent Reports (Last 30 days)
+          </h3>
+          <div className='orders-table-container'>
+            <table className='orders-table'>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Report Type</th>
+                  <th>Period</th>
+                  <th>Download</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reportHistory.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ textAlign: 'center', padding: '48px' }}>
+                      <div className='empty-state'>
+                        <i className='fa-solid fa-inbox empty-state-icon'></i>
+                        <p>No reports generated yet</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  reportHistory.map((report) => (
+                    <tr key={report.id}>
+                      <td>{report.date}</td>
+                      <td>{report.type}</td>
+                      <td>{report.period}</td>
+                      <td>
+                        <button className='action-icon-btn' title='Download'>
+                          <i className='fa-solid fa-download'></i>
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      {/* REPORT HISTORY */}
-      <div className='dashboard-card'>
-        <h3 className='dashboard-section-title'>
-          <i className='fa-solid fa-history' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
-          Recent Reports (Last 30 days)
-        </h3>
-        <div className='orders-table-container'>
-          <table className='orders-table'>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Report Type</th>
-                <th>Period</th>
-                <th>Download</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reportHistory.length === 0 ? (
-                <tr>
-                  <td colSpan={4} style={{ textAlign: 'center', padding: '48px' }}>
-                    <div className='empty-state'>
-                      <i className='fa-solid fa-inbox empty-state-icon'></i>
-                      <p>No reports generated yet</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                reportHistory.map((report) => (
-                  <tr key={report.id}>
-                    <td>{report.date}</td>
-                    <td>{report.type}</td>
-                    <td>{report.period}</td>
-                    <td>
-                      <button className='action-icon-btn' title='Download'>
-                        <i className='fa-solid fa-download'></i>
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   );
 };

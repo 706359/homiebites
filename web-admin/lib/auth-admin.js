@@ -1,21 +1,14 @@
-// Simple authentication utility using localStorage
-// In production, this should use a proper backend API
+// Authentication utility using localStorage
+// Note: Login is now handled via API (api-admin.js)
+// This file only provides logout and authentication check utilities
 
 const ADMIN_KEY = "homiebites_admin";
-const ADMIN_CREDENTIALS = {
-  username: "adminHomieBites",
-  password: "Bless@@!!##12",
-};
 
+// Login is no longer supported via this file - use API authentication instead
 export const login = (username, password) => {
-  if (
-    username === ADMIN_CREDENTIALS.username &&
-    password === ADMIN_CREDENTIALS.password
-  ) {
-    localStorage.setItem(ADMIN_KEY, "true");
-    return { success: true };
-  }
-  return { success: false, error: "Invalid credentials" };
+  // Legacy function - login should be done via API
+  console.warn('login() from auth-admin.js is deprecated. Use API authentication instead.');
+  return { success: false, error: "Please use API authentication" };
 };
 
 export const logout = () => {

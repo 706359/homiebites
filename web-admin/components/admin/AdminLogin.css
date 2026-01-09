@@ -33,7 +33,7 @@
   right: 0;
   bottom: 0;
   background: 
-    var(--admin-accent-light, rgba(37, 99, 235, 0.05));
+    var(--admin-accent-light, rgba(68, 144, 49, 0.05));
   pointer-events: none;
   z-index: 0;
 }
@@ -75,8 +75,8 @@
 }
 
 .login-page-wrapper.dark-theme .login-info {
-  background: var(--admin-accent-light, rgba(37, 99, 235, 0.15));
-  border-color: var(--admin-accent-light, rgba(37, 99, 235, 0.3));
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.15));
+  border-color: var(--admin-accent-light, rgba(68, 144, 49, 0.3));
 }
 
 .login-page-wrapper.dark-theme .login-info-title {
@@ -97,7 +97,7 @@
   box-shadow: 
     0 25px 50px -12px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(0, 0, 0, 0.05),
-    0 0 40px var(--admin-accent-light, rgba(37, 99, 235, 0.1));
+    0 0 40px var(--admin-accent-light, rgba(68, 144, 49, 0.1));
   overflow: hidden;
   position: relative;
   z-index: 1;
@@ -110,7 +110,7 @@
 .login-left-section {
   position: relative;
   overflow: hidden;
-  background: var(--admin-accent, #2563eb);
+  background: var(--admin-accent, #449031);
 }
 
 .login-left-section::before {
@@ -120,7 +120,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--admin-accent, #2563eb);
+  background: var(--admin-accent, #449031);
   opacity: 0.4;
   z-index: 1;
   pointer-events: none;
@@ -214,11 +214,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--admin-accent, #2563eb);
+  background: var(--admin-accent, #449031);
   border-radius: 16px;
   box-shadow: 
-    0 8px 16px var(--admin-accent-light, rgba(37, 99, 235, 0.3)),
-    0 0 0 4px var(--admin-accent-light, rgba(37, 99, 235, 0.1));
+    0 8px 16px var(--admin-accent-light, rgba(68, 144, 49, 0.3)),
+    0 0 0 4px var(--admin-accent-light, rgba(68, 144, 49, 0.1));
   color: white;
   font-size: 1.75rem;
 }
@@ -260,7 +260,7 @@
 }
 
 .form-field label i {
-  color: var(--admin-accent, #2563eb);
+  color: var(--admin-accent, #449031);
   font-size: 0.875rem;
   width: 16px;
   transition: color 0.2s ease;
@@ -282,15 +282,15 @@
 }
 
 .login-input:hover {
-  border-color: var(--admin-accent-light, rgba(37, 99, 235, 0.3));
+  border-color: var(--admin-accent-light, rgba(68, 144, 49, 0.3));
 }
 
 .login-input:focus {
   outline: none;
-  border-color: var(--admin-accent, #2563eb);
+  border-color: var(--admin-accent, #449031);
   box-shadow: 
-    0 0 0 4px var(--admin-accent-light, rgba(37, 99, 235, 0.1)),
-    0 2px 8px var(--admin-accent-light, rgba(37, 99, 235, 0.15));
+    0 0 0 4px var(--admin-accent-light, rgba(68, 144, 49, 0.1)),
+    0 2px 8px var(--admin-accent-light, rgba(68, 144, 49, 0.15));
   background: var(--admin-bg, #ffffff);
 }
 
@@ -306,15 +306,15 @@
   border-radius: 12px;
   transition: all 0.2s ease;
   box-shadow: 
-    0 4px 12px var(--admin-accent-light, rgba(37, 99, 235, 0.3)),
-    0 0 0 1px var(--admin-accent-light, rgba(37, 99, 235, 0.1));
+    0 4px 12px var(--admin-accent-light, rgba(68, 144, 49, 0.3)),
+    0 0 0 1px var(--admin-accent-light, rgba(68, 144, 49, 0.1));
 }
 
 .login-submit-btn:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 
-    0 6px 16px var(--admin-accent-light, rgba(37, 99, 235, 0.4)),
-    0 0 0 1px var(--admin-accent-light, rgba(37, 99, 235, 0.15));
+    0 6px 16px var(--admin-accent-light, rgba(68, 144, 49, 0.4)),
+    0 0 0 1px var(--admin-accent-light, rgba(68, 144, 49, 0.15));
 }
 
 .login-submit-btn:active:not(:disabled) {
@@ -330,9 +330,9 @@
   margin-top: 2.5rem;
   padding: 1.5rem;
   text-align: center;
-  background: var(--admin-accent-light, rgba(37, 99, 235, 0.08));
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.08));
   border-radius: 12px;
-  border: 1px solid var(--admin-accent-light, rgba(37, 99, 235, 0.2));
+  border: 1px solid var(--admin-accent-light, rgba(68, 144, 49, 0.2));
 }
 
 .login-info-icon {
@@ -342,11 +342,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--admin-accent, #2563eb);
+  background: var(--admin-accent, #449031);
   border-radius: 12px;
   color: white;
   font-size: 1.25rem;
-  box-shadow: 0 4px 12px var(--admin-accent-light, rgba(37, 99, 235, 0.25));
+  box-shadow: 0 4px 12px var(--admin-accent-light, rgba(68, 144, 49, 0.25));
 }
 
 .login-info-title {
@@ -368,7 +368,7 @@
 }
 
 .admin-login-forgot-link {
-  color: var(--admin-accent, #2563eb);
+  color: var(--admin-accent, #449031);
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
@@ -386,7 +386,7 @@
 
 .admin-login-forgot-link:hover {
   color: var(--admin-accent, #1d4ed8);
-  background: var(--admin-accent-light, rgba(37, 99, 235, 0.08));
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.08));
   text-decoration: none;
 }
 
@@ -791,7 +791,7 @@
   }
 
   .admin-login-forgot-link:active {
-    background: var(--admin-accent-light, rgba(37, 99, 235, 0.1));
+    background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
   }
 }
 

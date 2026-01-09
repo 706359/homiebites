@@ -5,8 +5,7 @@ import React from 'react';
 /**
  * Enterprise Loader Component
  * Features:
- * - Static logo in center
- * - Single rotating circle
+ * - Animated logo with blur/glow effect
  * - Clean, professional design
  * - Responsive design
  */
@@ -16,9 +15,9 @@ const PremiumLoader = ({
   showText = true 
 }) => {
   const sizeClasses = {
-    small: { container: '64px', logo: '48px', spinner: '64px', text: '0.85rem' },
-    medium: { container: '80px', logo: '60px', spinner: '80px', text: '0.9rem' },
-    large: { container: '100px', logo: '75px', spinner: '100px', text: '1rem' },
+    small: { container: '64px', logo: '48px', text: '0.85rem' },
+    medium: { container: '80px', logo: '60px', text: '0.9rem' },
+    large: { container: '100px', logo: '75px', text: '1rem' },
   };
 
   const dimensions = sizeClasses[size] || sizeClasses.large;
@@ -26,16 +25,7 @@ const PremiumLoader = ({
   return (
     <div className="premium-loader-container">
       <div className="premium-loader-wrapper">
-        {/* Rotating spinner circle */}
-        <div 
-          className="premium-loader-spinner"
-          style={{ 
-            width: dimensions.spinner, 
-            height: dimensions.spinner 
-          }}
-        ></div>
-        
-        {/* Static logo in center */}
+        {/* Animated logo/text in center with blur/glow effect */}
         <div className="premium-loader-logo-container">
           <img
             src="/logo.png"
@@ -56,12 +46,15 @@ const PremiumLoader = ({
             className="premium-loader-logo-fallback" 
             style={{ 
               display: 'none',
-              width: dimensions.logo,
+              width: 'auto',
+              minWidth: dimensions.logo,
               height: dimensions.logo,
-              fontSize: `calc(${dimensions.logo} * 0.5)`,
+              fontSize: `calc(${dimensions.logo} * 0.35)`,
+              fontWeight: '700',
+              letterSpacing: '0.02em',
             }}
           >
-            <i className="fa-solid fa-shield-halved"></i>
+            HomieBites
           </div>
         </div>
       </div>

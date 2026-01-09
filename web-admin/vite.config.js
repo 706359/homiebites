@@ -14,7 +14,7 @@ export default defineConfig({
   },
   server: {
     host: 'localhost', // Web runs on localhost only
-    port: 3000,
+    port: 5050,
     strictPort: true, // Exit if port is already in use
     open: true,
   },

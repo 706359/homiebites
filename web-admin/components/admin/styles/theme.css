@@ -19,9 +19,9 @@
   --admin-glass-border: rgba(0, 0, 0, 0.08);
   --admin-glass-overlay: rgba(255, 255, 255, 0.6);
 
-  /* Accent Colors - Professional Blue */
-  --admin-accent: #2563eb; /* Primary blue */
-  --admin-accent-light: rgba(37, 99, 235, 0.1);
+  /* Accent Colors - Brand Green */
+  --admin-accent: #449031; /* Primary green */
+  --admin-accent-light: rgba(68, 144, 49, 0.1);
   --admin-success: #16a34a; /* Success green */
   --admin-success-light: rgba(22, 163, 74, 0.1);
 
@@ -31,9 +31,9 @@
   --admin-danger: #dc2626; /* Danger red */
   --admin-danger-light: rgba(220, 38, 38, 0.12);
 
-  /* Secondary color - Blue variant */
-  --admin-secondary: #3b82f6; /* Secondary blue */
-  --admin-secondary-light: rgba(59, 130, 246, 0.12);
+  /* Secondary color - Orange variant */
+  --admin-secondary: #c45c2d; /* Secondary orange */
+  --admin-secondary-light: rgba(196, 92, 45, 0.12);
 }
 
 /* Dark Theme - Dark Professional (Optimized for Long Usage) */
@@ -54,9 +54,9 @@
   --admin-glass-border: rgba(255, 255, 255, 0.1);
   --admin-glass-overlay: rgba(15, 23, 42, 0.8);
 
-  /* Accent Colors - Professional Blue & Cyan */
-  --admin-accent: #3b82f6; /* Primary blue */
-  --admin-accent-light: rgba(59, 130, 246, 0.15);
+  /* Accent Colors - Brand Green */
+  --admin-accent: #449031; /* Primary green */
+  --admin-accent-light: rgba(68, 144, 49, 0.15);
   --admin-success: #16a34a; /* Success green */
   --admin-success-light: rgba(22, 163, 74, 0.15);
 
@@ -66,9 +66,9 @@
   --admin-danger: #ef4444; /* Danger red */
   --admin-danger-light: rgba(239, 68, 68, 0.2);
 
-  /* Secondary color - Cyan accent */
-  --admin-secondary: #22d3ee; /* Cyan accent */
-  --admin-secondary-light: rgba(34, 211, 238, 0.15);
+  /* Secondary color - Orange accent */
+  --admin-secondary: #c45c2d; /* Orange accent */
+  --admin-secondary-light: rgba(196, 92, 45, 0.15);
 }
 
 /* Apply background colors - SCOPED TO ADMIN DASHBOARD */
@@ -98,16 +98,16 @@ body {
   --admin-glass-bg: rgba(17, 24, 39, 0.95);
   --admin-glass-border: rgba(255, 255, 255, 0.1);
   --admin-glass-overlay: rgba(15, 23, 42, 0.8);
-  --admin-accent: #3b82f6; /* Primary blue */
-  --admin-accent-light: rgba(59, 130, 246, 0.15);
+  --admin-accent: #449031; /* Primary green */
+  --admin-accent-light: rgba(68, 144, 49, 0.15);
   --admin-success: #16a34a; /* Success green */
   --admin-success-light: rgba(22, 163, 74, 0.15);
   --admin-warning: #f59e0b; /* Warning amber */
   --admin-warning-light: rgba(245, 158, 11, 0.2);
   --admin-danger: #ef4444; /* Danger red */
   --admin-danger-light: rgba(239, 68, 68, 0.2);
-  --admin-secondary: #22d3ee; /* Cyan accent */
-  --admin-secondary-light: rgba(34, 211, 238, 0.15);
+  --admin-secondary: #c45c2d; /* Orange accent */
+  --admin-secondary-light: rgba(196, 92, 45, 0.15);
 }
 
 /* Light theme - scoped to admin-dashboard - Light Clean */
@@ -122,16 +122,16 @@ body {
   --admin-glass-bg: rgba(255, 255, 255, 0.95);
   --admin-glass-border: rgba(0, 0, 0, 0.08);
   --admin-glass-overlay: rgba(255, 255, 255, 0.6);
-  --admin-accent: #2563eb; /* Primary blue */
-  --admin-accent-light: rgba(37, 99, 235, 0.1);
+  --admin-accent: #449031; /* Primary green */
+  --admin-accent-light: rgba(68, 144, 49, 0.1);
   --admin-success: #16a34a; /* Success green */
   --admin-success-light: rgba(22, 163, 74, 0.1);
   --admin-warning: #f59e0b; /* Warning amber */
   --admin-warning-light: rgba(245, 158, 11, 0.15);
   --admin-danger: #dc2626; /* Danger red */
   --admin-danger-light: rgba(220, 38, 38, 0.12);
-  --admin-secondary: #3b82f6; /* Secondary blue */
-  --admin-secondary-light: rgba(59, 130, 246, 0.12);
+  --admin-secondary: #c45c2d; /* Secondary orange */
+  --admin-secondary-light: rgba(196, 92, 45, 0.12);
 }
 
 .admin-content {
@@ -140,9 +140,17 @@ body {
 }
 
 .dashboard-card {
-  background-color: var(--admin-bg);
-  border-color: var(--admin-border);
-  color: var(--admin-text);
+  background-color: var(--admin-bg) !important;
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text) !important;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.stat-card {
+  background-color: var(--admin-bg) !important;
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text) !important;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 .admin-sidebar {

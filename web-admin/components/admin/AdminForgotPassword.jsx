@@ -17,7 +17,7 @@ const AdminForgotPassword = () => {
     const applyThemeSettings = () => {
       try {
         // Get theme settings from localStorage
-        const primaryColor = localStorage.getItem('homiebites_primary_color') || '#2563eb';
+        const primaryColor = localStorage.getItem('homiebites_primary_color') || '#449031';
         const fontFamily = localStorage.getItem('homiebites_font_family') || 'Baloo 2';
         const fontSize = localStorage.getItem('homiebites_font_size') || 'medium';
         const theme = localStorage.getItem('homiebites_theme') || 'light';
@@ -162,11 +162,7 @@ const AdminForgotPassword = () => {
     try {
       const data = await api.forgotPassword(email);
       if (data && data.success) {
-        setSuccess(data.message || "OTP sent to your registered mobile number");
-        // In development, show OTP in console/alert
-        if (data.otp) {
-          alert(`Development Mode: Your OTP is ${data.otp}`);
-        }
+        setSuccess(data.message || "OTP sent to your registered email address");
         setStep(2);
       } else {
         setError(data?.error || "Failed to send OTP");
@@ -340,7 +336,7 @@ const AdminForgotPassword = () => {
           className="login-input"
         />
         <p className="admin-forgot-help-text">
-          Enter the 6-digit OTP sent to your registered mobile number
+          Enter the 6-digit OTP sent to your registered email address
         </p>
       </div>
       {error && <div className="error-message">{error}</div>}

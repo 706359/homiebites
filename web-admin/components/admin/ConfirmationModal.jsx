@@ -39,8 +39,8 @@ const ConfirmationModal = ({
       case 'success':
         return {
           icon: 'fa-check-circle',
-          iconColor: 'var(--admin-success, #449031)',
-          iconBg: 'rgba(68, 144, 49, 0.1)',
+          iconColor: 'var(--admin-success, #16a34a)',
+          iconBg: 'rgba(22, 163, 74, 0.1)',
           confirmBtn: 'btn-success',
         };
       case 'info':
@@ -63,8 +63,8 @@ const ConfirmationModal = ({
   const styles = getTypeStyles();
 
   return (
-    <div className="modal-overlay" onClick={!isLoading ? onCancel : undefined}>
-      <div className="modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+    <div className="modal-overlay">
+      <div className="modal-container" style={{ maxWidth: '480px' }}>
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div
