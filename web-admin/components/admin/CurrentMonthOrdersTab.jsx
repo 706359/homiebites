@@ -86,14 +86,20 @@ const CurrentMonthOrdersTab = ({
     const total = currentMonthOrders.length;
     const pending = currentMonthOrders.filter((o) => isPendingStatus(o.status));
     const pendingAmount = pending.reduce((sum, o) => {
-      // Try total first, then totalAmount, then calculate from quantity * unitPrice
-      let amount = parseFloat(o.total || o.totalAmount || 0);
-      if (isNaN(amount) || amount === 0) {
-        // Fallback: calculate from quantity * unitPrice if total is missing
+      let amount = null;
+      
+      if (o.totalAmount !== undefined && o.totalAmount !== null) {
+        amount = parseFloat(o.totalAmount);
+      } else if (o.total !== undefined && o.total !== null) {
+        amount = parseFloat(o.total);
+      }
+      
+      if (amount === null || isNaN(amount)) {
         const qty = parseFloat(o.quantity || 1);
         const price = parseFloat(o.unitPrice || 0);
         amount = qty * price;
       }
+      
       return sum + (isNaN(amount) ? 0 : amount);
     }, 0);
 

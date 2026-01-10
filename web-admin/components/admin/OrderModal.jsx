@@ -1226,7 +1226,7 @@ const OrderModal = ({
               </div>
               {formErrors.unitPrice && <span className='error-text'>{formErrors.unitPrice}</span>}
             </div>
-            <div className='form-group'>
+            <div className='form-group mobile-hide-auto-field'>
               <label>
                 <i className='fa-solid fa-lock mr-2'></i>
                 Total Amount
@@ -1330,7 +1330,7 @@ const OrderModal = ({
             </div>
           </div>
           {/* OrderID Display/Input */}
-          <div className='form-group'>
+          <div className='form-group mobile-hide-auto-field'>
             <label>
               <i className='fa-solid fa-hashtag mr-2'></i>
               Order ID
@@ -1367,7 +1367,7 @@ const OrderModal = ({
             {formErrors.orderId && <span className='error-text'>{formErrors.orderId}</span>}
           </div>
           {/* Derived fields - Display only (never stored) */}
-          <div className='form-row admin-auto-fields-row'>
+          <div className='form-row admin-auto-fields-row mobile-hide-auto-field'>
             <div className='form-group'>
               <label>Billing Month (auto)</label>
               <input
@@ -1391,9 +1391,6 @@ const OrderModal = ({
           </div>
         </div>
         <div className='modal-footer'>
-          <button className='btn btn-ghost' onClick={handleClose}>
-            Cancel
-          </button>
           <button
             className='btn btn-primary'
             onClick={handleSave}
@@ -1412,6 +1409,9 @@ const OrderModal = ({
                 <i className='fa-solid fa-save'></i> {editingOrder ? 'Update Order' : 'Save Order'}
               </>
             )}
+          </button>
+          <button className='btn btn-ghost' onClick={handleClose}>
+            Cancel
           </button>
         </div>
       </div>

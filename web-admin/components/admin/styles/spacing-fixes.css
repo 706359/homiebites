@@ -119,13 +119,18 @@
   margin-bottom: 0;
 }
 
-/* Table Spacing - Consistent Cell Padding */
+/* Table Spacing - Reduced Cell Padding for Better Fit */
 .orders-table th {
-  padding: 14px 16px;
+  padding: 8px 10px;
+  font-size: var(--admin-font-size-body-xs, 12px) !important;
 }
 
 .orders-table td {
-  padding: 14px 16px;
+  padding: 8px 10px;
+  font-size: var(--admin-font-size-body, 14px) !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .orders-table-container {
@@ -373,7 +378,14 @@
 
   .orders-table th,
   .orders-table td {
-    padding: 12px 14px;
+    padding: 8px 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .orders-table td {
+    font-size: var(--admin-font-size-body, 14px) !important;
   }
 
   .dashboard-grid-layout {
@@ -420,11 +432,11 @@
   }
 
   .form-group {
-    margin-bottom: 14px;
+    margin-bottom: 10px;
   }
 
   .input-group {
-    margin-bottom: 14px;
+    margin-bottom: 10px;
   }
 
   .btn-group {
@@ -444,16 +456,16 @@
   }
 
   .modal-header {
-    padding: 16px 20px;
+    padding: 12px 16px;
   }
 
   .modal-body {
-    padding: 20px;
+    padding: 12px 16px;
   }
 
   .modal-footer {
-    padding: 14px 16px;
-    gap: 6px;
+    padding: 12px 16px;
+    gap: 12px;
     flex-direction: column;
   }
 
@@ -464,7 +476,10 @@
 
   .orders-table th,
   .orders-table td {
-    padding: 10px 12px;
+    padding: 6px 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .dashboard-grid-layout {

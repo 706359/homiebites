@@ -67,7 +67,20 @@ const AllAddressesTab = ({
 
       customerMap[address].orders.push(order);
       customerMap[address].totalOrders++;
-      const orderTotal = parseFloat(order.total || order.totalAmount || 0);
+      
+      let orderTotal = null;
+      if (order.totalAmount !== undefined && order.totalAmount !== null) {
+        orderTotal = parseFloat(order.totalAmount);
+      } else if (order.total !== undefined && order.total !== null) {
+        orderTotal = parseFloat(order.total);
+      }
+      
+      if (orderTotal === null || isNaN(orderTotal)) {
+        const qty = parseFloat(order.quantity || 1);
+        const price = parseFloat(order.unitPrice || 0);
+        orderTotal = qty * price;
+      }
+      
       customerMap[address].totalSpent += isNaN(orderTotal) ? 0 : orderTotal;
 
       // Parse order date with better error handling

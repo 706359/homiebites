@@ -6,6 +6,7 @@ import {
   formatCurrency,
   isPaidStatus,
   isPendingStatus,
+  sortOrdersByOrderId,
 } from './utils/orderUtils.js';
 
 const AllOrdersDataTab = ({
@@ -236,14 +237,26 @@ const AllOrdersDataTab = ({
           bVal = parseInt(b.quantity || 1);
           break;
         case 'total': {
-          let aTotal = parseFloat(a.total || a.totalAmount || 0);
-          if (isNaN(aTotal) || aTotal === 0) {
+          let aTotal = null;
+          if (a.totalAmount !== undefined && a.totalAmount !== null) {
+            aTotal = parseFloat(a.totalAmount);
+          } else if (a.total !== undefined && a.total !== null) {
+            aTotal = parseFloat(a.total);
+          }
+          if (aTotal === null || isNaN(aTotal)) {
             aTotal = parseFloat(a.quantity || 1) * parseFloat(a.unitPrice || 0);
           }
-          let bTotal = parseFloat(b.total || b.totalAmount || 0);
-          if (isNaN(bTotal) || bTotal === 0) {
+          
+          let bTotal = null;
+          if (b.totalAmount !== undefined && b.totalAmount !== null) {
+            bTotal = parseFloat(b.totalAmount);
+          } else if (b.total !== undefined && b.total !== null) {
+            bTotal = parseFloat(b.total);
+          }
+          if (bTotal === null || isNaN(bTotal)) {
             bTotal = parseFloat(b.quantity || 1) * parseFloat(b.unitPrice || 0);
           }
+          
           aVal = isNaN(aTotal) ? 0 : aTotal;
           bVal = isNaN(bTotal) ? 0 : bTotal;
           break;

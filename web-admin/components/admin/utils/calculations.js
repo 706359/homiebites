@@ -277,7 +277,20 @@ export const getSummaryReport = (ordersList = []) => {
         }
 
         const report = reportMap.get(key);
-        const amount = parseFloat(order.total || order.totalAmount || 0);
+        
+        let amount = null;
+        if (order.totalAmount !== undefined && order.totalAmount !== null) {
+          amount = parseFloat(order.totalAmount);
+        } else if (order.total !== undefined && order.total !== null) {
+          amount = parseFloat(order.total);
+        }
+        
+        if (amount === null || isNaN(amount)) {
+          const qty = parseFloat(order.quantity || 1);
+          const price = parseFloat(order.unitPrice || 0);
+          amount = qty * price;
+        }
+        
         const isDelivered =
           String(order.status || "").toLowerCase() === "delivered";
 
@@ -339,7 +352,20 @@ export const getAllCustomers = (ordersList = []) => {
         }
 
         const customer = customerMap.get(address);
-        const amount = parseFloat(order.total || order.totalAmount || 0);
+        
+        let amount = null;
+        if (order.totalAmount !== undefined && order.totalAmount !== null) {
+          amount = parseFloat(order.totalAmount);
+        } else if (order.total !== undefined && order.total !== null) {
+          amount = parseFloat(order.total);
+        }
+        
+        if (amount === null || isNaN(amount)) {
+          const qty = parseFloat(order.quantity || 1);
+          const price = parseFloat(order.unitPrice || 0);
+          amount = qty * price;
+        }
+        
         const orderDate = new Date(order.createdAt || order.date);
 
         customer.totalOrders++;

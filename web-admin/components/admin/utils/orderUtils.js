@@ -34,20 +34,27 @@ export const formatNumberIndian = (amount) => {
 
 /**
  * Get total revenue (all orders)
- * Handles both total and totalAmount fields, with fallback to quantity * unitPrice
+ * Prioritizes totalAmount (server-calculated), falls back to total, then calculates from quantity * unitPrice
  */
 export const getTotalRevenue = (ordersList = []) => {
   try {
     return ordersList.reduce((sum, order) => {
       if (!order) return sum;
-      // Try total first, then totalAmount
-      let amount = parseFloat(order.total || order.totalAmount || 0);
-      // If amount is missing or invalid, calculate from quantity * unitPrice
-      if (isNaN(amount) || amount === 0) {
+      
+      let amount = null;
+      
+      if (order.totalAmount !== undefined && order.totalAmount !== null) {
+        amount = parseFloat(order.totalAmount);
+      } else if (order.total !== undefined && order.total !== null) {
+        amount = parseFloat(order.total);
+      }
+      
+      if (amount === null || isNaN(amount)) {
         const qty = parseFloat(order.quantity || 1);
         const price = parseFloat(order.unitPrice || 0);
         amount = qty * price;
       }
+      
       return sum + (isNaN(amount) ? 0 : amount);
     }, 0);
   } catch (error) {
@@ -64,7 +71,20 @@ export const getDeliveredRevenue = (ordersList = []) => {
     return ordersList
       .filter((order) => order && order.status === 'delivered')
       .reduce((sum, order) => {
-        const amount = parseFloat(order.total || order.totalAmount || 0);
+        let amount = null;
+        
+        if (order.totalAmount !== undefined && order.totalAmount !== null) {
+          amount = parseFloat(order.totalAmount);
+        } else if (order.total !== undefined && order.total !== null) {
+          amount = parseFloat(order.total);
+        }
+        
+        if (amount === null || isNaN(amount)) {
+          const qty = parseFloat(order.quantity || 1);
+          const price = parseFloat(order.unitPrice || 0);
+          amount = qty * price;
+        }
+        
         return sum + (isNaN(amount) ? 0 : amount);
       }, 0);
   } catch (error) {

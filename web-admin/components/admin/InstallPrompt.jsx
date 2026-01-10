@@ -109,13 +109,14 @@ const InstallPrompt = () => {
     return (
       <div
         id='pwa-install-prompt'
+        className='pwa-install-prompt-ios'
         style={{
           position: 'fixed',
           bottom: '20px',
           left: '50%',
           transform: 'translateX(-50%)',
-          maxWidth: 'calc(100% - 40px)',
-          width: '400px',
+          maxWidth: 'calc(100vw - 40px)',
+          width: 'min(400px, calc(100vw - 40px))',
           background: '#ffffff',
           border: '2px solid var(--admin-accent, #449031)',
           borderRadius: '12px',
@@ -123,6 +124,7 @@ const InstallPrompt = () => {
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
           zIndex: 99999,
           animation: 'slideUp 0.3s ease',
+          boxSizing: 'border-box',
         }}
       >
         <div
@@ -212,25 +214,32 @@ const InstallPrompt = () => {
   if (deferredPrompt) {
     return (
       <div
+        className='install-prompt-button-container'
         style={{
           position: 'fixed',
           bottom: '20px',
           right: '20px',
+          left: 'auto',
           zIndex: 10000,
+          maxWidth: 'calc(100vw - 40px)',
+          boxSizing: 'border-box',
         }}
       >
         <button
           onClick={handleInstallClick}
-          className='btn btn-primary'
+          className='btn btn-primary install-prompt-button'
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             boxShadow: '0 4px 12px rgba(68, 144, 49, 0.3)',
+            whiteSpace: 'nowrap',
+            maxWidth: '100%',
+            boxSizing: 'border-box',
           }}
         >
           <i className='fa-solid fa-download'></i>
-          Install App
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Install App</span>
         </button>
       </div>
     );

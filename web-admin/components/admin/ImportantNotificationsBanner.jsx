@@ -30,10 +30,20 @@ const ImportantNotificationsBanner = ({
     });
 
     if (overdueOrders.length > 0) {
-      const totalOverdue = overdueOrders.reduce(
-        (sum, o) => sum + parseFloat(o.total || o.totalAmount || 0),
-        0
-      );
+      const totalOverdue = overdueOrders.reduce((sum, o) => {
+        let amount = null;
+        if (o.totalAmount !== undefined && o.totalAmount !== null) {
+          amount = parseFloat(o.totalAmount);
+        } else if (o.total !== undefined && o.total !== null) {
+          amount = parseFloat(o.total);
+        }
+        if (amount === null || isNaN(amount)) {
+          const qty = parseFloat(o.quantity || 1);
+          const price = parseFloat(o.unitPrice || 0);
+          amount = qty * price;
+        }
+        return sum + (isNaN(amount) ? 0 : amount);
+      }, 0);
       notifications.push({
         id: 'overdue-payments',
         type: 'danger',
@@ -59,10 +69,20 @@ const ImportantNotificationsBanner = ({
     });
 
     if (urgentOrders.length > 0) {
-      const totalUrgent = urgentOrders.reduce(
-        (sum, o) => sum + parseFloat(o.total || o.totalAmount || 0),
-        0
-      );
+      const totalUrgent = urgentOrders.reduce((sum, o) => {
+        let amount = null;
+        if (o.totalAmount !== undefined && o.totalAmount !== null) {
+          amount = parseFloat(o.totalAmount);
+        } else if (o.total !== undefined && o.total !== null) {
+          amount = parseFloat(o.total);
+        }
+        if (amount === null || isNaN(amount)) {
+          const qty = parseFloat(o.quantity || 1);
+          const price = parseFloat(o.unitPrice || 0);
+          amount = qty * price;
+        }
+        return sum + (isNaN(amount) ? 0 : amount);
+      }, 0);
       notifications.push({
         id: 'urgent-payments',
         type: 'warning',
@@ -74,18 +94,40 @@ const ImportantNotificationsBanner = ({
       });
     }
 
-    // 3. High value pending orders (> ₹500)
     const highValuePending = orders.filter((order) => {
       if (!isPendingStatus(order.status)) return false;
-      const amount = parseFloat(order.total || order.totalAmount || 0);
+      
+      let amount = null;
+      if (order.totalAmount !== undefined && order.totalAmount !== null) {
+        amount = parseFloat(order.totalAmount);
+      } else if (order.total !== undefined && order.total !== null) {
+        amount = parseFloat(order.total);
+      }
+      
+      if (amount === null || isNaN(amount)) {
+        const qty = parseFloat(order.quantity || 1);
+        const price = parseFloat(order.unitPrice || 0);
+        amount = qty * price;
+      }
+      
       return amount > 500;
     });
 
     if (highValuePending.length > 0) {
-      const totalHighValue = highValuePending.reduce(
-        (sum, o) => sum + parseFloat(o.total || o.totalAmount || 0),
-        0
-      );
+      const totalHighValue = highValuePending.reduce((sum, o) => {
+        let amount = null;
+        if (o.totalAmount !== undefined && o.totalAmount !== null) {
+          amount = parseFloat(o.totalAmount);
+        } else if (o.total !== undefined && o.total !== null) {
+          amount = parseFloat(o.total);
+        }
+        if (amount === null || isNaN(amount)) {
+          const qty = parseFloat(o.quantity || 1);
+          const price = parseFloat(o.unitPrice || 0);
+          amount = qty * price;
+        }
+        return sum + (isNaN(amount) ? 0 : amount);
+      }, 0);
       notifications.push({
         id: 'high-value-pending',
         type: 'info',

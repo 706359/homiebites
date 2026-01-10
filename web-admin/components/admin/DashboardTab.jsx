@@ -18,18 +18,23 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   // PROFIT STATISTICS (30% margin after expenses)
   const profitStats = getProfitStats(currentMonthRevenue, 70, 30);
 
-  // Calculate unpaid amount - ensure we handle both total and totalAmount fields correctly
   const currentMonthUnpaidAmount = currentMonthOrders
     .filter((o) => isPendingStatus(o.status))
     .reduce((sum, o) => {
-      // Try total first, then totalAmount, then calculate from quantity * unitPrice
-      let amount = parseFloat(o.total || o.totalAmount || 0);
-      if (isNaN(amount) || amount === 0) {
-        // Fallback: calculate from quantity * unitPrice if total is missing
+      let amount = null;
+      
+      if (o.totalAmount !== undefined && o.totalAmount !== null) {
+        amount = parseFloat(o.totalAmount);
+      } else if (o.total !== undefined && o.total !== null) {
+        amount = parseFloat(o.total);
+      }
+      
+      if (amount === null || isNaN(amount)) {
         const qty = parseFloat(o.quantity || 1);
         const price = parseFloat(o.unitPrice || 0);
         amount = qty * price;
       }
+      
       return sum + (isNaN(amount) ? 0 : amount);
     }, 0);
   const unpaidOrdersCount = currentMonthOrders.filter((o) => isPendingStatus(o.status)).length;
@@ -174,7 +179,6 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   const maxDailyOrders = Math.max(...dailyOrdersData.map((d) => d.orders), 1);
   
 
-  // Payment Mode Split
   const paymentModeStats = {};
   currentMonthOrders.forEach((o) => {
     const mode = o.paymentMode || 'Not Set';
@@ -182,13 +186,21 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
       paymentModeStats[mode] = { count: 0, amount: 0 };
     }
     paymentModeStats[mode].count++;
-    // Try total first, then totalAmount, then calculate from quantity * unitPrice
-    let amount = parseFloat(o.total || o.totalAmount || 0);
-    if (isNaN(amount) || amount === 0) {
+    
+    let amount = null;
+    
+    if (o.totalAmount !== undefined && o.totalAmount !== null) {
+      amount = parseFloat(o.totalAmount);
+    } else if (o.total !== undefined && o.total !== null) {
+      amount = parseFloat(o.total);
+    }
+    
+    if (amount === null || isNaN(amount)) {
       const qty = parseFloat(o.quantity || 1);
       const price = parseFloat(o.unitPrice || 0);
       amount = qty * price;
     }
+    
     paymentModeStats[mode].amount += isNaN(amount) ? 0 : amount;
   });
 

@@ -80,15 +80,22 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           ? Infinity
           : 0;
 
-    // Calculate pending payments
     const pendingOrders = periodOrders.filter((o) => isPendingStatus(o.status));
     const pendingAmount = pendingOrders.reduce((sum, o) => {
-      let amount = parseFloat(o.total || o.totalAmount || 0);
-      if (isNaN(amount) || amount === 0) {
+      let amount = null;
+      
+      if (o.totalAmount !== undefined && o.totalAmount !== null) {
+        amount = parseFloat(o.totalAmount);
+      } else if (o.total !== undefined && o.total !== null) {
+        amount = parseFloat(o.total);
+      }
+      
+      if (amount === null || isNaN(amount)) {
         const qty = parseFloat(o.quantity || 1);
         const price = parseFloat(o.unitPrice || 0);
         amount = qty * price;
       }
+      
       return sum + (isNaN(amount) ? 0 : amount);
     }, 0);
 
@@ -180,13 +187,20 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           areaStats[addr] = { address: addr, orders: 0, revenue: 0 };
         }
         areaStats[addr].orders++;
-        // Try total first, then totalAmount, then calculate from quantity * unitPrice
-        let amount = parseFloat(o.total || o.totalAmount || 0);
-        if (isNaN(amount) || amount === 0) {
+        
+        let amount = null;
+        if (o.totalAmount !== undefined && o.totalAmount !== null) {
+          amount = parseFloat(o.totalAmount);
+        } else if (o.total !== undefined && o.total !== null) {
+          amount = parseFloat(o.total);
+        }
+        
+        if (amount === null || isNaN(amount)) {
           const qty = parseFloat(o.quantity || 1);
           const price = parseFloat(o.unitPrice || 0);
           amount = qty * price;
         }
+        
         areaStats[addr].revenue += isNaN(amount) ? 0 : amount;
       }
     });
@@ -226,14 +240,21 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           customerData[addr] = { orders: 0, spent: 0 };
         }
         customerData[addr].orders++;
-        const amount = parseFloat(o.total || o.totalAmount || 0);
-        if (isNaN(amount)) {
+        
+        let amount = null;
+        if (o.totalAmount !== undefined && o.totalAmount !== null) {
+          amount = parseFloat(o.totalAmount);
+        } else if (o.total !== undefined && o.total !== null) {
+          amount = parseFloat(o.total);
+        }
+        
+        if (amount === null || isNaN(amount)) {
           const qty = parseFloat(o.quantity || 1);
           const price = parseFloat(o.unitPrice || 0);
-          customerData[addr].spent += qty * price;
-        } else {
-          customerData[addr].spent += amount;
+          amount = qty * price;
         }
+        
+        customerData[addr].spent += isNaN(amount) ? 0 : amount;
       }
     });
     // Customer segmentation based on spending:
@@ -261,13 +282,20 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         trends[mode] = { count: 0, amount: 0 };
       }
       trends[mode].count++;
-      // Try total first, then totalAmount, then calculate from quantity * unitPrice
-      let amount = parseFloat(o.total || o.totalAmount || 0);
-      if (isNaN(amount) || amount === 0) {
+      
+      let amount = null;
+      if (o.totalAmount !== undefined && o.totalAmount !== null) {
+        amount = parseFloat(o.totalAmount);
+      } else if (o.total !== undefined && o.total !== null) {
+        amount = parseFloat(o.total);
+      }
+      
+      if (amount === null || isNaN(amount)) {
         const qty = parseFloat(o.quantity || 1);
         const price = parseFloat(o.unitPrice || 0);
         amount = qty * price;
       }
+      
       trends[mode].amount += isNaN(amount) ? 0 : amount;
     });
     return Object.entries(trends)
@@ -300,9 +328,14 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           };
         }
         
-        // Calculate amount for this order
-        let amount = parseFloat(o.total || o.totalAmount || 0);
-        if (isNaN(amount) || amount === 0) {
+        let amount = null;
+        if (o.totalAmount !== undefined && o.totalAmount !== null) {
+          amount = parseFloat(o.totalAmount);
+        } else if (o.total !== undefined && o.total !== null) {
+          amount = parseFloat(o.total);
+        }
+        
+        if (amount === null || isNaN(amount)) {
           const qty = parseFloat(o.quantity || 1);
           const price = parseFloat(o.unitPrice || 0);
           amount = qty * price;
@@ -350,14 +383,21 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     return str;
   };
 
-  // Helper function to calculate order amount
   const getOrderAmount = (order) => {
-    let amount = parseFloat(order.total || order.totalAmount || 0);
-    if (isNaN(amount) || amount === 0) {
+    let amount = null;
+    
+    if (order.totalAmount !== undefined && order.totalAmount !== null) {
+      amount = parseFloat(order.totalAmount);
+    } else if (order.total !== undefined && order.total !== null) {
+      amount = parseFloat(order.total);
+    }
+    
+    if (amount === null || isNaN(amount)) {
       const qty = parseFloat(order.quantity || 1);
       const price = parseFloat(order.unitPrice || 0);
       amount = qty * price;
     }
+    
     return isNaN(amount) ? 0 : amount;
   };
 
