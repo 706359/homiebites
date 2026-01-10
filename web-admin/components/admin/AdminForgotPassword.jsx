@@ -1,32 +1,29 @@
 import { useState, useEffect } from "react";
-import api from "../../lib/api-admin.js";
+import { useNotification } from "./contexts/NotificationContext.jsx";
 import "./styles/index.css";
 import "./AdminForgotPassword.css";
 
 const AdminForgotPassword = () => {
   const goBack = () => {
-    window.location.href = "/login";
+    window.location.href = "/admin";
   };
-  const [step, setStep] = useState(1);
+  
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const { error: showError, success: showSuccess } = useNotification();
 
   // Apply theme settings from localStorage
   useEffect(() => {
     const applyThemeSettings = () => {
       try {
-        // Get theme settings from localStorage
         const primaryColor = localStorage.getItem('homiebites_primary_color') || '#449031';
         const fontFamily = localStorage.getItem('homiebites_font_family') || 'Baloo 2';
         const fontSize = localStorage.getItem('homiebites_font_size') || 'medium';
         const theme = localStorage.getItem('homiebites_theme') || 'light';
 
-        // Get root element
         const root = document.documentElement;
         const loginWrapper = document.querySelector('.login-page-wrapper');
 
-        // Helper to convert hex to RGB
         const hexToRgb = (hex) => {
           const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
           return result
@@ -38,19 +35,14 @@ const AdminForgotPassword = () => {
             : null;
         };
 
-        // Apply primary color
         if (primaryColor) {
           root.style.setProperty('--admin-accent', primaryColor);
-          
-          // Calculate light and dark variants
           const rgb = hexToRgb(primaryColor);
           if (rgb) {
             root.style.setProperty(
               '--admin-accent-light',
               `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`
             );
-            
-            // Calculate darker variant for gradients
             const darkerR = Math.max(0, Math.floor(rgb.r * 0.7));
             const darkerG = Math.max(0, Math.floor(rgb.g * 0.7));
             const darkerB = Math.max(0, Math.floor(rgb.b * 0.7));
@@ -61,7 +53,6 @@ const AdminForgotPassword = () => {
           }
         }
 
-        // Apply font family
         if (fontFamily) {
           const fontFamilyValue = `'${fontFamily}', sans-serif`;
           root.style.setProperty('--admin-font-family', fontFamilyValue);
@@ -70,7 +61,6 @@ const AdminForgotPassword = () => {
           }
         }
 
-        // Apply font size
         if (fontSize) {
           const fontSizeMap = {
             small: '14px',
@@ -85,7 +75,6 @@ const AdminForgotPassword = () => {
           }
         }
 
-        // Apply theme (light/dark)
         if (theme === 'dark') {
           if (loginWrapper) {
             loginWrapper.classList.add('dark-theme');
@@ -113,10 +102,8 @@ const AdminForgotPassword = () => {
       }
     };
 
-    // Apply theme on mount
     applyThemeSettings();
 
-    // Listen for theme changes
     const handleStorageChange = (e) => {
       if (
         e.key === 'homiebites_primary_color' ||
@@ -137,403 +124,30 @@ const AdminForgotPassword = () => {
     };
   }, []);
 
-  // Step 1: Email
-  const [email, setEmail] = useState("");
-
-  // Step 2: OTP
-  const [otp, setOtp] = useState("");
-
-  // Step 3: Identity verification
-  const [adminId, setAdminId] = useState("");
-  const [panCard, setPanCard] = useState("");
-  const [verificationToken, setVerificationToken] = useState("");
-
-  // Step 4: New password
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [resetToken, setResetToken] = useState("");
-
-  const handleStep1 = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
     setLoading(true);
 
     try {
-      const data = await api.forgotPassword(email);
-      if (data && data.success) {
-        setSuccess(data.message || "OTP sent to your registered email address");
-        setStep(2);
-      } else {
-        setError(data?.error || "Failed to send OTP");
-      }
-    } catch (err) {
-      setError(err?.message || "Failed to send OTP. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
 
-  const handleStep2 = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    setLoading(true);
+      const data = await response.json();
 
-    try {
-      const data = await api.verifyOTP(email, otp);
       if (data.success) {
-        setVerificationToken(data.verificationToken);
-        setSuccess("OTP verified successfully");
-        setStep(3);
+        showSuccess('If an account exists, a password reset link has been sent to your email. Please check your inbox.');
       } else {
-        setError(data.error || "Invalid OTP");
+        showError(data.error || 'Failed to send reset link');
       }
     } catch (err) {
-      setError(err.message || "Failed to verify OTP. Please try again.");
+      showError(err.message || 'Failed to send reset link');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleStep3 = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (!adminId.trim() || !panCard.trim()) {
-      setError("Please enter both Admin ID and PAN card");
-      return;
-    }
-
-    // Validate PAN card format (10 characters, alphanumeric)
-    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    if (!panRegex.test(panCard.toUpperCase())) {
-      setError("Invalid PAN card format. Format: ABCDE1234F");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const data = await api.verifyIdentity(
-        email,
-        verificationToken,
-        panCard,
-        adminId,
-      );
-      if (data && data.success) {
-        setResetToken(data.resetToken);
-        setSuccess("Identity verified successfully");
-        setStep(4);
-      } else {
-        setError(data?.error || "Verification failed");
-      }
-    } catch (err) {
-      setError(err?.message || "Failed to verify identity. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleStep4 = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const data = await api.resetPassword(email, resetToken, newPassword);
-      if (data && data.success) {
-        setSuccess("Password reset successfully! Redirecting to login...");
-        setTimeout(() => {
-          goBack();
-        }, 2000);
-      } else {
-        setError(data?.error || "Failed to reset password");
-      }
-    } catch (err) {
-      setError(err?.message || "Failed to reset password. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const renderStep1 = () => (
-    <form onSubmit={handleStep1} className="login-form">
-      <div className="form-field">
-        <label>
-          <i className="fa-solid fa-envelope"></i>
-          Admin Email Address
-        </label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter your admin email"
-          required
-          autoFocus
-          className="login-input"
-        />
-      </div>
-      {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">{success}</div>}
-      <button
-        type="submit"
-        className="btn btn-primary btn-full login-submit-btn"
-        disabled={loading}
-      >
-        {loading ? (
-          <>
-            <i className="fa-solid fa-spinner fa-spin"></i>
-            <span>Sending...</span>
-          </>
-        ) : (
-          <>
-            <i className="fa-solid fa-paper-plane"></i>
-            <span>Send OTP</span>
-          </>
-        )}
-      </button>
-      <button
-        type="button"
-        onClick={goBack}
-        className="btn btn-secondary btn-full"
-      >
-        Back to Login
-      </button>
-    </form>
-  );
-
-  const renderStep2 = () => (
-    <form onSubmit={handleStep2} className="login-form">
-      <div className="form-field">
-        <label>
-          <i className="fa-solid fa-shield-halved"></i>
-          Enter OTP
-        </label>
-        <input
-          type="text"
-          value={otp}
-          onChange={(e) =>
-            setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
-          }
-          placeholder="Enter 6-digit OTP"
-          maxLength={6}
-          required
-          autoFocus
-          className="login-input"
-        />
-        <p className="admin-forgot-help-text">
-          Enter the 6-digit OTP sent to your registered email address
-        </p>
-      </div>
-      {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">{success}</div>}
-      <button
-        type="submit"
-        className="btn btn-primary btn-full login-submit-btn"
-        disabled={loading}
-      >
-        {loading ? (
-          <>
-            <i className="fa-solid fa-spinner fa-spin"></i>
-            <span>Verifying...</span>
-          </>
-        ) : (
-          <>
-            <i className="fa-solid fa-shield-check"></i>
-            <span>Verify OTP</span>
-          </>
-        )}
-      </button>
-      <button
-        type="button"
-        onClick={() => {
-          setStep(1);
-          setOtp("");
-          setError("");
-          setSuccess("");
-        }}
-        className="btn btn-secondary btn-full"
-      >
-        Back
-      </button>
-    </form>
-  );
-
-  const renderStep3 = () => (
-    <form onSubmit={handleStep3} className="login-form">
-      <div className="form-field">
-        <label>
-          <i className="fa-solid fa-id-card"></i>
-          Admin ID
-        </label>
-        <input
-          type="text"
-          value={adminId}
-          onChange={(e) => setAdminId(e.target.value)}
-          placeholder="Enter your Admin ID"
-          required
-          autoFocus
-          className="login-input"
-        />
-        <p className="admin-forgot-help-text">
-          Enter the Admin ID associated with your account
-        </p>
-      </div>
-      <div className="form-field">
-        <label>
-          <i className="fa-solid fa-file-invoice"></i>
-          PAN Card Number
-        </label>
-        <input
-          type="text"
-          value={panCard}
-          onChange={(e) =>
-            setPanCard(
-              e.target.value
-                .toUpperCase()
-                .replace(/[^A-Z0-9]/g, "")
-                .slice(0, 10),
-            )
-          }
-          placeholder="ABCDE1234F"
-          maxLength={10}
-          required
-          className="login-input"
-        />
-        <p className="admin-forgot-help-text">
-          Format: ABCDE1234F (10 characters, alphanumeric)
-        </p>
-      </div>
-      {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">{success}</div>}
-      <button
-        type="submit"
-        className="btn btn-primary btn-full login-submit-btn"
-        disabled={loading}
-      >
-        {loading ? (
-          <>
-            <i className="fa-solid fa-spinner fa-spin"></i>
-            <span>Verifying...</span>
-          </>
-        ) : (
-          <>
-            <i className="fa-solid fa-user-check"></i>
-            <span>Verify Identity</span>
-          </>
-        )}
-      </button>
-      <button
-        type="button"
-        onClick={() => {
-          setStep(2);
-          setAdminId("");
-          setPanCard("");
-          setError("");
-          setSuccess("");
-        }}
-        className="btn btn-secondary btn-full"
-      >
-        Back
-      </button>
-    </form>
-  );
-
-  const renderStep4 = () => (
-    <form onSubmit={handleStep4} className="login-form">
-      <div className="form-field">
-        <label>
-          <i className="fa-solid fa-lock"></i>
-          New Password
-        </label>
-        <input
-          type="password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          placeholder="Enter new password"
-          minLength={6}
-          required
-          autoFocus
-          className="login-input"
-        />
-        <p className="admin-forgot-help-text">Minimum 6 characters</p>
-      </div>
-      <div className="form-field">
-        <label>
-          <i className="fa-solid fa-lock"></i>
-          Confirm New Password
-        </label>
-        <input
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          placeholder="Confirm new password"
-          minLength={6}
-          required
-          className="login-input"
-        />
-      </div>
-      {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">{success}</div>}
-      <button
-        type="submit"
-        className="btn btn-primary btn-full login-submit-btn"
-        disabled={loading}
-      >
-        {loading ? (
-          <>
-            <i className="fa-solid fa-spinner fa-spin"></i>
-            <span>Resetting...</span>
-          </>
-        ) : (
-          <>
-            <i className="fa-solid fa-key"></i>
-            <span>Reset Password</span>
-          </>
-        )}
-      </button>
-      <button
-        type="button"
-        onClick={() => {
-          setStep(3);
-          setNewPassword("");
-          setConfirmPassword("");
-          setError("");
-          setSuccess("");
-        }}
-        className="btn btn-secondary btn-full"
-      >
-        Back
-      </button>
-    </form>
-  );
-
-  const getStepTitle = () => {
-    switch (step) {
-      case 1:
-        return "Step 1: Enter Email";
-      case 2:
-        return "Step 2: Verify OTP";
-      case 3:
-        return "Step 3: Verify Identity";
-      case 4:
-        return "Step 4: Reset Password";
-      default:
-        return "Password Recovery";
     }
   };
 
@@ -561,14 +175,56 @@ const AdminForgotPassword = () => {
               <div className="login-icon-wrapper">
                 <i className="fa-solid fa-key"></i>
               </div>
-              <h1 className="login-title">Password Recovery</h1>
-              <p className="login-subtitle">{getStepTitle()}</p>
+              <h1 className="login-title">Forgot Password</h1>
+              <p className="login-subtitle">Enter your email to receive a password reset link</p>
             </div>
 
-            {step === 1 && renderStep1()}
-            {step === 2 && renderStep2()}
-            {step === 3 && renderStep3()}
-            {step === 4 && renderStep4()}
+            <form onSubmit={handleSubmit} className="login-form">
+              <div className="form-field">
+                <label htmlFor="forgot-email-input">
+                  <i className="fa-solid fa-envelope"></i>
+                  Email Address
+                </label>
+                <input
+                  id="forgot-email-input"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="Enter your email address"
+                  autoFocus
+                  autoComplete="email"
+                  className="login-input"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary btn-full login-submit-btn"
+              >
+                {loading ? (
+                  <>
+                    <i className="fa-solid fa-spinner fa-spin"></i>
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    <i className="fa-solid fa-paper-plane"></i>
+                    <span>Send Reset Link</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={goBack}
+                className="btn btn-secondary btn-full"
+              >
+                <i className="fa-solid fa-arrow-left"></i>
+                Back to Login
+              </button>
+            </form>
 
             <div className="login-info">
               <div className="login-info-icon">
@@ -576,7 +232,7 @@ const AdminForgotPassword = () => {
               </div>
               <p className="login-info-title">Security Note</p>
               <p className="admin-login-info-text">
-                This process requires multi-step verification to ensure account security.
+                Password reset link will be sent to your email. The link expires in 1 hour.
               </p>
             </div>
           </div>

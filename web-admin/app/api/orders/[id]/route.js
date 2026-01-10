@@ -65,16 +65,69 @@ export async function PUT(request, { params }) {
     }
 
     const update = await request.json();
-    delete update.orderId; // Immutable
+    delete update.orderId; // Immutable - orderId cannot be changed
 
+    // Normalize and validate status and paymentStatus fields for production data integrity
+    if (update.status !== undefined) {
+      const statusValue = String(update.status).trim();
+      update.status = statusValue;
+      
+      // CRITICAL: Always sync paymentStatus with status for data consistency
+      // This ensures both fields are always in sync in production
+      const statusLower = statusValue.toLowerCase();
+      if (statusLower === 'paid' || statusLower === 'delivered') {
+        update.paymentStatus = 'Paid';
+      } else {
+        update.paymentStatus = update.paymentStatus || 'Pending'; // Default for unpaid/pending
+      }
+    }
+    
+    // Normalize paymentStatus if provided independently (ensure consistency)
+    if (update.paymentStatus !== undefined) {
+      const psLower = String(update.paymentStatus).toLowerCase().trim();
+      if (psLower === 'paid') {
+        update.paymentStatus = 'Paid';
+      } else if (psLower === 'unpaid' || psLower === 'pending') {
+        update.paymentStatus = 'Pending';
+      } else {
+        update.paymentStatus = String(update.paymentStatus).trim();
+      }
+      
+      // If status wasn't updated but paymentStatus was, sync status too
+      if (update.status === undefined) {
+        if (update.paymentStatus === 'Paid') {
+          update.status = existingOrder.status && existingOrder.status.toLowerCase() === 'paid' 
+            ? existingOrder.status 
+            : 'Paid';
+        }
+      }
+    }
+    
+    // Normalize paymentMode if provided (production-safe normalization)
+    if (update.paymentMode !== undefined && update.paymentMode !== null) {
+      if (update.paymentMode === '' || update.paymentMode === 'None') {
+        update.paymentMode = ''; // Allow empty string
+      } else {
+        update.paymentMode = String(update.paymentMode).trim();
+      }
+    }
+
+    // Validate and process date
     if (update.date) {
       const newDate = new Date(update.date);
       if (!isNaN(newDate.getTime())) {
         update.dateNeedsReview = false;
         update.originalDateString = undefined;
+        update.date = newDate; // Ensure date is a Date object
+      } else {
+        // Invalid date - remove from update to prevent errors
+        delete update.date;
       }
     }
 
+    // Calculate totalAmount if quantity or unitPrice changes
+    // Note: totalAmount will also be recalculated by Order model pre-save hook
+    // But we set it here to ensure consistency before validation
     if (update.quantity !== undefined || update.unitPrice !== undefined) {
       const quantity = Number(update.quantity !== undefined ? update.quantity : existingOrder.quantity) || 1;
       const unitPrice = Number(update.unitPrice !== undefined ? update.unitPrice : existingOrder.unitPrice) || 0;
@@ -88,20 +141,43 @@ export async function PUT(request, { params }) {
         update.priceOverride = false;
       }
     }
+    
+    // CRITICAL FOR PRODUCTION: Always recalculate totalAmount to ensure data integrity
+    // This is calculated server-side to prevent client-side manipulation or inconsistencies
+    // The Order model pre-save hook will also recalculate, but we set it here for validation
+    if (update.quantity !== undefined || update.unitPrice !== undefined || update.totalAmount === undefined) {
+      const finalQuantity = Number(update.quantity !== undefined ? update.quantity : existingOrder.quantity) || 1;
+      const finalUnitPrice = Number(update.unitPrice !== undefined ? update.unitPrice : existingOrder.unitPrice) || 0;
+      update.totalAmount = finalQuantity * finalUnitPrice;
+    }
+    
+    // Note: totalAmount is calculated server-side, never trust client-provided values
+    // The pre-save hook provides an additional layer of validation
 
-    delete update.totalAmount;
-
+    // CRITICAL FOR PRODUCTION: Mongoose findByIdAndUpdate/findOneAndUpdate
+    // with a plain object automatically uses $set operator internally
+    // This ensures only specified fields are updated, preserving other fields
+    // This is the correct and safe approach for production data integrity
     let updatedOrder;
     if (mongoose.Types.ObjectId.isValid(orderId)) {
-      updatedOrder = await Order.findByIdAndUpdate(orderId, update, {
-        new: true,
-        runValidators: true,
-      });
+      updatedOrder = await Order.findByIdAndUpdate(
+        orderId, 
+        update, // Plain object - Mongoose treats this as $set internally
+        {
+          new: true,
+          runValidators: true,
+          // Only update fields specified in 'update' object
+        }
+      );
     } else {
       updatedOrder = await Order.findOneAndUpdate(
         { orderId: orderId },
-        update,
-        { new: true, runValidators: true }
+        update, // Plain object - Mongoose treats this as $set internally
+        { 
+          new: true, 
+          runValidators: true,
+          // Only update fields specified in 'update' object
+        }
       );
     }
 

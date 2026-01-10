@@ -129,11 +129,18 @@
 }
 
 .orders-table-container {
+  margin-bottom: 0; /* Pagination will add spacing */
+}
+
+/* When table container is followed by pagination, pagination handles spacing */
+.orders-table-container:not(:has(+ .pagination-controls)) {
   margin-bottom: 20px;
 }
 
-.orders-table-container:last-child {
-  margin-bottom: 0;
+/* Ensure pagination always has proper spacing */
+.pagination-controls {
+  margin-top: 16px;
+  margin-bottom: 20px;
 }
 
 /* Modal Spacing - Consistent Padding */
@@ -229,13 +236,13 @@
 
 /* Stat Cards Spacing */
 .stat-card {
-  padding: 20px 24px;
+  padding: 16px 20px;
   margin-bottom: 0;
 }
 
 .stat-cards-grid {
-  gap: 20px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .stat-cards-grid:last-child {
@@ -504,4 +511,5 @@
 :root.dark-theme .settings-tab-content {
   /* Spacing values remain the same in dark theme */
 }
+
 

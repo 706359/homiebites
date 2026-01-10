@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
-import { isPendingStatus } from './utils/orderUtils.js';
+import { isPendingStatus, sortOrdersByOrderId } from './utils/orderUtils.js';
 import PremiumLoader from './PremiumLoader.jsx';
 
 // Get time ago helper
@@ -94,17 +94,18 @@ const NotificationsTab = ({
   // Recent orders notifications (last 7 days, limit to 10)
   const sevenDaysAgo = new Date(now);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const recentOrders = orders
-    .filter((order) => {
-      const orderDate = parseOrderDate(order.date || order.order_date || null);
-      return orderDate && orderDate >= sevenDaysAgo;
+  // Get recent orders from last 7 days, sorted by orderId (newest first)
+  const recentOrders = sortOrdersByOrderId(
+    orders.filter((order) => {
+      try {
+        const orderDate = parseOrderDate(order.date || order.order_date || null);
+        if (!orderDate) return false;
+        return orderDate >= sevenDaysAgo;
+      } catch (e) {
+        return false;
+      }
     })
-    .sort((a, b) => {
-      const dateA = parseOrderDate(a.date || a.order_date || null);
-      const dateB = parseOrderDate(b.date || b.order_date || null);
-      return (dateB || new Date(0)) - (dateA || new Date(0));
-    })
-    .slice(0, 10);
+  ).slice(0, 10);
 
   recentOrders.forEach((order) => {
     const orderDate = parseOrderDate(order.date || order.order_date || null);
@@ -137,7 +138,6 @@ const NotificationsTab = ({
     return timeA - timeB;
   });
 
-  // Mark notifications as read based on state
   const notificationsWithReadState = notifications.map((notif) => ({
     ...notif,
     read: readNotifications.has(notif.id) || notif.read,
@@ -159,7 +159,6 @@ const NotificationsTab = ({
   const orderCount = notifications.filter((n) => n.type === 'order').length;
   const systemCount = notifications.filter((n) => n.type === 'system').length;
 
-  // Handle mark as read
   const handleMarkAsRead = (id) => {
     setReadNotifications((prev) => {
       const newSet = new Set(prev);
@@ -169,7 +168,6 @@ const NotificationsTab = ({
     if (showNotification) showNotification('Notification marked as read', 'success');
   };
 
-  // Handle mark all as read
   const handleMarkAllAsRead = () => {
     const allIds = notifications.map((n) => n.id);
     setReadNotifications(new Set(allIds));

@@ -6,6 +6,7 @@ import api from '../../../lib/api-admin.js';
 import { getMenuData, getMenuDataSync } from '../../../lib/menuData.js';
 import { getOffersData, getOffersDataSync } from '../../../lib/offersData.js';
 import errorTracker from '../utils/errorTracker.js';
+import { sortOrdersByOrderId } from '../utils/orderUtils.js';
 
 export const useAdminData = () => {
   const [menuData, setMenuData] = useState([]);
@@ -67,10 +68,10 @@ export const useAdminData = () => {
         const response = await api.getAllOrders({}, { hardRefresh });
 
         if (response.success && response.data) {
-          const nextOrders = Array.isArray(response.data) ? response.data : [];
-          // IMPORTANT: avoid re-render loops when backend legitimately returns 0 orders.
-          // If we keep setting a brand new [] each time, downstream effects that depend on
-          // array identity can repeatedly re-trigger loads.
+          let nextOrders = Array.isArray(response.data) ? response.data : [];
+          if (nextOrders.length > 0) {
+            nextOrders = sortOrdersByOrderId(nextOrders);
+          }
           setOrders((prev) => {
             const prevArr = Array.isArray(prev) ? prev : [];
             if (prevArr.length === 0 && nextOrders.length === 0) return prevArr;
@@ -140,7 +141,6 @@ export const useAdminData = () => {
           }
         }
       }
-      // Fallback to localStorage
       const stored =
         localStorage.getItem('homiebites_users') || localStorage.getItem('homiebites_users_data');
       if (stored) {

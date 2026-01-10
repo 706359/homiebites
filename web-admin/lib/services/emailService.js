@@ -35,40 +35,45 @@ export async function sendEmail(to, subject, html, text = null) {
  * Send email via Gmail SMTP using Nodemailer
  */
 async function sendViaGmail(to, subject, html, text) {
-  // Dynamic import to avoid requiring nodemailer if not needed
-  const nodemailer = await import('nodemailer');
-  
-  // Gmail SMTP configuration from environment
-  const smtpConfig = {
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for 587
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD || process.env.SMTP_APP_PASSWORD, // Gmail App Password
-    },
-  };
+  try {
+    // Dynamic import to avoid requiring nodemailer if not needed
+    const nodemailer = await import('nodemailer');
+    
+    // Gmail SMTP configuration from environment
+    const smtpConfig = {
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for 587
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD || process.env.SMTP_APP_PASSWORD, // Gmail App Password
+      },
+    };
 
-  if (!smtpConfig.auth.user || !smtpConfig.auth.pass) {
-    throw new Error('Gmail SMTP credentials not configured. Please set SMTP_USER and SMTP_PASSWORD (App Password) in your .env file');
+    if (!smtpConfig.auth.user || !smtpConfig.auth.pass) {
+      throw new Error('Gmail SMTP credentials not configured. Please set SMTP_USER and SMTP_PASSWORD (App Password) in your .env file');
+    }
+
+    const transporter = nodemailer.default.createTransport(smtpConfig);
+
+    const mailOptions = {
+      from: process.env.SMTP_FROM || smtpConfig.auth.user,
+      to,
+      subject,
+      html,
+      text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML if no text provided
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+
+    return {
+      success: true,
+      messageId: info.messageId,
+    };
+  } catch (error) {
+    console.error('[Email Service] Error sending email:', error);
+    throw error;
   }
-
-  const transporter = nodemailer.default.createTransport(smtpConfig);
-
-  const mailOptions = {
-    from: process.env.SMTP_FROM || smtpConfig.auth.user,
-    to,
-    subject,
-    html,
-    text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML if no text provided
-  };
-
-  const info = await transporter.sendMail(mailOptions);
-
-  return {
-    success: true,
-    messageId: info.messageId,
-  };
 }
 
 /**
@@ -118,4 +123,70 @@ export async function sendOTPEmail(email, otp, serviceName = 'HomieBites') {
   `;
 
   return await sendEmail(email, subject, html);
+}
+
+/**
+ * Send password reset email with reset link
+ * Following ADMIN_PASSWORD.md specification
+ * @param {string} to - Recipient email address
+ * @param {string} resetUrl - Password reset URL with token
+ * @param {string} userName - User's name
+ * @returns {Promise<{success: boolean, messageId?: string, error?: string, devMode?: boolean}>}
+ */
+export async function sendPasswordResetEmail(to, resetUrl, userName = 'User') {
+  const subject = 'Password Reset Request - HomieBites Admin';
+  const html = `<!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #3B82F6; color: white; padding: 20px; text-align: center; }
+        .content { background-color: #f9f9f9; padding: 30px; }
+        .button { 
+          display: inline-block; 
+          padding: 12px 30px; 
+          background-color: #3B82F6; 
+          color: white; 
+          text-decoration: none; 
+          border-radius: 5px; 
+          margin: 20px 0;
+        }
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🔐 Password Reset Request</h1>
+        </div>
+        <div class="content">
+          <p>Hello ${userName},</p>
+          <p>You requested to reset your password for your HomieBites Admin account.</p>
+          <p>Click the button below to reset your password:</p>
+          <a href="${resetUrl}" class="button">Reset Password</a>
+          <p>Or copy this link to your browser:</p>
+          <p style="word-break: break-all; color: #3B82F6;">${resetUrl}</p>
+          <p><strong>⚠️ This link will expire in 1 hour.</strong></p>
+          <p>If you didn't request this, please ignore this email. Your password will remain unchanged.</p>
+        </div>
+        <div class="footer">
+          <p>© 2025 HomieBites. All rights reserved.</p>
+          <p>This is an automated email. Please do not reply.</p>
+        </div>
+      </div>
+    </body>
+    </html>`;
+
+  try {
+    const result = await sendEmail(to, subject, html);
+    if (result.success && !result.devMode) {
+      console.log('Password reset email sent to:', to);
+    }
+    return result;
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    throw error;
+  }
 }

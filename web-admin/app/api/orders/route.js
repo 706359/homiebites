@@ -43,6 +43,11 @@ export async function GET(request) {
       ];
     }
 
+    // CRITICAL FOR PRODUCTION: Sort by orderId descending (newest first)
+    // Order IDs have sequence numbers: HB-Jan'25-15-000079 (higher number = newer)
+    // We'll sort on the client side using extractOrderIdSequence since MongoDB
+    // can't directly parse the sequence from the orderId string format
+    // For now, sort by createdAt descending as fallback, client will re-sort by orderId
     let orders = await Order.find(query).sort({ createdAt: -1 });
 
     // Normalize orders

@@ -46,7 +46,6 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
   const lastMonthOrders = orders.filter((o) => {
     try {
-      // Never use createdAt (today's date) as fallback - only use actual order date
       const orderDate = parseOrderDate(o.date || o.order_date || null);
       return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === lastMonthYear;
     } catch (e) {
@@ -66,7 +65,6 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   // Today's Revenue
   const todayOrders = orders.filter((o) => {
     try {
-      // Never use createdAt (today's date) as fallback - only use actual order date
       const orderDate = parseOrderDate(o.date || o.order_date || null);
       return orderDate >= today && orderDate < tomorrow;
     } catch (e) {
@@ -82,7 +80,6 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   thisWeekStart.setHours(0, 0, 0, 0);
   const thisWeekOrders = orders.filter((o) => {
     try {
-      // Never use createdAt (today's date) as fallback - only use actual order date
       const orderDate = parseOrderDate(o.date || o.order_date || null);
       return orderDate >= thisWeekStart;
     } catch (e) {

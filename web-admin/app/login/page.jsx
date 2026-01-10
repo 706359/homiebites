@@ -13,7 +13,7 @@ export default function Login() {
     // Check if already logged in
     const admin = localStorage.getItem('homiebites_admin');
     const user = localStorage.getItem('homiebites_user');
-    if (admin === 'true' || (user && (JSON.parse(user).role?.toLowerCase() === 'admin' || JSON.parse(user).role === 'Admin'))) {
+    if (admin === 'true' || (user && JSON.parse(user).role === 'admin')) {
       router.replace('/admin/dashboard');
     }
   }, [router]);
@@ -29,4 +29,3 @@ export default function Login() {
     </NotificationProvider>
   );
 }
-

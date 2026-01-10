@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
 import { formatDate, formatDateShort, parseOrderDate } from './utils/dateUtils.js';
-import { formatCurrency } from './utils/orderUtils.js';
+import { formatCurrency, sortOrdersByOrderId } from './utils/orderUtils.js';
 
 const AllAddressesTab = ({
   orders = [],
@@ -71,7 +71,6 @@ const AllAddressesTab = ({
       customerMap[address].totalSpent += isNaN(orderTotal) ? 0 : orderTotal;
 
       // Parse order date with better error handling
-      // Never use createdAt (today's date) as fallback - only use actual order date
       const orderDate = parseOrderDate(order.date || order.order_date || null);
 
       if (orderDate) {
@@ -259,7 +258,6 @@ const AllAddressesTab = ({
     }
   };
 
-  // Handle view customer details
   const handleViewCustomer = (customer) => {
     setSelectedCustomer(customer);
     setShowCustomerModal(true);
@@ -473,8 +471,8 @@ const AllAddressesTab = ({
 
       {/* TABLE VIEW */}
       {viewMode === 'table' ? (
-        <div className='dashboard-card' style={{ padding: 0, overflow: 'hidden' }}>
-          <div className='orders-table-container' style={{ minHeight: '400px' }}>
+        <div className='dashboard-card table-container-card' style={{ padding: 0 }}>
+          <div className='orders-table-container table-wrapper' style={{ minHeight: '400px' }}>
             {filteredCustomers.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '48px' }}>
                 <div className='empty-state'>
@@ -1003,13 +1001,7 @@ const AllAddressesTab = ({
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedCustomer.orders
-                          .sort((a, b) => {
-                            // Never use createdAt (today's date) as fallback - only use actual order date
-                            const dateA = new Date(a.date || a.order_date || 0);
-                            const dateB = new Date(b.date || b.order_date || 0);
-                            return dateB - dateA;
-                          })
+                        {sortOrdersByOrderId(selectedCustomer.orders || [])
                           .slice(0, 10)
                           .map((order, idx) => {
                             const orderDate = parseOrderDate(

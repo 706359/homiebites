@@ -13,14 +13,15 @@ export default function Admin() {
     // Check if already logged in
     const admin = localStorage.getItem('homiebites_admin');
     const user = localStorage.getItem('homiebites_user');
-    if (admin === 'true' || (user && (JSON.parse(user).role?.toLowerCase() === 'admin' || JSON.parse(user).role === 'Admin'))) {
+    // Check for both lowercase and uppercase Admin role
+    const userRole = user ? JSON.parse(user).role : null;
+    const isAdminRole = userRole && (userRole.toLowerCase() === 'admin' || userRole === 'Admin');
+    if (admin === 'true' || isAdminRole) {
       router.replace('/admin/dashboard');
     }
   }, [router]);
 
   const handleLoginSuccess = () => {
-    // Login success is handled by AdminLogin component with window.location.href
-    // This callback is kept for compatibility but redirect happens in AdminLogin
     router.replace('/admin/dashboard');
   };
 

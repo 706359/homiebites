@@ -1,0 +1,577 @@
+/* Universal tab scrolling fixes - Mobile-first design */
+
+.admin-dashboard .admin-main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.admin-dashboard .admin-main > .admin-top-nav,
+.admin-dashboard .admin-main > .important-notifications-banner {
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+.admin-dashboard .admin-main > .admin-content,
+.admin-dashboard .admin-content {
+  flex: 1 1 0%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--admin-border, #e2e8f0) transparent;
+  padding: 12px;
+  padding-left: max(12px, env(safe-area-inset-left));
+  padding-right: max(12px, env(safe-area-inset-right));
+  min-height: 0;
+  max-height: none;
+  position: relative;
+  width: 100%;
+}
+
+/* Webkit scrollbar styling */
+.admin-dashboard .admin-main > .admin-content::-webkit-scrollbar,
+.admin-dashboard .admin-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-dashboard .admin-main > .admin-content::-webkit-scrollbar-track,
+.admin-dashboard .admin-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-dashboard .admin-main > .admin-content::-webkit-scrollbar-thumb,
+.admin-dashboard .admin-content::-webkit-scrollbar-thumb {
+  background: var(--admin-border, #e2e8f0);
+  border-radius: 3px;
+}
+
+.admin-dashboard .admin-main > .admin-content::-webkit-scrollbar-thumb:hover,
+.admin-dashboard .admin-content::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-text-secondary, #64748b);
+}
+
+/* Desktop: Enhanced spacing */
+@media (min-width: 769px) {
+  .admin-dashboard .admin-main > .admin-content,
+  .admin-dashboard .admin-content {
+    padding: 14px;
+  }
+
+  .admin-dashboard .admin-main > .admin-content::-webkit-scrollbar,
+  .admin-dashboard .admin-content::-webkit-scrollbar {
+    width: 8px;
+  }
+}
+
+/* ============================================
+   TABLE CONTAINERS - HORIZONTAL SCROLLING
+   ============================================ */
+
+/* All table containers should scroll horizontally */
+.admin-dashboard .orders-table-container,
+.admin-dashboard .table-wrapper,
+.admin-dashboard .recent-orders-table-container,
+.dashboard-card .orders-table-container,
+.dashboard-card .table-wrapper,
+.dashboard-card .recent-orders-table-container {
+  position: relative;
+  margin-bottom: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  width: 100%;
+}
+
+/* Table wrapper specific */
+.orders-table-container.table-wrapper {
+  padding-bottom: 12px;
+  margin-bottom: 0;
+}
+
+@media (min-width: 769px) {
+  .orders-table-container.table-wrapper {
+    padding-bottom: 20px;
+  }
+}
+
+/* ============================================
+   TABLES - RESPONSIVE WIDTH
+   ============================================ */
+
+/* Mobile: Natural width */
+.admin-dashboard .admin-content table,
+.admin-dashboard .orders-table,
+.admin-dashboard .recent-orders-table,
+.dashboard-card table {
+  width: 100%;
+  min-width: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+}
+
+/* Desktop: Minimum width for columns */
+@media (min-width: 769px) {
+  .admin-dashboard .admin-content table,
+  .admin-dashboard .orders-table,
+  .admin-dashboard .recent-orders-table,
+  .dashboard-card table {
+    min-width: 1000px;
+  }
+}
+
+.table-wrapper .orders-table,
+.table-wrapper table {
+  width: 100%;
+  min-width: auto;
+}
+
+@media (min-width: 769px) {
+  .table-wrapper .orders-table,
+  .table-wrapper table {
+    min-width: 1000px;
+  }
+}
+
+.table-full-width {
+  width: 100%;
+  min-width: auto;
+  display: table;
+  table-layout: auto;
+}
+
+@media (min-width: 769px) {
+  .table-full-width {
+    min-width: 1000px;
+  }
+}
+
+/* ============================================
+   DASHBOARD CARDS - FLEXBOX LAYOUT
+   ============================================ */
+
+.dashboard-card {
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  max-height: none;
+}
+
+/* Cards with tables */
+.dashboard-card.table-container-card,
+.dashboard-card:has(.orders-table-container),
+.dashboard-card:has(.table-wrapper) {
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  min-height: 0;
+  gap: 0;
+}
+
+.dashboard-card.table-container-card .table-header-container {
+  flex-shrink: 0;
+  order: 1;
+}
+
+.dashboard-card.table-container-card .orders-table-container,
+.dashboard-card.table-container-card .orders-table-container.table-wrapper {
+  flex: 0 1 auto;
+  overflow-x: auto;
+  overflow-y: visible;
+  margin-bottom: 4px;
+  padding-bottom: 0;
+  min-height: 0;
+  max-height: none;
+  order: 2;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+
+/* Override inline styles - Necessary for inline style overrides */
+.dashboard-card[style*="overflow: hidden"],
+.dashboard-card[style*="overflow:hidden"] {
+  overflow: visible !important;
+}
+
+.dashboard-card[style*="padding: 0"],
+.dashboard-card[style*="padding:0"] {
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.dashboard-card[style*="padding: 0"] .orders-table-container,
+.dashboard-card[style*="padding:0"] .orders-table-container,
+.dashboard-card[style*="padding: 0"] .table-wrapper,
+.dashboard-card[style*="padding:0"] .table-wrapper {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  margin: 0;
+  border-radius: 0;
+}
+
+/* ============================================
+   PAGINATION CONTROLS
+   ============================================ */
+
+.pagination-controls,
+.pagination {
+  position: relative;
+  z-index: 100;
+  background: var(--admin-bg, #ffffff);
+  margin-top: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  border-top: 1px solid var(--admin-border, #e2e8f0);
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  touch-action: manipulation;
+  clear: both;
+}
+
+.dashboard-card .pagination-controls,
+.dashboard-card.table-container-card .pagination-controls {
+  margin-top: 8px;
+  margin-bottom: 0;
+  padding: 16px;
+  order: 999;
+}
+
+.orders-table-container + .pagination-controls,
+.table-wrapper + .pagination-controls {
+  margin-top: 16px;
+}
+
+@media (min-width: 769px) {
+  .pagination-controls {
+    margin-top: 16px;
+    margin-bottom: 20px;
+    padding: 16px;
+    gap: 16px;
+  }
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+.orders-table-container::-webkit-scrollbar,
+.table-wrapper::-webkit-scrollbar,
+.recent-orders-table-container::-webkit-scrollbar {
+  height: 8px;
+  background: transparent;
+}
+
+.orders-table-container::-webkit-scrollbar-track,
+.table-wrapper::-webkit-scrollbar-track,
+.recent-orders-table-container::-webkit-scrollbar-track {
+  background: var(--admin-bg, #f8f9fa);
+  border-radius: 4px;
+  margin: 2px 0;
+}
+
+.orders-table-container::-webkit-scrollbar-thumb,
+.table-wrapper::-webkit-scrollbar-thumb,
+.recent-orders-table-container::-webkit-scrollbar-thumb {
+  background: var(--admin-border, #e2e8f0);
+  border-radius: 4px;
+  border: 1px solid var(--admin-bg, #f8f9fa);
+  min-height: 24px;
+  touch-action: manipulation;
+}
+
+.orders-table-container::-webkit-scrollbar-thumb:active,
+.table-wrapper::-webkit-scrollbar-thumb:active,
+.recent-orders-table-container::-webkit-scrollbar-thumb:active {
+  background: var(--admin-text-secondary, #64748b);
+}
+
+@media (min-width: 769px) {
+  .orders-table-container::-webkit-scrollbar,
+  .table-wrapper::-webkit-scrollbar,
+  .recent-orders-table-container::-webkit-scrollbar {
+    height: 12px;
+  }
+
+  .orders-table-container::-webkit-scrollbar-track,
+  .table-wrapper::-webkit-scrollbar-track,
+  .recent-orders-table-container::-webkit-scrollbar-track {
+    margin: 4px 0;
+    border-radius: 6px;
+  }
+
+  .orders-table-container::-webkit-scrollbar-thumb,
+  .table-wrapper::-webkit-scrollbar-thumb,
+  .recent-orders-table-container::-webkit-scrollbar-thumb {
+    border-radius: 6px;
+    border: 2px solid var(--admin-bg, #f8f9fa);
+    min-height: 20px;
+  }
+
+  .orders-table-container::-webkit-scrollbar-thumb:hover,
+  .table-wrapper::-webkit-scrollbar-thumb:hover,
+  .recent-orders-table-container::-webkit-scrollbar-thumb:hover {
+    background: var(--admin-text-secondary, #64748b);
+  }
+}
+
+/* ============================================
+   TABLE CELLS - MOBILE-FIRST
+   ============================================ */
+
+.admin-content table td,
+.admin-content table th,
+.orders-table td,
+.orders-table th,
+.recent-orders-table td,
+.recent-orders-table th {
+  overflow: visible;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+@media (min-width: 769px) {
+  .admin-content table td,
+  .admin-content table th,
+  .orders-table td,
+  .orders-table th,
+  .recent-orders-table td,
+  .recent-orders-table th {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+
+.orders-table .action-buttons-cell,
+.orders-table .table-checkbox-header,
+.orders-table td:last-child {
+  white-space: nowrap;
+}
+
+.orders-table .action-buttons-cell {
+  white-space: nowrap;
+  position: sticky;
+  right: 0;
+  background: var(--admin-bg, #ffffff);
+  z-index: 5;
+  padding: 8px 16px;
+}
+
+@media (max-width: 768px) {
+  .orders-table td:nth-child(4),
+  .orders-table td:nth-child(3) {
+    white-space: normal;
+    word-break: break-word;
+    max-width: 150px;
+  }
+}
+
+/* ============================================
+   GRID & LAYOUT
+   ============================================ */
+
+.dashboard-grid-layout,
+.dashboard-grid,
+.dashboard-section,
+.dashboard-with-sidebar,
+.dashboard-main-content,
+.filter-container,
+.filter-bar-container {
+  min-width: 0;
+  overflow: visible;
+  width: 100%;
+}
+
+.admin-content > *,
+.admin-content .dashboard-with-sidebar,
+.admin-content .dashboard-main-content {
+  min-width: 0;
+  overflow: visible;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .admin-dashboard .admin-main > .admin-content,
+  .admin-dashboard .admin-content {
+    padding: 12px;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  .orders-table-container,
+  .table-wrapper,
+  .recent-orders-table-container {
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--admin-border, #e2e8f0) transparent;
+    touch-action: pan-x;
+  }
+
+  .pagination-controls {
+    margin: 16px 0 20px 0;
+    padding: 16px 12px;
+    flex-wrap: wrap;
+    gap: 12px;
+    touch-action: manipulation;
+  }
+
+  .pagination-controls button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 16px;
+    touch-action: manipulation;
+  }
+
+  .pagination-controls select {
+    min-height: 44px;
+    min-width: 80px;
+    font-size: 16px;
+    padding: 10px 12px;
+    touch-action: manipulation;
+  }
+
+  .dashboard-card {
+    padding: 12px;
+    margin-bottom: 16px;
+    overflow: visible;
+  }
+
+  .action-buttons-cell {
+    min-width: 88px;
+  }
+
+  .action-icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+    touch-action: manipulation;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-dashboard .admin-main > .admin-content,
+  .admin-dashboard .admin-content {
+    padding: 8px;
+  }
+
+  .pagination-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .pagination-controls > div {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pagination-controls button {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .orders-table-container.table-wrapper {
+    padding-bottom: 8px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .admin-dashboard .admin-main > .admin-content,
+  .admin-dashboard .admin-content {
+    padding: 14px;
+  }
+
+  .orders-table-container.table-wrapper {
+    padding-bottom: 16px;
+  }
+}
+
+/* ============================================
+   SPECIFIC TAB FIXES
+   ============================================ */
+
+.recent-orders-table-container {
+  overflow-x: auto;
+  overflow-y: visible;
+  max-height: none;
+  width: 100%;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+}
+
+.recent-orders-table {
+  width: 100%;
+  min-width: auto;
+  border-collapse: collapse;
+}
+
+.dashboard-card:has(.recent-orders-table-container) {
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 769px) {
+  .recent-orders-table-container {
+    padding-bottom: 12px;
+  }
+}
+
+.settings-tab-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chart-container,
+canvas {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.customer-card,
+.address-card {
+  overflow: visible;
+}
+
+.menu-items-grid {
+  overflow: visible;
+}
+
+.menu-item-card {
+  overflow: visible;
+}
+
+.reports-side-by-side-container {
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notification-list,
+.notification-item {
+  overflow: visible;
+}

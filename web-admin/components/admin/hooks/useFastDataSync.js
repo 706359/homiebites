@@ -155,11 +155,30 @@ export const useFastDataSync = () => {
 
         const apiOrderId = order._id || order.id || order.orderId || orderId;
 
+        const updatePayload = {};
+        Object.keys(updates).forEach(key => {
+          if (updates[key] !== undefined) {
+            updatePayload[key] = updates[key];
+          }
+        });
+        
+        // Ensure paymentStatus is synced when status is updated (production data integrity)
+        if (updatePayload.status && !updatePayload.paymentStatus) {
+          const statusLower = String(updatePayload.status).toLowerCase().trim();
+          if (statusLower === 'paid' || statusLower === 'delivered') {
+            updatePayload.paymentStatus = 'Paid';
+          } else {
+            updatePayload.paymentStatus = 'Pending';
+          }
+        }
+
+        // Perform optimistic update with clean payload
         await optimisticData.updateOptimistic(orderId, updates, async () => {
-          const response = await api.updateOrder(apiOrderId, {
-            ...order,
-            ...updates,
-          });
+          const response = await api.updateOrder(apiOrderId, updatePayload);
+          // Verify response contains updated order
+          if (!response.success) {
+            throw new Error(response.error || response.message || 'Update failed');
+          }
           return response;
         });
 
@@ -172,16 +191,24 @@ export const useFastDataSync = () => {
           )
         );
 
-        // Sync in background (debounced)
-        await optimisticData.syncDebounced(async () => {
-          const response = await api.getAllOrders({});
-          if (response.success && response.data) {
-            adminData.setOrders(response.data);
-            optimisticData.setData(response.data);
-          }
-          return response;
-        }, 500);
+        // Sync in background (debounced) to ensure UI reflects actual database state
+        // This is critical for production data integrity
+        optimisticData
+          .syncDebounced(async () => {
+            const response = await api.getAllOrders({});
+            if (response.success && response.data) {
+              adminData.setOrders(response.data);
+              optimisticData.setData(response.data);
+            }
+            return response;
+          }, 500)
+          .catch((err) => {
+            // Log error but don't block - optimistic update already applied
+            console.warn('[useFastDataSync] Background sync error after update:', err);
+          });
 
+        // Call success callback immediately after optimistic update
+        // Background sync will ensure data consistency
         if (onSuccess) onSuccess();
       } catch (error) {
         // Format error message for user-friendly display

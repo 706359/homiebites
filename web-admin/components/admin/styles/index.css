@@ -10,6 +10,7 @@
 @import './mobile-compatibility.css';
 @import './device-guaranteed.css';
 @import './spacing-fixes.css';
+@import './tab-scrolling-fixes.css';
 
 /* Only Color Variables - No other design tokens */
 /* Admin Dashboard Color System - Scoped to prevent conflicts */

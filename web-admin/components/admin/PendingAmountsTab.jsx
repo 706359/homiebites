@@ -84,7 +84,6 @@ const PendingAmountsTab = ({
     let payments = pending
       .map((order) => {
         try {
-          // Never use createdAt (today's date) as fallback - only use actual order date
           const orderDate = parseOrderDate(order.date || order.order_date || null);
           if (!orderDate) {
             return {
@@ -118,15 +117,18 @@ const PendingAmountsTab = ({
         }
       })
       .sort((a, b) => {
-        // Primary sort: days pending (most urgent first)
         if (b.daysPending !== a.daysPending) {
           return b.daysPending - a.daysPending;
         }
-        // Secondary sort: orderId (newest first)
         const seqA = extractOrderIdSequence(a.orderId);
         const seqB = extractOrderIdSequence(b.orderId);
         if (seqA > 0 && seqB > 0) {
           return seqB - seqA;
+        }
+        const idA = (a.orderId || '').toString();
+        const idB = (b.orderId || '').toString();
+        if (idA && idB) {
+          return idB.localeCompare(idA);
         }
         return 0;
       });
@@ -275,7 +277,6 @@ const PendingAmountsTab = ({
     }
   };
 
-  // Handle bulk mark as paid
   const handleBulkMarkAsPaid = async () => {
     const selectedOrders = pendingPayments.filter((p) => p.isUrgent);
     const count = selectedOrders.length;

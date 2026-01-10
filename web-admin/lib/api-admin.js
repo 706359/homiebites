@@ -98,9 +98,9 @@ export const api = {
             if (window.location.pathname.startsWith('/admin')) {
               console.warn('[API] Authentication failed. Redirecting to admin login...');
               window.location.href = '/admin';
-            } else if (window.location.pathname === '/' || window.location.pathname === '/login') {
-              // Already on login page, don't redirect
-              console.warn('[API] Authentication failed but already on login page');
+            } else if (window.location.pathname === '/') {
+              // Don't redirect if already on home page
+              console.warn('[API] Authentication failed but already on home page');
             }
           }
 

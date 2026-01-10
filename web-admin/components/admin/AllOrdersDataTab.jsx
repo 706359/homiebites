@@ -60,13 +60,9 @@ const AllOrdersDataTab = ({
   const [selectedRows, setSelectedRows] = useState(new Set());
   const [selectAll, setSelectAll] = useState(false);
 
-  // Sorting state - default to orderId descending (newest to oldest)
   const [sortColumn, setSortColumn] = useState('orderId');
   const [sortDirection, setSortDirection] = useState('desc');
 
-  // Modal states removed - using showConfirmation from parent
-
-  // Filtered orders based on all filters
   const filteredOrders = useMemo(() => {
     let filtered = [...orders];
 
@@ -94,7 +90,6 @@ const AllOrdersDataTab = ({
           month = parseInt(order.billingMonth);
           year = parseInt(order.billingYear);
         } else {
-          // Never use createdAt (today's date) as fallback - only use actual order date
           const orderDate = parseOrderDate(order.date || order.order_date || null);
           if (!orderDate) return false;
           month = orderDate.getUTCMonth() + 1;
@@ -117,21 +112,32 @@ const AllOrdersDataTab = ({
       });
     }
 
-    // Payment status filter
+    // Payment status filter - check both status and paymentStatus fields
     if (allOrdersFilterPaymentStatus) {
       const statusFilter = allOrdersFilterPaymentStatus.toLowerCase();
       if (statusFilter === 'paid') {
-        filtered = filtered.filter((o) => isPaidStatus(o.status));
+        filtered = filtered.filter((o) => isPaidStatus(o.status, o.paymentStatus));
       } else if (statusFilter === 'pending' || statusFilter === 'unpaid') {
-        filtered = filtered.filter((o) => isPendingStatus(o.status));
+        filtered = filtered.filter((o) => isPendingStatus(o.status, o.paymentStatus));
       }
     }
 
-    // Additional filters
+    // Additional filters - check both status and paymentStatus fields
     if (filterStatus) {
       filtered = filtered.filter((o) => {
-        const status = (o.status || '').toLowerCase();
-        return status === filterStatus.toLowerCase();
+        const status = (o.status || '').toLowerCase().trim();
+        const filterValue = filterStatus.toLowerCase().trim();
+        
+        // Use helper functions for paid/pending/unpaid for better matching
+        // Pass both status and paymentStatus for accurate filtering
+        if (filterValue === 'paid') {
+          return isPaidStatus(o.status, o.paymentStatus);
+        } else if (filterValue === 'pending' || filterValue === 'unpaid') {
+          return isPendingStatus(o.status, o.paymentStatus);
+        } else {
+          // For other statuses, do exact match (case-insensitive)
+          return status === filterValue;
+        }
       });
     }
 
@@ -156,7 +162,6 @@ const AllOrdersDataTab = ({
         if (order.billingYear) {
           year = parseInt(order.billingYear);
         } else {
-          // Never use createdAt (today's date) as fallback - only use actual order date
           const orderDate = parseOrderDate(order.date || order.order_date || null);
           if (orderDate) {
             year = orderDate.getFullYear();
@@ -183,7 +188,6 @@ const AllOrdersDataTab = ({
       const fromDate = parseOrderDate(dateRangeFrom);
       if (fromDate) {
         filtered = filtered.filter((order) => {
-          // Never use createdAt (today's date) as fallback - only use actual order date
           const orderDate = parseOrderDate(order.date || order.order_date || null);
           return orderDate && orderDate >= fromDate;
         });
@@ -195,55 +199,32 @@ const AllOrdersDataTab = ({
       if (toDate) {
         toDate.setHours(23, 59, 59, 999); // End of day
         filtered = filtered.filter((order) => {
-          // Never use createdAt (today's date) as fallback - only use actual order date
           const orderDate = parseOrderDate(order.date || order.order_date || null);
           return orderDate && orderDate <= toDate;
         });
       }
     }
 
-    // Sorting - always sort, default to date descending then orderId descending
+    if (!sortColumn || sortColumn === 'orderId') {
+      return sortOrdersByOrderId(filtered);
+    }
+
     filtered.sort((a, b) => {
       let aVal, bVal;
-      let aSecondaryVal, bSecondaryVal;
 
       switch (sortColumn) {
         case 'date': {
-          // Never use createdAt (today's date) as fallback - only use actual order date
           aVal = parseOrderDate(a.date || a.order_date || null);
           bVal = parseOrderDate(b.date || b.order_date || null);
           aVal = aVal ? aVal.getTime() : 0;
           bVal = bVal ? bVal.getTime() : 0;
-          // Secondary sort by orderId sequence number when dates are equal
-          const extractSequence = (orderId) => {
-            if (!orderId) return 0;
-            const match = orderId.toString().match(/HB-\w+'?\d{2}-\d{2}-(\d+)$/);
-            return match && match[1] ? parseInt(match[1], 10) : 0;
-          };
-          aSecondaryVal = extractSequence(a.orderId);
-          bSecondaryVal = extractSequence(b.orderId);
-          // If sequence numbers are same or missing, fall back to lexicographic sort
-          if (aSecondaryVal === 0 && bSecondaryVal === 0) {
-            aSecondaryVal = (a.orderId || '').toString();
-            bSecondaryVal = (b.orderId || '').toString();
-          }
           break;
         }
         case 'orderId': {
-          // Extract sequence number from Order ID (format: HB-Feb'24-21-000001)
-          const extractSequence = (orderId) => {
-            if (!orderId) return 0;
-            const match = orderId.toString().match(/HB-\w+'?\d{2}-\d{2}-(\d+)$/);
-            return match && match[1] ? parseInt(match[1], 10) : 0;
-          };
-
-          // Primary sort by sequence number (newest first = higher sequence number first)
-          aVal = extractSequence(a.orderId);
-          bVal = extractSequence(b.orderId);
-
-          // Secondary sort by orderId string (for orders without sequence numbers)
-          aSecondaryVal = (a.orderId || '').toString();
-          bSecondaryVal = (b.orderId || '').toString();
+          const seqA = extractOrderIdSequence(a.orderId);
+          const seqB = extractOrderIdSequence(b.orderId);
+          aVal = seqA;
+          bVal = seqB;
           break;
         }
         case 'address':
@@ -255,18 +236,13 @@ const AllOrdersDataTab = ({
           bVal = parseInt(b.quantity || 1);
           break;
         case 'total': {
-          // Try total first, then totalAmount, then calculate from quantity * unitPrice
           let aTotal = parseFloat(a.total || a.totalAmount || 0);
           if (isNaN(aTotal) || aTotal === 0) {
-            const aQty = parseFloat(a.quantity || 1);
-            const aPrice = parseFloat(a.unitPrice || 0);
-            aTotal = aQty * aPrice;
+            aTotal = parseFloat(a.quantity || 1) * parseFloat(a.unitPrice || 0);
           }
           let bTotal = parseFloat(b.total || b.totalAmount || 0);
           if (isNaN(bTotal) || bTotal === 0) {
-            const bQty = parseFloat(b.quantity || 1);
-            const bPrice = parseFloat(b.unitPrice || 0);
-            bTotal = bQty * bPrice;
+            bTotal = parseFloat(b.quantity || 1) * parseFloat(b.unitPrice || 0);
           }
           aVal = isNaN(aTotal) ? 0 : aTotal;
           bVal = isNaN(bTotal) ? 0 : bTotal;
@@ -285,64 +261,34 @@ const AllOrdersDataTab = ({
           bVal = (b.paymentMode || '').toLowerCase();
           break;
         default: {
-          // Default sort: date descending, then orderId sequence ascending (000001, 000002, etc.)
-          aVal = parseOrderDate(a.date || a.order_date || null);
-          bVal = parseOrderDate(b.date || b.order_date || null);
-          aVal = aVal ? aVal.getTime() : 0;
-          bVal = bVal ? bVal.getTime() : 0;
-          // Secondary sort by orderId sequence number (ascending)
-          const extractSequence = (orderId) => {
-            if (!orderId) return 0;
-            const match = orderId.toString().match(/HB-\w+'?\d{2}-\d{2}-(\d+)$/);
-            return match && match[1] ? parseInt(match[1], 10) : 0;
-          };
-          aSecondaryVal = extractSequence(a.orderId);
-          bSecondaryVal = extractSequence(b.orderId);
-          // If sequence numbers are same or missing, fall back to lexicographic sort
-          if (aSecondaryVal === 0 && bSecondaryVal === 0) {
-            aSecondaryVal = (a.orderId || '').toString();
-            bSecondaryVal = (b.orderId || '').toString();
-          }
+          const seqA = extractOrderIdSequence(a.orderId);
+          const seqB = extractOrderIdSequence(b.orderId);
+          aVal = seqA;
+          bVal = seqB;
           break;
         }
       }
 
-      // Primary sort
       if (aVal < bVal) {
-        const primaryResult = sortDirection === 'asc' ? -1 : 1;
-        return primaryResult;
+        return sortDirection === 'asc' ? -1 : 1;
       }
       if (aVal > bVal) {
-        const primaryResult = sortDirection === 'asc' ? 1 : -1;
-        return primaryResult;
+        return sortDirection === 'asc' ? 1 : -1;
       }
 
-      // Secondary sort (when primary values are equal)
-      // For date sorting, secondary sort (sequence numbers) should be ascending (increasing order)
-      // For orderId sorting, secondary sort (sequence numbers) should be ascending (oldest to newest)
-      // For other columns, use the same direction as primary sort
-      if (aSecondaryVal !== undefined && bSecondaryVal !== undefined) {
-        let secondaryDirection;
-        if (sortColumn === 'date' || sortColumn === null) {
-          // When sorting by date (or default), sequence numbers should be ascending (000001, 000002, 000003...)
-          // This ensures orders on the same date are sorted: 000001, then 000002, then 000003, etc.
-          secondaryDirection = 'asc';
-        } else if (sortColumn === 'orderId') {
-          // When sorting by orderId, sequence numbers should be descending (newest to oldest)
-          // This ensures reverse chronological order: 000100, then 000010, then 000001, etc.
-          secondaryDirection = 'desc';
-        } else {
-          // For other columns, use same direction as primary
-          secondaryDirection = sortDirection;
-        }
-        if (aSecondaryVal < bSecondaryVal) {
-          return secondaryDirection === 'asc' ? -1 : 1;
-        }
-        if (aSecondaryVal > bSecondaryVal) {
-          return secondaryDirection === 'asc' ? 1 : -1;
-        }
+      const seqA = extractOrderIdSequence(a.orderId);
+      const seqB = extractOrderIdSequence(b.orderId);
+      
+      if (seqA > 0 && seqB > 0) {
+        return seqB - seqA;
       }
-
+      
+      const idA = (a.orderId || '').toString();
+      const idB = (b.orderId || '').toString();
+      if (idA && idB) {
+        return idB.localeCompare(idA);
+      }
+      
       return 0;
     });
 
@@ -364,20 +310,27 @@ const AllOrdersDataTab = ({
     sortDirection,
   ]);
 
-  // Pagination
   const totalPages = Math.ceil(filteredOrders.length / recordsPerPage);
   const startIndex = (currentPage - 1) * recordsPerPage;
   const paginatedOrders = filteredOrders.slice(startIndex, startIndex + recordsPerPage);
 
-  // Active filters array
   const activeFilters = useMemo(() => {
     const filters = [];
-    if (allOrdersFilterPaymentStatus)
+    if (allOrdersFilterPaymentStatus) {
+      const displayLabel = allOrdersFilterPaymentStatus.charAt(0).toUpperCase() + allOrdersFilterPaymentStatus.slice(1);
       filters.push({
-        key: 'status',
-        label: `Status: ${allOrdersFilterPaymentStatus}`,
+        key: 'paymentStatus',
+        label: `Payment Status: ${displayLabel}`,
         value: allOrdersFilterPaymentStatus,
       });
+    }
+    if (filterStatus) {
+      filters.push({
+        key: 'status',
+        label: `Status: ${filterStatus}`,
+        value: filterStatus,
+      });
+    }
     if (filterMode) filters.push({ key: 'mode', label: `Mode: ${filterMode}`, value: filterMode });
     if (allOrdersFilterMonth)
       filters.push({
@@ -397,6 +350,7 @@ const AllOrdersDataTab = ({
     return filters;
   }, [
     allOrdersFilterPaymentStatus,
+    filterStatus,
     filterMode,
     allOrdersFilterMonth,
     filterYear,
@@ -404,19 +358,16 @@ const AllOrdersDataTab = ({
     dateRangeTo,
   ]);
 
-  // Handle sort
   const handleSort = (column) => {
     if (!column) return; // Ignore clicks on non-sortable columns
     if (sortColumn === column) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortColumn(column);
-      // Default to descending for orderId (newest to oldest), descending for date, ascending for others
       setSortDirection(column === 'orderId' ? 'desc' : column === 'date' ? 'desc' : 'asc');
     }
   };
 
-  // Handle select all
   const handleSelectAll = (checked) => {
     setSelectAll(checked);
     if (checked) {
@@ -458,9 +409,12 @@ const AllOrdersDataTab = ({
   // Remove active filter
   const removeFilter = (filter) => {
     switch (filter.key) {
-      case 'status':
+      case 'paymentStatus':
         setAllOrdersFilterPaymentStatus('');
         if (setAllOrdersFilterPaymentStatus) setAllOrdersFilterPaymentStatus('');
+        break;
+      case 'status':
+        setFilterStatus('');
         break;
       case 'mode':
         setFilterMode('');
@@ -477,6 +431,8 @@ const AllOrdersDataTab = ({
       case 'daterange':
         setDateRangeFrom('');
         setDateRangeTo('');
+        break;
+      default:
         break;
     }
   };
@@ -518,30 +474,42 @@ const AllOrdersDataTab = ({
         });
       }
     } else if (action === 'paid' || action === 'pending') {
-      const status = action === 'paid' ? 'Paid' : 'Pending';
+      // Normalize status for bulk operations - use 'Unpaid' for pending (consistent with UI dropdowns)
+      const normalizedStatus = action === 'paid' ? 'Paid' : 'Unpaid';
+      const statusLabel = action === 'paid' ? 'Paid' : 'Unpaid';
+      
       if (showConfirmation) {
         showConfirmation({
-          title: `Mark as ${status}`,
+          title: `Mark as ${statusLabel}`,
           message: `Are you sure you want to mark ${count} selected order${
             count > 1 ? 's' : ''
-          } as ${status.toLowerCase()}?`,
+          } as ${statusLabel.toLowerCase()}?`,
           type: 'info',
-          confirmText: `Mark as ${status}`,
+          confirmText: `Mark as ${statusLabel}`,
           onConfirm: async () => {
             try {
+              // Update all selected orders with normalized status
+              // Skip confirmation for bulk operations (already confirmed above)
               for (const id of selectedOrderIds) {
                 if (onUpdateOrderStatus) {
-                  await onUpdateOrderStatus(id, action === 'paid' ? 'Paid' : 'Unpaid');
+                  await onUpdateOrderStatus(id, normalizedStatus, true);
                 }
               }
               setSelectedRows(new Set());
               setSelectAll(false);
               if (showNotification)
-                showNotification(`Selected orders marked as ${status.toLowerCase()}`, 'success');
-              if (loadOrders) loadOrders();
+                showNotification(`Selected orders marked as ${statusLabel.toLowerCase()}`, 'success');
+              // Refresh to ensure filters work correctly with updated data
+              if (loadOrders) {
+                setTimeout(() => {
+                  loadOrders();
+                }, 300);
+              }
             } catch (error) {
               console.error('Error updating order status:', error);
               if (showNotification) showNotification('Error updating order status', 'error');
+              // Refresh on error to get accurate state
+              if (loadOrders) loadOrders();
             }
           },
         });
@@ -724,11 +692,38 @@ const AllOrdersDataTab = ({
         <div className='filter-bar-container'>
           {/* Quick Filters - Always Visible */}
           <div className='filter-bar-quick-filters'>
+            {/* Payment Status Filter - Groups Paid vs Unpaid */}
+            <select
+              className='input-field filter-select'
+              value={allOrdersFilterPaymentStatus}
+              onChange={(e) => {
+                setAllOrdersFilterPaymentStatus(e.target.value);
+                if (setAllOrdersFilterPaymentStatus) setAllOrdersFilterPaymentStatus(e.target.value);
+                // Clear the specific status filter when using payment status filter
+                if (e.target.value) {
+                  setFilterStatus('');
+                }
+              }}
+              title='Filter by Payment Status'
+            >
+              <option value=''>All Payment Status</option>
+              <option value='paid'>Paid</option>
+              <option value='unpaid'>Unpaid</option>
+              <option value='pending'>Pending</option>
+            </select>
+
             <select
               className='input-field filter-select'
               value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              title='Filter by Status'
+              onChange={(e) => {
+                setFilterStatus(e.target.value);
+                // Clear payment status filter when using specific status filter
+                if (e.target.value) {
+                  setAllOrdersFilterPaymentStatus('');
+                  if (setAllOrdersFilterPaymentStatus) setAllOrdersFilterPaymentStatus('');
+                }
+              }}
+              title='Filter by Exact Status'
             >
               <option value=''>All Status</option>
               {uniqueStatuses.map((status) => (
@@ -756,9 +751,9 @@ const AllOrdersDataTab = ({
               className='input-field filter-select'
               value={filterPayment}
               onChange={(e) => setFilterPayment(e.target.value)}
-              title='Filter by Payment'
+              title='Filter by Payment Mode'
             >
-              <option value=''>All Payment</option>
+              <option value=''>All Payment Modes</option>
               {uniquePaymentModes.map((pm) => (
                 <option key={pm} value={pm}>
                   {pm}
@@ -810,7 +805,8 @@ const AllOrdersDataTab = ({
             </div>
           )}
           {/* Clear Filters - Outside quick filters for better layout */}
-          {(filterStatus ||
+          {(allOrdersFilterPaymentStatus ||
+            filterStatus ||
             filterMode ||
             filterPayment ||
             filterAddress ||
@@ -1029,7 +1025,7 @@ const AllOrdersDataTab = ({
                     year = null;
                   }
                   const isSelected = selectedRows.has(startIndex + idx);
-                  const isPaid = isPaidStatus(order.status);
+                  const isPaid = isPaidStatus(order.status, order.paymentStatus);
 
                   return (
                     <tr
@@ -1064,7 +1060,7 @@ const AllOrdersDataTab = ({
                       <td>
                         {(() => {
                           // Normalize status to 'Paid' or 'Unpaid' for the dropdown
-                          const normalizedStatus = isPaidStatus(order.status) ? 'Paid' : 'Unpaid';
+                          const normalizedStatus = isPaidStatus(order.status, order.paymentStatus) ? 'Paid' : 'Unpaid';
                           const currentStatus = order.status || 'Unpaid';
 
                           return (

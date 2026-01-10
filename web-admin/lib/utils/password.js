@@ -14,8 +14,10 @@ export async function hashPassword(password) {
     throw new Error('Password must be a non-empty string');
   }
 
-  // Use 12 rounds for good security (higher = more secure but slower)
-  const saltRounds = 12;
+  // Use 10 rounds as per ADMIN_PASSWORD.md specification
+  // Document shows: const salt = await bcrypt.genSalt(10); const hashedPassword = await bcrypt.hash(newPassword, salt);
+  // We use the same 10 rounds for consistency
+  const saltRounds = 10;
   return await bcrypt.hash(password, saltRounds);
 }
 

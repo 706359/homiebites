@@ -26,7 +26,7 @@ import { useNotification } from './contexts/NotificationContext.jsx';
 import { useFastDataSync } from './hooks/useFastDataSync.js';
 import dataSyncManager from './utils/dataSyncManager.js';
 import { getNotificationDuration, getNotificationMessage } from './utils/notificationMessages.js';
-import { autoFixThemeOnLoad, watchThemeChanges, fixTheme } from './utils/themeFixer.js';
+import { autoFixThemeOnLoad, watchThemeChanges } from './utils/themeFixer.js';
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -98,13 +98,14 @@ const AdminDashboard = () => {
     const adminFlag = localStorage.getItem('homiebites_admin');
     const userStr = localStorage.getItem('homiebites_user');
     
-    // Check if user is authenticated and is admin
-    const isAdmin = adminFlag === 'true' || (userStr && (JSON.parse(userStr).role?.toLowerCase() === 'admin' || JSON.parse(userStr).role === 'Admin'));
+    // Check if user is authenticated and is admin (case-insensitive)
+    const userRole = userStr ? JSON.parse(userStr).role : null;
+    const isAdminRole = userRole && (userRole.toLowerCase() === 'admin' || userRole === 'Admin');
+    const isAdmin = adminFlag === 'true' || isAdminRole;
 
     if (!token || !isAdmin) {
       console.warn('[AdminDashboard] Authentication check failed, redirecting to /admin');
       router.replace('/admin');
-      return;
     }
   }, [router]);
 
@@ -142,7 +143,7 @@ const AdminDashboard = () => {
 
     // Apply theme to both root and admin-dashboard for consistency
     const adminDashboard = document.querySelector('.admin-dashboard');
-    
+
     if (savedTheme === 'dark') {
       document.documentElement.classList.add('dark-theme');
       document.documentElement.classList.remove('light-theme');
@@ -175,15 +176,15 @@ const AdminDashboard = () => {
         }
       }
     }
-    
+
     // Auto-fix theme issues after a short delay to ensure DOM is ready
     setTimeout(() => {
       autoFixThemeOnLoad(5, 200);
     }, 100);
-    
+
     // Watch for theme changes and auto-fix
     const themeWatcher = watchThemeChanges();
-    
+
     return () => {
       // Cleanup theme watcher on unmount
       if (themeWatcher && themeWatcher.disconnect) {
@@ -204,7 +205,6 @@ const AdminDashboard = () => {
       : null;
   };
 
-  // Handle logout with confirmation
   const handleLogout = () => {
     showConfirmation({
       title: 'Logout',
@@ -220,7 +220,6 @@ const AdminDashboard = () => {
     });
   };
 
-  // Handle add order - using fast sync
   const handleAddOrder = async (orderData) => {
     try {
       await fastCreate(
@@ -234,8 +233,6 @@ const AdminDashboard = () => {
             );
           }
 
-          // Refresh orders data to get the latest list (including the new order)
-          // This ensures the order ID preview updates correctly for the next entry
           try {
             await loadOrders();
           } catch (refreshError) {
@@ -246,7 +243,9 @@ const AdminDashboard = () => {
           // Reset form to allow new entry (after refresh so order ID updates)
           // Use DD/MM/YYYY format to match OrderModal's date format
           const today = new Date();
-          const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+          const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(
+            today.getMonth() + 1
+          ).padStart(2, '0')}/${today.getFullYear()}`;
 
           setNewOrder({
             date: formattedDate,
@@ -277,22 +276,56 @@ const AdminDashboard = () => {
     }
   };
 
-  // Handle edit order - using fast sync
   const handleEditOrder = async (orderId, orderData) => {
     const order = (orders || []).find(
       (o) => o.orderId === orderId || o._id === orderId || o.id === orderId
     );
     const orderInfo = order
-      ? `Order ${order.orderId || orderId} for ${order.deliveryAddress || order.customerAddress || 'N/A'}`
+      ? `Order ${order.orderId || orderId} for ${
+          order.deliveryAddress || order.customerAddress || 'N/A'
+        }`
       : `Order ${orderId}`;
 
     const performUpdate = async () => {
       try {
         const apiOrderId = order?._id || order?.id || order?.orderId || orderId;
 
+        const updateData = {};
+        const allowedFields = [
+          'date', 'deliveryAddress', 'quantity', 'unitPrice', 'mode', 
+          'status', 'paymentStatus', 'paymentMode', 'notes', 'customerName',
+          'billingMonth', 'billingYear', 'addressId'
+        ];
+        
+        allowedFields.forEach(key => {
+          if (orderData[key] !== undefined) {
+            if (key === 'paymentMode' || key === 'notes' || key === 'customerName') {
+              updateData[key] = orderData[key] === '' ? '' : (orderData[key] || '');
+            } else if (orderData[key] !== null) {
+              updateData[key] = orderData[key];
+            }
+          }
+        });
+        
+        if (updateData.status && !updateData.paymentStatus) {
+          const statusLower = String(updateData.status).toLowerCase().trim();
+          if (statusLower === 'paid' || statusLower === 'delivered') {
+            updateData.paymentStatus = 'Paid';
+          } else {
+            updateData.paymentStatus = 'Pending';
+          }
+        } else if (updateData.paymentStatus && !updateData.status) {
+          // If paymentStatus was updated but status wasn't, sync status too
+          if (updateData.paymentStatus === 'Paid') {
+            updateData.status = 'Paid';
+          } else if (updateData.paymentStatus === 'Pending') {
+            updateData.status = order.status || 'Unpaid';
+          }
+        }
+
         await fastUpdate(
           apiOrderId,
-          orderData,
+          updateData,
           () => {
             if (showNotification) {
               showNotification(
@@ -303,6 +336,12 @@ const AdminDashboard = () => {
             }
             setShowOrderModal(false);
             setEditingOrder(null);
+            // Force refresh to ensure filters work with updated data
+            if (loadOrders) {
+              setTimeout(() => {
+                loadOrders();
+              }, 200);
+            }
           },
           (error) => {
             console.error('Error updating order:', error);
@@ -342,7 +381,6 @@ const AdminDashboard = () => {
         if (config.onConfirm) {
           try {
             await config.onConfirm();
-            // Only close modal if no error occurred
             setConfirmationModal((prev) => ({ ...prev, show: false }));
           } catch (error) {
             // Error handling is done in the callback itself
@@ -364,7 +402,6 @@ const AdminDashboard = () => {
     });
   };
 
-  // Handle delete order with confirmation - using fast sync
   const handleDeleteOrder = async (orderId) => {
     const order = (orders || []).find((o) => (o._id || o.orderId) === orderId);
     const orderInfo = order
@@ -433,9 +470,19 @@ const AdminDashboard = () => {
     const orderInfo = `Order ${order.orderId || orderId} for ${
       order.deliveryAddress || order.customerAddress || 'N/A'
     }`;
-    const currentStatus = order.status || 'Unknown';
-
-    if (currentStatus.toLowerCase() === status.toLowerCase()) {
+    // Normalize current status for comparison (handle different formats like 'PENDING', 'PAID', etc.)
+    const currentStatus = order.status || order.paymentStatus || 'Unknown';
+    const normalizedCurrentStatus = currentStatus.toLowerCase().trim();
+    const normalizedNewStatus = status.toLowerCase().trim();
+    
+    // Check if status actually changed (accounting for different formats)
+    const isCurrentlyPaid = normalizedCurrentStatus === 'paid' || normalizedCurrentStatus === 'delivered';
+    const isNewlyPaid = normalizedNewStatus === 'paid';
+    const isCurrentlyPending = normalizedCurrentStatus === 'pending' || normalizedCurrentStatus === 'unpaid';
+    const isNewlyPending = normalizedNewStatus === 'pending' || normalizedNewStatus === 'unpaid';
+    
+    // If status hasn't meaningfully changed, don't update
+    if ((isCurrentlyPaid && isNewlyPaid) || (isCurrentlyPending && isNewlyPending)) {
       // No change needed
       return;
     }
@@ -446,11 +493,31 @@ const AdminDashboard = () => {
         // Use the order's _id for API call (backend expects MongoDB _id)
         const apiOrderId = order._id || order.id || order.orderId;
 
+        // Normalize status to ensure consistency with database schema
+        // Database uses: status (legacy, default 'PENDING'), paymentStatus (default 'Pending')
+        // UI sends: 'Paid' or 'Unpaid'
+        // Normalize to match database expectations for production data integrity
+        let normalizedStatus;
+        let normalizedPaymentStatus;
+        
+        const statusLower = String(status).toLowerCase().trim();
+        if (statusLower === 'paid') {
+          normalizedStatus = 'Paid';
+          normalizedPaymentStatus = 'Paid';
+        } else if (statusLower === 'unpaid' || statusLower === 'pending') {
+          normalizedStatus = 'Unpaid';
+          normalizedPaymentStatus = 'Pending'; // Database default for unpaid/pending
+        } else {
+          normalizedStatus = status.trim();
+          normalizedPaymentStatus = statusLower === 'paid' || statusLower === 'delivered' ? 'Paid' : 'Pending';
+        }
+
+        // This ensures we only update what we intend to update
         await fastUpdate(
           apiOrderId,
           {
-            status: status,
-            paymentStatus: status, // Also update paymentStatus for consistency
+            status: normalizedStatus,
+            paymentStatus: normalizedPaymentStatus,
           },
           () => {
             if (showNotification) {
@@ -460,11 +527,12 @@ const AdminDashboard = () => {
                 getNotificationDuration('success')
               );
             }
-            // Force refresh orders to ensure UI updates
+            // Force refresh orders to ensure UI updates and filters work correctly
+            // Small delay ensures API update has completed
             if (loadOrders) {
               setTimeout(() => {
                 loadOrders();
-              }, 100);
+              }, 300);
             }
           },
           (error) => {
@@ -627,10 +695,10 @@ const AdminDashboard = () => {
                 fontSize === 'small'
                   ? 'Small'
                   : fontSize === 'large'
-                    ? 'Large'
-                    : fontSize === 'extra-large'
-                      ? 'Extra Large'
-                      : 'Medium';
+                  ? 'Large'
+                  : fontSize === 'extra-large'
+                  ? 'Extra Large'
+                  : 'Medium';
               changes.push(`${sizeName} font size`);
             }
 
@@ -848,33 +916,6 @@ const AdminDashboard = () => {
       dashboard: {
         title: 'Dashboard',
         subtitle: 'Overview of your business metrics',
-        action: (
-          <div
-            style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '8px',
-              background:
-                monthLockStatus.status === 'LOCKED'
-                  ? 'var(--admin-warning-light)'
-                  : 'var(--admin-success-light)',
-              border: `2px solid ${
-                monthLockStatus.status === 'LOCKED'
-                  ? 'var(--admin-warning)'
-                  : 'var(--admin-success)'
-              }`,
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              color:
-                monthLockStatus.status === 'LOCKED'
-                  ? 'var(--admin-warning)'
-                  : 'var(--admin-success)',
-            }}
-          >
-            {monthLockStatus.status === 'LOCKED' ? '🔒' : '🟢'} Current Month:{' '}
-            {monthLockStatus.status}
-            {monthLockStatus.lockedTill && ` (till ${monthLockStatus.lockedTill})`}
-          </div>
-        ),
       },
       allOrdersData: {
         title: 'All Orders Data',
@@ -1163,6 +1204,7 @@ const AdminDashboard = () => {
           onViewPendingAmounts={handleViewPendingAmounts}
         />
 
+        {/* Tab Content - Each tab component handles its own admin-content wrapper */}
         {renderActiveTab()}
       </div>
 

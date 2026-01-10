@@ -148,12 +148,16 @@
   margin-left: 80px;
 }
 
+/* Base admin-content - will be overridden by tab-scrolling-fixes.css for proper scrolling */
 .admin-content {
   flex: 1;
   padding: 14px;
   overflow-y: auto;
   overflow-x: hidden;
   background: transparent;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+  max-height: none;
 }
 
 @media (max-width: 1024px) {
@@ -1483,17 +1487,18 @@ a.btn,
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: 16px;
-  padding: 24px;
+  padding: 16px 20px;
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.04),
     0 1px 2px rgba(0, 0, 0, 0.02);
   border: 1px solid var(--admin-border);
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: flex-start;
+  gap: 12px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  min-height: 100px;
+  min-height: auto;
   overflow: hidden;
 }
 
@@ -1523,18 +1528,18 @@ a.btn,
 }
 
 .stat-card:hover {
-  border-color: var(--admin-accent-light, rgba(68, 144, 49, 0.3));
+  border-color: var(--admin-border);
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.08),
     0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .stat-card:hover::before {
-  transform: scaleX(1);
+  transform: scaleX(0);
 }
 
 .stat-card:hover::after {
-  opacity: 1;
+  opacity: 0;
 }
 
 .stat-card i {
@@ -1548,6 +1553,16 @@ a.btn,
   justify-content: center;
   background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
   border-radius: 4px;
+  align-self: center;
+}
+
+.stat-card > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex: 1;
 }
 
 .stat-card h3 {
@@ -1556,6 +1571,7 @@ a.btn,
   color: var(--admin-text);
   margin: 0;
   line-height: 1.3;
+  text-align: center;
 }
 
 .stat-card p {
@@ -1564,6 +1580,7 @@ a.btn,
   margin: 0;
   font-weight: 500;
   line-height: 1.5;
+  text-align: center;
 }
 
 .dashboard-card {
@@ -1586,21 +1603,21 @@ a.btn,
 .admin-stats {
   display: grid;
   grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 20px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 @media (min-width: 640px) {
   .admin-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
+    gap: 12px;
   }
 }
 
 @media (min-width: 1024px) {
   .admin-stats {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 20px;
+    gap: 12px;
   }
 }
 
@@ -2056,9 +2073,12 @@ select.input-field option:hover {
   border-radius: 10px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   border: 1px solid var(--admin-border, #e2e8f0);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: visible;
   transition: all 0.3s ease;
-  margin-bottom: 14px;
+  margin-bottom: 0;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
 }
 
 .orders-table-container:hover {
@@ -2067,9 +2087,31 @@ select.input-field option:hover {
 
 .orders-table {
   width: 100%;
+  /* Mobile-first: No minimum width - allow natural sizing */
+  min-width: auto;
   border-collapse: separate;
   border-spacing: 0;
-  table-layout: fixed;
+  table-layout: auto; /* Auto layout for better column sizing */
+}
+
+/* Desktop: Ensure minimum width for all columns */
+@media (min-width: 769px) {
+  .orders-table {
+    min-width: 1000px; /* Minimum width to show all columns properly */
+  }
+}
+
+/* When table is inside a scrollable container, ensure proper sizing */
+.table-wrapper .orders-table {
+  width: 100%;
+  /* Mobile-first: Natural sizing */
+  min-width: auto;
+}
+
+@media (min-width: 769px) {
+  .table-wrapper .orders-table {
+    min-width: 1000px; /* Minimum width to show all columns properly */
+  }
 }
 
 .orders-table thead {
@@ -3822,9 +3864,11 @@ select.input-field option {
 
 .recent-orders-table-container {
   overflow-x: auto;
-  max-height: 500px;
-  overflow-y: auto;
+  overflow-y: visible; /* Changed from auto to visible - let parent handle vertical scroll */
+  max-height: none; /* Remove height restriction */
   border-radius: 12px;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
 }
 
 .recent-orders-table {
@@ -3985,7 +4029,8 @@ select.input-field option {
 /* Responsive adjustments for Recent Orders Table */
 @media (max-width: 1024px) {
   .recent-orders-table-container {
-    max-height: 400px;
+    max-height: none;
+    overflow-y: visible;
   }
 
   .recent-orders-table th,
@@ -3999,6 +4044,11 @@ select.input-field option {
   .recent-orders-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .recent-orders-table-container {
+    max-height: none;
+    overflow-y: visible;
   }
 
   .recent-orders-table {
@@ -4028,7 +4078,8 @@ select.input-field option {
 
 @media (max-width: 480px) {
   .recent-orders-table-container {
-    max-height: 300px;
+    max-height: none;
+    overflow-y: visible;
   }
 
   .recent-orders-table th,
@@ -4146,8 +4197,13 @@ select.input-field {
   padding: 16px;
   border-top: 1px solid var(--admin-border, #e2e8f0);
   margin-top: 16px;
+  margin-bottom: 0;
   flex-wrap: wrap;
   gap: 16px;
+  background: var(--admin-bg, #ffffff);
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0; /* Prevent pagination from being compressed */
 }
 
 .pagination-controls > div {
@@ -4156,13 +4212,27 @@ select.input-field {
   gap: 8px;
 }
 
-/* Orders Table Enhancements */
+/* Orders Table Enhancements - Updated to prevent pagination overlap */
 .orders-table-container {
   overflow-x: auto;
   border-radius: 12px;
   border: 1px solid var(--admin-border, #e2e8f0);
-  max-height: 600px;
+  overflow-y: visible; /* Allow table to expand, scroll handled by admin-content */
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 0;
+}
+
+/* When table needs vertical scrolling, limit height */
+.orders-table-container.has-vertical-scroll {
+  max-height: calc(100vh - 350px);
   overflow-y: auto;
+}
+
+/* Pagination after table container */
+.orders-table-container + .pagination-controls {
+  margin-top: 16px;
+  margin-bottom: 20px;
 }
 
 .orders-table {
@@ -4609,7 +4679,7 @@ select.input-field {
   /* Stat cards */
   .admin-stats {
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 12px;
   }
 
   .stat-card {
@@ -4673,11 +4743,12 @@ select.input-field {
     font-size: 14px;
   }
 
-  /* Tables - horizontal scroll on mobile */
+  /* Tables - horizontal scroll on mobile, vertical scroll handled by admin-content */
   .orders-table-container {
     overflow-x: auto;
+    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
-    max-height: 500px;
+    max-height: none;
     border-radius: 12px;
   }
 
@@ -4817,7 +4888,7 @@ select.input-field {
 
   .admin-stats {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 12px;
   }
 
   /* Search input */
@@ -4907,10 +4978,10 @@ select.input-field {
     overflow-wrap: break-word;
   }
 
-  /* Fix for iOS viewport */
+  /* Fix for iOS viewport - but don't break scrolling */
   @supports (-webkit-touch-callout: none) {
     .admin-content {
-      min-height: -webkit-fill-available;
+      /* Remove min-height that breaks scrolling - flex handles height */
     }
   }
 

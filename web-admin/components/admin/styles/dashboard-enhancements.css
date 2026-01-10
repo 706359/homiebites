@@ -240,11 +240,11 @@
 
 .dashboard-card:hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border-color: var(--admin-accent, #449031);
+  border-color: var(--admin-border);
 }
 
 .dashboard-card:hover::before {
-  opacity: 1;
+  opacity: 0;
 }
 
 /* Enhanced Stat Cards - Original Style */
@@ -252,14 +252,15 @@
   background-color: var(--admin-bg);
   color: var(--admin-text);
   border-radius: 10px;
-  padding: 14px;
+  padding: 16px 20px;
   border: 1px solid var(--admin-border);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: flex-start;
   gap: 12px;
 }
 
@@ -277,11 +278,20 @@
 
 .stat-card:hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border-color: var(--admin-accent, #449031);
+  border-color: var(--admin-border);
 }
 
 .stat-card:hover::after {
-  opacity: 1;
+  opacity: 0;
+}
+
+.stat-card > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex: 1;
 }
 
 .stat-card h3 {
@@ -291,6 +301,7 @@
   margin-bottom: 2px;
   line-height: 1.2;
   letter-spacing: -0.02em;
+  text-align: center;
 }
 
 .stat-card p {
@@ -299,6 +310,7 @@
   margin: 0;
   font-weight: 500;
   line-height: 1.4;
+  text-align: center;
 }
 
 /* Stat Card Subtitle/Metadata - Theme Consistent */
@@ -308,6 +320,7 @@
   color: var(--admin-text-light, #9ca3af) !important;
   font-weight: 400 !important;
   line-height: 1.4 !important;
+  text-align: center !important;
 }
 
 /* Stat Card Icon Colors - Theme Consistent */
@@ -331,7 +344,8 @@
   color: var(--admin-danger, #dc2626) !important;
 }
 
-.stat-card .stat-icon {
+.stat-card .stat-icon,
+.stat-card > i {
   width: 36px;
   height: 36px;
   border-radius: 8px;
@@ -345,9 +359,15 @@
   transition: all 0.2s ease;
 }
 
+.stat-card > i {
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+}
+
 .stat-card:hover .stat-icon {
-  background: var(--admin-accent, #449031);
-  color: white;
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  color: var(--admin-accent, #449031);
 }
 
 .stat-card-gradient-accent {
@@ -956,7 +976,7 @@
 :root.dark-theme .dashboard-card:hover,
 :root.dark-theme .stat-card:hover {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  border-color: var(--admin-accent-light, rgba(59, 130, 246, 0.3));
+  border-color: var(--admin-border);
 }
 
 :root.dark-theme .orders-table thead,
@@ -1991,22 +2011,55 @@
   overflow-x: auto;
   overflow-y: visible;
   position: relative;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Override orders-table-container overflow when used with table-wrapper */
 .orders-table-container.table-wrapper {
-  overflow: visible;
   overflow-x: auto;
+  overflow-y: visible;
   min-height: 300px;
   max-height: none;
+  margin-bottom: 0;
+  padding-bottom: 20px; /* Space to prevent scrollbar from covering pagination */
+  position: relative;
+  display: block;
+}
+
+/* Ensure pagination controls are always visible and not covered by scrollbar */
+.dashboard-card.table-container-card .pagination-controls,
+.orders-table-container.table-wrapper + .pagination-controls,
+.orders-table-container:not(.table-wrapper) + .pagination-controls {
+  margin-top: 0;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  border-top: 1px solid var(--admin-border, #e2e8f0);
+  position: relative;
+  z-index: 100;
+  background: var(--admin-bg, #ffffff);
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  clear: both;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .table-full-width {
   width: 100%;
+  /* Mobile-first: No minimum width - allow natural sizing */
+  min-width: auto;
   display: table;
-  table-layout: fixed;
+  table-layout: auto; /* Changed to auto for better column sizing */
   visibility: visible;
   opacity: 1;
+}
+
+/* Desktop: Ensure minimum width for all columns */
+@media (min-width: 769px) {
+  .table-full-width {
+    min-width: 1000px; /* Minimum width to show all columns properly */
+  }
 }
 
 /* Ensure table body is visible */

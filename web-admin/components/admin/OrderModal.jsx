@@ -88,7 +88,6 @@ const OrderModal = ({
         }
       }
 
-      // Fallback: Start from 000001 if no orders exist
       return `HB-${monthAbbr}'${year}-${monthNum}-000001`;
     } catch (e) {
       return 'HB-XXX-XX-XXXXXX';
@@ -110,7 +109,6 @@ const OrderModal = ({
 
     const duplicate = orders.find((o) => {
       try {
-        // Never use createdAt (today's date) as fallback - only use actual order date
         const oDate = new Date(o.date || o.order_date || 0);
         const addr = o.deliveryAddress || o.customerAddress || o.address;
         return (
@@ -168,7 +166,6 @@ const OrderModal = ({
       if (!order.date) {
         errors.date = 'Date is required';
       } else {
-        // Handle DD/MM/YYYY format
         let dateToValidate = order.date;
         if (typeof order.date === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(order.date)) {
           // Convert DD/MM/YYYY to YYYY-MM-DD for validation
@@ -247,7 +244,6 @@ const OrderModal = ({
       return;
     }
 
-    // Only validate if we have order data and at least one field has been touched
     const order = editingOrder || newOrder;
     if (!order || Object.keys(touchedFields).length === 0) {
       return;
@@ -258,7 +254,6 @@ const OrderModal = ({
       const errors = {};
       const orderToValidate = order;
 
-      // Only validate touched fields
       if (touchedFields.date && !orderToValidate.date) {
         errors.date = 'Date is required';
       }
@@ -373,11 +368,26 @@ const OrderModal = ({
       orderId: orderToValidate.orderId || newOrder.orderId,
     };
 
+    // Normalize status to ensure consistency
     if (normalizedOrder.status) {
       normalizedOrder.status = String(normalizedOrder.status).trim();
+      // Also update paymentStatus for consistency with database schema
+      if (normalizedOrder.status === 'Paid' || normalizedOrder.status.toLowerCase() === 'paid') {
+        normalizedOrder.paymentStatus = 'Paid';
+      } else if (normalizedOrder.status === 'Unpaid' || normalizedOrder.status.toLowerCase() === 'unpaid') {
+        normalizedOrder.paymentStatus = 'Pending'; // Database default for unpaid
+      } else {
+        normalizedOrder.paymentStatus = normalizedOrder.paymentStatus || 'Pending';
+      }
     }
-    if (normalizedOrder.paymentMode) {
-      normalizedOrder.paymentMode = String(normalizedOrder.paymentMode).trim();
+    
+    // Normalize paymentMode (trim whitespace, allow empty string for 'None')
+    if (normalizedOrder.paymentMode !== undefined && normalizedOrder.paymentMode !== null) {
+      if (normalizedOrder.paymentMode === '' || normalizedOrder.paymentMode === 'None') {
+        normalizedOrder.paymentMode = ''; // Empty string is allowed
+      } else {
+        normalizedOrder.paymentMode = String(normalizedOrder.paymentMode).trim();
+      }
     }
 
     // Update state with normalized values
@@ -413,7 +423,6 @@ const OrderModal = ({
     // Auto-set order ID for new records if not already set
     // Generate fresh ID at save time to prevent duplicates from rapid clicks
     if (!editingOrder) {
-      // Always generate fresh ID at save time to ensure uniqueness
       // Use current orders list to check for duplicates
       const currentOrders = orders || [];
       let generatedId = generateOrderIdPreview();
@@ -453,7 +462,6 @@ const OrderModal = ({
       }
     }
 
-    // Mark all fields as touched before validation on submit so errors show
     setTouchedFields({
       date: true,
       deliveryAddress: true,
@@ -488,7 +496,44 @@ const OrderModal = ({
     try {
       // Pass the normalized order data to onSave
       if (editingOrder) {
-        await onSave(editingOrder.orderId || editingOrder._id, normalizedOrder);
+        const cleanOrderData = {};
+        
+        // Define allowed fields that can be updated
+        const allowedFields = {
+          date: normalizedOrder.date,
+          deliveryAddress: normalizedOrder.deliveryAddress,
+          quantity: normalizedOrder.quantity,
+          unitPrice: normalizedOrder.unitPrice,
+          mode: normalizedOrder.mode,
+          status: normalizedOrder.status,
+          paymentStatus: normalizedOrder.paymentStatus,
+          paymentMode: normalizedOrder.paymentMode, // Can be empty string
+          notes: normalizedOrder.notes,
+          customerName: normalizedOrder.customerName,
+          addressId: normalizedOrder.addressId,
+        };
+        
+        Object.keys(allowedFields).forEach(key => {
+          const value = allowedFields[key];
+          if (value !== undefined) {
+            if (key === 'paymentMode' || key === 'notes' || key === 'customerName' || key === 'addressId') {
+              // These fields can be empty strings
+              cleanOrderData[key] = value === null ? '' : value;
+            } else {
+              cleanOrderData[key] = value;
+            }
+          }
+        });
+        
+        // Include billingMonth/billingYear if they exist (from date calculation)
+        if (normalizedOrder.billingMonth !== undefined) {
+          cleanOrderData.billingMonth = normalizedOrder.billingMonth;
+        }
+        if (normalizedOrder.billingYear !== undefined) {
+          cleanOrderData.billingYear = normalizedOrder.billingYear;
+        }
+        
+        await onSave(editingOrder.orderId || editingOrder._id, cleanOrderData);
         // Close modal after editing
         setTimeout(() => {
           setIsSaving(false);
@@ -613,7 +658,6 @@ const OrderModal = ({
       return;
     }
 
-    // Mark field as touched when user types
     setTouchedFields((prev) => ({ ...prev, deliveryAddress: true }));
 
     if (editingOrder) {
@@ -644,7 +688,6 @@ const OrderModal = ({
           return;
         }
 
-        // Only try to populate if this is a different address than what we've already populated
         if (normalizedValue !== autoPopulatedAddress) {
           // Check if this address exists in orders
           const lastOrder = getLastOrderForAddress(orders, normalizedValue);
@@ -682,7 +725,6 @@ const OrderModal = ({
   };
 
   const handleAddressBlur = () => {
-    // Mark field as touched when user leaves it
     setTouchedFields((prev) => ({ ...prev, deliveryAddress: true }));
 
     // Simple timeout - if clicking on suggestion, flag will prevent hiding
@@ -695,7 +737,6 @@ const OrderModal = ({
         if (!editingOrder && newOrder.deliveryAddress) {
           const normalizedValue = newOrder.deliveryAddress.trim().toLowerCase();
 
-          // Only auto-fill if address is valid (at least 3 characters) and we haven't already populated for this address
           if (normalizedValue.length >= 3 && normalizedValue !== autoPopulatedAddress) {
             const lastOrder = getLastOrderForAddress(orders, normalizedValue);
             if (lastOrder) {
@@ -707,7 +748,6 @@ const OrderModal = ({
                 .toLowerCase();
 
               if (lastOrderAddress === normalizedValue) {
-                // Mark this address as auto-populated (for tracking only)
                 setAutoPopulatedAddress(normalizedValue);
                 // Don't auto-populate any other fields - only address
               }
@@ -727,12 +767,8 @@ const OrderModal = ({
 
     // Set flag FIRST to prevent blur handler from interfering
     setIsClickingSuggestion(true);
-
-    // CRITICAL: Update the same state that the input is bound to
-    // The input uses: newOrder.deliveryAddress, so we MUST update that
     onNewOrderChange('deliveryAddress', trimmedAddr);
 
-    // Mark this address as auto-populated BEFORE hiding suggestions
     setAutoPopulatedAddress(normalizedAddr);
 
     // Focus the input FIRST to prevent blur issues
@@ -813,7 +849,6 @@ const OrderModal = ({
   // Helper function to convert DD/MM/YYYY to YYYY-MM-DD for backend
   const parseDateFromInput = (dateStr) => {
     if (!dateStr) return '';
-    // Handle DD/MM/YYYY format
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
       const [day, month, year] = dateStr.split('/').map(Number);
       if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 2000 && year <= 2100) {
@@ -1051,7 +1086,6 @@ const OrderModal = ({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        // CRITICAL: Call handler to update address state
                         handleSuggestionClick(addr);
                       }}
                       style={{

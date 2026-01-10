@@ -64,9 +64,8 @@
   }
 }
 
-/* Smooth Scrolling */
+/* Smooth Scrolling - Let tab-scrolling-fixes.css handle admin-content scrolling */
 .admin-dashboard,
-.admin-content,
 .login-page-wrapper {
   -webkit-overflow-scrolling: touch;
   overflow-x: hidden;

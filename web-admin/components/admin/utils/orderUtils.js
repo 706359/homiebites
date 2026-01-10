@@ -375,7 +375,14 @@ export const getUniqueAddresses = (orders) => {
  * @param {string} status - Order status
  * @returns {boolean} True if status is paid/delivered
  */
-export const isPaidStatus = (status) => {
+export const isPaidStatus = (status, paymentStatus = null) => {
+  // Check paymentStatus first if provided (more reliable)
+  if (paymentStatus) {
+    const ps = String(paymentStatus).toLowerCase().trim();
+    if (ps === 'paid') return true;
+  }
+  
+  // Check status field
   if (!status) return false;
   const s = String(status).toLowerCase().trim();
   return s === 'paid' || s === 'delivered';
@@ -384,10 +391,20 @@ export const isPaidStatus = (status) => {
 /**
  * Check if order status is considered "Pending" or "Unpaid"
  * Standardizes status checking across the application
+ * Checks both status and paymentStatus fields for consistency
  * @param {string} status - Order status
+ * @param {string} paymentStatus - Payment status (optional, checked as fallback)
  * @returns {boolean} True if status is pending/unpaid
  */
-export const isPendingStatus = (status) => {
+export const isPendingStatus = (status, paymentStatus = null) => {
+  // Check paymentStatus first if provided (more reliable)
+  if (paymentStatus) {
+    const ps = String(paymentStatus).toLowerCase().trim();
+    if (ps === 'pending' || ps === 'unpaid') return true;
+    if (ps === 'paid') return false;
+  }
+  
+  // Check status field
   if (!status) return true; // Treat missing status as pending
   const s = String(status).toLowerCase().trim();
   return s === 'pending' || s === 'unpaid';
@@ -403,7 +420,7 @@ export const normalizeStatus = (status) => {
   const s = String(status).toLowerCase().trim();
   if (s === 'paid' || s === 'delivered') return 'Paid';
   if (s === 'pending' || s === 'unpaid') return 'Pending';
-  return 'Pending'; // Default to Pending for unknown statuses
+  return 'Pending';
 };
 
 /**
@@ -422,9 +439,8 @@ export const ensureAllOrdersHaveUniqueIds = (orders) => {
 };
 
 /**
- * Extract sequence number from orderId for sorting
- * Order ID format: HB-Feb'24-21-000001
- * Returns the sequence number (last part) or 0 if not found
+ * Extract sequence number from orderId (format: HB-Feb'24-21-000001)
+ * @returns Sequence number or 0 if not found
  */
 export const extractOrderIdSequence = (orderId) => {
   if (!orderId) return 0;
@@ -433,26 +449,33 @@ export const extractOrderIdSequence = (orderId) => {
 };
 
 /**
- * Sort orders by orderId (newest first)
- * Orders with higher sequence numbers are considered newer
+ * Sort orders by orderId descending (newest first)
  */
 export const sortOrdersByOrderId = (orders) => {
+  if (!Array.isArray(orders) || orders.length === 0) return orders;
+  
   return [...orders].sort((a, b) => {
     const seqA = extractOrderIdSequence(a.orderId);
     const seqB = extractOrderIdSequence(b.orderId);
     
-    // If both have valid sequences, sort by sequence descending (newest first)
     if (seqA > 0 && seqB > 0) {
       return seqB - seqA;
     }
     
-    // If only one has a sequence, prioritize it
     if (seqA > 0) return -1;
     if (seqB > 0) return 1;
     
-    // If neither has a sequence, fall back to lexicographic sort
     const idA = (a.orderId || '').toString();
     const idB = (b.orderId || '').toString();
-    return idB.localeCompare(idA);
+    
+    if (idA && idB) {
+      return idB.localeCompare(idA);
+    }
+    
+    if (!idA && !idB) return 0;
+    if (!idA) return 1;
+    if (!idB) return -1;
+    
+    return 0;
   });
 };
