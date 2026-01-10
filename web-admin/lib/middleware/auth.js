@@ -28,7 +28,8 @@ export function authenticate(request) {
 export async function isAdmin(request) {
   try {
     const user = await authenticate(request);
-    if (user && (user.role === "admin" || user.isAdmin)) {
+    const userRole = user?.role?.toLowerCase();
+    if (user && (userRole === "admin" || user.role === "Admin" || user.isAdmin)) {
       return user;
     }
     throw { status: 403, message: "Admin access required" };

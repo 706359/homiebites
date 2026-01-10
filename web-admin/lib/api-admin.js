@@ -94,10 +94,13 @@ export const api = {
             localStorage.removeItem('homiebites_admin');
             localStorage.removeItem('homiebites_user');
 
-            // Redirect to login if on admin route
-            if (window.location.pathname.startsWith('/admin') || window.location.pathname === '/') {
-              console.warn('[API] Authentication failed. Redirecting to login...');
-              window.location.href = '/';
+            // Redirect to admin login page if on admin route
+            if (window.location.pathname.startsWith('/admin')) {
+              console.warn('[API] Authentication failed. Redirecting to admin login...');
+              window.location.href = '/admin';
+            } else if (window.location.pathname === '/' || window.location.pathname === '/login') {
+              // Already on login page, don't redirect
+              console.warn('[API] Authentication failed but already on login page');
             }
           }
 
@@ -139,11 +142,10 @@ export const api = {
   },
 
   // Auth endpoints
-  async login(emailOrUsername, password) {
-    // Support both email and username for login - trim whitespace
+  async login(email, password) {
+    // Following ADMIN_PASSWORD.md - use email for login
     const loginData = {
-      email: emailOrUsername?.trim() || emailOrUsername,
-      username: emailOrUsername?.trim() || emailOrUsername,
+      email: email?.trim() || email,
       password: password?.trim() || password,
     };
     return this.request('/api/auth/login', {

@@ -95,10 +95,16 @@ const AdminDashboard = () => {
   // Check authentication on mount
   useEffect(() => {
     const token = localStorage.getItem('homiebites_token');
-    const isAdmin = localStorage.getItem('homiebites_admin') === 'true';
+    const adminFlag = localStorage.getItem('homiebites_admin');
+    const userStr = localStorage.getItem('homiebites_user');
+    
+    // Check if user is authenticated and is admin
+    const isAdmin = adminFlag === 'true' || (userStr && (JSON.parse(userStr).role?.toLowerCase() === 'admin' || JSON.parse(userStr).role === 'Admin'));
 
     if (!token || !isAdmin) {
-      router.replace('/login');
+      console.warn('[AdminDashboard] Authentication check failed, redirecting to /admin');
+      router.replace('/admin');
+      return;
     }
   }, [router]);
 
@@ -1222,7 +1228,7 @@ const AdminDashboard = () => {
         }}
       />
 
-      {/* PWA Install Prompt */}
+      {/* PWA Install Prompt - Admin Only */}
       <InstallPrompt />
     </div>
   );

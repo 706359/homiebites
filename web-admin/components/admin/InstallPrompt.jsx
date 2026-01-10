@@ -1,11 +1,25 @@
+'use client';
+
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 const InstallPrompt = () => {
+  const pathname = usePathname();
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showIOSPrompt, setShowIOSPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
 
+  // Only show on admin pages (not on public website)
+  // Admin routes: /admin, /admin/* (dashboard, login, forgot-password, etc.)
+  // Public routes: /, /menu, /offers, /faq, /search, etc. - should NOT show InstallPrompt
+  const isAdminPage = pathname && (pathname === '/admin' || pathname.startsWith('/admin/'));
+
   useEffect(() => {
+    // Don't run if not on admin page
+    if (!isAdminPage) {
+      return;
+    }
+
     // Check if already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     if (isStandalone) {
@@ -67,7 +81,7 @@ const InstallPrompt = () => {
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
-  }, []);
+  }, [isAdminPage]);
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -85,7 +99,8 @@ const InstallPrompt = () => {
     localStorage.setItem('pwa-ios-prompt-seen', 'true');
   };
 
-  if (isInstalled) {
+  // Don't show if not on admin page or already installed
+  if (!isAdminPage || isInstalled) {
     return null;
   }
 

@@ -6,7 +6,7 @@ import "./styles/index.css";
 import "./AdminLogin.css";
 
 const AdminLogin = ({ onLoginSuccess }) => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { error: showError, success: showSuccess } = useNotification();
@@ -150,26 +150,29 @@ const AdminLogin = ({ onLoginSuccess }) => {
     try {
       // Try backend API first
       try {
-        // Use username field for admin login (api.login accepts email, so pass username as email)
-        const data = await api.login(username, password);
+        // Use email for login (following ADMIN_PASSWORD.md)
+        const data = await api.login(email, password);
 
         if (
           data.success &&
           data.user &&
-          (data.user.role === "admin" || data.user.isAdmin)
+          (data.user.role === "admin" || data.user.isAdmin || data.user.role === "Admin")
         ) {
           localStorage.setItem("homiebites_token", data.token);
           localStorage.setItem("homiebites_user", JSON.stringify(data.user));
           localStorage.setItem("homiebites_admin", "true");
 
-          // Successfully logged in
-
-          if (onLoginSuccess) {
-            onLoginSuccess();
-          } else {
-            // Fallback: redirect using window.location if router not available
-            window.location.href = "/dashboard";
+          // Check if password change is required (temporary password)
+          if (data.requirePasswordChange) {
+            // Redirect to change password page
+            window.location.href = "/admin/change-password?temporary=true";
+            return;
           }
+
+          // Successfully logged in - redirect to dashboard immediately
+          // Use window.location.href for immediate navigation to avoid race conditions
+          console.log('[AdminLogin] Login successful, redirecting to dashboard');
+          window.location.href = "/admin/dashboard";
           return;
         } else {
           showError(
@@ -246,32 +249,36 @@ const AdminLogin = ({ onLoginSuccess }) => {
 
             <form onSubmit={handleSubmit} className="login-form">
               <div className="form-field">
-                <label>
-                  <i className="fa-solid fa-user"></i>
-                  Mobile Number or Username
+                <label htmlFor="email-input">
+                  <i className="fa-solid fa-envelope"></i>
+                  Email Address
                 </label>
                 <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter mobile number or username"
+                  id="email-input"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email address"
                   required
                   autoFocus
+                  autoComplete="email"
                   className="login-input"
                 />
               </div>
 
               <div className="form-field">
-                <label>
+                <label htmlFor="password-input">
                   <i className="fa-solid fa-lock"></i>
                   Password
                 </label>
                 <input
+                  id="password-input"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   required
+                  autoComplete="current-password"
                   className="login-input"
                 />
               </div>
@@ -316,7 +323,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
         </div>
       </div>
       
-      {/* PWA Install Prompt */}
+      {/* PWA Install Prompt - Admin Only */}
       <InstallPrompt />
     </div>
   );

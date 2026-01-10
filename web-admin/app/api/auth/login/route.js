@@ -1,47 +1,19 @@
 /**
  * Next.js API Route: Auth Login
- * Migrated from Express backend
+ * Complete password management system - following ADMIN_PASSWORD.md
  */
 import connectDB from '../../../../lib/db.js';
 import User from '../../../../lib/models/User.js';
 import jwt from 'jsonwebtoken';
-import { verifyPassword, isBcryptHash } from '../../../../lib/utils/password.js';
+import { verifyPassword } from '../../../../lib/utils/password.js';
 
-// Helper function to get admin credentials
-function getAdminCredentials() {
-  // SECURE: Prefer ADMIN_PASSWORD_HASH (bcrypt hash) over ADMIN_PASSWORD (plain text)
-  // If ADMIN_PASSWORD_HASH is set, use it (most secure)
-  // Otherwise, fall back to ADMIN_PASSWORD if set
-  // No default password - must be set in environment variables
-  const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH?.trim();
-  const adminPasswordPlain = process.env.ADMIN_PASSWORD?.trim();
-  
-  // Require at least one password method to be configured
-  if (!adminPasswordHash && !adminPasswordPlain) {
-    throw new Error('ADMIN_PASSWORD_HASH or ADMIN_PASSWORD must be set in environment variables');
-  }
-  
-  // Log security warning if using plain text password
-  if (!adminPasswordHash && process.env.NODE_ENV === 'development') {
-    console.warn('[Admin Credentials] Using plain text password. For better security, set ADMIN_PASSWORD_HASH environment variable. Run: node scripts/generate-admin-hash.js');
-  }
-  
-  return {
-    JWT_SECRET: process.env.JWT_SECRET || 'homiebites_secret',
-    ADMIN_USERNAME: process.env.ADMIN_USERNAME || 'adminHomieBites',
-    ADMIN_EMAIL: process.env.ADMIN_EMAIL || '706359@gmail.com',
-    // Store both hash and plain text (for migration support)
-    ADMIN_PASSWORD_HASH: adminPasswordHash,
-    ADMIN_PASSWORD: adminPasswordPlain,
-    ADMIN_FIRSTNAME: process.env.ADMIN_FIRSTNAME || 'Admin',
-    ADMIN_LASTNAME: process.env.ADMIN_LASTNAME || 'User',
-    ADMIN_MOBILE: process.env.ADMIN_MOBILE || '8958111112',
-  };
-}
+const JWT_SECRET = process.env.JWT_SECRET || 'homiebites_secret';
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCK_TIME = 15 * 60 * 1000; // 15 minutes
 
 export async function POST(request) {
   try {
-    // Connect to database first - if this fails, return appropriate error
+    // Connect to database first
     try {
       await connectDB();
     } catch (dbError) {
@@ -56,131 +28,48 @@ export async function POST(request) {
       );
     }
     
-    const adminCreds = getAdminCredentials();
     const body = await request.json();
-    const { email, password, username } = body;
+    const { email, password } = body;
 
-    // Normalize login identifier
-    const loginUsername = String(username || email || '').trim();
+    // Following ADMIN_PASSWORD.md - use email for login
+    const normalizedEmail = String(email || '').trim().toLowerCase();
     const trimmedPassword = String(password || '').trim();
 
-    // Normalize mobile numbers - remove all non-digit characters for comparison
-    const normalizeMobile = (mobile) => {
-      return String(mobile || '').replace(/\D/g, ''); // Remove all non-digits
-    };
+    console.log('[Login API] Login attempt:', { 
+      email: normalizedEmail, 
+      passwordLength: trimmedPassword.length,
+      timestamp: new Date().toISOString()
+    });
 
-    // Check admin credentials
-    const normalizedMobile = normalizeMobile(adminCreds.ADMIN_MOBILE);
-    const normalizedUsername = String(adminCreds.ADMIN_USERNAME).trim().toLowerCase();
-    const normalizedEmail = String(adminCreds.ADMIN_EMAIL || '').trim().toLowerCase();
-    const normalizedLoginUsername = loginUsername.toLowerCase();
-    const normalizedLoginMobile = normalizeMobile(loginUsername);
-    
-    const usernameMatch = normalizedLoginUsername === normalizedUsername;
-    const emailMatch = !!(normalizedEmail && normalizedLoginUsername === normalizedEmail);
-    const mobileMatch = !!(normalizedMobile && normalizedLoginMobile === normalizedMobile);
-    const isAdminIdentifier = usernameMatch || emailMatch || mobileMatch;
-    
-    // SECURE: Verify password using bcrypt if hash is available, otherwise fall back to plain text comparison
-    let passwordMatch = false;
-    if (isAdminIdentifier) {
-      if (adminCreds.ADMIN_PASSWORD_HASH && isBcryptHash(adminCreds.ADMIN_PASSWORD_HASH)) {
-        // Use secure bcrypt comparison
-        passwordMatch = await verifyPassword(trimmedPassword, adminCreds.ADMIN_PASSWORD_HASH);
-      } else {
-        // Fallback to plain text comparison (for migration - not recommended for production)
-        const expectedPassword = String(adminCreds.ADMIN_PASSWORD).trim();
-        passwordMatch = trimmedPassword === expectedPassword;
-        
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('[Admin Login] Using plain text password comparison. Set ADMIN_PASSWORD_HASH for secure authentication.');
-        }
-      }
-    }
-
-    // Debug logging (only in development)
-    if (process.env.NODE_ENV === 'development') {
-      const usingHash = !!(adminCreds.ADMIN_PASSWORD_HASH && isBcryptHash(adminCreds.ADMIN_PASSWORD_HASH));
-      console.log('[Login Debug]', {
-        loginUsername,
-        normalizedLoginUsername,
-        normalizedLoginMobile,
-        normalizedUsername,
-        normalizedEmail,
-        normalizedMobile,
-        usernameMatch,
-        emailMatch,
-        mobileMatch,
-        isAdminIdentifier,
-        passwordLength: trimmedPassword.length,
-        passwordMatch,
-        usingSecureHash: usingHash,
-        hasEnvPasswordHash: !!adminCreds.ADMIN_PASSWORD_HASH,
-        hasEnvPassword: !!process.env.ADMIN_PASSWORD,
+    if (!normalizedEmail || !trimmedPassword) {
+      console.error('[Login API] Missing credentials:', { 
+        hasEmail: !!normalizedEmail, 
+        hasPassword: !!trimmedPassword 
       });
-    }
-
-    if (isAdminIdentifier && passwordMatch) {
-      const adminName = `${adminCreds.ADMIN_FIRSTNAME} ${adminCreds.ADMIN_LASTNAME}`.trim() || 'Admin';
-      const adminEmail = adminCreds.ADMIN_EMAIL || 'admin@homiebites.com';
-      const token = jwt.sign(
-        {
-          id: 'admin',
-          username: adminCreds.ADMIN_USERNAME,
-          email: adminEmail,
-          role: 'admin',
-          isAdmin: true,
-          firstName: adminCreds.ADMIN_FIRSTNAME,
-          lastName: adminCreds.ADMIN_LASTNAME,
-          mobile: adminCreds.ADMIN_MOBILE,
-        },
-        adminCreds.JWT_SECRET,
-        { expiresIn: '7d' }
-      );
-
-      return Response.json({
-        success: true,
-        token,
-        user: {
-          id: 'admin',
-          name: adminName,
-          email: adminEmail,
-          role: 'admin',
-          isAdmin: true,
-          firstName: adminCreds.ADMIN_FIRSTNAME,
-          lastName: adminCreds.ADMIN_LASTNAME,
-          mobile: adminCreds.ADMIN_MOBILE,
-        },
-      });
-    }
-
-    // If admin identifier matched but password didn't, provide specific error
-    if (isAdminIdentifier && !passwordMatch) {
-      const usingHash = !!(adminCreds.ADMIN_PASSWORD_HASH && isBcryptHash(adminCreds.ADMIN_PASSWORD_HASH));
-      const errorMessage = 'Invalid admin password. Please check your credentials.';
-      
       return Response.json(
-        { 
-          success: false, 
-          error: errorMessage,
-          hint: process.env.NODE_ENV === 'development' 
-            ? (usingHash 
-                ? 'Password does not match the hashed password in ADMIN_PASSWORD_HASH.'
-                : 'Password does not match. Consider using ADMIN_PASSWORD_HASH for secure authentication.')
-            : undefined
-        },
-        { status: 401 }
+        { success: false, error: 'Email and password are required' },
+        { status: 400 }
       );
     }
 
-    // Try to find user in database
+    // Find user by email (following ADMIN_PASSWORD.md)
     let user;
     try {
-      user = await User.findOne({
-        $or: [{ email: loginUsername }, { username: loginUsername }],
+      user = await User.findOne({ email: normalizedEmail });
+      console.log('[Login API] User lookup result:', { 
+        found: !!user, 
+        email: normalizedEmail,
+        userId: user?._id?.toString(),
+        isActive: user?.isActive,
+        loginAttempts: user?.loginAttempts,
+        isLocked: !!(user?.lockUntil && user.lockUntil > Date.now())
       });
     } catch (dbQueryError) {
-      console.error('[Login API] Database query error:', dbQueryError.message);
+      console.error('[Login API] Database query error:', {
+        error: dbQueryError.message,
+        stack: dbQueryError.stack,
+        email: normalizedEmail
+      });
       return Response.json(
         { 
           success: false, 
@@ -192,40 +81,210 @@ export async function POST(request) {
     }
 
     if (!user) {
+      console.error('[Login API] User not found:', { email: normalizedEmail });
+      const errorResponse = { 
+        success: false, 
+        error: 'Invalid email or password',
+        code: 'USER_NOT_FOUND',
+        timestamp: new Date().toISOString()
+      };
+      console.log('[Login API] Returning error response:', errorResponse);
+      return Response.json(errorResponse, { status: 401 });
+    }
+
+    // Check if account is locked (following ADMIN_PASSWORD.md)
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      const minutesLeft = Math.ceil((user.lockUntil.getTime() - Date.now()) / 60000);
+      console.error('[Login API] Account locked:', {
+        email: normalizedEmail,
+        userId: user._id.toString(),
+        lockUntil: user.lockUntil.toISOString(),
+        minutesLeft,
+        loginAttempts: user.loginAttempts
+      });
       return Response.json(
-        { success: false, error: 'Invalid credentials. Please check your username and password.' },
-        { status: 401 }
+        {
+          success: false,
+          error: `Account locked. Try again in ${minutesLeft} minutes.`
+        },
+        { status: 423 }
       );
     }
 
-    // Generate JWT token
-    const token = jwt.sign(
-      {
-        id: user._id.toString(),
-        email: user.email,
-        role: user.role || 'user',
-        isAdmin: user.role === 'admin',
-      },
-      adminCreds.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    // Verify password
+    let isMatch = false;
+    if (user.password) {
+      try {
+        isMatch = await verifyPassword(trimmedPassword, user.password);
+        console.log('[Login API] Password verification:', {
+          email: normalizedEmail,
+          userId: user._id.toString(),
+          isMatch,
+          hasPassword: !!user.password
+        });
+      } catch (verifyError) {
+        console.error('[Login API] Password verification error:', {
+          error: verifyError.message,
+          stack: verifyError.stack,
+          email: normalizedEmail,
+          userId: user._id.toString()
+        });
+        isMatch = false;
+      }
+    } else {
+      console.error('[Login API] User has no password set:', {
+        email: normalizedEmail,
+        userId: user._id.toString()
+      });
+    }
 
-    return Response.json({
+    if (!isMatch) {
+      // Increment failed login attempts
+      const previousAttempts = user.loginAttempts || 0;
+      user.loginAttempts = previousAttempts + 1;
+
+      console.error('[Login API] Password mismatch:', {
+        email: normalizedEmail,
+        userId: user._id.toString(),
+        previousAttempts,
+        currentAttempts: user.loginAttempts,
+        maxAttempts: MAX_LOGIN_ATTEMPTS
+      });
+
+      if (user.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+        user.lockUntil = new Date(Date.now() + LOCK_TIME);
+        await user.save();
+        console.error('[Login API] Account locked due to too many failed attempts:', {
+          email: normalizedEmail,
+          userId: user._id.toString(),
+          loginAttempts: user.loginAttempts,
+          lockUntil: user.lockUntil.toISOString(),
+          lockDurationMinutes: LOCK_TIME / 60000
+        });
+        return Response.json(
+          {
+            success: false,
+            error: `Too many failed attempts. Account locked for 15 minutes.`
+          },
+          { status: 423 }
+        );
+      }
+
+      await user.save();
+      const attemptsRemaining = MAX_LOGIN_ATTEMPTS - user.loginAttempts;
+      console.warn('[Login API] Failed login attempt recorded:', {
+        email: normalizedEmail,
+        userId: user._id.toString(),
+        attemptsRemaining,
+        totalAttempts: user.loginAttempts
+      });
+      const errorResponse = {
+        success: false,
+        error: `Invalid email or password. ${attemptsRemaining} attempts remaining.`,
+        code: 'PASSWORD_MISMATCH',
+        attemptsRemaining,
+        timestamp: new Date().toISOString()
+      };
+      console.log('[Login API] Returning password mismatch error:', errorResponse);
+      return Response.json(errorResponse, { status: 401 });
+    }
+
+    // Reset login attempts on successful login
+    user.loginAttempts = 0;
+    user.lockUntil = null;
+    await user.save();
+
+    // Generate JWT token
+    let token;
+    try {
+      token = jwt.sign(
+        { userId: user._id.toString(), email: user.email, role: user.role || 'user' },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+    } catch (tokenError) {
+      console.error('[Login API] JWT token generation error:', {
+        error: tokenError.message,
+        stack: tokenError.stack,
+        email: normalizedEmail,
+        userId: user._id.toString()
+      });
+      return Response.json(
+        { 
+          success: false, 
+          error: 'Token generation failed. Please try again.',
+          details: process.env.NODE_ENV === 'development' ? tokenError.message : undefined
+        },
+        { status: 500 }
+      );
+    }
+
+    // Check if temporary password
+    if (user.isTemporaryPassword) {
+      console.log('[Login API] Successful login with temporary password:', {
+        email: normalizedEmail,
+        userId: user._id.toString(),
+        name: user.name,
+        role: user.role
+      });
+      const successResponse = {
+        success: true,
+        requirePasswordChange: true,
+        token,
+        user: {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name,
+          role: user.role || 'user',
+        }
+      };
+      console.log('[Login API] Returning success response (temp password):', {
+        ...successResponse,
+        token: '***REDACTED***'
+      });
+      return Response.json(successResponse);
+    }
+
+    console.log('[Login API] Successful login:', {
+      email: normalizedEmail,
+      userId: user._id.toString(),
+      name: user.name,
+      role: user.role,
+      isTemporaryPassword: false
+    });
+
+    const successResponse = {
       success: true,
       token,
       user: {
         id: user._id.toString(),
-        name: user.name,
         email: user.email,
+        name: user.name,
         role: user.role || 'user',
-        isAdmin: user.role === 'admin',
-      },
+      }
+    };
+    console.log('[Login API] Returning success response:', {
+      ...successResponse,
+      token: '***REDACTED***'
     });
+
+    return Response.json(successResponse);
+
   } catch (error) {
-    console.error('[Login API] Unexpected error:', error);
+    console.error('[Login API] Unexpected error:', {
+      error: error.message,
+      stack: error.stack,
+      name: error.name,
+      code: error.code,
+      timestamp: new Date().toISOString()
+    });
     
     // Handle validation errors
     if (error.name === 'ValidationError') {
+      console.error('[Login API] Validation error:', {
+        errors: Object.values(error.errors || {}).map(e => e.message),
+        fields: Object.keys(error.errors || {})
+      });
       return Response.json(
         { 
           success: false, 
@@ -242,6 +301,11 @@ export async function POST(request) {
         errorMessage.includes('ECONNREFUSED') || 
         errorMessage.includes('Database connection') ||
         errorMessage.includes('MONGOURI')) {
+      console.error('[Login API] Database connection error:', {
+        error: errorMessage,
+        code: error.code,
+        mongoUri: process.env.MONGODB_URI ? '***configured***' : 'missing'
+      });
       return Response.json(
         { 
           success: false, 
@@ -254,6 +318,10 @@ export async function POST(request) {
     
     // Handle JSON parsing errors
     if (error instanceof SyntaxError || errorMessage.includes('JSON')) {
+      console.error('[Login API] JSON parsing error:', {
+        error: errorMessage,
+        body: typeof body !== 'undefined' ? 'received' : 'missing'
+      });
       return Response.json(
         { 
           success: false, 
@@ -262,6 +330,12 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+    
+    console.error('[Login API] Unhandled error response:', {
+      status: error.status || 500,
+      message: errorMessage || 'Login failed. Please try again.',
+      type: typeof error
+    });
     
     return Response.json(
       { 
@@ -273,4 +347,3 @@ export async function POST(request) {
     );
   }
 }
-
