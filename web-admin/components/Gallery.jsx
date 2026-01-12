@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import api from '../lib/api';
 import PremiumLoader from './PremiumLoader';
@@ -12,6 +12,8 @@ const Gallery = () => {
   const [galleryItems, setGalleryItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [expandedCategories, setExpandedCategories] = useState(new Set());
+  const itemsPerCategory = 6; // Show 6 items initially, then "View All" to show all
 
   // Fetch gallery items from backend
   useEffect(() => {
@@ -161,8 +163,34 @@ const Gallery = () => {
     };
   }, []);
 
-  const openModal = (item) => setSelectedImage(item);
-  const closeModal = () => setSelectedImage(null);
+  const openModal = (item) => {
+    setSelectedImage(item);
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+  };
+  
+  const closeModal = () => {
+    setSelectedImage(null);
+    // Restore body scroll when modal is closed
+    document.body.style.overflow = '';
+  };
+
+  // Close modal on ESC key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && selectedImage) {
+        setSelectedImage(null);
+        document.body.style.overflow = '';
+      }
+    };
+    
+    if (selectedImage) {
+      document.addEventListener('keydown', handleEscape);
+      return () => {
+        document.removeEventListener('keydown', handleEscape);
+      };
+    }
+  }, [selectedImage]);
 
   // Available images in public folder
   const publicImages = [
@@ -276,6 +304,56 @@ const Gallery = () => {
     return '/food.jpeg';
   };
 
+  // Group items by category
+  const groupedByCategory = useMemo(() => {
+    const grouped = {};
+    galleryItems.forEach((item) => {
+      const category = item.category || 'Other';
+      if (!grouped[category]) {
+        grouped[category] = [];
+      }
+      grouped[category].push(item);
+    });
+    return grouped;
+  }, [galleryItems]);
+
+  // Get category list sorted - Thali and Tiffin first, then alphabetically
+  const categories = useMemo(() => {
+    const allCategories = Object.keys(groupedByCategory);
+    const priorityCategories = ['Thali', 'Tiffin'];
+    const otherCategories = allCategories.filter(
+      cat => !priorityCategories.some(priority => 
+        cat.toLowerCase() === priority.toLowerCase()
+      )
+    );
+    
+    // Get priority categories that exist (case-insensitive)
+    const foundPriority = priorityCategories.filter(priority =>
+      allCategories.some(cat => cat.toLowerCase() === priority.toLowerCase())
+    ).map(priority => 
+      allCategories.find(cat => cat.toLowerCase() === priority.toLowerCase())
+    );
+    
+    // Sort other categories alphabetically
+    const sortedOthers = otherCategories.sort((a, b) => 
+      a.localeCompare(b, undefined, { sensitivity: 'base' })
+    );
+    
+    return [...foundPriority, ...sortedOthers];
+  }, [groupedByCategory]);
+
+  const toggleCategory = (category) => {
+    setExpandedCategories((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(category)) {
+        newSet.delete(category);
+      } else {
+        newSet.add(category);
+      }
+      return newSet;
+    });
+  };
+
   if (loading) {
     return (
       <section id='gallery' className='gallery-section'>
@@ -302,77 +380,117 @@ const Gallery = () => {
             <p className='gallery-empty-message'>{t('gallery.noItems') || 'We\'re currently updating our gallery with fresh, delicious meals. Check back soon to see our latest offerings!'}</p>
           </div>
         ) : (
-          <div className='gallery-grid'>
-            {galleryItems.map((item, index) => (
-              <div
-                key={`gallery-item-${item.id || index}-${item.name || 'item'}-${index}`}
-                className='gallery-item'
-                onClick={() => openModal(item)}
-                role='button'
-                tabIndex={0}
-                aria-label={`View ${item.name}`}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    openModal(item);
-                  }
-                }}
-              >
-                <img
-                  key={`gallery-img-${item.id || index}-${item.imageUrl || 'no-img'}-${index}`}
-                  src={getImageSrc(item)}
-                  alt={item.alt || item.name || 'Gallery item'}
-                  loading='lazy'
-                  onError={(e) => {
-                    // Fallback to placeholder from public folder if image fails to load
-                    const placeholder = '/food.jpeg';
-                    const currentSrc = e.target.src.split('?')[0]; // Remove query params if any
-                    if (!currentSrc.endsWith(placeholder) && !e.target.src.includes(placeholder)) {
-                      console.warn('[Gallery Image] Failed to load:', currentSrc, 'for item:', item.name, '- Using fallback');
-                      e.target.src = placeholder;
-                    }
-                  }}
-                />
-                <div className='gallery-caption'>
-                  <div className='gallery-item-name'>{item.name}</div>
-                  {item.price && (
-                    <div className='gallery-item-price'>₹{item.price}</div>
+          <div className='gallery-categories'>
+            {categories.map((category) => {
+              const categoryItems = groupedByCategory[category];
+              const isExpanded = expandedCategories.has(category);
+              const displayItems = isExpanded 
+                ? categoryItems 
+                : categoryItems.slice(0, itemsPerCategory);
+              const hasMore = categoryItems.length > itemsPerCategory;
+
+              return (
+                <div key={category} className='gallery-category-section'>
+                  <div className='gallery-category-header'>
+                    <h3 className='gallery-category-title'>{category}</h3>
+                    <span className='gallery-category-count'>({categoryItems.length} items)</span>
+                  </div>
+                  <div className='gallery-grid'>
+                    {displayItems.map((item, index) => (
+                      <div
+                        key={`gallery-item-${item.id || index}-${item.name || 'item'}-${index}`}
+                        className='gallery-item'
+                        onClick={() => openModal(item)}
+                        role='button'
+                        tabIndex={0}
+                        aria-label={`View ${item.name}`}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            openModal(item);
+                          }
+                        }}
+                      >
+                        <img
+                          key={`gallery-img-${item.id || index}-${item.imageUrl || 'no-img'}-${index}`}
+                          src={getImageSrc(item)}
+                          alt={item.alt || item.name || 'Gallery item'}
+                          loading='lazy'
+                          onError={(e) => {
+                            // Fallback to placeholder from public folder if image fails to load
+                            const placeholder = '/food.jpeg';
+                            const currentSrc = e.target.src.split('?')[0]; // Remove query params if any
+                            if (!currentSrc.endsWith(placeholder) && !e.target.src.includes(placeholder)) {
+                              console.warn('[Gallery Image] Failed to load:', currentSrc, 'for item:', item.name, '- Using fallback');
+                              e.target.src = placeholder;
+                            }
+                          }}
+                        />
+                        <div className='gallery-caption'>
+                          <div className='gallery-item-name'>{item.name}</div>
+                          {item.price && (
+                            <div className='gallery-item-price'>₹{item.price}</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {hasMore && (
+                    <div className='gallery-category-footer'>
+                      <button
+                        className='gallery-view-all-btn'
+                        onClick={() => toggleCategory(category)}
+                        aria-label={isExpanded ? 'Show less' : 'View all items'}
+                      >
+                        {isExpanded ? (
+                          <>
+                            <i className='fa-solid fa-chevron-up'></i>
+                            Show Less
+                          </>
+                        ) : (
+                          <>
+                            View All ({categoryItems.length} items)
+                            <i className='fa-solid fa-chevron-down'></i>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   )}
                 </div>
-                {/* Only show details overlay if item has actual details */}
-                {item.details && Array.isArray(item.details) && item.details.length > 0 && (
-                  <div className='gallery-details'>
-                    <ul className='gallery-details-list'>
-                      {item.details.map((detail, idx) => (
-                        <li key={idx} className='gallery-detail-item'>{detail}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
         {selectedImage && (
           <div className='gallery-modal' onClick={closeModal}>
             <div className='gallery-modal-content' onClick={(e) => e.stopPropagation()}>
-              <button
-                className='gallery-modal-close'
-                onClick={closeModal}
-                aria-label='Close gallery modal'
-              >
-                &times;
-              </button>
-              <img 
-                src={getImageSrc(selectedImage)}
-                alt={selectedImage.alt || selectedImage.name || 'Gallery item'} 
-                key={`modal-img-${selectedImage.id}-${selectedImage.imageUrl || 'no-img'}`}
-              />
-              <div className='gallery-modal-caption'>
-                <div className='gallery-modal-name'>{selectedImage.name}</div>
-                {selectedImage.price && (
-                  <div className='gallery-modal-price'>₹{selectedImage.price}</div>
+              <div className='gallery-modal-image-wrapper'>
+                <img 
+                  src={getImageSrc(selectedImage)}
+                  alt={selectedImage.alt || selectedImage.name || 'Gallery item'} 
+                  key={`modal-img-${selectedImage.id}-${selectedImage.imageUrl || 'no-img'}`}
+                />
+              </div>
+              <div className='gallery-modal-info'>
+                <div className='gallery-modal-caption'>
+                  <div className='gallery-modal-name'>{selectedImage.name}</div>
+                  {selectedImage.price && (
+                    <div className='gallery-modal-price'>₹{selectedImage.price}</div>
+                  )}
+                </div>
+                {selectedImage.details && Array.isArray(selectedImage.details) && selectedImage.details.length > 0 && (
+                  <div className='gallery-modal-details'>
+                    <h3 className='gallery-modal-details-title'>Details</h3>
+                    <ul className='gallery-modal-details-list'>
+                      {selectedImage.details.map((detail, idx) => (
+                        <li key={idx} className='gallery-modal-detail-item'>
+                          <i className='fa-solid fa-check'></i>
+                          <span>{detail}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </div>
             </div>

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
 import api from '../../lib/api-admin.js';
+import { convertMenuItemsToCategories } from '../../lib/menuData.js';
 import ConfirmModal from './ConfirmationModal.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
 import { formatCurrency } from './utils/orderUtils.js';
@@ -17,6 +19,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
   const [filterCategory, setFilterCategory] = useState('');
   const [sortBy, setSortBy] = useState('name'); // 'name', 'price', 'category'
   const [sortOrder, setSortOrder] = useState('asc'); // 'asc', 'desc'
+
+  // Enable keyboard avoidance for mobile
+  useAutoKeyboardAvoidance({
+    containerSelector: '.modal-container, .menu-price-tab',
+    inputSelector: 'input, textarea, select',
+  });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -36,7 +44,11 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
   // Ensure default categories are always available
   useEffect(() => {
     const defaultCategories = ['Breakfast', 'Lunch', 'Dinner'];
-    if (categories.length === 0 || !categories.includes('Breakfast') || !categories.includes('Dinner')) {
+    if (
+      categories.length === 0 ||
+      !categories.includes('Breakfast') ||
+      !categories.includes('Dinner')
+    ) {
       console.log('[Categories] Ensuring default categories are present. Current:', categories);
       const merged = [...new Set([...defaultCategories, ...categories])];
       setCategories(merged);
@@ -96,20 +108,20 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         setMenuItems(flattenedItems);
 
         const defaultCategories = ['Breakfast', 'Lunch', 'Dinner'];
-        
+
         // Extract unique categories from loaded items
         const uniqueCategories = [...new Set(flattenedItems.map((item) => item.category))];
-        
+
         console.log('[Menu Load] Category processing:', {
           defaultCategories,
           uniqueCategoriesFromItems: uniqueCategories,
         });
-        
+
         // Merge default categories with categories found in database
         const allCategories = [...new Set([...defaultCategories, ...uniqueCategories])];
-        
+
         console.log('[Menu Load] Final categories to set:', allCategories);
-        
+
         // Always set to merged categories (defaults + found in DB)
         console.log('[Menu Load] Setting categories to:', allCategories);
         setCategories(allCategories);
@@ -250,39 +262,39 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
   // Find matching image from public folder based on item name
   const findImageByName = (itemName) => {
     if (!itemName) return '/food.jpeg';
-    
+
     const normalizedName = normalizeName(itemName);
-    
+
     // Check for common food name variations first (more specific)
     const commonMatches = {
-      'chhole': 'Amritsarichhole.png',
-      'chole': 'Amritsarichhole.png',
-      'chana': 'kalachana.jpg',
-      'dal': 'MoondDalKhichdi.jpg',
-      'khichdi': 'MoondDalKhichdi.jpg',
-      'paratha': 'DeliciousAaluParatha.jpg',
-      'aloo': 'DeliciousAaluParatha.jpg',
-      'thali': 'DesiThali.jpeg',
-      'rajma': 'rajma.jpg',
-      'roti': 'RotiSabji.png',
-      'sabji': 'RotiSabji.png',
-      'pakora': 'kadhipakora.jpg',
-      'kadhi': 'kadhipakora.jpg',
-      'lobhiya': 'lobhiya.jpg',
-      'kofta': 'lokikofte.jpg',
-      'koofte': 'lokikofte.jpg',
-      'curd': 'Curd.jpg',
-      'dahi': 'Curd.jpg',
-      'tiffin': 'FullTiffin.jpg',
-      'full': 'FullTiffin.jpg',
+      chhole: 'Amritsarichhole.png',
+      chole: 'Amritsarichhole.png',
+      chana: 'kalachana.jpg',
+      dal: 'MoondDalKhichdi.jpg',
+      khichdi: 'MoondDalKhichdi.jpg',
+      paratha: 'DeliciousAaluParatha.jpg',
+      aloo: 'DeliciousAaluParatha.jpg',
+      thali: 'DesiThali.jpeg',
+      rajma: 'rajma.jpg',
+      roti: 'RotiSabji.png',
+      sabji: 'RotiSabji.png',
+      pakora: 'kadhipakora.jpg',
+      kadhi: 'kadhipakora.jpg',
+      lobhiya: 'lobhiya.jpg',
+      kofta: 'lokikofte.jpg',
+      koofte: 'lokikofte.jpg',
+      curd: 'Curd.jpg',
+      dahi: 'Curd.jpg',
+      tiffin: 'FullTiffin.jpg',
+      full: 'FullTiffin.jpg',
     };
-    
+
     for (const [key, imageFile] of Object.entries(commonMatches)) {
       if (normalizedName.includes(key)) {
         return '/' + imageFile;
       }
     }
-    
+
     // Try to find exact or partial match
     for (const image of publicImages) {
       const imageName = normalizeName(image.replace(/\.(jpg|jpeg|png)$/i, ''));
@@ -290,7 +302,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         return '/' + image;
       }
     }
-    
+
     return '/food.jpeg'; // Default fallback
   };
 
@@ -307,7 +319,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         return '/' + imageUrl;
       }
     }
-    
+
     // Auto-generate from item name
     return findImageByName(item.name);
   };
@@ -319,12 +331,16 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
   const syncMenuItemsToGallery = async (items, showNotification = null) => {
     try {
       console.log('[Gallery Sync] Starting sync for', items.length, 'menu items');
-      
+
       // Get current gallery items
       let galleryResponse;
       try {
         galleryResponse = await api.getGallery();
-        console.log('[Gallery Sync] Fetched', galleryResponse?.data?.length || 0, 'existing gallery items');
+        console.log(
+          '[Gallery Sync] Fetched',
+          galleryResponse?.data?.length || 0,
+          'existing gallery items'
+        );
       } catch (error) {
         console.error('[Gallery Sync] Error fetching gallery:', error);
         throw new Error('Failed to fetch gallery: ' + (error.message || 'Unknown error'));
@@ -341,14 +357,18 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           if (finalImageUrl && finalImageUrl.trim() !== '') {
             // User provided an image URL - normalize it
             finalImageUrl = finalImageUrl.trim();
-            if (!finalImageUrl.startsWith('/') && !finalImageUrl.startsWith('http://') && !finalImageUrl.startsWith('https://')) {
+            if (
+              !finalImageUrl.startsWith('/') &&
+              !finalImageUrl.startsWith('http://') &&
+              !finalImageUrl.startsWith('https://')
+            ) {
               finalImageUrl = '/' + finalImageUrl;
             }
           } else {
             // No imageUrl provided - auto-generate from item name
             finalImageUrl = getItemImageUrl(item);
           }
-          
+
           return {
             ...item,
             imageUrl: finalImageUrl,
@@ -384,20 +404,16 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       for (const item of itemsToSync) {
         // ImageUrl is already normalized in the map step above
         const finalImageUrl = item.imageUrl;
-        
+
         console.log('[Gallery Sync] Syncing item:', {
           name: item.name,
           originalImageUrl: item.imageUrl,
           finalImageUrl: finalImageUrl,
-          wasAutoGenerated: !item.imageUrl || item.imageUrl.trim() === '' ? 'Yes (from name)' : 'No (user provided)',
+          wasAutoGenerated:
+            !item.imageUrl || item.imageUrl.trim() === ''
+              ? 'Yes (from name)'
+              : 'No (user provided)',
         });
-        
-        const defaultDetails = [
-          'Dry Sabji',
-          'Gravy Sabji',
-          '4 Roti (6 without Rice)',
-          'Rice'
-        ];
 
         const galleryItemData = {
           name: item.name,
@@ -406,7 +422,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           caption: item.price ? `${item.name} - ₹${item.price}` : item.name,
           price: item.price,
           category: item.category || 'Menu',
-          details: defaultDetails, // Add default details for hover display
+          details:
+            item.details && Array.isArray(item.details) && item.details.length > 0
+              ? item.details
+              : [],
           order: item.order || 0,
           isActive: item.isAvailable !== false,
         };
@@ -467,10 +486,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         // Dispatch custom event for gallery to refresh immediately
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('gallery-updated'));
-          
+
           // Also update localStorage timestamp for cross-tab communication
           localStorage.setItem('gallery-last-update', Date.now().toString());
-          
+
           console.log('[Gallery Sync] Triggered gallery refresh event');
         }
       } catch (e) {
@@ -713,7 +732,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         });
 
         const updatedItems = [...menuItems, newItem];
-        
+
         // Save to backend FIRST (before updating local state) to ensure consistency
         console.log('[Add Item] Saving new item to backend:', {
           itemName: newItem.name,
@@ -728,7 +747,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         try {
           await saveMenuItemsToBackend(updatedItems);
           console.log('[Add Item] Successfully saved to backend, now reloading from backend...');
-          
+
           // Reload from backend to ensure we have the latest data and sync with database
           await loadMenuItems();
           console.log('[Add Item] Reloaded menu items from backend - should now be in sync');
@@ -744,14 +763,14 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         }
 
         setShowAddModal(false);
-              setFormData({
-                name: '',
-                description: '',
-                price: 0,
-                isAvailable: true,
-                imageUrl: '',
-                category: '',
-              });
+        setFormData({
+          name: '',
+          description: '',
+          price: 0,
+          isAvailable: true,
+          imageUrl: '',
+          category: '',
+        });
 
         // Notification is already shown in saveMenuItemsToBackend, no need to show again
       } catch (error) {
@@ -772,6 +791,105 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       });
     } else {
       await performAdd();
+    }
+  };
+
+  // Handle import menu items
+  const handleImportMenuItems = async () => {
+    if (showConfirmation) {
+      showConfirmation({
+        title: 'Import Menu Items',
+        message:
+          'This will add all predefined menu items to your menu. Existing items will be preserved. Continue?',
+        type: 'info',
+        confirmText: 'Import',
+        onConfirm: async () => {
+          try {
+            setLoadingMenu(true);
+
+            // Convert menu items to categories format
+            const newCategories = convertMenuItemsToCategories();
+
+            // Load current menu from backend first (don't use local state)
+            const currentMenuResponse = await api.getMenu();
+            const existingCategories =
+              currentMenuResponse.success && Array.isArray(currentMenuResponse.data)
+                ? currentMenuResponse.data
+                : [];
+
+            // Merge new categories with existing ones from backend
+            // If a category already exists, merge items; otherwise add new category
+            const mergedCategories = [...existingCategories];
+
+            newCategories.forEach((newCategory) => {
+              const existingIndex = mergedCategories.findIndex(
+                (cat) => cat.category === newCategory.category
+              );
+
+              if (existingIndex >= 0) {
+                // Category exists - merge items (avoid duplicates by name)
+                const existingItems = mergedCategories[existingIndex].items || [];
+                const existingItemNames = new Set(existingItems.map((item) => item.name));
+
+                newCategory.items.forEach((newItem) => {
+                  if (!existingItemNames.has(newItem.name)) {
+                    existingItems.push(newItem);
+                  }
+                });
+
+                mergedCategories[existingIndex].items = existingItems;
+              } else {
+                // New category - add it
+                mergedCategories.push(newCategory);
+              }
+            });
+
+            // Flatten for saving to backend
+            const flattenedItems = [];
+            mergedCategories.forEach((category) => {
+              if (category.items && Array.isArray(category.items)) {
+                category.items.forEach((item) => {
+                  flattenedItems.push({
+                    ...item,
+                    category: category.category || item.category || 'Lunch',
+                    categoryId: category.id,
+                    categoryIcon: category.icon,
+                    categoryTag: category.tag,
+                    categoryDescription: category.description,
+                  });
+                });
+              }
+            });
+
+            // Save to backend FIRST (don't update local state)
+            await saveMenuItemsToBackend(flattenedItems);
+
+            // Reload from backend to sync local state with backend data
+            await loadMenuItems();
+
+            const importedCount = newCategories.reduce(
+              (sum, cat) => sum + (cat.items?.length || 0),
+              0
+            );
+            if (showNotification) {
+              showNotification(
+                `Successfully imported ${importedCount} menu items to backend`,
+                'success'
+              );
+            }
+          } catch (error) {
+            console.error('Error importing menu items:', error);
+            if (showNotification) {
+              showNotification(
+                'Error importing menu items: ' + (error.message || 'Unknown error'),
+                'error'
+              );
+            }
+          } finally {
+            setLoadingMenu(false);
+          }
+        },
+      });
     }
   };
 
@@ -809,20 +927,20 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
         // Save to backend FIRST
         await saveMenuItemsToBackend(updatedItems);
-        
+
         // Reload from backend to ensure we have the latest data
         await loadMenuItems();
 
         setShowEditModal(false);
         setSelectedItem(null);
-              setFormData({
-                name: '',
-                description: '',
-                price: 0,
-                isAvailable: true,
-                imageUrl: '',
-                category: '',
-              });
+        setFormData({
+          name: '',
+          description: '',
+          price: 0,
+          isAvailable: true,
+          imageUrl: '',
+          category: '',
+        });
 
         // Notification is already shown in saveMenuItemsToBackend, no need to show again
       } catch (error) {
@@ -850,7 +968,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
   const handleDeleteItem = async () => {
     try {
       const updatedItems = menuItems.filter((item) => item.id !== selectedItem.id);
-      
+
       console.log('[Delete Item] Deleting item:', {
         itemId: selectedItem.id,
         itemName: selectedItem.name,
@@ -861,7 +979,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
       // Save to backend FIRST
       await saveMenuItemsToBackend(updatedItems);
-      
+
       // Reload from backend to ensure we have the latest data
       await loadMenuItems();
 
@@ -885,7 +1003,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
       // Save to backend FIRST
       await saveMenuItemsToBackend(updatedItems);
-      
+
       // Reload from backend to ensure we have the latest data
       await loadMenuItems();
 
@@ -999,12 +1117,22 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                 await syncMenuItemsToGallery(menuItems, showNotification);
               } catch (error) {
                 console.error('[Manual Sync] Error:', error);
-                showNotification('Gallery sync failed: ' + (error.message || 'Unknown error'), 'error');
+                showNotification(
+                  'Gallery sync failed: ' + (error.message || 'Unknown error'),
+                  'error'
+                );
               }
             }}
             title='Sync all menu items with images to website gallery'
           >
             <i className='fa-solid fa-sync-alt'></i> Sync to Gallery
+          </button>
+          <button
+            className='btn btn-success btn-small'
+            onClick={handleImportMenuItems}
+            title='Import predefined menu items (adds to existing items)'
+          >
+            <i className='fa-solid fa-download'></i> Import Menu Items
           </button>
         </div>
       </div>
@@ -1163,45 +1291,48 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                       const findImageByName = (itemName) => {
                         if (!itemName) return '/food.jpeg';
                         const normalizedName = normalizeName(itemName);
-                        
+
                         // Check for common food name variations first (more specific)
                         const commonMatches = {
-                          'chhole': 'Amritsarichhole.png',
-                          'chole': 'Amritsarichhole.png',
-                          'chana': 'kalachana.jpg',
-                          'dal': 'MoondDalKhichdi.jpg',
-                          'khichdi': 'MoondDalKhichdi.jpg',
-                          'paratha': 'DeliciousAaluParatha.jpg',
-                          'aloo': 'DeliciousAaluParatha.jpg',
-                          'thali': 'DesiThali.jpeg',
-                          'rajma': 'rajma.jpg',
-                          'roti': 'RotiSabji.png',
-                          'sabji': 'RotiSabji.png',
-                          'pakora': 'kadhipakora.jpg',
-                          'kadhi': 'kadhipakora.jpg',
-                          'lobhiya': 'lobhiya.jpg',
-                          'kofta': 'lokikofte.jpg',
-                          'koofte': 'lokikofte.jpg',
-                          'curd': 'Curd.jpg',
-                          'dahi': 'Curd.jpg',
-                          'tiffin': 'FullTiffin.jpg',
-                          'full': 'FullTiffin.jpg',
+                          chhole: 'Amritsarichhole.png',
+                          chole: 'Amritsarichhole.png',
+                          chana: 'kalachana.jpg',
+                          dal: 'MoondDalKhichdi.jpg',
+                          khichdi: 'MoondDalKhichdi.jpg',
+                          paratha: 'DeliciousAaluParatha.jpg',
+                          aloo: 'DeliciousAaluParatha.jpg',
+                          thali: 'DesiThali.jpeg',
+                          rajma: 'rajma.jpg',
+                          roti: 'RotiSabji.png',
+                          sabji: 'RotiSabji.png',
+                          pakora: 'kadhipakora.jpg',
+                          kadhi: 'kadhipakora.jpg',
+                          lobhiya: 'lobhiya.jpg',
+                          kofta: 'lokikofte.jpg',
+                          koofte: 'lokikofte.jpg',
+                          curd: 'Curd.jpg',
+                          dahi: 'Curd.jpg',
+                          tiffin: 'FullTiffin.jpg',
+                          full: 'FullTiffin.jpg',
                         };
-                        
+
                         for (const [key, imageFile] of Object.entries(commonMatches)) {
                           if (normalizedName.includes(key)) {
                             return '/' + imageFile;
                           }
                         }
-                        
+
                         // Try to find exact or partial match
                         for (const image of publicImages) {
                           const imageName = normalizeName(image.replace(/\.(jpg|jpeg|png)$/i, ''));
-                          if (imageName.includes(normalizedName) || normalizedName.includes(imageName)) {
+                          if (
+                            imageName.includes(normalizedName) ||
+                            normalizedName.includes(imageName)
+                          ) {
                             return '/' + image;
                           }
                         }
-                        
+
                         return '/food.jpeg';
                       };
 
@@ -1210,19 +1341,22 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                         const imageUrl = item.imageUrl.trim();
                         if (imageUrl.startsWith('/')) {
                           return imageUrl;
-                        } else if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+                        } else if (
+                          imageUrl.startsWith('http://') ||
+                          imageUrl.startsWith('https://')
+                        ) {
                           return imageUrl;
                         } else {
                           return '/' + imageUrl;
                         }
                       }
-                      
+
                       // If no imageUrl, try to find matching image from public folder
                       const matchedImage = findImageByName(item.name);
                       if (matchedImage) {
                         return matchedImage;
                       }
-                      
+
                       return '/food.jpeg';
                     })()}
                     alt={item.name || 'Menu item'}
@@ -1233,7 +1367,11 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                       display: 'block',
                     }}
                     onError={(e) => {
-                      console.warn('[Menu Item Image] Failed to load:', e.target.src, '- Using fallback');
+                      console.warn(
+                        '[Menu Item Image] Failed to load:',
+                        e.target.src,
+                        '- Using fallback'
+                      );
                       const fallback = '/food.jpeg';
                       if (e.target.src !== fallback && !e.target.src.includes(fallback)) {
                         e.target.src = fallback;
@@ -1280,14 +1418,14 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                         item.category === 'Lunch'
                           ? 'var(--admin-accent-light)'
                           : item.category === 'Dinner'
-                            ? 'var(--admin-secondary-light)'
-                            : 'var(--admin-glass-border)',
+                          ? 'var(--admin-secondary-light)'
+                          : 'var(--admin-glass-border)',
                       color:
                         item.category === 'Lunch'
                           ? 'var(--admin-accent)'
                           : item.category === 'Dinner'
-                            ? 'var(--admin-secondary)'
-                            : 'var(--admin-text-secondary)',
+                          ? 'var(--admin-secondary)'
+                          : 'var(--admin-text-secondary)',
                       fontSize: '12px',
                       padding: '4px 8px',
                     }}
@@ -1422,7 +1560,16 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                 </div>
                 <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
                   <label style={{ fontSize: '13px', marginBottom: '6px' }}>
-                    Category <span style={{ color: 'var(--admin-text-light)', fontWeight: 400, fontSize: '11px' }}>(Optional)</span>
+                    Category{' '}
+                    <span
+                      style={{
+                        color: 'var(--admin-text-light)',
+                        fontWeight: 400,
+                        fontSize: '11px',
+                      }}
+                    >
+                      (Optional)
+                    </span>
                   </label>
                   <select
                     className='input-field'
@@ -1448,7 +1595,16 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                 </div>
                 <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
                   <label style={{ fontSize: '13px', marginBottom: '6px' }}>
-                    Image URL <span style={{ color: 'var(--admin-text-light)', fontWeight: 400, fontSize: '11px' }}>(Optional)</span>
+                    Image URL{' '}
+                    <span
+                      style={{
+                        color: 'var(--admin-text-light)',
+                        fontWeight: 400,
+                        fontSize: '11px',
+                      }}
+                    >
+                      (Optional)
+                    </span>
                   </label>
                   <input
                     type='text'
@@ -1458,13 +1614,31 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                     placeholder='/food.jpeg or https://example.com/image.jpg'
                     style={{ padding: '10px 12px', fontSize: '14px' }}
                   />
-                  <small style={{ color: 'var(--admin-text-light)', fontSize: '11px', marginTop: '4px', display: 'block', lineHeight: '1.4' }}>
+                  <small
+                    style={{
+                      color: 'var(--admin-text-light)',
+                      fontSize: '11px',
+                      marginTop: '4px',
+                      display: 'block',
+                      lineHeight: '1.4',
+                    }}
+                  >
                     Use /filename.jpg for public folder, or full URL for external images
                   </small>
                 </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0, marginTop: '4px' }}>
+                <div
+                  className='form-group'
+                  style={{ gridColumn: '1 / -1', marginBottom: 0, marginTop: '4px' }}
+                >
                   <label
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', marginBottom: 0 }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      marginBottom: 0,
+                    }}
                   >
                     <input
                       type='checkbox'
@@ -1478,10 +1652,18 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
               </div>
             </div>
             <div className='modal-footer' style={{ padding: '16px 24px', gap: '10px' }}>
-              <button className='btn btn-ghost' onClick={() => setShowAddModal(false)} style={{ padding: '10px 18px', fontSize: '14px' }}>
+              <button
+                className='btn btn-ghost'
+                onClick={() => setShowAddModal(false)}
+                style={{ padding: '10px 18px', fontSize: '14px' }}
+              >
                 Cancel
               </button>
-              <button className='btn btn-primary' onClick={handleAddItem} style={{ padding: '10px 18px', fontSize: '14px' }}>
+              <button
+                className='btn btn-primary'
+                onClick={handleAddItem}
+                style={{ padding: '10px 18px', fontSize: '14px' }}
+              >
                 <i className='fa-solid fa-plus'></i> Add Item
               </button>
             </div>
@@ -1542,7 +1724,16 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                 </div>
                 <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
                   <label style={{ fontSize: '13px', marginBottom: '6px' }}>
-                    Category <span style={{ color: 'var(--admin-text-light)', fontWeight: 400, fontSize: '11px' }}>(Optional)</span>
+                    Category{' '}
+                    <span
+                      style={{
+                        color: 'var(--admin-text-light)',
+                        fontWeight: 400,
+                        fontSize: '11px',
+                      }}
+                    >
+                      (Optional)
+                    </span>
                   </label>
                   <select
                     className='input-field'
@@ -1568,7 +1759,16 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                 </div>
                 <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
                   <label style={{ fontSize: '13px', marginBottom: '6px' }}>
-                    Image URL <span style={{ color: 'var(--admin-text-light)', fontWeight: 400, fontSize: '11px' }}>(Optional)</span>
+                    Image URL{' '}
+                    <span
+                      style={{
+                        color: 'var(--admin-text-light)',
+                        fontWeight: 400,
+                        fontSize: '11px',
+                      }}
+                    >
+                      (Optional)
+                    </span>
                   </label>
                   <input
                     type='text'
@@ -1578,7 +1778,15 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                     placeholder='Leave empty to auto-match, or enter /filename.jpg'
                     style={{ padding: '10px 12px', fontSize: '14px' }}
                   />
-                  <small style={{ color: 'var(--admin-text-light)', fontSize: '11px', marginTop: '4px', display: 'block', lineHeight: '1.4' }}>
+                  <small
+                    style={{
+                      color: 'var(--admin-text-light)',
+                      fontSize: '11px',
+                      marginTop: '4px',
+                      display: 'block',
+                      lineHeight: '1.4',
+                    }}
+                  >
                     {formData.imageUrl ? (
                       <>Custom: {formData.imageUrl}</>
                     ) : (
@@ -1586,9 +1794,19 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                     )}
                   </small>
                 </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0, marginTop: '4px' }}>
+                <div
+                  className='form-group'
+                  style={{ gridColumn: '1 / -1', marginBottom: 0, marginTop: '4px' }}
+                >
                   <label
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', marginBottom: 0 }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      marginBottom: 0,
+                    }}
                   >
                     <input
                       type='checkbox'
@@ -1602,10 +1820,18 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
               </div>
             </div>
             <div className='modal-footer' style={{ padding: '16px 24px', gap: '10px' }}>
-              <button className='btn btn-ghost' onClick={() => setShowEditModal(false)} style={{ padding: '10px 18px', fontSize: '14px' }}>
+              <button
+                className='btn btn-ghost'
+                onClick={() => setShowEditModal(false)}
+                style={{ padding: '10px 18px', fontSize: '14px' }}
+              >
                 Cancel
               </button>
-              <button className='btn btn-primary' onClick={handleEditItem} style={{ padding: '10px 18px', fontSize: '14px' }}>
+              <button
+                className='btn btn-primary'
+                onClick={handleEditItem}
+                style={{ padding: '10px 18px', fontSize: '14px' }}
+              >
                 <i className='fa-solid fa-save'></i> Save Changes
               </button>
             </div>
