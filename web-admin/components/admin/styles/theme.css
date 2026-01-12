@@ -75,9 +75,7 @@
 body {
   background-color: var(--admin-bg-secondary);
   color: var(--admin-text);
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Theme classes scoped to admin-dashboard only */
@@ -86,28 +84,79 @@ body {
   color: var(--admin-text);
 }
 
+/* Ensure wrapper backgrounds are never affected by theme color changes */
+/* Wrapper backgrounds should always use --admin-bg-secondary, never accent colors */
+.admin-dashboard,
+.admin-dashboard .admin-content,
+.admin-dashboard .dashboard-main-content,
+.admin-dashboard .dashboard-with-sidebar {
+  background-color: var(--admin-bg-secondary);
+}
+
 /* Dark theme - scoped to admin-dashboard - Dark Professional */
+/* Higher specificity - comes after light theme, no !important needed */
+:root.dark-theme .admin-dashboard,
 .admin-dashboard.dark-theme {
+  /* Background Colors - Dark Professional Palette */
   --admin-bg: #111827; /* Cards */
   --admin-bg-secondary: #0f172a; /* Main background - dark slate */
+
+  /* Text Colors - High contrast for readability */
   --admin-text: #e5e7eb; /* Primary text */
   --admin-text-primary: #e5e7eb;
   --admin-text-secondary: #9ca3af; /* Muted text */
   --admin-text-light: #6b7280;
+
+  /* Border Colors - Subtle but visible */
   --admin-border: #1f2937; /* Card borders */
   --admin-glass-bg: rgba(17, 24, 39, 0.95);
   --admin-glass-border: rgba(255, 255, 255, 0.1);
   --admin-glass-overlay: rgba(15, 23, 42, 0.8);
+
+  /* Accent Colors - Brand Green */
   --admin-accent: #449031; /* Primary green */
   --admin-accent-light: rgba(68, 144, 49, 0.15);
   --admin-success: #16a34a; /* Success green */
   --admin-success-light: rgba(22, 163, 74, 0.15);
+
+  /* Warning & Danger - High visibility */
   --admin-warning: #f59e0b; /* Warning amber */
   --admin-warning-light: rgba(245, 158, 11, 0.2);
   --admin-danger: #ef4444; /* Danger red */
   --admin-danger-light: rgba(239, 68, 68, 0.2);
+
+  /* Secondary color - Orange accent */
   --admin-secondary: #c45c2d; /* Orange accent */
   --admin-secondary-light: rgba(196, 92, 45, 0.15);
+
+  background-color: var(--admin-bg-secondary);
+  color: var(--admin-text);
+}
+
+/* Dark theme child elements - proper cascade */
+:root.dark-theme .admin-dashboard *,
+.admin-dashboard.dark-theme * {
+  color: var(--admin-text);
+}
+
+/* Dark theme specific elements - higher specificity */
+:root.dark-theme .admin-dashboard .admin-content,
+:root.dark-theme .admin-dashboard .dashboard-main-content,
+:root.dark-theme .admin-dashboard .dashboard-with-sidebar,
+:root.dark-theme .admin-dashboard .dashboard-card,
+:root.dark-theme .admin-dashboard .stat-card,
+:root.dark-theme .admin-dashboard .admin-sidebar,
+:root.dark-theme .admin-dashboard .admin-top-nav,
+.admin-dashboard.dark-theme .admin-content,
+.admin-dashboard.dark-theme .dashboard-main-content,
+.admin-dashboard.dark-theme .dashboard-with-sidebar,
+.admin-dashboard.dark-theme .dashboard-card,
+.admin-dashboard.dark-theme .stat-card,
+.admin-dashboard.dark-theme .admin-sidebar,
+.admin-dashboard.dark-theme .admin-top-nav {
+  background-color: var(--admin-bg);
+  color: var(--admin-text);
+  border-color: var(--admin-border);
 }
 
 /* Light theme - scoped to admin-dashboard - Light Clean */
@@ -140,16 +189,16 @@ body {
 }
 
 .dashboard-card {
-  background-color: var(--admin-bg) !important;
-  border-color: var(--admin-border) !important;
-  color: var(--admin-text) !important;
+  background-color: var(--admin-bg);
+  border-color: var(--admin-border);
+  color: var(--admin-text);
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 .stat-card {
-  background-color: var(--admin-bg) !important;
-  border-color: var(--admin-border) !important;
-  color: var(--admin-text) !important;
+  background-color: var(--admin-bg);
+  border-color: var(--admin-border);
+  color: var(--admin-text);
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -165,17 +214,47 @@ body {
 
 /* Font Size Variables - SCOPED TO ADMIN DASHBOARD ONLY */
 :root {
-  --admin-base-font-size: 16px;
-  --admin-font-family: 'Baloo 2', sans-serif;
+  --admin-base-font-size: 16px; /* Standard default font size */
+  /* Font family uses global --font-primary from shared/styles/variables.css */
+}
+
+/* Ensure standard default font size is always set */
+.admin-dashboard {
+  --admin-base-font-size: 16px; /* Standard default */
+  font-size: 16px; /* Standard default */
 }
 
 /* Font size and theme are scoped to .admin-dashboard only */
 /* This ensures website is not affected */
 
 /* Smooth transitions for theme changes */
-* {
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease,
-    border-color 0.3s ease;
+*,
+*::before,
+*::after {
+  transition-property: background-color, color, border-color, box-shadow, opacity;
+  transition-duration: 0.3s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Faster transitions for interactive elements */
+button,
+a,
+input,
+select,
+textarea,
+.btn,
+.action-button,
+.sidebar-item,
+.top-nav-search-btn,
+.top-nav-notification-btn {
+  transition-property: all;
+  transition-duration: 0.2s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Disable transitions during theme load to prevent flash */
+body.theme-loading *,
+body.theme-loading *::before,
+body.theme-loading *::after {
+  transition: none !important;
 }

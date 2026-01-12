@@ -332,21 +332,6 @@
     display: none;
   }
 
-  /* Hide breadcrumb on mobile - ensure all breadcrumb elements are hidden */
-  .breadcrumb,
-  .breadcrumb-item,
-  .breadcrumb-separator,
-  .breadcrumb a,
-  .breadcrumb span {
-    display: none;
-    visibility: hidden;
-    height: 0;
-    width: 0;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-  }
-
   /* Hide all tooltip text on mobile */
   .tooltip {
     display: none;
@@ -451,6 +436,9 @@
     flex: 1;
   }
 
+  /* Force 2 columns for stats on mobile - override base styles with higher specificity */
+  .admin-content .admin-stats,
+  .dashboard-main-content .admin-stats,
   .admin-stats,
   .admin-stats.customer-stats-row {
     display: grid;
@@ -614,6 +602,24 @@
     font-size: 13px;
     font-weight: 600;
     color: var(--admin-text, #333);
+  }
+
+  /* Settings checkboxes - 2 per row on mobile */
+  /* Target the div containers that hold checkbox groups */
+  .dashboard-card .form-group > div {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* Ensure checkbox labels fit properly */
+  .dashboard-card .form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 0;
   }
 
   /* ============================================
@@ -1266,6 +1272,7 @@
     min-width: 24px;
     color: var(--admin-text-secondary, #64748b);
     transition: color 0.2s ease;
+    padding-left: 4px; /* Add spacing from left border */
   }
 
   .sidebar-item:hover i {
@@ -1344,6 +1351,18 @@
 
   .notification-item-message {
     font-size: 13px;
+  }
+
+  /* Notification grid - 2 columns on mobile instead of 4 */
+  .notification-grid-4-col {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 0;
+  }
+
+  .notification-card-grid {
+    min-height: auto;
   }
 
   /* ============================================

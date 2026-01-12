@@ -31,7 +31,13 @@ import { autoFixThemeOnLoad, watchThemeChanges } from './utils/themeFixer.js';
 const AdminDashboard = () => {
   const router = useRouter();
   const { showNotification } = useNotification();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  // Load active tab from localStorage on mount, default to 'dashboard'
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('homiebites_active_tab') || 'dashboard';
+    }
+    return 'dashboard';
+  });
 
   // Setup global error handlers for unhandled errors
   useEffect(() => {
@@ -121,7 +127,9 @@ const AdminDashboard = () => {
   useEffect(() => {
     const savedTheme = localStorage.getItem('homiebites_theme') || 'light';
     const savedPrimaryColor = localStorage.getItem('homiebites_primary_color') || '#449031';
+    const savedSecondaryColor = localStorage.getItem('homiebites_secondary_color') || '#B8D84E';
     const savedFontSize = localStorage.getItem('homiebites_font_size') || 'medium';
+    const savedFontFamily = localStorage.getItem('homiebites_font_family') || 'Baloo 2';
 
     const root = document.documentElement;
 
@@ -132,17 +140,45 @@ const AdminDashboard = () => {
       root.style.setProperty('--admin-accent-light', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`);
     }
 
-    // Apply font size
+    // Apply secondary color
+    if (savedSecondaryColor) {
+      root.style.setProperty('--admin-secondary', savedSecondaryColor);
+      const secondaryRgb = hexToRgb(savedSecondaryColor);
+      if (secondaryRgb) {
+        root.style.setProperty('--admin-secondary-light', `rgba(${secondaryRgb.r}, ${secondaryRgb.g}, ${secondaryRgb.b}, 0.15)`);
+      }
+    }
+
+    // Apply font family
+    if (savedFontFamily) {
+      const fontFamily = `'${savedFontFamily}', sans-serif`;
+      root.style.setProperty('--font-primary', fontFamily);
+      document.body.style.fontFamily = fontFamily;
+      const adminDashboard = document.querySelector('.admin-dashboard');
+      if (adminDashboard) {
+        adminDashboard.style.fontFamily = fontFamily;
+      }
+    }
+
+    // Apply font size - Default to standard size (16px/medium)
     const fontSizeMap = {
       small: '14px',
-      medium: '16px',
+      medium: '16px', // Standard default size
       large: '18px',
+      'extra-large': '20px',
     };
-    root.style.setProperty('--admin-base-font-size', fontSizeMap[savedFontSize] || '16px');
-    document.body.style.fontSize = fontSizeMap[savedFontSize] || '16px';
+    // Default to medium (16px) if no font size is saved
+    const defaultFontSize = savedFontSize || 'medium';
+    const fontSize = fontSizeMap[defaultFontSize] || '16px'; // Fallback to 16px
+    root.style.setProperty('--admin-base-font-size', fontSize);
+    document.body.style.fontSize = fontSize;
 
     // Apply theme to both root and admin-dashboard for consistency
     const adminDashboard = document.querySelector('.admin-dashboard');
+    if (adminDashboard) {
+      adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
+      adminDashboard.style.fontSize = fontSize;
+    }
 
     if (savedTheme === 'dark') {
       document.documentElement.classList.add('dark-theme');
@@ -150,6 +186,11 @@ const AdminDashboard = () => {
       if (adminDashboard) {
         adminDashboard.classList.add('dark-theme');
         adminDashboard.classList.remove('light-theme');
+        // Force update all child elements
+        const allElements = adminDashboard.querySelectorAll('*');
+        allElements.forEach((el) => {
+          el.classList.add('dark-theme-applied');
+        });
       }
     } else if (savedTheme === 'light') {
       document.documentElement.classList.add('light-theme');
@@ -157,6 +198,11 @@ const AdminDashboard = () => {
       if (adminDashboard) {
         adminDashboard.classList.add('light-theme');
         adminDashboard.classList.remove('dark-theme');
+        // Remove dark theme from all child elements
+        const allElements = adminDashboard.querySelectorAll('*');
+        allElements.forEach((el) => {
+          el.classList.remove('dark-theme-applied');
+        });
       }
     } else if (savedTheme === 'auto') {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -166,6 +212,10 @@ const AdminDashboard = () => {
         if (adminDashboard) {
           adminDashboard.classList.add('dark-theme');
           adminDashboard.classList.remove('light-theme');
+          const allElements = adminDashboard.querySelectorAll('*');
+          allElements.forEach((el) => {
+            el.classList.add('dark-theme-applied');
+          });
         }
       } else {
         document.documentElement.classList.add('light-theme');
@@ -173,6 +223,10 @@ const AdminDashboard = () => {
         if (adminDashboard) {
           adminDashboard.classList.add('light-theme');
           adminDashboard.classList.remove('dark-theme');
+          const allElements = adminDashboard.querySelectorAll('*');
+          allElements.forEach((el) => {
+            el.classList.remove('dark-theme-applied');
+          });
         }
       }
     }
@@ -192,6 +246,35 @@ const AdminDashboard = () => {
       }
     };
   }, []);
+
+  // Sync settings from backend to localStorage when settings are loaded
+  useEffect(() => {
+    if (settings) {
+      // Sync theme settings from backend to localStorage if they exist
+      if (settings.theme !== undefined) {
+        localStorage.setItem('homiebites_theme', settings.theme);
+      }
+      if (settings.primaryColor !== undefined) {
+        localStorage.setItem('homiebites_primary_color', settings.primaryColor);
+      }
+      if (settings.secondaryColor !== undefined) {
+        localStorage.setItem('homiebites_secondary_color', settings.secondaryColor);
+      }
+      if (settings.fontSize !== undefined) {
+        localStorage.setItem('homiebites_font_size', settings.fontSize);
+      }
+      if (settings.fontFamily !== undefined) {
+        localStorage.setItem('homiebites_font_family', settings.fontFamily);
+      }
+    }
+  }, [settings]);
+
+  // Save active tab to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && activeTab) {
+      localStorage.setItem('homiebites_active_tab', activeTab);
+    }
+  }, [activeTab]);
 
   // Helper function to convert hex to RGB
   const hexToRgb = (hex) => {
@@ -667,7 +750,25 @@ const AdminDashboard = () => {
               ? 'Your profile and password have been updated'
               : 'Your profile has been updated successfully';
           } else if (newSettings.themeSettings) {
-            const { theme, primaryColor, fontSize, fontFamily } = newSettings.themeSettings;
+            const { theme, primaryColor, secondaryColor, fontSize, fontFamily } = newSettings.themeSettings;
+            
+            // Sync theme settings to localStorage after successful backend save
+            if (theme !== undefined) {
+              localStorage.setItem('homiebites_theme', theme);
+            }
+            if (primaryColor !== undefined) {
+              localStorage.setItem('homiebites_primary_color', primaryColor);
+            }
+            if (secondaryColor !== undefined) {
+              localStorage.setItem('homiebites_secondary_color', secondaryColor);
+            }
+            if (fontSize !== undefined) {
+              localStorage.setItem('homiebites_font_size', fontSize);
+            }
+            if (fontFamily !== undefined) {
+              localStorage.setItem('homiebites_font_family', fontFamily);
+            }
+
             const changes = [];
 
             // Build descriptive message parts
@@ -1165,6 +1266,12 @@ const AdminDashboard = () => {
 
   return (
     <div className='admin-dashboard'>
+      {/* Sidebar Overlay for Mobile */}
+      <div
+        className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+        aria-hidden={!sidebarOpen}
+      />
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}

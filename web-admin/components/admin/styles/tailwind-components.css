@@ -17,7 +17,7 @@
   /* Font family - use global font from variables.css */
   font-family: var(--font-primary, 'Baloo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif);
   /* Base font size - scoped to admin dashboard only */
-  font-size: var(--admin-base-font-size, 14px);
+  font-size: var(--admin-base-font-size, 16px) !important;
   line-height: 1.6;
   color: #1a202c;
   isolation: isolate;
@@ -26,20 +26,40 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Typography Hierarchy Variables */
-  --admin-font-size-h1: 28px; /* Page Title */
-  --admin-font-size-h2: 22px; /* Main Section Title */
-  --admin-font-size-h3: 18px; /* Subsection / Card Title */
-  --admin-font-size-h4: 16px; /* Small Section Title */
-  --admin-font-size-body-lg: 15px; /* Body Large */
-  --admin-font-size-body: 14px; /* Body Default (base) */
-  --admin-font-size-body-sm: 13px; /* Body Small */
-  --admin-font-size-body-xs: 12px; /* Body XSmall / Caption */
-  --admin-font-size-body-xxs: 11px; /* Body XXSmall */
-  --admin-font-size-caption: 10px; /* Table Headers / Tiny Text */
+  /* Typography Hierarchy Variables - Scale based on base font size */
+  --admin-font-size-h1: calc(var(--admin-base-font-size, 16px) * 1.75); /* Page Title */
+  --admin-font-size-h2: calc(var(--admin-base-font-size, 16px) * 1.375); /* Main Section Title */
+  --admin-font-size-h3: calc(var(--admin-base-font-size, 16px) * 1.125); /* Subsection / Card Title */
+  --admin-font-size-h4: var(--admin-base-font-size, 16px); /* Small Section Title */
+  --admin-font-size-body-lg: calc(var(--admin-base-font-size, 16px) * 0.9375); /* Body Large */
+  --admin-font-size-body: calc(var(--admin-base-font-size, 16px) * 0.875); /* Body Default (base) */
+  --admin-font-size-body-sm: calc(var(--admin-base-font-size, 16px) * 0.8125); /* Body Small */
+  --admin-font-size-body-xs: calc(var(--admin-base-font-size, 16px) * 0.75); /* Body XSmall / Caption */
+  --admin-font-size-body-xxs: calc(var(--admin-base-font-size, 16px) * 0.6875); /* Body XXSmall */
+  --admin-font-size-caption: calc(var(--admin-base-font-size, 16px) * 0.625); /* Table Headers / Tiny Text */
 
-  /* Theme variables */
-  --admin-base-font-size: 14px;
+  /* Theme variables - Standard default font size */
+  --admin-base-font-size: 16px; /* Standard default size */
+}
+
+/* Ensure default font size is always applied */
+.admin-dashboard:not([style*="font-size"]) {
+  font-size: 16px !important;
+  --admin-base-font-size: 16px !important;
+}
+
+/* Ensure all child elements inherit font size unless explicitly set */
+.admin-dashboard *:not([style*="font-size"]) {
+  font-size: inherit;
+}
+
+/* Override for form elements - use relative units */
+.admin-dashboard input:not([style*="font-size"]),
+.admin-dashboard textarea:not([style*="font-size"]),
+.admin-dashboard select:not([style*="font-size"]),
+.admin-dashboard button:not([style*="font-size"]),
+.admin-dashboard .btn:not([style*="font-size"]) {
+  font-size: calc(var(--admin-base-font-size, 16px) * 0.875) !important;
 }
 
 /* Typography Hierarchy - Headings */
@@ -133,7 +153,23 @@
 
 /* Admin content inherits base size */
 .admin-content {
-  font-size: var(--admin-base-font-size, 14px);
+  font-size: var(--admin-base-font-size, 16px) !important;
+}
+
+/* Force font size inheritance for all admin dashboard children */
+.admin-dashboard,
+.admin-dashboard * {
+  font-size: inherit;
+}
+
+/* Reset font size for elements that should use base size */
+.admin-dashboard p,
+.admin-dashboard span,
+.admin-dashboard div,
+.admin-dashboard td,
+.admin-dashboard th,
+.admin-dashboard li {
+  font-size: inherit;
 }
 
 /* Button reset - only for non-.btn buttons */
@@ -579,6 +615,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding-left: 4px; /* Add spacing from left border */
 }
 
 .sidebar-item span {
@@ -654,6 +691,7 @@
   width: auto;
   font-size: 22px;
   color: inherit;
+  padding-left: 0; /* No padding needed when collapsed - centered */
 }
 
 .sidebar-footer {
@@ -2275,8 +2313,8 @@ select.input-field option:hover {
 }
 
 .orders-table tbody tr:hover {
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.04));
-  cursor: pointer;
+  background: transparent;
+  cursor: default;
 }
 
 .orders-table tbody tr.table-row-selected {
@@ -2284,7 +2322,7 @@ select.input-field option:hover {
 }
 
 .orders-table tbody tr.table-row-selected:hover {
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.12));
+  background: transparent;
   transform: none;
 }
 
@@ -4319,8 +4357,8 @@ select.input-field option {
 }
 
 .recent-orders-table tbody tr:hover {
-  background: rgba(68, 144, 49, 0.04);
-  cursor: pointer;
+  background: transparent;
+  cursor: default;
 }
 
 .recent-orders-table tbody tr:last-child td {
@@ -4652,8 +4690,8 @@ select.input-field {
 }
 
 .orders-table tbody tr:hover {
-  background: rgba(68, 144, 49, 0.04);
-  cursor: pointer;
+  background: transparent;
+  cursor: default;
 }
 
 .orders-table tbody tr:last-child td {
