@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
+import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance.js';
 import api from '../../lib/api-admin.js';
 import { convertMenuItemsToCategories } from '../../lib/menuData.js';
 import ConfirmModal from './ConfirmationModal.jsx';
