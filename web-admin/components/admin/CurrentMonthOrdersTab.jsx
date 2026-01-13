@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import EmptyState from './EmptyState.jsx';
+import OrderModal from './OrderModal.jsx';
+import PremiumLoader from './PremiumLoader.jsx';
 import { getFilteredOrdersByDate } from './utils/calculations.js';
 import { formatDate, parseOrderDate } from './utils/dateUtils.js';
 import {
@@ -8,9 +11,6 @@ import {
   isPendingStatus,
   sortOrdersByOrderId,
 } from './utils/orderUtils.js';
-import EmptyState from './EmptyState.jsx';
-import OrderModal from './OrderModal.jsx';
-import PremiumLoader from './PremiumLoader.jsx';
 
 const CurrentMonthOrdersTab = ({
   orders = [],
@@ -87,19 +87,19 @@ const CurrentMonthOrdersTab = ({
     const pending = currentMonthOrders.filter((o) => isPendingStatus(o.status));
     const pendingAmount = pending.reduce((sum, o) => {
       let amount = null;
-      
+
       if (o.totalAmount !== undefined && o.totalAmount !== null) {
         amount = parseFloat(o.totalAmount);
       } else if (o.total !== undefined && o.total !== null) {
         amount = parseFloat(o.total);
       }
-      
+
       if (amount === null || isNaN(amount)) {
         const qty = parseFloat(o.quantity || 1);
         const price = parseFloat(o.unitPrice || 0);
         amount = qty * price;
       }
-      
+
       return sum + (isNaN(amount) ? 0 : amount);
     }, 0);
 
@@ -122,8 +122,8 @@ const CurrentMonthOrdersTab = ({
       lastMonthRevenue > 0
         ? ((revenue - lastMonthRevenue) / lastMonthRevenue) * 100
         : revenue > 0
-          ? Infinity
-          : 0;
+        ? Infinity
+        : 0;
 
     return {
       revenue,
@@ -194,6 +194,21 @@ const CurrentMonthOrdersTab = ({
       default:
         // 'all' - no filter
         break;
+    }
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((order) => {
+        const address = (
+          order.deliveryAddress ||
+          order.customerAddress ||
+          order.address ||
+          ''
+        ).toLowerCase();
+        const orderId = (order.orderId || '').toLowerCase();
+        return address.includes(query) || orderId.includes(query);
+      });
     }
 
     // Sort by orderId (newest first)
@@ -495,7 +510,9 @@ const CurrentMonthOrdersTab = ({
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = `current_month_export_${new Date().toISOString().split('T')[0]}.csv`;
+                link.download = `current_month_export_${
+                  new Date().toISOString().split('T')[0]
+                }.csv`;
                 link.click();
                 if (showNotification)
                   showNotification('Month data exported successfully', 'success');
@@ -535,7 +552,7 @@ const CurrentMonthOrdersTab = ({
             icon='fa-solid fa-inbox'
             title='No orders found'
             message='Try adjusting your filters or add a new order'
-            actionLabel='Add New Order (Ctrl+N)'
+            actionLabel='Add New Order'
             onAction={() => setShowAddOrderModal(true)}
           />
         ) : (

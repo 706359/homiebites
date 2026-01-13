@@ -529,7 +529,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
           {/* File Drop Zone */}
           {!file && (
             <div
-              className='dashboard-card'
+              className='dashboard-card file-upload'
               style={{
                 border: '2px dashed var(--admin-border)',
                 padding: '48px',
@@ -543,22 +543,22 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
             >
-              <i
-                className='fa-solid fa-cloud-upload-alt'
-                style={{ fontSize: '64px', color: 'var(--admin-accent)', marginBottom: '16px' }}
-              ></i>
-              <h3 style={{ marginBottom: '8px' }}>Drag & Drop CSV/Excel file</h3>
-              <p style={{ color: 'var(--admin-text-secondary)', marginBottom: '16px' }}>or</p>
-              <button className='btn btn-primary'>
-                <i className='fa-solid fa-folder-open'></i> Browse Files
-              </button>
-              <p
-                style={{ color: 'var(--admin-text-light)', fontSize: '0.85rem', marginTop: '16px' }}
-              >
-                Supported formats: .csv, .xlsx, .xls
-                <br />
-                Max file size: 10 MB
-              </p>
+              <div className='file-upload-label'>
+                <i
+                  className='fa-solid fa-cloud-upload-alt file-upload-icon'
+                  style={{ fontSize: '64px', color: 'var(--admin-accent)', marginBottom: '16px' }}
+                ></i>
+                <h3 className='file-upload-text' style={{ marginBottom: '8px' }}>Drag & Drop CSV/Excel file</h3>
+                <p style={{ color: 'var(--admin-text-secondary)', marginBottom: '16px' }}>or</p>
+                <button className='btn btn-primary'>
+                  <i className='fa-solid fa-folder-open'></i> Browse Files
+                </button>
+                <p className='file-upload-hint' style={{ color: 'var(--admin-text-light)', fontSize: '0.85rem', marginTop: '16px' }}>
+                  Supported formats: .csv, .xlsx, .xls
+                  <br />
+                  Max file size: 10 MB
+                </p>
+              </div>
             </div>
           )}
 
@@ -638,48 +638,40 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
 
                 {/* Validation Errors */}
                 {validationErrors.length > 0 && (
-                  <div
-                    style={{
-                      background: 'var(--admin-danger-light)',
-                      border: '2px solid var(--admin-danger)',
-                      borderRadius: '8px',
-                      padding: '16px',
-                      marginTop: '16px',
-                    }}
-                  >
-                    <h4 style={{ color: 'var(--admin-danger)', marginBottom: '8px' }}>
-                      <i className='fa-solid fa-exclamation-triangle'></i> Validation Errors:
-                    </h4>
-                    <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                      {validationErrors.map((error, idx) => (
-                        <li key={idx} style={{ color: 'var(--admin-text)', marginBottom: '4px' }}>
-                          {error}
-                        </li>
-                      ))}
-                    </ul>
+                  <div className='alert alert-danger'>
+                    <div className='alert-icon'>
+                      <i className='fa-solid fa-exclamation-triangle'></i>
+                    </div>
+                    <div className='alert-content'>
+                      <div className='alert-title'>Validation Errors:</div>
+                      <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
+                        {validationErrors.map((error, idx) => (
+                          <li key={idx} style={{ color: 'var(--admin-text)', marginBottom: '4px' }}>
+                            {error}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 )}
 
                 {/* Validation Success */}
                 {validationErrors.length === 0 && previewData && (
-                  <div
-                    style={{
-                      background: 'var(--admin-success-light)',
-                      border: '2px solid var(--admin-success)',
-                      borderRadius: '8px',
-                      padding: '16px',
-                      marginTop: '16px',
-                    }}
-                  >
-                    <p style={{ color: 'var(--admin-success)', fontWeight: '600' }}>
-                      <i className='fa-solid fa-check-circle'></i> Validation passed
-                    </p>
-                    <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px', fontSize: '0.9rem' }}>
-                      <li>All required columns present</li>
-                      <li>Date format correct</li>
-                      <li>Total Amount will be calculated automatically (Quantity × Unit Price)</li>
-                      <li>No duplicate Order IDs detected</li>
-                    </ul>
+                  <div className='alert alert-success'>
+                    <div className='alert-icon'>
+                      <i className='fa-solid fa-circle-check'></i>
+                    </div>
+                    <div className='alert-content'>
+                      <div className='alert-title'>File Validated Successfully</div>
+                      <div className='alert-message'>
+                        <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px', fontSize: '0.9rem' }}>
+                          <li>All required columns present</li>
+                          <li>Date format correct</li>
+                          <li>Total Amount will be calculated automatically (Quantity × Unit Price)</li>
+                          <li>No duplicate Order IDs detected</li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -802,33 +794,26 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                   e.currentTarget.style.color = 'var(--admin-text-secondary)';
                 }}
                 title='Minimize and continue in background'
+                className='tooltip-wrapper'
               >
                 <i className='fa-solid fa-window-minimize'></i>
+                <span className='tooltip'>Minimize and continue in background</span>
               </button>
               <h3 className='margin-bottom-24'>Uploading Orders...</h3>
               <div className='margin-bottom-24'>
-                <div
-                  style={{
-                    width: '100%',
-                    height: '32px',
-                    background: 'var(--admin-glass-border)',
-                    borderRadius: '16px',
-                    overflow: 'hidden',
-                    position: 'relative',
-                  }}
-                >
+                <div className='progress-label'>
+                  <span>Upload Progress</span>
+                  <span className='progress-percentage'>
+                    {uploadedRecords > 0 && totalRecords > 0
+                      ? `${uploadedRecords} / ${totalRecords}`
+                      : `${Math.round(uploadProgress)}%`}
+                  </span>
+                </div>
+                <div className='progress progress-bar-container'>
                   <div
+                    className='progress-bar progress-fill'
                     style={{
                       width: `${uploadProgress}%`,
-                      height: '100%',
-                      background: 'var(--admin-accent, #449031)',
-                      borderRadius: '16px',
-                      transition: 'width 0.3s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'white',
-                      fontWeight: '600',
                     }}
                   >
                     {uploadProgress >= 10 && (
@@ -887,14 +872,9 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
                 <div
+                  className='avatar'
                   style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
                     background: 'var(--admin-accent, #449031)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
                     color: 'white',
                     fontSize: '18px',
                     flexShrink: 0,
@@ -903,41 +883,21 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                   <i className='fa-solid fa-cloud-upload-alt'></i>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      marginBottom: '4px',
-                    }}
-                  >
-                    <span
-                      style={{ fontWeight: '600', color: 'var(--admin-text)', fontSize: '14px' }}
-                    >
+                  <div className='progress-label'>
+                    <span style={{ fontWeight: '600', color: 'var(--admin-text)', fontSize: '14px' }}>
                       Uploading in background...
                     </span>
-                    <span style={{ fontSize: '12px', color: 'var(--admin-text-secondary)' }}>
+                    <span className='progress-percentage' style={{ fontSize: '12px', color: 'var(--admin-text-secondary)' }}>
                       {uploadedRecords > 0 && totalRecords > 0
                         ? `${uploadedRecords} / ${totalRecords}`
                         : `${Math.round(uploadProgress)}%`}
                     </span>
                   </div>
-                  <div
-                    style={{
-                      width: '100%',
-                      height: '6px',
-                      background: 'var(--admin-glass-border)',
-                      borderRadius: '3px',
-                      overflow: 'hidden',
-                    }}
-                  >
+                  <div className='progress progress-bar-container'>
                     <div
+                      className='progress-bar progress-fill'
                       style={{
                         width: `${uploadProgress}%`,
-                        height: '100%',
-                        background: 'var(--admin-accent, #449031)',
-                        borderRadius: '3px',
-                        transition: 'width 0.3s ease',
                       }}
                     />
                   </div>

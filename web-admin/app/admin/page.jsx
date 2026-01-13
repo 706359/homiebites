@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import AdminLogin from '../../components/admin/AdminLogin';
 import NotificationWrapper from '../../components/admin/NotificationWrapper.jsx';
+import FontSettingsLoader from '../../components/FontSettingsLoader';
 import { NotificationProvider } from '../../components/admin/contexts/NotificationContext.jsx';
 
 export default function Admin() {
@@ -27,6 +28,7 @@ export default function Admin() {
 
   return (
     <NotificationProvider>
+      <FontSettingsLoader />
       <AdminLogin onLoginSuccess={handleLoginSuccess} />
       <NotificationWrapper />
     </NotificationProvider>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
 import PremiumLoader from './PremiumLoader.jsx';
 
 const SettingsTab = ({
@@ -12,6 +13,12 @@ const SettingsTab = ({
   showConfirmation,
 }) => {
   const [activeTab, setActiveTab] = useState('general'); // 'general', 'orders', 'notifications', 'data', 'profile', 'theme'
+
+  // Enable keyboard avoidance for mobile
+  useAutoKeyboardAvoidance({
+    containerSelector: '.settings-tab-content',
+    inputSelector: 'input, textarea, select',
+  });
 
   // Form states
   const [businessInfo, setBusinessInfo] = useState({
@@ -62,10 +69,10 @@ const SettingsTab = ({
   const [themeSettings, setThemeSettings] = useState({
     theme: settings?.theme || localStorage.getItem('homiebites_theme') || 'light',
     primaryColor:
-      settings?.primaryColor || localStorage.getItem('homiebites_primary_color') || '#449031',
+      settings?.primaryColor || localStorage.getItem('homiebites_primary_color') || '#A4672E',
     secondaryColor:
-      settings?.secondaryColor || localStorage.getItem('homiebites_secondary_color') || '#c45c2d',
-    fontSize: settings?.fontSize || localStorage.getItem('homiebites_font_size') || 'medium',
+      settings?.secondaryColor || localStorage.getItem('homiebites_secondary_color') || '#B8D84E',
+    fontSize: settings?.fontSize || localStorage.getItem('homiebites_font_size') || 'medium', // Standard default: medium (16px)
     fontFamily: settings?.fontFamily || localStorage.getItem('homiebites_font_family') || 'Baloo 2',
   });
 
@@ -90,6 +97,11 @@ const SettingsTab = ({
       if (!adminDashboard) {
         return;
       }
+
+      // Preserve wrapper background colors - DO NOT CHANGE
+      const preservedBgSecondary = getComputedStyle(adminDashboard).getPropertyValue('--admin-bg-secondary') || '#f5f5f7';
+      const preservedBg = getComputedStyle(adminDashboard).getPropertyValue('--admin-bg') || '#ffffff';
+      const preservedBgTertiary = getComputedStyle(adminDashboard).getPropertyValue('--admin-bg-tertiary') || '#fafafa';
 
       // Apply primary color - scoped to admin-dashboard
       if (theme && theme.primaryColor) {
@@ -119,44 +131,87 @@ const SettingsTab = ({
         }
       }
 
-      // Apply font size - SCOPED TO ADMIN DASHBOARD ONLY
-      if (theme && theme.fontSize) {
-        const fontSizeMap = {
-          small: '14px',
-          medium: '16px',
-          large: '18px',
-          'extra-large': '20px',
-        };
-        const fontSize = fontSizeMap[theme.fontSize] || '16px';
-        // Set CSS variable on admin-dashboard element
-        adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
-        // Apply font size to admin-dashboard
-        adminDashboard.style.fontSize = fontSize;
-      }
+      // Restore wrapper background colors - ensure they remain unchanged
+      adminDashboard.style.setProperty('--admin-bg-secondary', preservedBgSecondary);
+      adminDashboard.style.setProperty('--admin-bg', preservedBg);
+      adminDashboard.style.setProperty('--admin-bg-tertiary', preservedBgTertiary);
 
-      // Apply font family - SCOPED TO ADMIN DASHBOARD ONLY
+      // Apply font size - SCOPED TO ADMIN DASHBOARD ONLY
+      // Default to standard size (16px/medium) if not specified
+      const fontSizeMap = {
+        small: '14px',
+        medium: '16px', // Standard default size
+        large: '18px',
+        'extra-large': '20px',
+      };
+      const selectedFontSize = theme?.fontSize || 'medium'; // Default to medium
+      const fontSize = fontSizeMap[selectedFontSize] || '16px'; // Fallback to 16px
+      
+      // Set CSS variable on root and admin-dashboard
+      document.documentElement.style.setProperty('--admin-base-font-size', fontSize);
+      adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
+      // Apply font size to admin-dashboard
+      adminDashboard.style.fontSize = fontSize;
+      // Force reflow to ensure changes apply
+      void adminDashboard.offsetHeight;
+      // Trigger a custom event to notify all components
+      window.dispatchEvent(new CustomEvent('adminFontSizeChanged', { detail: { fontSize } }));
+
+      // Apply font family - Set global font variable on root for entire platform
       if (theme && theme.fontFamily) {
         const fontFamily = `'${theme.fontFamily}', sans-serif`;
-        adminDashboard.style.setProperty('--admin-font-family', fontFamily);
-        adminDashboard.style.fontFamily = fontFamily;
+        const root = document.documentElement;
+        root.style.setProperty('--font-primary', fontFamily);
+        document.body.style.fontFamily = fontFamily;
+        // Also apply to admin dashboard for immediate effect
+        if (adminDashboard) {
+          adminDashboard.style.fontFamily = fontFamily;
+        }
       }
 
       // Apply theme (light/dark/auto) - SCOPED TO ADMIN DASHBOARD ONLY
       if (theme && theme.theme === 'dark') {
+        // Apply to both root and admin-dashboard for full coverage
+        document.documentElement.classList.add('dark-theme');
+        document.documentElement.classList.remove('light-theme');
         adminDashboard.classList.add('dark-theme');
         adminDashboard.classList.remove('light-theme');
+        // Force update all child elements
+        const allElements = adminDashboard.querySelectorAll('*');
+        allElements.forEach((el) => {
+          el.classList.add('dark-theme-applied');
+        });
       } else if (theme && theme.theme === 'light') {
+        document.documentElement.classList.add('light-theme');
+        document.documentElement.classList.remove('dark-theme');
         adminDashboard.classList.add('light-theme');
         adminDashboard.classList.remove('dark-theme');
+        // Remove dark theme from all child elements
+        const allElements = adminDashboard.querySelectorAll('*');
+        allElements.forEach((el) => {
+          el.classList.remove('dark-theme-applied');
+        });
       } else if (theme && theme.theme === 'auto') {
         // Auto theme based on system preference
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         if (prefersDark) {
+          document.documentElement.classList.add('dark-theme');
+          document.documentElement.classList.remove('light-theme');
           adminDashboard.classList.add('dark-theme');
           adminDashboard.classList.remove('light-theme');
+          const allElements = adminDashboard.querySelectorAll('*');
+          allElements.forEach((el) => {
+            el.classList.add('dark-theme-applied');
+          });
         } else {
+          document.documentElement.classList.add('light-theme');
+          document.documentElement.classList.remove('dark-theme');
           adminDashboard.classList.add('light-theme');
           adminDashboard.classList.remove('dark-theme');
+          const allElements = adminDashboard.querySelectorAll('*');
+          allElements.forEach((el) => {
+            el.classList.remove('dark-theme-applied');
+          });
         }
       }
     } catch (error) {
@@ -326,6 +381,19 @@ const SettingsTab = ({
   };
 
   const handleSaveTheme = () => {
+    // Apply font globally when saving theme
+    if (themeSettings.fontFamily) {
+      const root = document.documentElement;
+      const fontFamily = `'${themeSettings.fontFamily}', sans-serif`;
+      root.style.setProperty('--font-primary', fontFamily);
+      document.body.style.fontFamily = fontFamily;
+      // Also apply to admin dashboard for immediate effect
+      const adminDashboard = document.querySelector('.admin-dashboard');
+      if (adminDashboard) {
+        adminDashboard.style.fontFamily = fontFamily;
+      }
+    }
+
     if (showConfirmation) {
       showConfirmation({
         title: 'Apply Theme',
@@ -385,17 +453,17 @@ const SettingsTab = ({
 
   // Apply theme when settings change (for preview)
   const handleLogoTheme = () => {
-    // Apply logo theme colors: Green #449031 and Orange #c45c2d
+    // Apply HomieBites theme colors: Brown #A4672E and Lime #B8D84E
     const logoTheme = {
-      primaryColor: '#449031',
-      secondaryColor: '#c45c2d'
+      primaryColor: '#A4672E',
+      secondaryColor: '#B8D84E',
     };
     setThemeSettings({ ...themeSettings, ...logoTheme });
     handleThemeChange(logoTheme);
-    
+
     // Show notification
     if (showNotification) {
-      showNotification('Logo theme applied! Click "Apply Theme" to save.', 'success');
+      showNotification('HomieBites theme applied! Click "Apply Theme" to save.', 'success');
     }
   };
 
@@ -512,7 +580,7 @@ const SettingsTab = ({
       </div>
 
       {/* TAB CONTENT */}
-      <div className="settings-tab-content">
+      <div className='settings-tab-content'>
         {activeTab === 'general' && (
           <div className='dashboard-grid-layout settings-general-grid'>
             {/* Business Information */}
@@ -1095,7 +1163,8 @@ const SettingsTab = ({
                     onClick={handleLogoTheme}
                     style={{
                       width: '100%',
-                      background: 'linear-gradient(135deg, #449031 0%, #449031 50%, #c45c2d 50%, #c45c2d 100%)',
+                      background:
+                        'linear-gradient(135deg, #449031 0%, #449031 50%, #c45c2d 50%, #c45c2d 100%)',
                       color: '#fff',
                       border: 'none',
                       padding: '10px 16px',
@@ -1107,9 +1176,11 @@ const SettingsTab = ({
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '8px',
-                      boxShadow: themeSettings.primaryColor === '#449031' && themeSettings.secondaryColor === '#c45c2d' 
-                        ? '0 0 0 3px rgba(68, 144, 49, 0.3)' 
-                        : 'none'
+                      boxShadow:
+                        themeSettings.primaryColor === '#449031' &&
+                        themeSettings.secondaryColor === '#c45c2d'
+                          ? '0 0 0 3px rgba(68, 144, 49, 0.3)'
+                          : 'none',
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'scale(1.02)';
@@ -1117,23 +1188,28 @@ const SettingsTab = ({
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'scale(1)';
-                      e.currentTarget.style.boxShadow = themeSettings.primaryColor === '#449031' && themeSettings.secondaryColor === '#c45c2d' 
-                        ? '0 0 0 3px rgba(68, 144, 49, 0.3)' 
-                        : 'none';
+                      e.currentTarget.style.boxShadow =
+                        themeSettings.primaryColor === '#449031' &&
+                        themeSettings.secondaryColor === '#c45c2d'
+                          ? '0 0 0 3px rgba(68, 144, 49, 0.3)'
+                          : 'none';
                     }}
                   >
-                    <i className="fa-solid fa-image"></i>
+                    <i className='fa-solid fa-image'></i>
                     <span>Apply Logo Theme</span>
-                    {themeSettings.primaryColor === '#449031' && themeSettings.secondaryColor === '#c45c2d' && (
-                      <i className="fa-solid fa-check" style={{ marginLeft: '4px' }}></i>
-                    )}
+                    {themeSettings.primaryColor === '#449031' &&
+                      themeSettings.secondaryColor === '#c45c2d' && (
+                        <i className='fa-solid fa-check' style={{ marginLeft: '4px' }}></i>
+                      )}
                   </button>
-                  <p style={{ 
-                    fontSize: '12px', 
-                    color: 'var(--admin-text-secondary, #6b7280)', 
-                    marginTop: '8px',
-                    textAlign: 'center'
-                  }}>
+                  <p
+                    style={{
+                      fontSize: '12px',
+                      color: 'var(--admin-text-secondary, #6b7280)',
+                      marginTop: '8px',
+                      textAlign: 'center',
+                    }}
+                  >
                     Uses exact logo colors: Green (#449031) & Orange (#c45c2d)
                   </p>
                 </div>
@@ -1166,7 +1242,8 @@ const SettingsTab = ({
                     onClick={handleLogoTheme}
                     style={{
                       width: '100%',
-                      background: 'linear-gradient(135deg, #449031 0%, #449031 50%, #c45c2d 50%, #c45c2d 100%)',
+                      background:
+                        'linear-gradient(135deg, #449031 0%, #449031 50%, #c45c2d 50%, #c45c2d 100%)',
                       color: '#fff',
                       border: 'none',
                       padding: '10px 16px',
@@ -1177,7 +1254,7 @@ const SettingsTab = ({
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '8px'
+                      gap: '8px',
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'scale(1.02)';
@@ -1188,7 +1265,7 @@ const SettingsTab = ({
                       e.currentTarget.style.boxShadow = 'none';
                     }}
                   >
-                    <i className="fa-solid fa-image"></i>
+                    <i className='fa-solid fa-image'></i>
                     <span>Apply Logo Theme</span>
                   </button>
                 </div>
@@ -1197,7 +1274,9 @@ const SettingsTab = ({
                     (color) => (
                       <button
                         key={color}
-                        className={`color-preset ${themeSettings.primaryColor === color ? 'active' : ''}`}
+                        className={`color-preset ${
+                          themeSettings.primaryColor === color ? 'active' : ''
+                        }`}
                         onClick={() => handleThemeChange({ primaryColor: color })}
                         style={{ background: color }}
                         title={color}
@@ -1220,15 +1299,20 @@ const SettingsTab = ({
                       if (adminDashboard) {
                         const fontSizeMap = {
                           small: '14px',
-                          medium: '16px',
+                          medium: '16px', // Standard default size
                           large: '18px',
                           'extra-large': '20px',
                         };
+                        // Default to medium (16px) if invalid selection
                         const fontSize = fontSizeMap[newFontSize] || '16px';
+                        // Set CSS variable on root and admin-dashboard
+                        document.documentElement.style.setProperty('--admin-base-font-size', fontSize);
                         adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
                         adminDashboard.style.fontSize = fontSize;
                         // Force reflow to ensure changes apply
-                        adminDashboard.offsetHeight;
+                        void adminDashboard.offsetHeight;
+                        // Trigger a custom event to notify all components
+                        window.dispatchEvent(new CustomEvent('adminFontSizeChanged', { detail: { fontSize } }));
                       } else {
                         setTimeout(applyFontSize, 50);
                       }
@@ -1248,10 +1332,10 @@ const SettingsTab = ({
                         themeSettings.fontSize === 'small'
                           ? '14px'
                           : themeSettings.fontSize === 'large'
-                            ? '18px'
-                            : themeSettings.fontSize === 'extra-large'
-                              ? '20px'
-                              : '16px',
+                          ? '18px'
+                          : themeSettings.fontSize === 'extra-large'
+                          ? '20px'
+                          : '16px',
                       margin: 0,
                     }}
                   >
@@ -1267,17 +1351,40 @@ const SettingsTab = ({
                   onChange={(e) => {
                     const newFontFamily = e.target.value;
                     handleThemeChange({ fontFamily: newFontFamily });
-                    // Apply font family immediately - SCOPED TO ADMIN DASHBOARD
+
+                    // Load Google Font
+                    const fontName = newFontFamily.replace(/\s+/g, '+');
+                    const existingLink = document.querySelector(
+                      `link[href*="fonts.googleapis.com"][href*="${fontName}"]`
+                    );
+                    if (!existingLink) {
+                      // Remove old font links
+                      const oldLinks = document.querySelectorAll(
+                        'link[href*="fonts.googleapis.com"]'
+                      );
+                      oldLinks.forEach((link) => {
+                        if (!link.href.includes('font-awesome')) {
+                          link.remove();
+                        }
+                      });
+                      // Add new font link
+                      const link = document.createElement('link');
+                      link.rel = 'stylesheet';
+                      link.href = `https://fonts.googleapis.com/css2?family=${fontName}:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap`;
+                      document.head.appendChild(link);
+                    }
+
+                    // Apply font family immediately - Set global font for entire platform
                     const applyFontFamily = () => {
+                      const root = document.documentElement;
+                      const fontFamily = `'${newFontFamily}', sans-serif`;
+                      // Set global font variable on root for entire platform
+                      root.style.setProperty('--font-primary', fontFamily);
+                      document.body.style.fontFamily = fontFamily;
+                      // Also apply to admin dashboard for immediate effect
                       const adminDashboard = document.querySelector('.admin-dashboard');
                       if (adminDashboard) {
-                        const fontFamily = `'${newFontFamily}', sans-serif`;
-                        adminDashboard.style.setProperty('--admin-font-family', fontFamily);
                         adminDashboard.style.fontFamily = fontFamily;
-                        // Force reflow to ensure changes apply
-                        adminDashboard.offsetHeight;
-                      } else {
-                        setTimeout(applyFontFamily, 50);
                       }
                     };
                     applyFontFamily();

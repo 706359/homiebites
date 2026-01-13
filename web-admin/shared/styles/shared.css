@@ -22,7 +22,7 @@
 body {
   font-family: var(--font-primary);
   color: var(--text-primary);
-  background: var(--bg-white);
+  /* Background is set in globals.css for web-specific design */
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

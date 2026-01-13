@@ -6,7 +6,7 @@ import {
   getDeliveredRevenue,
   getOrderDateOnly,
   getTotalRevenue,
-} from "./orderUtils.js";
+} from './orderUtils.js';
 
 /**
  * Get today's statistics
@@ -31,7 +31,7 @@ export const getTodayStats = (ordersList = []) => {
     const todayRevenue = getDeliveredRevenue(todayOrders);
     const todayTotalRevenue = getTotalRevenue(todayOrders);
     const pending = todayOrders.filter((o) =>
-      ["pending", "confirmed", "preparing"].includes(o.status),
+      ['pending', 'confirmed', 'preparing'].includes(o.status)
     ).length;
 
     return {
@@ -41,7 +41,7 @@ export const getTodayStats = (ordersList = []) => {
       totalRevenue: todayTotalRevenue,
     };
   } catch (error) {
-    console.error("Error calculating today stats:", error);
+    console.error('Error calculating today stats:', error);
     return {
       orders: 0,
       pending: 0,
@@ -76,9 +76,7 @@ export const getWeeklyStats = (ordersList = []) => {
 
     const weekRevenue = getTotalRevenue(weekOrders);
     const weekDeliveredRevenue = getDeliveredRevenue(weekOrders);
-    const deliveredWeekOrders = weekOrders.filter(
-      (o) => o && o.status === "delivered",
-    );
+    const deliveredWeekOrders = weekOrders.filter((o) => o && o.status === 'delivered');
 
     return {
       orders: weekOrders.length,
@@ -89,13 +87,12 @@ export const getWeeklyStats = (ordersList = []) => {
         deliveredWeekOrders.length > 0
           ? Math.round(weekDeliveredRevenue / deliveredWeekOrders.length)
           : 0,
-      avgOrderValueAll:
-        weekOrders.length > 0 ? Math.round(weekRevenue / weekOrders.length) : 0,
+      avgOrderValueAll: weekOrders.length > 0 ? Math.round(weekRevenue / weekOrders.length) : 0,
       formattedRevenue: formatCurrency(weekDeliveredRevenue),
       formattedDeliveredRevenue: formatCurrency(weekDeliveredRevenue),
     };
   } catch (error) {
-    console.error("Error calculating weekly stats:", error);
+    console.error('Error calculating weekly stats:', error);
     return {
       orders: 0,
       revenue: 0,
@@ -111,11 +108,10 @@ export const getWeeklyStats = (ordersList = []) => {
  */
 export const getPendingOrders = (ordersList = []) => {
   try {
-    return ordersList.filter((o) =>
-      ["pending", "confirmed", "preparing"].includes(o.status),
-    ).length;
+    return ordersList.filter((o) => ['pending', 'confirmed', 'preparing'].includes(o.status))
+      .length;
   } catch (error) {
-    console.error("Error calculating pending orders:", error);
+    console.error('Error calculating pending orders:', error);
     return 0;
   }
 };
@@ -123,18 +119,13 @@ export const getPendingOrders = (ordersList = []) => {
 /**
  * Filter orders by date range
  */
-export const getFilteredOrdersByDate = (
-  ordersList,
-  dateRange,
-  customStartDate,
-  customEndDate,
-) => {
+export const getFilteredOrdersByDate = (ordersList, dateRange, customStartDate, customEndDate) => {
   try {
     if (!Array.isArray(ordersList)) {
       return [];
     }
 
-    if (dateRange === "all") {
+    if (dateRange === 'all') {
       return ordersList;
     }
 
@@ -143,23 +134,28 @@ export const getFilteredOrdersByDate = (
     let startDate, endDate;
 
     switch (dateRange) {
-      case "today":
+      case 'today':
         startDate = new Date(today);
         endDate = new Date(today);
         endDate.setHours(23, 59, 59, 999);
         break;
-      case "week":
+      case 'week':
         startDate = new Date(today);
         startDate.setDate(today.getDate() - 7);
         endDate = new Date(today);
         endDate.setHours(23, 59, 59, 999);
         break;
-      case "month":
+      case 'month':
         startDate = new Date(today.getFullYear(), today.getMonth(), 1);
         endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
         endDate.setHours(23, 59, 59, 999);
         break;
-      case "custom":
+      case 'year':
+        startDate = new Date(today.getFullYear(), 0, 1);
+        endDate = new Date(today.getFullYear(), 11, 31);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case 'custom':
         if (customStartDate && customEndDate) {
           startDate = new Date(customStartDate);
           startDate.setHours(0, 0, 0, 0);
@@ -178,36 +174,32 @@ export const getFilteredOrdersByDate = (
         if (!order) return false;
         // Support all possible date fields (check multiple field names)
         const dateValue =
-          order.order_date ||
-          order.createdAt ||
-          order.date ||
-          order.orderDate ||
-          order.created_at;
+          order.order_date || order.createdAt || order.date || order.orderDate || order.created_at;
         if (!dateValue) return false;
 
         // Try to parse the date
         let orderDate = new Date(dateValue);
 
         // If parsing fails, try parsing as DD-MMM-YY format (e.g., "31-Dec-25")
-        if (isNaN(orderDate.getTime()) && typeof dateValue === "string") {
+        if (isNaN(orderDate.getTime()) && typeof dateValue === 'string') {
           const dateStr = dateValue.trim();
           // Try to parse DD-MMM-YY or DD-MMM-YYYY format
           const dateMatch = dateStr.match(/(\d{1,2})-([A-Za-z]{3})-(\d{2,4})/i);
           if (dateMatch) {
             const day = parseInt(dateMatch[1], 10);
             const monthNames = [
-              "jan",
-              "feb",
-              "mar",
-              "apr",
-              "may",
-              "jun",
-              "jul",
-              "aug",
-              "sep",
-              "oct",
-              "nov",
-              "dec",
+              'jan',
+              'feb',
+              'mar',
+              'apr',
+              'may',
+              'jun',
+              'jul',
+              'aug',
+              'sep',
+              'oct',
+              'nov',
+              'dec',
             ];
             const month = monthNames.indexOf(dateMatch[2].toLowerCase());
             let year = parseInt(dateMatch[3], 10);
@@ -234,7 +226,7 @@ export const getFilteredOrdersByDate = (
       }
     });
   } catch (error) {
-    console.error("Error filtering orders by date:", error);
+    console.error('Error filtering orders by date:', error);
     return ordersList;
   }
 };
@@ -262,13 +254,13 @@ export const getSummaryReport = (ordersList = []) => {
 
         const year = orderDate.getFullYear();
         const month = orderDate.getMonth() + 1;
-        const key = `${year}-${String(month).padStart(2, "0")}`;
+        const key = `${year}-${String(month).padStart(2, '0')}`;
 
         if (!reportMap.has(key)) {
           reportMap.set(key, {
             year: String(year),
-            month: String(month).padStart(2, "0"),
-            monthName: orderDate.toLocaleString("en-US", { month: "long" }),
+            month: String(month).padStart(2, '0'),
+            monthName: orderDate.toLocaleString('en-US', { month: 'long' }),
             totalOrders: 0,
             totalRevenue: 0,
             deliveredOrders: 0,
@@ -277,22 +269,21 @@ export const getSummaryReport = (ordersList = []) => {
         }
 
         const report = reportMap.get(key);
-        
+
         let amount = null;
         if (order.totalAmount !== undefined && order.totalAmount !== null) {
           amount = parseFloat(order.totalAmount);
         } else if (order.total !== undefined && order.total !== null) {
           amount = parseFloat(order.total);
         }
-        
+
         if (amount === null || isNaN(amount)) {
           const qty = parseFloat(order.quantity || 1);
           const price = parseFloat(order.unitPrice || 0);
           amount = qty * price;
         }
-        
-        const isDelivered =
-          String(order.status || "").toLowerCase() === "delivered";
+
+        const isDelivered = String(order.status || '').toLowerCase() === 'delivered';
 
         report.totalOrders++;
         report.totalRevenue += isNaN(amount) ? 0 : amount;
@@ -302,7 +293,7 @@ export const getSummaryReport = (ordersList = []) => {
           report.deliveredRevenue += isNaN(amount) ? 0 : amount;
         }
       } catch (orderError) {
-        console.warn("Error processing order in summary report:", orderError);
+        console.warn('Error processing order in summary report:', orderError);
       }
     });
 
@@ -314,7 +305,7 @@ export const getSummaryReport = (ordersList = []) => {
       return parseInt(b.month) - parseInt(a.month);
     });
   } catch (error) {
-    console.error("Error generating summary report:", error);
+    console.error('Error generating summary report:', error);
     return [];
   }
 };
@@ -334,9 +325,7 @@ export const getAllCustomers = (ordersList = []) => {
       try {
         if (!order) return;
 
-        const address = String(
-          order.deliveryAddress || order.customerAddress || "",
-        ).trim();
+        const address = String(order.deliveryAddress || order.customerAddress || '').trim();
         if (!address) return;
 
         if (!customerMap.has(address)) {
@@ -352,20 +341,20 @@ export const getAllCustomers = (ordersList = []) => {
         }
 
         const customer = customerMap.get(address);
-        
+
         let amount = null;
         if (order.totalAmount !== undefined && order.totalAmount !== null) {
           amount = parseFloat(order.totalAmount);
         } else if (order.total !== undefined && order.total !== null) {
           amount = parseFloat(order.total);
         }
-        
+
         if (amount === null || isNaN(amount)) {
           const qty = parseFloat(order.quantity || 1);
           const price = parseFloat(order.unitPrice || 0);
           amount = qty * price;
         }
-        
+
         const orderDate = new Date(order.createdAt || order.date);
 
         customer.totalOrders++;
@@ -379,13 +368,13 @@ export const getAllCustomers = (ordersList = []) => {
           customer.firstOrderDate = orderDate;
         }
       } catch (orderError) {
-        console.warn("Error processing order in getAllCustomers:", orderError);
+        console.warn('Error processing order in getAllCustomers:', orderError);
       }
     });
 
     return Array.from(customerMap.values());
   } catch (error) {
-    console.error("Error generating customer list:", error);
+    console.error('Error generating customer list:', error);
     return [];
   }
 };
@@ -404,7 +393,7 @@ export const calculateTotalExpenses = (revenue, expensePercentage = 70) => {
     const expensePercent = parseFloat(expensePercentage) || 70;
     return (revenueNum * expensePercent) / 100;
   } catch (error) {
-    console.error("Error calculating total expenses:", error);
+    console.error('Error calculating total expenses:', error);
     return 0;
   }
 };
@@ -416,11 +405,7 @@ export const calculateTotalExpenses = (revenue, expensePercentage = 70) => {
  * @param {number} expensePercentage - Percentage of revenue for expenses (default: 70)
  * @returns {number} Profit after expenses
  */
-export const calculateProfit = (
-  revenue,
-  expenses = null,
-  expensePercentage = 70,
-) => {
+export const calculateProfit = (revenue, expenses = null, expensePercentage = 70) => {
   try {
     const revenueNum = parseFloat(revenue) || 0;
     const expensesNum =
@@ -429,7 +414,7 @@ export const calculateProfit = (
         : calculateTotalExpenses(revenueNum, expensePercentage);
     return Math.max(0, revenueNum - expensesNum);
   } catch (error) {
-    console.error("Error calculating profit:", error);
+    console.error('Error calculating profit:', error);
     return 0;
   }
 };
@@ -447,14 +432,14 @@ export const calculateProfitWithMargin = (
   revenue,
   expenses = null,
   expensePercentage = 70,
-  profitMargin = 30,
+  profitMargin = 30
 ) => {
   try {
     const profit = calculateProfit(revenue, expenses, expensePercentage);
     const marginPercent = parseFloat(profitMargin) || 30;
     return (profit * marginPercent) / 100;
   } catch (error) {
-    console.error("Error calculating profit with margin:", error);
+    console.error('Error calculating profit with margin:', error);
     return 0;
   }
 };
@@ -469,7 +454,7 @@ export const calculateProfitWithMargin = (
 export const calculateProfitMarginPercentage = (
   revenue,
   expenses = null,
-  expensePercentage = 70,
+  expensePercentage = 70
 ) => {
   try {
     const revenueNum = parseFloat(revenue) || 0;
@@ -477,7 +462,7 @@ export const calculateProfitMarginPercentage = (
     const profit = calculateProfit(revenue, expenses, expensePercentage);
     return (profit / revenueNum) * 100;
   } catch (error) {
-    console.error("Error calculating profit margin percentage:", error);
+    console.error('Error calculating profit margin percentage:', error);
     return 0;
   }
 };
@@ -489,11 +474,7 @@ export const calculateProfitMarginPercentage = (
  * @param {number} targetProfitMargin - Target profit margin percentage (default: 30)
  * @returns {Object} Object containing all profit-related statistics
  */
-export const getProfitStats = (
-  revenue,
-  expensePercentage = 70,
-  targetProfitMargin = 30,
-) => {
+export const getProfitStats = (revenue, expensePercentage = 70, targetProfitMargin = 30) => {
   try {
     const revenueNum = parseFloat(revenue) || 0;
     const expenses = calculateTotalExpenses(revenueNum, expensePercentage);
@@ -502,12 +483,12 @@ export const getProfitStats = (
       revenueNum,
       expenses,
       expensePercentage,
-      targetProfitMargin,
+      targetProfitMargin
     );
     const profitMarginPercent = calculateProfitMarginPercentage(
       revenueNum,
       expenses,
-      expensePercentage,
+      expensePercentage
     );
     const targetProfit = (revenueNum * targetProfitMargin) / 100;
 
@@ -522,7 +503,7 @@ export const getProfitStats = (
       expensePercentage: expensePercentage,
     };
   } catch (error) {
-    console.error("Error calculating profit stats:", error);
+    console.error('Error calculating profit stats:', error);
     return {
       revenue: 0,
       expenses: 0,

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNotification } from "./contexts/NotificationContext.jsx";
+import { useAutoKeyboardAvoidance } from "../../hooks/useKeyboardAvoidance";
 import "./styles/index.css";
 import "./AdminForgotPassword.css";
 
@@ -11,6 +12,12 @@ const AdminForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const { error: showError, success: showSuccess } = useNotification();
+
+  // Enable keyboard avoidance for mobile
+  useAutoKeyboardAvoidance({
+    containerSelector: '.login-form',
+    inputSelector: 'input, textarea, select',
+  });
 
   // Apply theme settings from localStorage
   useEffect(() => {
@@ -53,9 +60,10 @@ const AdminForgotPassword = () => {
           }
         }
 
+        // Apply font family - Use global font variable
         if (fontFamily) {
           const fontFamilyValue = `'${fontFamily}', sans-serif`;
-          root.style.setProperty('--admin-font-family', fontFamilyValue);
+          root.style.setProperty('--font-primary', fontFamilyValue);
           if (loginWrapper) {
             loginWrapper.style.fontFamily = fontFamilyValue;
           }
@@ -123,6 +131,7 @@ const AdminForgotPassword = () => {
       window.removeEventListener('themeChanged', applyThemeSettings);
     };
   }, []);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();

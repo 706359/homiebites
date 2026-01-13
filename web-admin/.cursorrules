@@ -27,6 +27,7 @@
 - Creating new button variants
 - Admin-specific button classes
 - Inline styles overriding button colors
+- no !imporatnt should use, only give proper fix
 
 ### If you need a custom button:
 
@@ -77,18 +78,21 @@ Use `.btn-special` with CSS variables:
 ### Required Steps:
 
 1. **After Every Code Change:**
+
    - Run `read_lints` tool on all modified files
    - Fix all linting errors before completing the task
    - Check for TypeScript/JavaScript errors
    - Verify no console errors or warnings
 
 2. **Before Marking Tasks Complete:**
+
    - Ensure all lint errors are resolved
    - Verify no build errors exist
    - Check that modified files pass linting rules
    - Confirm button system compliance (if adding buttons)
 
 3. **Error Types to Check:**
+
    - Linting errors (ESLint, style warnings)
    - Type errors (TypeScript)
    - Build errors (compilation failures)
@@ -123,18 +127,21 @@ Use `.btn-special` with CSS variables:
 ### Design Principles:
 
 1. **Professional Quality First**
+
    - Use robust, well-tested solutions
    - Implement comprehensive error handling
    - Add proper loading states and feedback
    - Include detailed logging and debugging capabilities
 
 2. **Substantial Design Approach**
+
    - Avoid overly minimal or "lightweight" designs and fluffy.
    - Use proper spacing, padding, and visual hierarchy
    - Implement rich UI components with adequate visual weight
    - Ensure components feel substantial and professional
 
 3. **Best Practices Always**
+
    - Follow industry-standard patterns and conventions
    - Use proper TypeScript/JavaScript patterns
    - Implement comprehensive validation and error handling
@@ -142,6 +149,7 @@ Use `.btn-special` with CSS variables:
    - Use established libraries and proven solutions
 
 4. **User Experience**
+
    - Provide clear, informative feedback
    - Include helpful error messages with guidance
    - Add proper loading indicators

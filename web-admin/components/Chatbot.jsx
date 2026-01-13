@@ -101,9 +101,7 @@ const Chatbot = () => {
     }
 
     if (input.includes("cancel order") || input.includes("cancel my order")) {
-      addBotMessage(
-        t("chatbot.cancelOrder") + "ll process your cancellation immediately.",
-      );
+      addBotMessage(t("chatbot.cancelOrder"));
       return;
     }
 
@@ -112,10 +110,7 @@ const Chatbot = () => {
       input.includes("order status") ||
       input.includes("where is my order")
     ) {
-      addBotMessage(
-        t("chatbot.trackOrder") +
-          "ll send confirmation messages for order updates",
-      );
+      addBotMessage(t("chatbot.trackOrder"));
       return;
     }
 
@@ -195,9 +190,7 @@ const Chatbot = () => {
     }
 
     if (input.includes("minimum order") || input.includes("min order")) {
-      addBotMessage(
-        t("chatbot.minOrder") + "s no minimum order requirement otherwise.",
-      );
+      addBotMessage(t("chatbot.minOrder"));
       return;
     }
 
@@ -206,10 +199,7 @@ const Chatbot = () => {
       input.includes("not home") ||
       input.includes("missed delivery")
     ) {
-      addBotMessage(
-        t("chatbot.notAvailable") +
-          "t be available during delivery:\n• Inform us in advance via WhatsApp\n• Arrange for someone else to receive\n• We can reschedule for another time\n• Contact: +91-9958983578",
-      );
+      addBotMessage(t("chatbot.notAvailable"));
       return;
     }
 
@@ -242,7 +232,7 @@ const Chatbot = () => {
       input.includes("reset password") ||
       input.includes("password")
     ) {
-      addBotMessage(t("chatbot.password") + "ll help you reset it securely.");
+      addBotMessage(t("chatbot.password"));
       return;
     }
 
@@ -263,7 +253,7 @@ const Chatbot = () => {
       input.includes("call") ||
       input.includes("whatsapp")
     ) {
-      addBotMessage(t("chatbot.contact") + "re available 7 days a week!");
+      addBotMessage(t("chatbot.contact"));
       return;
     }
 
@@ -348,10 +338,7 @@ const Chatbot = () => {
       input.includes("assistance") ||
       input.includes("problem")
     ) {
-      addBotMessage(
-        t("chatbot.help") +
-          "m here to help! I can assist with:\n\n• Placing orders\n• Menu & pricing\n• Delivery information\n• Account management\n• Payment methods\n• Special offers\n\n📱 Support page: /support\n❓ FAQ page: /faq\n📞 Contact: +91-9958983578\n\nWhat would you like to know?",
-      );
+      addBotMessage(t("chatbot.help"));
       return;
     }
 

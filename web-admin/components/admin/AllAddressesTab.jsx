@@ -758,7 +758,8 @@ const AllAddressesTab = ({
               </div>
             </div>
           ) : (
-            paginatedCustomers.map((customer, idx) => {
+            <div className='list list-group'>
+              {paginatedCustomers.map((customer, idx) => {
               const segmentIcon =
                 customer.segment === 'Super VIP'
                   ? '👑'
@@ -779,7 +780,7 @@ const AllAddressesTab = ({
               return (
                 <div
                   key={idx}
-                  className='dashboard-card'
+                  className='dashboard-card list-item'
                   style={{
                     cursor: 'pointer',
                     transition: 'transform 0.2s ease, box-shadow 0.2s ease',
@@ -876,7 +877,8 @@ const AllAddressesTab = ({
                   </div>
                 </div>
               );
-            })
+              })}
+            </div>
           )}
         </div>
       )}

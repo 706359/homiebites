@@ -1,8 +1,14 @@
 import { useMemo, useState } from 'react';
+import PremiumLoader from './PremiumLoader.jsx';
 import { getFilteredOrdersByDate, getProfitStats } from './utils/calculations.js';
 import { parseOrderDate } from './utils/dateUtils.js';
-import { formatCurrency, formatNumberIndian, getTotalRevenue, isPendingStatus } from './utils/orderUtils.js';
-import PremiumLoader from './PremiumLoader.jsx';
+import {
+  formatCurrency,
+  formatNumberIndian,
+  getTotalRevenue,
+  isPendingStatus,
+} from './utils/orderUtils.js';
+import './AnalyticsTab.css';
 
 const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
   const [period, setPeriod] = useState('thisMonth'); // 'thisMonth', 'thisYear', 'custom'
@@ -42,7 +48,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
   const keyMetrics = useMemo(() => {
     const totalRevenue = getTotalRevenue(periodOrders);
     const totalOrders = periodOrders.length;
-    
+
     // Calculate growth rate for indicator
     let previousPeriodOrders = [];
     if (period === 'thisMonth') {
@@ -77,25 +83,25 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
       previousRevenue > 0
         ? ((totalRevenue - previousRevenue) / previousRevenue) * 100
         : totalRevenue > 0
-          ? Infinity
-          : 0;
+        ? Infinity
+        : 0;
 
     const pendingOrders = periodOrders.filter((o) => isPendingStatus(o.status));
     const pendingAmount = pendingOrders.reduce((sum, o) => {
       let amount = null;
-      
+
       if (o.totalAmount !== undefined && o.totalAmount !== null) {
         amount = parseFloat(o.totalAmount);
       } else if (o.total !== undefined && o.total !== null) {
         amount = parseFloat(o.total);
       }
-      
+
       if (amount === null || isNaN(amount)) {
         const qty = parseFloat(o.quantity || 1);
         const price = parseFloat(o.unitPrice || 0);
         amount = qty * price;
       }
-      
+
       return sum + (isNaN(amount) ? 0 : amount);
     }, 0);
 
@@ -187,20 +193,20 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           areaStats[addr] = { address: addr, orders: 0, revenue: 0 };
         }
         areaStats[addr].orders++;
-        
+
         let amount = null;
         if (o.totalAmount !== undefined && o.totalAmount !== null) {
           amount = parseFloat(o.totalAmount);
         } else if (o.total !== undefined && o.total !== null) {
           amount = parseFloat(o.total);
         }
-        
+
         if (amount === null || isNaN(amount)) {
           const qty = parseFloat(o.quantity || 1);
           const price = parseFloat(o.unitPrice || 0);
           amount = qty * price;
         }
-        
+
         areaStats[addr].revenue += isNaN(amount) ? 0 : amount;
       }
     });
@@ -217,7 +223,8 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     const dayStats = { Sun: 0, Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0 };
     periodOrders.forEach((o) => {
       try {
-        const orderDate = parseOrderDate(o.createdAt || o.date || o.order_date);
+        // Never use createdAt (today's date) as fallback - only use actual order date
+        const orderDate = parseOrderDate(o.date || o.order_date || null);
         if (!orderDate) return;
         const dayName = days[orderDate.getDay()];
         dayStats[dayName]++;
@@ -240,20 +247,20 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           customerData[addr] = { orders: 0, spent: 0 };
         }
         customerData[addr].orders++;
-        
+
         let amount = null;
         if (o.totalAmount !== undefined && o.totalAmount !== null) {
           amount = parseFloat(o.totalAmount);
         } else if (o.total !== undefined && o.total !== null) {
           amount = parseFloat(o.total);
         }
-        
+
         if (amount === null || isNaN(amount)) {
           const qty = parseFloat(o.quantity || 1);
           const price = parseFloat(o.unitPrice || 0);
           amount = qty * price;
         }
-        
+
         customerData[addr].spent += isNaN(amount) ? 0 : amount;
       }
     });
@@ -282,20 +289,20 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         trends[mode] = { count: 0, amount: 0 };
       }
       trends[mode].count++;
-      
+
       let amount = null;
       if (o.totalAmount !== undefined && o.totalAmount !== null) {
         amount = parseFloat(o.totalAmount);
       } else if (o.total !== undefined && o.total !== null) {
         amount = parseFloat(o.total);
       }
-      
+
       if (amount === null || isNaN(amount)) {
         const qty = parseFloat(o.quantity || 1);
         const price = parseFloat(o.unitPrice || 0);
         amount = qty * price;
       }
-      
+
       trends[mode].amount += isNaN(amount) ? 0 : amount;
     });
     return Object.entries(trends)
@@ -308,16 +315,16 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
   // Top 7 Days All Time by Revenue
   const top20Days = useMemo(() => {
     const dayStats = {};
-    
+
     // Group orders by date and sum amounts
     orders.forEach((o) => {
       try {
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         if (!orderDate) return;
-        
+
         // Create a date key (YYYY-MM-DD format)
         const dateKey = orderDate.toISOString().split('T')[0];
-        
+
         if (!dayStats[dateKey]) {
           dayStats[dateKey] = {
             date: dateKey,
@@ -327,20 +334,20 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
             orderIds: [], // Store order IDs for this day
           };
         }
-        
+
         let amount = null;
         if (o.totalAmount !== undefined && o.totalAmount !== null) {
           amount = parseFloat(o.totalAmount);
         } else if (o.total !== undefined && o.total !== null) {
           amount = parseFloat(o.total);
         }
-        
+
         if (amount === null || isNaN(amount)) {
           const qty = parseFloat(o.quantity || 1);
           const price = parseFloat(o.unitPrice || 0);
           amount = qty * price;
         }
-        
+
         dayStats[dateKey].revenue += isNaN(amount) ? 0 : amount;
         dayStats[dateKey].orders += 1;
         // Store order ID if available
@@ -351,7 +358,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         // Ignore invalid dates
       }
     });
-    
+
     // Convert to array, sort by revenue descending, and take top 7
     return Object.values(dayStats)
       .sort((a, b) => b.revenue - a.revenue)
@@ -373,6 +380,164 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
 
   const maxDayRevenue = Math.max(...top20Days.map((d) => d.revenue), 1);
 
+  // Helper function to get order amount
+  const getOrderAmount = (order) => {
+    let amount = null;
+
+    if (order.totalAmount !== undefined && order.totalAmount !== null) {
+      amount = parseFloat(order.totalAmount);
+    } else if (order.total !== undefined && order.total !== null) {
+      amount = parseFloat(order.total);
+    }
+
+    if (amount === null || isNaN(amount)) {
+      const qty = parseFloat(order.quantity || 1);
+      const price = parseFloat(order.unitPrice || 0);
+      amount = qty * price;
+    }
+
+    return isNaN(amount) ? 0 : amount;
+  };
+
+  // Delivery Address Yearly & Monthly Analytics
+  const deliveryAddressAnalytics = useMemo(() => {
+    const addressData = {};
+    const currentYear = now.getFullYear();
+    const year1 = currentYear - 2;
+    const year2 = currentYear - 1;
+    const year3 = currentYear;
+    const years = [year1, year2, year3];
+
+    // Get all unique years from orders to include them dynamically
+    const allYears = new Set();
+    orders.forEach((o) => {
+      try {
+        const orderDate = parseOrderDate(o.date || o.order_date || null);
+        if (orderDate) {
+          allYears.add(orderDate.getFullYear());
+        }
+      } catch (e) {
+        // Ignore
+      }
+    });
+
+    // Process orders and calculate totals
+    let processedCount = 0;
+    orders.forEach((o) => {
+      try {
+        const orderDate = parseOrderDate(o.date || o.order_date || null);
+        if (!orderDate) return;
+
+        const addr = o.deliveryAddress || o.customerAddress || o.address;
+        if (!addr) return;
+        
+        processedCount++;
+
+        const year = orderDate.getFullYear();
+        const month = orderDate.getMonth(); // 0-11
+
+        if (!addressData[addr]) {
+          addressData[addr] = {
+            address: addr,
+            yearly: {},
+            monthly: {},
+            grandTotal: 0,
+          };
+        }
+
+        // Initialize year if not exists
+        if (!addressData[addr].yearly[year]) {
+          addressData[addr].yearly[year] = 0;
+        }
+        if (!addressData[addr].monthly[year]) {
+          addressData[addr].monthly[year] = Array(12).fill(0);
+        }
+
+        let amount = getOrderAmount(o);
+
+        // Add to yearly total
+        addressData[addr].yearly[year] += amount;
+
+        // Add to monthly total
+        addressData[addr].monthly[year][month] += amount;
+
+        // Add to grand total
+        addressData[addr].grandTotal += amount;
+      } catch (e) {
+        // Ignore invalid orders
+        console.warn('[Analytics] Error processing order:', e, o);
+      }
+    });
+    
+    console.log('[Analytics] Processed orders:', processedCount, 'out of', orders.length);
+
+    // Calculate trends and gaps
+    // Gap calculation: Compare each month of current year (year3) with December of previous year (year2)
+    const currentMonth = now.getMonth(); // 0-11 (current month index)
+    const dec2025 = 11; // December is month index 11
+    
+    const result = Object.values(addressData).map((data) => {
+      const y1 = data.yearly[year1] || 0;
+      const y2 = data.yearly[year2] || 0;
+      const y3 = data.yearly[year3] || 0;
+
+      // Calculate trends (year-over-year growth)
+      const trendY1toY2 = y1 > 0 ? ((y2 - y1) / y1) * 100 : (y2 > 0 ? Infinity : 0);
+      const trendY2toY3 = y2 > 0 ? ((y3 - y2) / y2) * 100 : (y3 > 0 ? Infinity : 0);
+
+      // Calculate monthly gaps: Compare each month of current year (year3) with Dec of previous year (year2)
+      const monthlyGaps = [];
+      const dec2025Value = (data.monthly[year2] && data.monthly[year2][dec2025]) ? data.monthly[year2][dec2025] : 0;
+      
+      if (data.monthly[year3]) {
+        for (let month = 0; month <= currentMonth; month++) {
+          const currentMonthValue = data.monthly[year3][month] || 0;
+          const gap = currentMonthValue - dec2025Value;
+          monthlyGaps.push({
+            month,
+            value: currentMonthValue,
+            gap: gap,
+            dec2025Value: dec2025Value,
+          });
+        }
+      }
+
+      // Overall gap: Sum of all monthly gaps up to current month
+      const totalGap = monthlyGaps.reduce((sum, mg) => sum + mg.gap, 0);
+
+      return {
+        ...data,
+        years: { year1, year2, year3 },
+        trends: {
+          [`${year1}-${year2}`]: trendY1toY2,
+          [`${year2}-${year3}`]: trendY2toY3,
+        },
+        gaps: {
+          [`${year1}-${year2}`]: y2 - y1,
+          [`${year2}-${year3}`]: y3 - y2,
+        },
+        monthlyGaps: monthlyGaps,
+        totalGap: totalGap, // Total gap comparing current year months vs Dec 2025
+      };
+    });
+
+    // Sort by 2026 (year3) descending, then by grand total if 2026 values are equal
+    const sortedData = result.sort((a, b) => {
+      const year3A = a.yearly[year3] || 0;
+      const year3B = b.yearly[year3] || 0;
+      if (year3B !== year3A) {
+        return year3B - year3A; // Sort by 2026 high to low
+      }
+      return b.grandTotal - a.grandTotal; // If 2026 values are equal, sort by grand total
+    });
+    console.log('[Analytics] Delivery Address Analytics:', {
+      totalAddresses: sortedData.length,
+      sampleData: sortedData.slice(0, 3),
+      years: { year1, year2, year3 },
+    });
+    return { data: sortedData, year1, year2, year3 };
+  }, [orders, now]);
+
   // Helper function to escape CSV values
   const escapeCSV = (value) => {
     if (value === null || value === undefined) return '';
@@ -383,41 +548,25 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     return str;
   };
 
-  const getOrderAmount = (order) => {
-    let amount = null;
-    
-    if (order.totalAmount !== undefined && order.totalAmount !== null) {
-      amount = parseFloat(order.totalAmount);
-    } else if (order.total !== undefined && order.total !== null) {
-      amount = parseFloat(order.total);
-    }
-    
-    if (amount === null || isNaN(amount)) {
-      const qty = parseFloat(order.quantity || 1);
-      const price = parseFloat(order.unitPrice || 0);
-      amount = qty * price;
-    }
-    
-    return isNaN(amount) ? 0 : amount;
-  };
-
   // Export reports
   const handleExportReport = (type) => {
     let csvContent = '';
     const reportDate = new Date().toISOString().split('T')[0];
-    
+
     if (type === 'monthly') {
       // Monthly Report - Last 12 months
       csvContent = 'Month,Year,Revenue (₹),Orders,Average Order Value (₹)\n';
       monthlyRevenueTrend.forEach((m) => {
         const avgOrderValue = m.orders > 0 ? (m.revenue / m.orders).toFixed(2) : '0.00';
-        csvContent += `${escapeCSV(m.month)},${escapeCSV(m.revenue)},${escapeCSV(m.orders)},${escapeCSV(avgOrderValue)}\n`;
+        csvContent += `${escapeCSV(m.month)},${escapeCSV(m.revenue)},${escapeCSV(
+          m.orders
+        )},${escapeCSV(avgOrderValue)}\n`;
       });
     } else if (type === 'quarterly') {
       // Quarterly Report - Last 4 quarters
       csvContent = 'Quarter,Year,Revenue (₹),Orders,Average Order Value (₹)\n';
       const quarters = [];
-      
+
       // Get all unique years from orders
       const years = new Set();
       orders.forEach((o) => {
@@ -428,17 +577,17 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           // Ignore
         }
       });
-      
+
       const sortedYears = Array.from(years).sort((a, b) => b - a);
-      
+
       // Process last 4 quarters from most recent year
       const mostRecentYear = sortedYears.length > 0 ? sortedYears[0] : now.getFullYear();
-      
+
       for (let i = 3; i >= 0; i--) {
         const quarterStart = new Date(mostRecentYear, i * 3, 1);
         const quarterEnd = new Date(mostRecentYear, (i + 1) * 3, 0);
         quarterEnd.setHours(23, 59, 59, 999);
-        
+
         const quarterOrders = orders.filter((o) => {
           try {
             const orderDate = parseOrderDate(o.date || o.order_date || null);
@@ -448,11 +597,11 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
             return false;
           }
         });
-        
+
         const revenue = getTotalRevenue(quarterOrders);
         const orderCount = quarterOrders.length;
         const avgOrderValue = orderCount > 0 ? (revenue / orderCount).toFixed(2) : '0.00';
-        
+
         quarters.push({
           quarter: `Q${i + 1}`,
           year: mostRecentYear,
@@ -461,20 +610,23 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           avgOrderValue,
         });
       }
-      
+
       quarters.forEach((q) => {
-        csvContent += `${escapeCSV(q.quarter)},${escapeCSV(q.year)},${escapeCSV(q.revenue)},${escapeCSV(q.orders)},${escapeCSV(q.avgOrderValue)}\n`;
+        csvContent += `${escapeCSV(q.quarter)},${escapeCSV(q.year)},${escapeCSV(
+          q.revenue
+        )},${escapeCSV(q.orders)},${escapeCSV(q.avgOrderValue)}\n`;
       });
     } else if (type === 'annual') {
       // Annual Report - All years
-      csvContent = 'Year,Revenue (₹),Orders,Average Order Value (₹),Paid Orders,Unpaid Orders,Paid Amount (₹),Unpaid Amount (₹)\n';
+      csvContent =
+        'Year,Revenue (₹),Orders,Average Order Value (₹),Paid Orders,Unpaid Orders,Paid Amount (₹),Unpaid Amount (₹)\n';
       const years = {};
-      
+
       orders.forEach((o) => {
         try {
           const orderDate = parseOrderDate(o.date || o.order_date || null);
           if (!orderDate) return;
-          
+
           const year = orderDate.getFullYear();
           if (!years[year]) {
             years[year] = {
@@ -487,11 +639,11 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               unpaidAmount: 0,
             };
           }
-          
+
           const amount = getOrderAmount(o);
           years[year].revenue += amount;
           years[year].orders++;
-          
+
           const status = (o.status || '').toLowerCase();
           if (status === 'paid') {
             years[year].paidOrders++;
@@ -504,12 +656,16 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           // Ignore
         }
       });
-      
+
       Object.values(years)
         .sort((a, b) => b.year - a.year)
         .forEach((y) => {
           const avgOrderValue = y.orders > 0 ? (y.revenue / y.orders).toFixed(2) : '0.00';
-          csvContent += `${escapeCSV(y.year)},${escapeCSV(y.revenue.toFixed(2))},${escapeCSV(y.orders)},${escapeCSV(avgOrderValue)},${escapeCSV(y.paidOrders)},${escapeCSV(y.unpaidOrders)},${escapeCSV(y.paidAmount.toFixed(2))},${escapeCSV(y.unpaidAmount.toFixed(2))}\n`;
+          csvContent += `${escapeCSV(y.year)},${escapeCSV(y.revenue.toFixed(2))},${escapeCSV(
+            y.orders
+          )},${escapeCSV(avgOrderValue)},${escapeCSV(y.paidOrders)},${escapeCSV(
+            y.unpaidOrders
+          )},${escapeCSV(y.paidAmount.toFixed(2))},${escapeCSV(y.unpaidAmount.toFixed(2))}\n`;
         });
     }
 
@@ -539,435 +695,163 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         <div className='dashboard-main-content'>
           {/* TIME PERIOD SELECTOR */}
           <div className='dashboard-card dashboard-card-spaced'>
-        <div className='filter-container'>
-          <div className='filter-field-group-standard min-width-160'>
-            <label className='filter-label-standard'>
-              <i className='fa-solid fa-calendar-alt filter-label-icon'></i>
-              Time Period
-            </label>
-            <select
-              className='input-field filter-input-standard'
-              value={period}
-              onChange={(e) => setPeriod(e.target.value)}
-            >
-              <option value='thisMonth'>This Month</option>
-              <option value='thisYear'>This Year</option>
-              <option value='custom'>Custom Range</option>
-            </select>
-          </div>
-          {period === 'custom' && (
-            <>
+            <div className='filter-container'>
               <div className='filter-field-group-standard min-width-160'>
-                <label className='filter-label-standard'>From Date</label>
-                <input
-                  type='date'
+                <label className='filter-label-standard'>
+                  <i className='fa-solid fa-calendar-alt filter-label-icon'></i>
+                  Time Period
+                </label>
+                <select
                   className='input-field filter-input-standard'
-                  value={customFrom}
-                  onChange={(e) => setCustomFrom(e.target.value)}
-                />
-              </div>
-              <div className='filter-field-group-standard min-width-160'>
-                <label className='filter-label-standard'>To Date</label>
-                <input
-                  type='date'
-                  className='input-field filter-input-standard'
-                  value={customTo}
-                  onChange={(e) => setCustomTo(e.target.value)}
-                />
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* KEY METRICS GRID - Only Important Metrics */}
-      <div className='admin-stats'>
-        <div className='stat-card'>
-          <i className='fa-solid fa-rupee-sign'></i>
-          <div>
-            <h3>₹{formatCurrency(keyMetrics.totalRevenue)}</h3>
-            <p>Total Revenue</p>
-            {keyMetrics.growthRate !== 0 && (
-              <p className='stat-card-subtitle'>
-                {keyMetrics.growthRate === Infinity
-                  ? 'New ↑'
-                  : `${keyMetrics.growthRate >= 0 ? '+' : ''}${keyMetrics.growthRate.toFixed(1)}% ${keyMetrics.growthRate >= 0 ? '↑' : '↓'}`}
-              </p>
-            )}
-          </div>
-        </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-shopping-cart' style={{ color: 'var(--admin-accent)' }}></i>
-          <div>
-            <h3>{keyMetrics.totalOrders}</h3>
-            <p>Total Orders</p>
-            <p className='stat-card-subtitle'>
-              {period === 'thisMonth' ? 'Current month' : period === 'thisYear' ? 'This year' : 'Selected period'}
-            </p>
-          </div>
-        </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-exclamation-triangle' style={{ color: 'var(--admin-warning)' }}></i>
-          <div>
-            <h3>₹{formatCurrency(keyMetrics.pendingAmount)}</h3>
-            <p>Pending Payments</p>
-            <p className='stat-card-subtitle'>
-              {keyMetrics.pendingOrdersCount} {keyMetrics.pendingOrdersCount === 1 ? 'order' : 'orders'}
-            </p>
-          </div>
-        </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-users' style={{ color: 'var(--admin-accent)' }}></i>
-          <div>
-            <h3>{keyMetrics.totalCustomers}</h3>
-            <p>Total Customers</p>
-            <p className='stat-card-subtitle'>
-              Unique addresses
-            </p>
-          </div>
-        </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-chart-line' style={{ color: 'var(--admin-success)' }}></i>
-          <div>
-            <h3>₹{formatCurrency(keyMetrics.avgOrderValue)}</h3>
-            <p>Avg Order Value</p>
-          </div>
-        </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-chart-line stat-card-icon-success'></i>
-          <div>
-            <h3>₹{formatCurrency(keyMetrics.profitStats.profit)}</h3>
-            <p>Profit After Expenses</p>
-            <p className='stat-card-subtitle'>
-              {keyMetrics.profitStats.profitMarginPercent.toFixed(1)}% margin
-            </p>
-          </div>
-        </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-percent stat-card-icon-secondary'></i>
-          <div>
-            <h3>{keyMetrics.profitStats.profitMarginPercent.toFixed(1)}%</h3>
-            <p>Profit Margin</p>
-            <p className='stat-card-subtitle'>
-              Target: {keyMetrics.profitStats.targetProfitMargin}%
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* CHARTS SECTION */}
-      <div className='dashboard-grid-layout'>
-        {/* Monthly Revenue Trend */}
-        <div className='dashboard-grid-item full-width'>
-          <div className='dashboard-card'>
-            <h3 className='dashboard-section-title'>
-              <i className='fa-solid fa-chart-line' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
-              Monthly Revenue Trend (Last 12M)
-            </h3>
-            <div
-              style={{
-                padding: '16px',
-                borderTop: '2px solid var(--admin-border)',
-                marginTop: '0.5rem',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-end',
-                  gap: '1rem',
-                  minHeight: '200px',
-                  marginBottom: '16px',
-                }}
-              >
-                {monthlyRevenueTrend.map((month, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: '100%',
-                        maxWidth: '60px',
-                        height: `${(month.revenue / maxMonthlyRevenue) * 180}px`,
-                        minHeight: '10px',
-                        background: 'var(--admin-accent, #449031)',
-                        borderRadius: '8px 8px 0 0',
-                        display: 'flex',
-                        alignItems: 'flex-end',
-                        justifyContent: 'center',
-                        paddingBottom: '0.5rem',
-                        cursor: 'pointer',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                      }}
-                      title={`${month.month}: ₹${formatCurrency(month.revenue)} (${
-                        month.orders
-                      } orders)`}
-                    >
-                      <span style={{ color: 'white', fontSize: '0.7rem', fontWeight: '600' }}>
-                        ₹{formatNumberIndian(month.revenue)}
-                      </span>
-                    </div>
-                    <span
-                      style={{
-                        fontSize: '0.75rem',
-                        color: 'var(--admin-text-light)',
-                        textAlign: 'center',
-                        fontWeight: '500',
-                      }}
-                    >
-                      {month.month}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <div
-                style={{
-                  textAlign: 'center',
-                  color: 'var(--admin-text-secondary)',
-                  fontSize: '0.9rem',
-                }}
-              >
-                Peak: ₹{formatCurrency(peakMonth.revenue)} ({peakMonth.month})
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Top 10 Delivery Areas */}
-        <div className='dashboard-grid-item full-width'>
-          <div className='dashboard-card'>
-            <h3 className='dashboard-section-title'>
-              <i
-                className='fa-solid fa-map-marker-alt'
-                style={{ fontSize: '1rem', opacity: 0.7 }}
-              ></i>
-              Top 10 Delivery Areas
-            </h3>
-            <div
-              style={{
-                padding: '16px',
-                borderTop: '2px solid var(--admin-border)',
-                marginTop: '0.5rem',
-              }}
-            >
-              {topAreas.length === 0 ? (
-                <div
-                  style={{
-                    textAlign: 'center',
-                    padding: '48px',
-                    color: 'var(--admin-text-light)',
-                  }}
+                  value={period}
+                  onChange={(e) => setPeriod(e.target.value)}
                 >
-                  <i className='fa-solid fa-inbox' style={{ fontSize: '48px', opacity: 0.3 }}></i>
-                  <p style={{ marginTop: '16px' }}>No delivery areas found</p>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {topAreas.map((area, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px',
-                        padding: '12px',
-                        background: idx % 2 === 0 ? 'transparent' : 'var(--admin-glass-border)',
-                        borderRadius: '8px',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontWeight: '600',
-                            color: 'var(--admin-text)',
-                            fontSize: '0.95rem',
-                          }}
-                        >
-                          {idx + 1}. {area.address}
-                        </span>
-                        <span
-                          style={{
-                            fontWeight: '700',
-                            color: 'var(--admin-accent)',
-                            fontSize: '0.95rem',
-                          }}
-                        >
-                          ₹{formatCurrency(area.revenue)} ({area.orders}{' '}
-                          {area.orders === 1 ? 'order' : 'orders'})
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          width: '100%',
-                          height: '20px',
-                          background: 'var(--admin-glass-border)',
-                          borderRadius: '10px',
-                          overflow: 'hidden',
-                          position: 'relative',
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: `${maxAreaRevenue > 0 ? (area.revenue / maxAreaRevenue) * 100 : 0}%`,
-                            height: '100%',
-                            background: 'var(--admin-accent, #449031)',
-                            borderRadius: '10px',
-                            transition: 'width 0.5s ease',
-                            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.1)',
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                  <option value='thisMonth'>This Month</option>
+                  <option value='thisYear'>This Year</option>
+                  <option value='custom'>Custom Range</option>
+                </select>
+              </div>
+              {period === 'custom' && (
+                <>
+                  <div className='filter-field-group-standard min-width-160'>
+                    <label className='filter-label-standard'>From Date</label>
+                    <input
+                      type='date'
+                      className='input-field filter-input-standard'
+                      value={customFrom}
+                      onChange={(e) => setCustomFrom(e.target.value)}
+                    />
+                  </div>
+                  <div className='filter-field-group-standard min-width-160'>
+                    <label className='filter-label-standard'>To Date</label>
+                    <input
+                      type='date'
+                      className='input-field filter-input-standard'
+                      value={customTo}
+                      onChange={(e) => setCustomTo(e.target.value)}
+                    />
+                  </div>
+                </>
               )}
             </div>
           </div>
-        </div>
 
-
-        {/* Payment Mode Trends */}
-        <div className='dashboard-grid-item full-width'>
-          <div className='dashboard-card'>
-            <h3 className='dashboard-section-title'>
-              <i className='fa-solid fa-credit-card' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
-              Payment Mode Trends
-            </h3>
-            <div
-              style={{
-                padding: '16px',
-                borderTop: '2px solid var(--admin-border)',
-                marginTop: '0.5rem',
-              }}
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {paymentTrends.map((trend, idx) => {
-                  // Calculate percentage: (amount / total) * 100, with accuracy based on total records / 100
-                  const percentage =
-                    totalPaymentAmount > 0
-                      ? Math.min(
-                          100,
-                          parseFloat(((trend.amount / totalPaymentAmount) * 100).toFixed(2))
-                        )
-                      : 0;
-                  return (
-                    <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <span style={{ fontWeight: '600', color: 'var(--admin-text)' }}>
-                          {trend.mode}
-                        </span>
-                        <span
-                          style={{
-                            fontWeight: '700',
-                            color: 'var(--admin-accent)',
-                            fontSize: '1rem',
-                          }}
-                        >
-                          ₹{formatCurrency(trend.amount)} ({percentage.toFixed(2)}%)
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          width: '100%',
-                          height: '28px',
-                          background: 'var(--admin-glass-border)',
-                          borderRadius: '6px',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: `${percentage}%`,
-                            height: '100%',
-                            background: 'var(--admin-accent, #449031)',
-                            borderRadius: '6px',
-                            transition: 'width 0.5s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'flex-end',
-                            paddingRight: '0.5rem',
-                          }}
-                        >
-                          {percentage > 15 && (
-                            <span
-                              style={{ color: 'white', fontSize: '0.75rem', fontWeight: '600' }}
-                            >
-                              {percentage.toFixed(0)}%
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+          {/* KEY METRICS GRID - Only Important Metrics */}
+          <div className='admin-stats'>
+            <div className='stat-card'>
+              <i className='fa-solid fa-rupee-sign'></i>
+              <div>
+                <h3>₹{formatCurrency(keyMetrics.totalRevenue)}</h3>
+                <p>Total Revenue</p>
+                {keyMetrics.growthRate !== 0 && (
+                  <p className='stat-card-subtitle'>
+                    {keyMetrics.growthRate === Infinity
+                      ? 'New ↑'
+                      : `${keyMetrics.growthRate >= 0 ? '+' : ''}${keyMetrics.growthRate.toFixed(
+                          1
+                        )}% ${keyMetrics.growthRate >= 0 ? '↑' : '↓'}`}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className='stat-card'>
+              <i className='fa-solid fa-shopping-cart' style={{ color: 'var(--admin-accent)' }}></i>
+              <div>
+                <h3>{keyMetrics.totalOrders}</h3>
+                <p>Total Orders</p>
+                <p className='stat-card-subtitle'>
+                  {period === 'thisMonth'
+                    ? 'Current month'
+                    : period === 'thisYear'
+                    ? 'This year'
+                    : 'Selected period'}
+                </p>
+              </div>
+            </div>
+            <div className='stat-card'>
+              <i
+                className='fa-solid fa-exclamation-triangle'
+                style={{ color: 'var(--admin-warning)' }}
+              ></i>
+              <div>
+                <h3>₹{formatCurrency(keyMetrics.pendingAmount)}</h3>
+                <p>Pending Payments</p>
+                <p className='stat-card-subtitle'>
+                  {keyMetrics.pendingOrdersCount}{' '}
+                  {keyMetrics.pendingOrdersCount === 1 ? 'order' : 'orders'}
+                </p>
+              </div>
+            </div>
+            <div className='stat-card'>
+              <i className='fa-solid fa-users' style={{ color: 'var(--admin-accent)' }}></i>
+              <div>
+                <h3>{keyMetrics.totalCustomers}</h3>
+                <p>Total Customers</p>
+                <p className='stat-card-subtitle'>Unique addresses</p>
+              </div>
+            </div>
+            <div className='stat-card'>
+              <i className='fa-solid fa-chart-line' style={{ color: 'var(--admin-success)' }}></i>
+              <div>
+                <h3>₹{formatCurrency(keyMetrics.avgOrderValue)}</h3>
+                <p>Avg Order Value</p>
+              </div>
+            </div>
+            <div className='stat-card'>
+              <i className='fa-solid fa-chart-line stat-card-icon-success'></i>
+              <div>
+                <h3>₹{formatCurrency(keyMetrics.profitStats.profit)}</h3>
+                <p>Profit After Expenses</p>
+                <p className='stat-card-subtitle'>
+                  {keyMetrics.profitStats.profitMarginPercent.toFixed(1)}% margin
+                </p>
+              </div>
+            </div>
+            <div className='stat-card'>
+              <i className='fa-solid fa-percent stat-card-icon-secondary'></i>
+              <div>
+                <h3>{keyMetrics.profitStats.profitMarginPercent.toFixed(1)}%</h3>
+                <p>Profit Margin</p>
+                <p className='stat-card-subtitle'>
+                  Target: {keyMetrics.profitStats.targetProfitMargin}%
+                </p>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Top 7 Days All Time */}
-        <div className='dashboard-grid-item full-width'>
-          <div className='dashboard-card'>
-            <h3 className='dashboard-section-title'>
-              <i className='fa-solid fa-trophy' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
-              Top 7 Days All Time (By Revenue)
-            </h3>
-            <div
-              style={{
-                padding: '16px',
-                borderTop: '2px solid var(--admin-border)',
-                marginTop: '0.5rem',
-              }}
-            >
-              {top20Days.length === 0 ? (
+          {/* CHARTS SECTION */}
+          <div className='dashboard-grid-layout'>
+            {/* Monthly Revenue Trend */}
+            <div className='dashboard-grid-item full-width'>
+              <div className='dashboard-card'>
+                <h3 className='dashboard-section-title'>
+                  <i
+                    className='fa-solid fa-chart-line'
+                    style={{ fontSize: '1rem', opacity: 0.7 }}
+                  ></i>
+                  Monthly Revenue Trend (Last 12M)
+                </h3>
                 <div
                   style={{
-                    textAlign: 'center',
-                    padding: '48px',
-                    color: 'var(--admin-text-light)',
+                    padding: '16px',
+                    borderTop: '2px solid var(--admin-border)',
+                    marginTop: '0.5rem',
                   }}
                 >
-                  <i className='fa-solid fa-inbox' style={{ fontSize: '48px', opacity: 0.3 }}></i>
-                  <p style={{ marginTop: '16px' }}>No orders data available</p>
-                </div>
-              ) : (
-                <>
                   <div
                     style={{
                       display: 'flex',
                       alignItems: 'flex-end',
-                      gap: '0.5rem',
-                      minHeight: '250px',
+                      gap: '1rem',
+                      minHeight: '200px',
                       marginBottom: '16px',
-                      overflowX: 'auto',
-                      paddingBottom: '8px',
                     }}
                   >
-                    {top20Days.map((day, idx) => (
+                    {monthlyRevenueTrend.map((month, idx) => (
                       <div
                         key={idx}
                         style={{
-                          flex: '1 1 0',
-                          minWidth: '60px',
+                          flex: 1,
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
@@ -977,173 +861,650 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                         <div
                           style={{
                             width: '100%',
-                            maxWidth: '80px',
-                            height: `${(day.revenue / maxDayRevenue) * 200}px`,
+                            maxWidth: '60px',
+                            height: `${(month.revenue / maxMonthlyRevenue) * 180}px`,
                             minHeight: '10px',
-                            background:
-                              idx < 3
-                                ? 'var(--admin-accent, #449031)'
-                                : 'var(--admin-accent, #449031)',
+                            background: 'var(--admin-accent, #449031)',
                             borderRadius: '8px 8px 0 0',
                             display: 'flex',
                             alignItems: 'flex-end',
                             justifyContent: 'center',
                             paddingBottom: '0.5rem',
                             cursor: 'pointer',
-                            boxShadow:
-                              idx < 3
-                                ? '0 4px 12px rgba(68, 144, 49, 0.3)'
-                                : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                            position: 'relative',
-                            transition: 'all 0.3s ease',
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                           }}
-                          onClick={() => {
-                            if (onViewDayDetails) {
-                              onViewDayDetails(day.date);
-                            }
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-4px)';
-                            e.currentTarget.style.boxShadow = '0 6px 16px rgba(68, 144, 49, 0.4)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow =
-                              idx < 3
-                                ? '0 4px 12px rgba(68, 144, 49, 0.3)'
-                                : '0 2px 8px rgba(0, 0, 0, 0.1)';
-                          }}
-                          title={`Click to view orders for ${day.formattedDate}: ₹${formatCurrency(day.revenue)} (${day.orders} ${day.orders === 1 ? 'order' : 'orders'})`}
+                          title={`${month.month}: ₹${formatCurrency(month.revenue)} (${
+                            month.orders
+                          } orders)`}
                         >
-                          {idx < 3 && (
-                            <span
-                              style={{
-                                position: 'absolute',
-                                top: '-8px',
-                                right: '-8px',
-                                background: 'var(--admin-warning, #f59e0b)',
-                                color: 'white',
-                                borderRadius: '50%',
-                                width: '24px',
-                                height: '24px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '0.7rem',
-                                fontWeight: '700',
-                                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)',
-                              }}
-                            >
-                              {idx + 1}
-                            </span>
-                          )}
-                          <span
-                            style={{
-                              color: 'white',
-                              fontSize: '0.7rem',
-                              fontWeight: '600',
-                              textAlign: 'center',
-                              lineHeight: '1.2',
-                            }}
-                          >
-                            ₹{formatNumberIndian(day.revenue)}
+                          <span style={{ color: 'white', fontSize: '0.7rem', fontWeight: '600' }}>
+                            ₹{formatNumberIndian(month.revenue)}
                           </span>
                         </div>
-                        <div
+                        <span
                           style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '2px',
+                            fontSize: '0.75rem',
+                            color: 'var(--admin-text-light)',
+                            textAlign: 'center',
+                            fontWeight: '500',
                           }}
                         >
-                          <span
-                            style={{
-                              fontSize: '0.7rem',
-                              color: 'var(--admin-text-light)',
-                              textAlign: 'center',
-                              fontWeight: '500',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {day.shortDate}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: '0.65rem',
-                              color: 'var(--admin-text-secondary)',
-                              textAlign: 'center',
-                            }}
-                          >
-                            {day.orders} {day.orders === 1 ? 'order' : 'orders'}
-                          </span>
-                        </div>
+                          {month.month}
+                        </span>
                       </div>
                     ))}
                   </div>
                   <div
                     style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '12px',
-                      background: 'var(--admin-glass-border)',
-                      borderRadius: '8px',
-                      marginTop: '16px',
+                      textAlign: 'center',
+                      color: 'var(--admin-text-secondary)',
+                      fontSize: '0.9rem',
                     }}
                   >
-                    <div>
-                      <span
-                        style={{
-                          fontSize: '0.85rem',
-                          color: 'var(--admin-text-secondary)',
-                          fontWeight: '500',
-                        }}
-                      >
-                        Total Revenue (Top 7 Days):
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '1.1rem',
-                          color: 'var(--admin-accent)',
-                          fontWeight: '700',
-                          marginLeft: '8px',
-                        }}
-                      >
-                        ₹{formatCurrency(top20Days.reduce((sum, d) => sum + d.revenue, 0))}
-                      </span>
-                    </div>
-                    <div>
-                      <span
-                        style={{
-                          fontSize: '0.85rem',
-                          color: 'var(--admin-text-secondary)',
-                          fontWeight: '500',
-                        }}
-                      >
-                        Peak Day:
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '1rem',
-                          color: 'var(--admin-text)',
-                          fontWeight: '600',
-                          marginLeft: '8px',
-                        }}
-                      >
-                        {top20Days[0]?.formattedDate} (₹{formatCurrency(top20Days[0]?.revenue || 0)})
-                      </span>
-                    </div>
+                    Peak: ₹{formatCurrency(peakMonth.revenue)} ({peakMonth.month})
                   </div>
-                </>
-              )}
+                </div>
+              </div>
+            </div>
+
+            {/* Top 10 Delivery Areas */}
+            <div className='dashboard-grid-item full-width'>
+              <div className='dashboard-card'>
+                <h3 className='dashboard-section-title'>
+                  <i
+                    className='fa-solid fa-map-marker-alt'
+                    style={{ fontSize: '1rem', opacity: 0.7 }}
+                  ></i>
+                  Top 10 Delivery Areas
+                </h3>
+                <div
+                  style={{
+                    padding: '16px',
+                    borderTop: '2px solid var(--admin-border)',
+                    marginTop: '0.5rem',
+                  }}
+                >
+                  {topAreas.length === 0 ? (
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        padding: '48px',
+                        color: 'var(--admin-text-light)',
+                      }}
+                    >
+                      <i
+                        className='fa-solid fa-inbox'
+                        style={{ fontSize: '48px', opacity: 0.3 }}
+                      ></i>
+                      <p style={{ marginTop: '16px' }}>No delivery areas found</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {topAreas.map((area, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px',
+                            padding: '12px',
+                            background: idx % 2 === 0 ? 'transparent' : 'var(--admin-glass-border)',
+                            borderRadius: '8px',
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontWeight: '600',
+                                color: 'var(--admin-text)',
+                                fontSize: '0.95rem',
+                              }}
+                            >
+                              {idx + 1}. {area.address}
+                            </span>
+                            <span
+                              style={{
+                                fontWeight: '700',
+                                color: 'var(--admin-accent)',
+                                fontSize: '0.95rem',
+                              }}
+                            >
+                              ₹{formatCurrency(area.revenue)} ({area.orders}{' '}
+                              {area.orders === 1 ? 'order' : 'orders'})
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              width: '100%',
+                              height: '20px',
+                              background: 'var(--admin-glass-border)',
+                              borderRadius: '10px',
+                              overflow: 'hidden',
+                              position: 'relative',
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: `${
+                                  maxAreaRevenue > 0 ? (area.revenue / maxAreaRevenue) * 100 : 0
+                                }%`,
+                                height: '100%',
+                                background: 'var(--admin-accent, #449031)',
+                                borderRadius: '10px',
+                                transition: 'width 0.5s ease',
+                                boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.1)',
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Mode Trends */}
+            <div className='dashboard-grid-item full-width'>
+              <div className='dashboard-card'>
+                <h3 className='dashboard-section-title'>
+                  <i
+                    className='fa-solid fa-credit-card'
+                    style={{ fontSize: '1rem', opacity: 0.7 }}
+                  ></i>
+                  Payment Mode Trends
+                </h3>
+                <div
+                  style={{
+                    padding: '16px',
+                    borderTop: '2px solid var(--admin-border)',
+                    marginTop: '0.5rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {paymentTrends.map((trend, idx) => {
+                      // Calculate percentage: (amount / total) * 100, with accuracy based on total records / 100
+                      const percentage =
+                        totalPaymentAmount > 0
+                          ? Math.min(
+                              100,
+                              parseFloat(((trend.amount / totalPaymentAmount) * 100).toFixed(2))
+                            )
+                          : 0;
+                      return (
+                        <div
+                          key={idx}
+                          style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <span style={{ fontWeight: '600', color: 'var(--admin-text)' }}>
+                              {trend.mode}
+                            </span>
+                            <span
+                              style={{
+                                fontWeight: '700',
+                                color: 'var(--admin-accent)',
+                                fontSize: '1rem',
+                              }}
+                            >
+                              ₹{formatCurrency(trend.amount)} ({percentage.toFixed(2)}%)
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              width: '100%',
+                              height: '28px',
+                              background: 'var(--admin-glass-border)',
+                              borderRadius: '6px',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: `${percentage}%`,
+                                height: '100%',
+                                background: 'var(--admin-accent, #449031)',
+                                borderRadius: '6px',
+                                transition: 'width 0.5s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'flex-end',
+                                paddingRight: '0.5rem',
+                              }}
+                            >
+                              {percentage > 15 && (
+                                <span
+                                  style={{ color: 'white', fontSize: '0.75rem', fontWeight: '600' }}
+                                >
+                                  {percentage.toFixed(0)}%
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Delivery Address Yearly & Monthly Analytics */}
+            <div className='dashboard-grid-item full-width'>
+              <div className='dashboard-card'>
+                <h3 className='dashboard-section-title'>
+                  <i className='fa-solid fa-map-marker-alt' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
+                  Delivery Address Analytics (Yearly & Monthly)
+                </h3>
+                <div className='analytics-chart-container'>
+                  {!deliveryAddressAnalytics || !deliveryAddressAnalytics.data || deliveryAddressAnalytics.data.length === 0 ? (
+                    <div className='analytics-empty-state'>
+                      <i className='fa-solid fa-inbox analytics-empty-icon'></i>
+                      <p style={{ marginTop: '16px' }}>No delivery address data available</p>
+                    </div>
+                  ) : (
+                    <div className='analytics-delivery-table-wrapper'>
+                      <table className='analytics-delivery-table'>
+                        <thead>
+                          <tr>
+                            <th className='analytics-th-sticky'>
+                              Delivery Address
+                            </th>
+                            <th className='analytics-th-right'>{deliveryAddressAnalytics?.year1 || 'Year 1'}</th>
+                            <th className='analytics-th-right'>{deliveryAddressAnalytics?.year2 || 'Year 2'}</th>
+                            <th className='analytics-th-right analytics-th-year'>{deliveryAddressAnalytics?.year3 || 'Year 3'}</th>
+                            <th className='analytics-th-right analytics-th-grand-total'>
+                              Grand Total
+                            </th>
+                            <th className='analytics-th-center'>Trend</th>
+                            <th className='analytics-th-center analytics-th-monthly'>
+                              Monthly Breakdown
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {deliveryAddressAnalytics?.data?.map((data, idx) => {
+                            const { year1, year2, year3 } = data.years;
+                            const currentMonth = now.getMonth();
+                            const trendKey1 = `${year1}-${year2}`;
+                            const trendKey2 = `${year2}-${year3}`;
+                            const trendY1toY2 = data.trends[trendKey1];
+                            const trendY2toY3 = data.trends[trendKey2];
+                            
+                            // Gap: Total gap comparing current year months vs Dec 2025
+                            const totalGap = data.totalGap || 0;
+                            const dec2025Value = data.monthlyGaps && data.monthlyGaps.length > 0 
+                              ? data.monthlyGaps[0].dec2025Value 
+                              : 0;
+
+                            // Determine overall trend indicator (based on gap vs Dec 2025)
+                            let trendIcon = '—';
+                            let trendColor = 'var(--admin-text-secondary)';
+                            if (totalGap > 0) {
+                              trendIcon = '▲';
+                              trendColor = 'var(--admin-success)';
+                            } else if (totalGap < 0) {
+                              trendIcon = '▼';
+                              trendColor = 'var(--admin-danger)';
+                            }
+
+                            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                            
+                            return (
+                              <tr key={idx}>
+                                <td className='analytics-td-address'>
+                                  {data.address}
+                                </td>
+                                <td className={`analytics-td-right ${data.yearly[year1] > 0 ? 'analytics-td-year' : 'analytics-td-year-empty'}`}>
+                                  {data.yearly[year1] > 0 ? `₹${formatCurrency(data.yearly[year1])}` : '—'}
+                                </td>
+                                <td className={`analytics-td-right ${data.yearly[year2] > 0 ? 'analytics-td-year' : 'analytics-td-year-empty'}`}>
+                                  {data.yearly[year2] > 0 ? `₹${formatCurrency(data.yearly[year2])}` : '—'}
+                                </td>
+                                <td className={`analytics-td-right ${data.yearly[year3] > 0 ? 'analytics-td-year' : 'analytics-td-year-empty'}`}>
+                                  {data.yearly[year3] > 0 ? `₹${formatCurrency(data.yearly[year3])}` : '—'}
+                                </td>
+                                <td className='analytics-td-grand-total'>
+                                  ₹{formatCurrency(data.grandTotal)}
+                                </td>
+                                <td className='analytics-td-trend'>
+                                  <span className={`analytics-trend-icon ${totalGap > 0 ? 'analytics-trend-icon-up' : totalGap < 0 ? 'analytics-trend-icon-down' : 'analytics-trend-icon-neutral'}`}>
+                                    {trendIcon}
+                                  </span>
+                                </td>
+                                <td className='analytics-td-monthly'>
+                                  <div className='analytics-monthly-breakdown'>
+                                    {/* Year 1 Monthly */}
+                                    {data.monthly[year1] && (
+                                      <div className='analytics-monthly-year-row'>
+                                        <span className='analytics-monthly-year-label'>{year1}:</span>
+                                        {data.monthly[year1].map((monthVal, mIdx) => (
+                                          <span
+                                            key={`${year1}-${mIdx}`}
+                                            className={`analytics-monthly-value ${monthVal > 0 ? 'analytics-monthly-value-positive' : 'analytics-monthly-value-empty'}`}
+                                            title={`${monthNames[mIdx]}: ₹${formatCurrency(monthVal)}`}
+                                          >
+                                            {monthVal > 0 ? formatCurrency(monthVal) : '—'}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+                                    {/* Year 2 Monthly */}
+                                    {data.monthly[year2] && (
+                                      <div className='analytics-monthly-year-row'>
+                                        <span className='analytics-monthly-year-label'>{year2}:</span>
+                                        {data.monthly[year2].map((monthVal, mIdx) => (
+                                          <span
+                                            key={`${year2}-${mIdx}`}
+                                            className={`analytics-monthly-value ${monthVal > 0 ? 'analytics-monthly-value-positive' : 'analytics-monthly-value-empty'}`}
+                                            title={`${monthNames[mIdx]}: ₹${formatCurrency(monthVal)}`}
+                                          >
+                                            {monthVal > 0 ? formatCurrency(monthVal) : '—'}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+                                    {/* Year 3 Monthly with Gap indicators */}
+                                    {data.monthly[year3] && (
+                                      <div className='analytics-monthly-year3-container'>
+                                        <div className='analytics-monthly-year-row'>
+                                          <span className='analytics-monthly-year-label'>{year3}:</span>
+                                          {data.monthly[year3].map((monthVal, mIdx) => {
+                                            // Get gap for this month vs Dec 2025
+                                            const monthGap = data.monthlyGaps && data.monthlyGaps[mIdx] 
+                                              ? data.monthlyGaps[mIdx].gap 
+                                              : (monthVal - dec2025Value);
+                                            const isPositiveGap = monthGap >= 0;
+                                            
+                                            return (
+                                              <span
+                                                key={`${year3}-${mIdx}`}
+                                                className={`analytics-monthly-value ${monthVal > 0 && mIdx <= currentMonth
+                                                  ? (isPositiveGap ? 'analytics-monthly-value-year3-positive' : 'analytics-monthly-value-year3-negative')
+                                                  : monthVal > 0
+                                                  ? 'analytics-monthly-value-positive'
+                                                  : 'analytics-monthly-value-empty'
+                                                }`}
+                                                title={`${monthNames[mIdx]} ${year3}: ₹${formatCurrency(monthVal)}${mIdx <= currentMonth ? ` (Gap vs Dec ${year2}: ${isPositiveGap ? '+' : ''}₹${formatCurrency(Math.abs(monthGap))})` : ''}`}
+                                              >
+                                                {monthVal > 0 ? formatCurrency(monthVal) : '—'}
+                                              </span>
+                                            );
+                                          })}
+                                        </div>
+                                        {/* Gap indicators row */}
+                                        {data.monthlyGaps && data.monthlyGaps.length > 0 && (
+                                          <div className='analytics-monthly-gap-row'>
+                                            <span className='analytics-monthly-gap-label'>Gap:</span>
+                                            {data.monthlyGaps.map((mg, mIdx) => {
+                                              const isPositive = mg.gap >= 0;
+                                              return (
+                                                <span
+                                                  key={`gap-${mIdx}`}
+                                                  className={`analytics-monthly-gap-value ${isPositive ? 'analytics-monthly-gap-value-positive' : 'analytics-monthly-gap-value-negative'}`}
+                                                  title={`${monthNames[mg.month]} gap vs Dec ${year2}: ${isPositive ? '+' : ''}₹${formatCurrency(Math.abs(mg.gap))}`}
+                                                >
+                                                  {mg.gap !== 0 ? (isPositive ? '+' : '') + formatCurrency(Math.abs(mg.gap)) : '—'}
+                                                </span>
+                                              );
+                                            })}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Top 7 Days All Time */}
+            <div className='dashboard-grid-item full-width'>
+              <div className='dashboard-card'>
+                <h3 className='dashboard-section-title'>
+                  <i className='fa-solid fa-trophy' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
+                  Top 7 Days All Time (By Revenue)
+                </h3>
+                <div
+                  style={{
+                    padding: '16px',
+                    borderTop: '2px solid var(--admin-border)',
+                    marginTop: '0.5rem',
+                  }}
+                >
+                  {top20Days.length === 0 ? (
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        padding: '48px',
+                        color: 'var(--admin-text-light)',
+                      }}
+                    >
+                      <i
+                        className='fa-solid fa-inbox'
+                        style={{ fontSize: '48px', opacity: 0.3 }}
+                      ></i>
+                      <p style={{ marginTop: '16px' }}>No orders data available</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'flex-end',
+                          gap: '0.5rem',
+                          minHeight: '250px',
+                          marginBottom: '16px',
+                          overflowX: 'auto',
+                          paddingBottom: '8px',
+                        }}
+                      >
+                        {top20Days.map((day, idx) => (
+                          <div
+                            key={idx}
+                            style={{
+                              flex: '1 1 0',
+                              minWidth: '60px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: '100%',
+                                maxWidth: '80px',
+                                height: `${(day.revenue / maxDayRevenue) * 200}px`,
+                                minHeight: '10px',
+                                background:
+                                  idx < 3
+                                    ? 'var(--admin-accent, #449031)'
+                                    : 'var(--admin-accent, #449031)',
+                                borderRadius: '8px 8px 0 0',
+                                display: 'flex',
+                                alignItems: 'flex-end',
+                                justifyContent: 'center',
+                                paddingBottom: '0.5rem',
+                                cursor: 'pointer',
+                                boxShadow:
+                                  idx < 3
+                                    ? '0 4px 12px rgba(68, 144, 49, 0.3)'
+                                    : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                position: 'relative',
+                                transition: 'all 0.3s ease',
+                              }}
+                              onClick={() => {
+                                if (onViewDayDetails) {
+                                  onViewDayDetails(day.date);
+                                }
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-4px)';
+                                e.currentTarget.style.boxShadow =
+                                  '0 6px 16px rgba(68, 144, 49, 0.4)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow =
+                                  idx < 3
+                                    ? '0 4px 12px rgba(68, 144, 49, 0.3)'
+                                    : '0 2px 8px rgba(0, 0, 0, 0.1)';
+                              }}
+                              title={`Click to view orders for ${
+                                day.formattedDate
+                              }: ₹${formatCurrency(day.revenue)} (${day.orders} ${
+                                day.orders === 1 ? 'order' : 'orders'
+                              })`}
+                            >
+                              {idx < 3 && (
+                                <span
+                                  style={{
+                                    position: 'absolute',
+                                    top: '-8px',
+                                    right: '-8px',
+                                    background: 'var(--admin-warning, #f59e0b)',
+                                    color: 'white',
+                                    borderRadius: '50%',
+                                    width: '24px',
+                                    height: '24px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '0.7rem',
+                                    fontWeight: '700',
+                                    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)',
+                                  }}
+                                >
+                                  {idx + 1}
+                                </span>
+                              )}
+                              <span
+                                style={{
+                                  color: 'white',
+                                  fontSize: '0.7rem',
+                                  fontWeight: '600',
+                                  textAlign: 'center',
+                                  lineHeight: '1.2',
+                                }}
+                              >
+                                ₹{formatNumberIndian(day.revenue)}
+                              </span>
+                            </div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '2px',
+                              }}
+                            >
+                              <span
+                                style={{
+                                  fontSize: '0.7rem',
+                                  color: 'var(--admin-text-light)',
+                                  textAlign: 'center',
+                                  fontWeight: '500',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {day.shortDate}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: '0.65rem',
+                                  color: 'var(--admin-text-secondary)',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                {day.orders} {day.orders === 1 ? 'order' : 'orders'}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '12px',
+                          background: 'var(--admin-glass-border)',
+                          borderRadius: '8px',
+                          marginTop: '16px',
+                        }}
+                      >
+                        <div>
+                          <span
+                            style={{
+                              fontSize: '0.85rem',
+                              color: 'var(--admin-text-secondary)',
+                              fontWeight: '500',
+                            }}
+                          >
+                            Total Revenue (Top 7 Days):
+                          </span>
+                          <span
+                            style={{
+                              fontSize: '1.1rem',
+                              color: 'var(--admin-accent)',
+                              fontWeight: '700',
+                              marginLeft: '8px',
+                            }}
+                          >
+                            ₹{formatCurrency(top20Days.reduce((sum, d) => sum + d.revenue, 0))}
+                          </span>
+                        </div>
+                        <div>
+                          <span
+                            style={{
+                              fontSize: '0.85rem',
+                              color: 'var(--admin-text-secondary)',
+                              fontWeight: '500',
+                            }}
+                          >
+                            Peak Day:
+                          </span>
+                          <span
+                            style={{
+                              fontSize: '1rem',
+                              color: 'var(--admin-text)',
+                              fontWeight: '600',
+                              marginLeft: '8px',
+                            }}
+                          >
+                            {top20Days[0]?.formattedDate} (₹
+                            {formatCurrency(top20Days[0]?.revenue || 0)})
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      </div>
-      </div>
-
     </div>
   );
 };

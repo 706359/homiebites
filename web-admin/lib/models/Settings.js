@@ -39,6 +39,7 @@ const SettingsSchema = new mongoose.Schema(
     fontFamily: { type: String, default: 'Baloo 2' },
     fontSize: { type: String, default: 'medium' }, // small, medium, large, extra-large
     primaryColor: { type: String, default: '#449031' },
+    secondaryColor: { type: String, default: '#c45c2d' },
     theme: { type: String, default: 'light' }, // light, dark, auto
     // Legacy fields (kept for backward compatibility)
     whatsappNumber: String,

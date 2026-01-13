@@ -8,6 +8,16 @@
   position: relative;
 }
 
+.offer-section .section-container {
+  position: relative;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
 .offer-intro {
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.95);

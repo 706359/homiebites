@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../../../../components/admin/contexts/NotificationContext.jsx';
+import { useAutoKeyboardAvoidance } from '../../../../hooks/useKeyboardAvoidance';
 import './reset-password.css';
 
 export default function ResetPasswordForm({ token }) {
@@ -20,6 +21,12 @@ export default function ResetPasswordForm({ token }) {
     hasLowerCase: false,
     hasNumber: false,
     hasSpecialChar: false,
+  });
+
+  // Enable keyboard avoidance for mobile
+  useAutoKeyboardAvoidance({
+    containerSelector: '.reset-password-form',
+    inputSelector: 'input, textarea, select',
   });
 
   useEffect(() => {

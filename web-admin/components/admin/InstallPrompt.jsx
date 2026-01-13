@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const InstallPrompt = () => {
   const pathname = usePathname();
@@ -217,8 +217,8 @@ const InstallPrompt = () => {
         className='install-prompt-button-container'
         style={{
           position: 'fixed',
-          bottom: '20px',
-          right: '20px',
+          bottom: '16px',
+          right: '16px',
           left: 'auto',
           zIndex: 10000,
           maxWidth: 'calc(100vw - 40px)',
@@ -232,14 +232,13 @@ const InstallPrompt = () => {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            boxShadow: '0 4px 12px rgba(68, 144, 49, 0.3)',
+            boxShadow: '0 4px 8px rgba(68, 144, 49, 0.3)',
             whiteSpace: 'nowrap',
             maxWidth: '100%',
             boxSizing: 'border-box',
           }}
         >
           <i className='fa-solid fa-download'></i>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Install App</span>
         </button>
       </div>
     );

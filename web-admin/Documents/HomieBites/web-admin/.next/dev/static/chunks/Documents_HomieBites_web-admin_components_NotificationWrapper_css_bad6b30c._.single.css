@@ -1,0 +1,238 @@
+/* [project]/Documents/HomieBites/web-admin/components/NotificationWrapper.css [app-client] (css) */
+.notification-container {
+  z-index: 3000;
+  gap: var(--space-2);
+  pointer-events: none;
+  flex-direction: column;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+}
+
+.notification {
+  pointer-events: auto;
+  cursor: pointer;
+  border-radius: var(--border-radius-md);
+  opacity: 0;
+  transition: all .3s cubic-bezier(.4, 0, .2, 1);
+  position: relative;
+  overflow: hidden;
+  transform: translateX(120%)scale(.95);
+}
+
+.notification.notification-visible {
+  opacity: 1;
+  transform: translateX(0)scale(1);
+}
+
+.notification.notification-hidden {
+  opacity: 0;
+  transform: translateX(120%)scale(.95);
+}
+
+.notification-backdrop {
+  background: var(--bg-white);
+  border-radius: var(--border-radius-md);
+  z-index: 1;
+  box-shadow: 0 2px 12px var(--shadow-color);
+  position: absolute;
+  inset: 0;
+}
+
+.notification-body {
+  z-index: 2;
+  background: var(--bg-white);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 2px 12px var(--shadow-color);
+  border: none;
+  align-items: center;
+  gap: .625rem;
+  padding: .625rem .875rem;
+  transition: all .2s;
+  display: flex;
+  position: relative;
+}
+
+.notification:hover .notification-body {
+  box-shadow: 0 4px 16px var(--shadow-dark);
+  transform: translateY(-1px);
+}
+
+.notification-icon-wrapper {
+  border-radius: var(--border-radius-md);
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  transition: all .2s;
+  display: flex;
+  position: relative;
+}
+
+.notification-icon {
+  font-size: var(--font-size-lg);
+  z-index: 2;
+  transition: all .2s;
+  position: relative;
+}
+
+.notification:hover .notification-icon {
+  transform: scale(1.1);
+}
+
+.notification-progress-bar {
+  z-index: 3;
+  border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+  background: #0000000d;
+  height: 2px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+}
+
+.notification-progress-fill {
+  transform-origin: 0;
+  background: currentColor;
+  width: 100%;
+  height: 100%;
+  animation: linear forwards notificationProgress;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+@keyframes notificationProgress {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
+
+.notification-success .notification-body {
+  border-left: 3px solid var(--success-green-light);
+}
+
+.notification-success .notification-icon-wrapper {
+  background: #10b9811a;
+}
+
+.notification-success .notification-icon, .notification-success .notification-progress-fill {
+  color: var(--success-green-light);
+}
+
+.notification-error .notification-body {
+  border-left: 3px solid var(--error-red);
+}
+
+.notification-error .notification-icon-wrapper {
+  background: #ef44441a;
+}
+
+.notification-error .notification-icon, .notification-error .notification-progress-fill {
+  color: var(--error-red);
+}
+
+.notification-warning .notification-body {
+  border-left: 3px solid var(--primary-orange);
+}
+
+.notification-warning .notification-icon-wrapper {
+  background: #c45c2d1a;
+}
+
+.notification-warning .notification-icon, .notification-warning .notification-progress-fill {
+  color: var(--primary-orange);
+}
+
+.notification-info .notification-body {
+  border-left: 3px solid var(--info-blue-light);
+}
+
+.notification-info .notification-icon-wrapper {
+  background: #3b82f61a;
+}
+
+.notification-info .notification-icon, .notification-info .notification-progress-fill {
+  color: var(--info-blue-light);
+}
+
+.notification-content {
+  flex: 1;
+  min-width: 0;
+  padding-top: 0;
+  overflow: hidden;
+}
+
+.notification-message {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin: 0;
+  font-weight: 500;
+  line-height: 1.4;
+  overflow: hidden;
+}
+
+.notification-close {
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  border-radius: var(--border-radius-sm);
+  opacity: .6;
+  background: none;
+  border: none;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+  padding: .125rem;
+  transition: all .2s;
+  display: flex;
+}
+
+.notification-close:hover {
+  color: var(--text-primary);
+  opacity: 1;
+  background: #0000000d;
+  transform: rotate(90deg);
+}
+
+.notification-close:active {
+  transform: rotate(90deg)scale(.9);
+}
+
+@media (max-width: 768px) {
+  .notification-container {
+    gap: var(--space-2);
+    max-width: none;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+  }
+
+  .notification-body {
+    padding: var(--space-2) .75rem;
+  }
+
+  .notification-icon-wrapper {
+    width: 28px;
+    height: 28px;
+  }
+
+  .notification-icon {
+    font-size: var(--font-size-base);
+  }
+}
+
+/*# sourceMappingURL=Documents_HomieBites_web-admin_components_NotificationWrapper_css_bad6b30c._.single.css.map*/

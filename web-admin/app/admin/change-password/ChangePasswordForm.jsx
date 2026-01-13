@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useNotification } from '../../../components/admin/contexts/NotificationContext.jsx';
+import { useAutoKeyboardAvoidance } from '../../../hooks/useKeyboardAvoidance';
 import './change-password.css';
 
 export default function ChangePasswordForm({ isTemporary }) {
@@ -21,6 +22,12 @@ export default function ChangePasswordForm({ isTemporary }) {
     hasLowerCase: false,
     hasNumber: false,
     hasSpecialChar: false,
+  });
+
+  // Enable keyboard avoidance for mobile
+  useAutoKeyboardAvoidance({
+    containerSelector: '.change-password-form',
+    inputSelector: 'input, textarea, select',
   });
 
   useEffect(() => {

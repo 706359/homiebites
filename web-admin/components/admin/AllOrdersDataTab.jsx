@@ -128,7 +128,7 @@ const AllOrdersDataTab = ({
       filtered = filtered.filter((o) => {
         const status = (o.status || '').toLowerCase().trim();
         const filterValue = filterStatus.toLowerCase().trim();
-        
+
         // Use helper functions for paid/pending/unpaid for better matching
         // Pass both status and paymentStatus for accurate filtering
         if (filterValue === 'paid') {
@@ -246,7 +246,7 @@ const AllOrdersDataTab = ({
           if (aTotal === null || isNaN(aTotal)) {
             aTotal = parseFloat(a.quantity || 1) * parseFloat(a.unitPrice || 0);
           }
-          
+
           let bTotal = null;
           if (b.totalAmount !== undefined && b.totalAmount !== null) {
             bTotal = parseFloat(b.totalAmount);
@@ -256,7 +256,7 @@ const AllOrdersDataTab = ({
           if (bTotal === null || isNaN(bTotal)) {
             bTotal = parseFloat(b.quantity || 1) * parseFloat(b.unitPrice || 0);
           }
-          
+
           aVal = isNaN(aTotal) ? 0 : aTotal;
           bVal = isNaN(bTotal) ? 0 : bTotal;
           break;
@@ -291,17 +291,17 @@ const AllOrdersDataTab = ({
 
       const seqA = extractOrderIdSequence(a.orderId);
       const seqB = extractOrderIdSequence(b.orderId);
-      
+
       if (seqA > 0 && seqB > 0) {
         return seqB - seqA;
       }
-      
+
       const idA = (a.orderId || '').toString();
       const idB = (b.orderId || '').toString();
       if (idA && idB) {
         return idB.localeCompare(idA);
       }
-      
+
       return 0;
     });
 
@@ -330,7 +330,9 @@ const AllOrdersDataTab = ({
   const activeFilters = useMemo(() => {
     const filters = [];
     if (allOrdersFilterPaymentStatus) {
-      const displayLabel = allOrdersFilterPaymentStatus.charAt(0).toUpperCase() + allOrdersFilterPaymentStatus.slice(1);
+      const displayLabel =
+        allOrdersFilterPaymentStatus.charAt(0).toUpperCase() +
+        allOrdersFilterPaymentStatus.slice(1);
       filters.push({
         key: 'paymentStatus',
         label: `Payment Status: ${displayLabel}`,
@@ -490,7 +492,7 @@ const AllOrdersDataTab = ({
       // Normalize status for bulk operations - use 'Unpaid' for pending (consistent with UI dropdowns)
       const normalizedStatus = action === 'paid' ? 'Paid' : 'Unpaid';
       const statusLabel = action === 'paid' ? 'Paid' : 'Unpaid';
-      
+
       if (showConfirmation) {
         showConfirmation({
           title: `Mark as ${statusLabel}`,
@@ -511,7 +513,10 @@ const AllOrdersDataTab = ({
               setSelectedRows(new Set());
               setSelectAll(false);
               if (showNotification)
-                showNotification(`Selected orders marked as ${statusLabel.toLowerCase()}`, 'success');
+                showNotification(
+                  `Selected orders marked as ${statusLabel.toLowerCase()}`,
+                  'success'
+                );
               // Refresh to ensure filters work correctly with updated data
               if (loadOrders) {
                 setTimeout(() => {
@@ -706,45 +711,54 @@ const AllOrdersDataTab = ({
           {/* Quick Filters - Always Visible */}
           <div className='filter-bar-quick-filters'>
             {/* Payment Status Filter - Groups Paid vs Unpaid */}
-            <select
-              className='input-field filter-select'
-              value={allOrdersFilterPaymentStatus}
-              onChange={(e) => {
-                setAllOrdersFilterPaymentStatus(e.target.value);
-                if (setAllOrdersFilterPaymentStatus) setAllOrdersFilterPaymentStatus(e.target.value);
-                // Clear the specific status filter when using payment status filter
-                if (e.target.value) {
-                  setFilterStatus('');
-                }
-              }}
-              title='Filter by Payment Status'
-            >
-              <option value=''>All Payment Status</option>
-              <option value='paid'>Paid</option>
-              <option value='unpaid'>Unpaid</option>
-              <option value='pending'>Pending</option>
-            </select>
+            <div className='premium-select-wrapper'>
+              <i className='fa-solid fa-credit-card select-icon'></i>
+              <select
+                className='input-field filter-select premium-select'
+                value={allOrdersFilterPaymentStatus}
+                onChange={(e) => {
+                  setAllOrdersFilterPaymentStatus(e.target.value);
+                  if (setAllOrdersFilterPaymentStatus)
+                    setAllOrdersFilterPaymentStatus(e.target.value);
+                  // Clear the specific status filter when using payment status filter
+                  if (e.target.value) {
+                    setFilterStatus('');
+                  }
+                }}
+                title='Filter by Payment Status'
+              >
+                <option value=''>All Payment Status</option>
+                <option value='paid'>Paid</option>
+                <option value='unpaid'>Unpaid</option>
+                <option value='pending'>Pending</option>
+              </select>
+              <i className='fa-solid fa-chevron-down dropdown-icon'></i>
+            </div>
 
-            <select
-              className='input-field filter-select'
-              value={filterStatus}
-              onChange={(e) => {
-                setFilterStatus(e.target.value);
-                // Clear payment status filter when using specific status filter
-                if (e.target.value) {
-                  setAllOrdersFilterPaymentStatus('');
-                  if (setAllOrdersFilterPaymentStatus) setAllOrdersFilterPaymentStatus('');
-                }
-              }}
-              title='Filter by Exact Status'
-            >
-              <option value=''>All Status</option>
-              {uniqueStatuses.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
+            <div className='premium-select-wrapper'>
+              <i className='fa-solid fa-filter select-icon'></i>
+              <select
+                className='input-field filter-select premium-select'
+                value={filterStatus}
+                onChange={(e) => {
+                  setFilterStatus(e.target.value);
+                  // Clear payment status filter when using specific status filter
+                  if (e.target.value) {
+                    setAllOrdersFilterPaymentStatus('');
+                    if (setAllOrdersFilterPaymentStatus) setAllOrdersFilterPaymentStatus('');
+                  }
+                }}
+                title='Filter by Exact Status'
+              >
+                <option value=''>All Status</option>
+                {uniqueStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+              <i className='fa-solid fa-chevron-down dropdown-icon'></i>
+            </div>
 
             <select
               className='input-field filter-select'
@@ -773,19 +787,23 @@ const AllOrdersDataTab = ({
                 </option>
               ))}
             </select>
-
-            {/* Advanced Filters Toggle */}
-            <button
-              onClick={() => setFiltersExpanded(!filtersExpanded)}
-              className={`btn btn-ghost btn-small filter-toggle-btn ${filtersExpanded ? 'active' : ''}`}
-            >
-              <i className='fa-solid fa-filter filter-toggle-icon'></i>
-              More Filters
-              <i
-                className={`fa-solid fa-chevron-${filtersExpanded ? 'up' : 'down'} filter-toggle-chevron`}
-              ></i>
-            </button>
           </div>
+
+          {/* Advanced Filters Toggle - Moved to same line as other filters */}
+          <button
+            onClick={() => setFiltersExpanded(!filtersExpanded)}
+            className={`btn btn-ghost btn-small filter-toggle-btn ${
+              filtersExpanded ? 'active' : ''
+            }`}
+          >
+            <i className='fa-solid fa-sliders filter-toggle-icon'></i>
+            Advanced Filters
+            <i
+              className={`fa-solid fa-chevron-${
+                filtersExpanded ? 'up' : 'down'
+              } filter-toggle-chevron`}
+            ></i>
+          </button>
           {selectedRows.size > 0 && (
             <div className='bulk-actions-bar-inline'>
               <span className='bulk-actions-label'>{selectedRows.size} selected</span>
@@ -1073,12 +1091,16 @@ const AllOrdersDataTab = ({
                       <td>
                         {(() => {
                           // Normalize status to 'Paid' or 'Unpaid' for the dropdown
-                          const normalizedStatus = isPaidStatus(order.status, order.paymentStatus) ? 'Paid' : 'Unpaid';
+                          const normalizedStatus = isPaidStatus(order.status, order.paymentStatus)
+                            ? 'Paid'
+                            : 'Unpaid';
                           const currentStatus = order.status || 'Unpaid';
 
                           return (
                             <select
-                              className={`status-dropdown ${isPaid ? 'status-paid' : 'status-unpaid'}`}
+                              className={`status-dropdown ${
+                                isPaid ? 'status-paid' : 'status-unpaid'
+                              }`}
                               value={normalizedStatus}
                               onChange={(e) => {
                                 e.stopPropagation();

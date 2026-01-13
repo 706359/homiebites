@@ -180,21 +180,7 @@
   justify-content: center;
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .settings-theme-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-
-  .theme-options-group {
-    flex-direction: column;
-  }
-
-  .theme-option {
-    width: 100%;
-  }
-}
+/* Responsive Design - Mobile only */
 
 /* Dark Theme Support */
 :root.dark-theme .theme-option {

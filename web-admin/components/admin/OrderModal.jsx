@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
 import { parseOrderDate } from './utils/dateUtils.js';
 import {
   calculateTotalAmount,
@@ -34,6 +35,12 @@ const OrderModal = ({
   const dropdownRef = useRef(null);
   const selectedAddressRef = useRef(null); // Store selected address to prevent clearing
   const addressDebounceTimerRef = useRef(null);
+
+  // Enable keyboard avoidance for mobile
+  useAutoKeyboardAvoidance({
+    containerSelector: '.modal-container',
+    inputSelector: 'input, textarea, select',
+  });
 
   // Generate OrderID preview (format: HB-Feb'24-02-000079)
   // Format: HB-[MonthAbbr]'[YY]-[MM]-[Sequence]
@@ -374,13 +381,16 @@ const OrderModal = ({
       // Also update paymentStatus for consistency with database schema
       if (normalizedOrder.status === 'Paid' || normalizedOrder.status.toLowerCase() === 'paid') {
         normalizedOrder.paymentStatus = 'Paid';
-      } else if (normalizedOrder.status === 'Unpaid' || normalizedOrder.status.toLowerCase() === 'unpaid') {
+      } else if (
+        normalizedOrder.status === 'Unpaid' ||
+        normalizedOrder.status.toLowerCase() === 'unpaid'
+      ) {
         normalizedOrder.paymentStatus = 'Pending'; // Database default for unpaid
       } else {
         normalizedOrder.paymentStatus = normalizedOrder.paymentStatus || 'Pending';
       }
     }
-    
+
     // Normalize paymentMode (trim whitespace, allow empty string for 'None')
     if (normalizedOrder.paymentMode !== undefined && normalizedOrder.paymentMode !== null) {
       if (normalizedOrder.paymentMode === '' || normalizedOrder.paymentMode === 'None') {
@@ -497,7 +507,7 @@ const OrderModal = ({
       // Pass the normalized order data to onSave
       if (editingOrder) {
         const cleanOrderData = {};
-        
+
         // Define allowed fields that can be updated
         const allowedFields = {
           date: normalizedOrder.date,
@@ -512,11 +522,16 @@ const OrderModal = ({
           customerName: normalizedOrder.customerName,
           addressId: normalizedOrder.addressId,
         };
-        
-        Object.keys(allowedFields).forEach(key => {
+
+        Object.keys(allowedFields).forEach((key) => {
           const value = allowedFields[key];
           if (value !== undefined) {
-            if (key === 'paymentMode' || key === 'notes' || key === 'customerName' || key === 'addressId') {
+            if (
+              key === 'paymentMode' ||
+              key === 'notes' ||
+              key === 'customerName' ||
+              key === 'addressId'
+            ) {
               // These fields can be empty strings
               cleanOrderData[key] = value === null ? '' : value;
             } else {
@@ -524,7 +539,7 @@ const OrderModal = ({
             }
           }
         });
-        
+
         // Include billingMonth/billingYear if they exist (from date calculation)
         if (normalizedOrder.billingMonth !== undefined) {
           cleanOrderData.billingMonth = normalizedOrder.billingMonth;
@@ -532,7 +547,7 @@ const OrderModal = ({
         if (normalizedOrder.billingYear !== undefined) {
           cleanOrderData.billingYear = normalizedOrder.billingYear;
         }
-        
+
         await onSave(editingOrder.orderId || editingOrder._id, cleanOrderData);
         // Close modal after editing
         setTimeout(() => {
@@ -916,6 +931,44 @@ const OrderModal = ({
           </button>
         </div>
         <div className='modal-body'>
+          {/* Order ID moved to top for quick reference */}
+          <div className='form-group'>
+            <label>
+              <i className='fa-solid fa-hashtag mr-2'></i>
+              Order ID
+            </label>
+            {editingOrder ? (
+              <input
+                type='text'
+                className={`input-field ${formErrors.orderId ? 'error' : ''}`}
+                value={editingOrder.orderId || ''}
+                onChange={(e) =>
+                  onEditingOrderChange({
+                    ...editingOrder,
+                    orderId: e.target.value,
+                  })
+                }
+                placeholder="Enter Order ID (e.g., HB-Feb'24-05-000001)"
+              />
+            ) : (
+              <input
+                type='text'
+                className='input-field'
+                value={generateOrderIdPreview()}
+                readOnly
+                style={{
+                  backgroundColor: 'var(--admin-bg-secondary, #f8fafc)',
+                  cursor: 'not-allowed',
+                  fontFamily: 'monospace',
+                }}
+                title='Auto-generated on save'
+              />
+            )}
+            <span className='helper-text'>
+              {editingOrder ? '(Editable)' : '(Auto-generated - shown for preview only)'}
+            </span>
+            {formErrors.orderId && <span className='error-text'>{formErrors.orderId}</span>}
+          </div>
           <div className='form-group'>
             <label className={editingOrder?.dateNeedsReview ? 'required error' : 'required'}>
               <i className='fa-solid fa-calendar mr-2'></i>
@@ -1226,32 +1279,6 @@ const OrderModal = ({
               </div>
               {formErrors.unitPrice && <span className='error-text'>{formErrors.unitPrice}</span>}
             </div>
-            <div className='form-group mobile-hide-auto-field'>
-              <label>
-                <i className='fa-solid fa-lock mr-2'></i>
-                Total Amount
-              </label>
-              <input
-                type='text'
-                value={`₹${formatCurrency(
-                  calculateTotalAmount(
-                    editingOrder ? editingOrder.quantity || 1 : newOrder.quantity || 1,
-                    editingOrder ? editingOrder.unitPrice || 0 : newOrder.unitPrice || 0
-                  )
-                )}`}
-                readOnly
-                className='input-field'
-                style={{
-                  fontWeight: '700',
-                  fontSize: '16px',
-                  background: 'var(--admin-accent-light, rgba(68, 144, 49, 0.05))',
-                  borderColor: 'var(--admin-accent-light, rgba(68, 144, 49, 0.2))',
-                  cursor: 'not-allowed',
-                  color: 'var(--admin-accent, #449031)',
-                }}
-                title='Auto-calculated: Quantity × Unit Price'
-              />
-            </div>
           </div>
           <div className='form-row'>
             <div className='form-group'>
@@ -1329,66 +1356,42 @@ const OrderModal = ({
               )}
             </div>
           </div>
-          {/* OrderID Display/Input */}
-          <div className='form-group mobile-hide-auto-field'>
-            <label>
-              <i className='fa-solid fa-hashtag mr-2'></i>
-              Order ID
-            </label>
-            {editingOrder ? (
-              <input
-                type='text'
-                className={`input-field ${formErrors.orderId ? 'error' : ''}`}
-                value={editingOrder.orderId || ''}
-                onChange={(e) =>
-                  onEditingOrderChange({
-                    ...editingOrder,
-                    orderId: e.target.value,
-                  })
-                }
-                placeholder="Enter Order ID (e.g., HB-Feb'24-05-000001)"
-              />
-            ) : (
-              <input
-                type='text'
-                className='input-field'
-                value={generateOrderIdPreview()}
-                readOnly
-                style={{
-                  backgroundColor: 'var(--admin-bg-secondary, #f8fafc)',
-                  cursor: 'not-allowed',
-                  fontFamily: 'monospace',
-                }}
-              />
+        </div>
+        {/* Summary chip: Total Amount (computed on save) */}
+        <div
+          style={{
+            padding: '16px 28px',
+            borderTop: '1px solid var(--admin-border, #e2e8f0)',
+            background: 'var(--admin-bg-secondary, #f7f9fc)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <span
+            style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              color: 'var(--admin-text-secondary, #64748b)',
+            }}
+          >
+            Total Amount
+          </span>
+          <span
+            style={{
+              fontSize: '18px',
+              fontWeight: '700',
+              color: 'var(--admin-accent, #449031)',
+            }}
+          >
+            ₹
+            {formatCurrency(
+              calculateTotalAmount(
+                editingOrder ? editingOrder.quantity || 1 : newOrder.quantity || 1,
+                editingOrder ? editingOrder.unitPrice || 0 : newOrder.unitPrice || 0
+              )
             )}
-            <span className='helper-text'>
-              {editingOrder ? '(Editable)' : '(Auto-generated - Next number from last record)'}
-            </span>
-            {formErrors.orderId && <span className='error-text'>{formErrors.orderId}</span>}
-          </div>
-          {/* Derived fields - Display only (never stored) */}
-          <div className='form-row admin-auto-fields-row mobile-hide-auto-field'>
-            <div className='form-group'>
-              <label>Billing Month (auto)</label>
-              <input
-                type='text'
-                value={billingMonthFormatted}
-                readOnly
-                className='input-field bg-gray-100 cursor-not-allowed'
-                title='Auto-calculated from date'
-              />
-            </div>
-            <div className='form-group'>
-              <label>Year (auto)</label>
-              <input
-                type='text'
-                value={billingYear || ''}
-                readOnly
-                className='input-field bg-gray-100 cursor-not-allowed'
-                title='Auto-calculated from date'
-              />
-            </div>
-          </div>
+          </span>
         </div>
         <div className='modal-footer'>
           <button

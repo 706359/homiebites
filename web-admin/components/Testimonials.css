@@ -2,7 +2,11 @@
 
 .testimonials-section {
   padding: 5rem 2rem;
+  margin-top: 8rem;
   background: var(--bg-white);
+  position: relative;
+  z-index: 1;
+  scroll-margin-top: 120px;
 }
 
 .section-container {
@@ -174,12 +178,18 @@
   left: 0;
   right: 0;
   bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
+  z-index: 10001;
   padding: 2rem;
+  overflow-y: auto;
 }
 
 .review-form-wrapper {
@@ -196,6 +206,8 @@
 @media (max-width: 768px) {
   .testimonials-section {
     padding: 3rem 1.5rem;
+    margin-top: 6rem;
+    scroll-margin-top: 100px;
   }
 
   .reviews-grid {

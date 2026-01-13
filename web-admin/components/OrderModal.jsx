@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useNotification } from "../contexts/NotificationContext";
 import { getMenuData, getMenuDataSync } from "../lib/menuData";
+import { useAutoKeyboardAvoidance } from "../hooks/useKeyboardAvoidance";
 import "./OrderModal.css";
 
 const OrderModal = ({ isOpen, onClose }) => {
@@ -12,6 +13,12 @@ const OrderModal = ({ isOpen, onClose }) => {
   const [customerPhone, setCustomerPhone] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [menuItems, setMenuItems] = useState([]);
+
+  // Enable keyboard avoidance for mobile
+  useAutoKeyboardAvoidance({
+    containerSelector: '.order-modal',
+    inputSelector: 'input, textarea, select',
+  });
 
   useEffect(() => {
     // Wrap in try-catch to prevent unhandled errors
@@ -209,7 +216,7 @@ Please confirm this order. Thank you!`;
               value={deliveryAddress}
               onChange={(e) => setDeliveryAddress(e.target.value)}
               placeholder="A1-405, Panchsheel Greens"
-              rows="3"
+              rows="2"
             />
           </div>
         </div>

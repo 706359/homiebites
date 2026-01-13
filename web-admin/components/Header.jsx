@@ -13,12 +13,15 @@ const Header = ({ onOrderClick }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [location, setLocation] = useState("Panchsheel Greens");
-  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [hasActiveOffers, setHasActiveOffers] = useState(false);
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const closeMenu = () => setIsMenuOpen(false);
+  const toggleMenu = () => {
+    setIsMenuOpen((prev) => !prev);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
 
   const handleNavClick = () => {
     closeMenu();
@@ -81,124 +84,60 @@ const Header = ({ onOrderClick }) => {
     };
   }, []);
 
+
+  // Prevent body scroll when menu is open, restore when closed
   useEffect(() => {
-    // Check for saved location first
-    const savedLocation = localStorage.getItem("homiebites_location");
-    if (savedLocation) {
-      setLocation(savedLocation);
+    if (isMenuOpen) {
+      // Prevent background scroll when menu is open
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      // Restore scroll when menu is closed
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     }
 
-    // Auto-detect location on mount
-    detectLocation();
-  }, []);
+    return () => {
+      // Cleanup: always restore scroll on unmount
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [isMenuOpen]);
 
-  const detectLocation = () => {
-    if (!navigator.geolocation) {
-      return;
-    }
+  // Close menu when clicking outside or pressing Escape
+  useEffect(() => {
+    if (!isMenuOpen) return;
 
-    setIsDetectingLocation(true);
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-
-          // Use reverse geocoding to get location name
-          const response = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            const locality =
-              data.locality ||
-              data.city ||
-              data.principalSubdivision ||
-              "Your Location";
-            setLocation(locality);
-
-            // Save to localStorage
-            localStorage.setItem("homiebites_location", locality);
-          } else {
-            // Fallback: Check if location is near Panchsheel Greens
-            const distance = calculateDistance(
-              latitude,
-              longitude,
-              28.5431,
-              77.25,
-            ); // Approximate Panchsheel Greens coordinates
-            if (distance < 5) {
-              // Within 5km
-              setLocation("Panchsheel Greens");
-            } else {
-              setLocation("Your Location");
-            }
-          }
-        } catch (error) {
-          console.error("Error detecting location:", error);
-          // Check saved location
-          const savedLocation = localStorage.getItem("homiebites_location");
-          if (savedLocation) {
-            setLocation(savedLocation);
-          }
-        } finally {
-          setIsDetectingLocation(false);
+    const handleClickOutside = (e) => {
+      const target = e.target;
+      const menu = document.querySelector('.mobile-menu');
+      const button = document.querySelector('.menu-btn');
+      
+      if (menu && button) {
+        if (!menu.contains(target) && !button.contains(target)) {
+          closeMenu();
         }
-      },
-      (error) => {
-        // Handle different geolocation error types
-        let errorMessage = "Location detection failed";
-        
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            // User denied location permission - this is expected, don't log as error
-            errorMessage = "Location permission denied";
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = "Location information unavailable";
-            break;
-          case error.TIMEOUT:
-            errorMessage = "Location request timed out";
-            break;
-          default:
-            errorMessage = "Unknown location error";
-            break;
-        }
-        
-        // Only log non-permission errors to console
-        if (error.code !== error.PERMISSION_DENIED) {
-          console.warn("Geolocation error:", errorMessage, error);
-        }
-        
-        // Check saved location
-        const savedLocation = localStorage.getItem("homiebites_location");
-        if (savedLocation) {
-          setLocation(savedLocation);
-        }
-        setIsDetectingLocation(false);
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 5000,
-        maximumAge: 300000, // Cache for 5 minutes
-      },
-    );
-  };
+      }
+    };
 
-  const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Radius of the Earth in km
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' || e.keyCode === 27) {
+        closeMenu();
+      }
+    };
+
+    // Use capture phase for better reliability
+    document.addEventListener('mousedown', handleClickOutside, true);
+    document.addEventListener('touchstart', handleClickOutside, true);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside, true);
+      document.removeEventListener('touchstart', handleClickOutside, true);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isMenuOpen]);
+
 
   return (
     <header>
@@ -207,25 +146,18 @@ const Header = ({ onOrderClick }) => {
         <div className="top-bar-content">
           <span className="announcement">{t("header.announcement")}</span>
           <div className="top-bar-right">
-            <LanguageSwitcher />
-            <div
-              className="region-selector"
-              onClick={detectLocation}
-              title="Click to update location"
+            <a
+              href="https://wa.me/919958983578"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="whatsapp-order-link"
+              aria-label="Order on WhatsApp"
+              title="Order on WhatsApp"
             >
-              {isDetectingLocation ? (
-                <>
-                  <i className="fa-solid fa-spinner fa-spin"></i>
-                  <span>Detecting...</span>
-                </>
-              ) : (
-                <>
-                  <i className="fa-solid fa-location-dot"></i>
-                  <span>{location}</span>
-                  <i className="fa-solid fa-chevron-down"></i>
-                </>
-              )}
-            </div>
+              <i className="fa-brands fa-whatsapp"></i>
+              <span>+91-9958983578</span>
+            </a>
+            <LanguageSwitcher />
           </div>
         </div>
       </div>
@@ -274,6 +206,8 @@ const Header = ({ onOrderClick }) => {
             className={`menu-btn ${isMenuOpen ? "open" : ""}`}
             onClick={toggleMenu}
             aria-label="Toggle menu"
+            type="button"
+            aria-expanded={isMenuOpen}
           >
             <i className="fa-solid fa-bars menu-icon"></i>
             <i className="fa-solid fa-xmark close-icon"></i>
@@ -281,8 +215,25 @@ const Header = ({ onOrderClick }) => {
         </div>
       </nav>
 
+      {/* Mobile Menu Backdrop */}
+      {isMenuOpen && (
+        <div
+          className="mobile-menu-backdrop active"
+          onClick={closeMenu}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Mobile Menu */}
       <div className={`mobile-menu ${isMenuOpen ? "open" : ""}`}>
+        <button
+          className="mobile-menu-close-btn"
+          onClick={closeMenu}
+          aria-label="Close menu"
+          type="button"
+        >
+          <i className="fa-solid fa-xmark"></i>
+        </button>
         <a href="/#gallery" onClick={(e) => handleHashLink(e, "#gallery")}>
           {t("header.menu")}
         </a>

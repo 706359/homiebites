@@ -926,13 +926,14 @@
 }
 
 /* Dark Theme Enhancements - Optimized Visibility */
-:root.dark-theme .dashboard-card,
-:root.dark-theme .stat-card,
+/* Dark theme cards - higher specificity, no !important */
+:root.dark-theme .admin-dashboard .dashboard-card,
+:root.dark-theme .admin-dashboard .stat-card,
 .admin-dashboard.dark-theme .dashboard-card,
 .admin-dashboard.dark-theme .stat-card {
-  background-color: var(--admin-bg) !important;
-  border-color: var(--admin-border) !important;
-  color: var(--admin-text) !important;
+  background-color: var(--admin-bg);
+  border-color: var(--admin-border);
+  color: var(--admin-text);
 }
 
 :root.dark-theme .dashboard-card:hover,
@@ -941,68 +942,133 @@
   border-color: var(--admin-border);
 }
 
-:root.dark-theme .orders-table,
-:root.dark-theme .recent-orders-table {
-  background: var(--admin-bg, #111827) !important;
+/* Comprehensive dark theme coverage - proper specificity, no !important */
+:root.dark-theme .admin-dashboard,
+.admin-dashboard.dark-theme {
+  background-color: var(--admin-bg-secondary);
 }
 
-:root.dark-theme .orders-table thead,
-:root.dark-theme .recent-orders-table thead {
-  background: rgba(31, 41, 55, 0.8) !important;
-  color: var(--admin-text-primary, #e5e7eb) !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+:root.dark-theme .admin-dashboard *,
+.admin-dashboard.dark-theme * {
+  color: var(--admin-text);
 }
 
-:root.dark-theme .orders-table th {
-  color: var(--admin-text-primary, #e5e7eb) !important;
-  border-bottom-color: var(--admin-border, rgba(55, 65, 81, 0.6)) !important;
-  background: rgba(31, 41, 55, 0.8) !important;
+:root.dark-theme .admin-dashboard h1,
+:root.dark-theme .admin-dashboard h2,
+:root.dark-theme .admin-dashboard h3,
+:root.dark-theme .admin-dashboard h4,
+:root.dark-theme .admin-dashboard h5,
+:root.dark-theme .admin-dashboard h6,
+.admin-dashboard.dark-theme h1,
+.admin-dashboard.dark-theme h2,
+.admin-dashboard.dark-theme h3,
+.admin-dashboard.dark-theme h4,
+.admin-dashboard.dark-theme h5,
+.admin-dashboard.dark-theme h6 {
+  color: var(--admin-text-primary);
 }
 
-:root.dark-theme .orders-table th:hover {
-  color: var(--admin-accent, #449031) !important;
-  background: rgba(68, 144, 49, 0.15) !important;
+:root.dark-theme .admin-dashboard p,
+:root.dark-theme .admin-dashboard span,
+:root.dark-theme .admin-dashboard div,
+:root.dark-theme .admin-dashboard td,
+:root.dark-theme .admin-dashboard th,
+:root.dark-theme .admin-dashboard li,
+.admin-dashboard.dark-theme p,
+.admin-dashboard.dark-theme span,
+.admin-dashboard.dark-theme div,
+.admin-dashboard.dark-theme td,
+.admin-dashboard.dark-theme th,
+.admin-dashboard.dark-theme li {
+  color: var(--admin-text);
 }
 
-:root.dark-theme .orders-table td {
-  color: var(--admin-text, #e5e7eb) !important;
-  border-bottom-color: rgba(55, 65, 81, 0.4) !important;
+/* Dark theme tables - proper specificity */
+:root.dark-theme .admin-dashboard .orders-table,
+:root.dark-theme .admin-dashboard .recent-orders-table,
+.admin-dashboard.dark-theme .orders-table,
+.admin-dashboard.dark-theme .recent-orders-table {
+  background: var(--admin-bg);
 }
 
-:root.dark-theme .orders-table tbody tr:hover {
-  background: rgba(68, 144, 49, 0.08) !important;
+/* Dark theme table headers - proper specificity */
+:root.dark-theme .admin-dashboard .orders-table thead,
+:root.dark-theme .admin-dashboard .recent-orders-table thead,
+.admin-dashboard.dark-theme .orders-table thead,
+.admin-dashboard.dark-theme .recent-orders-table thead {
+  background: rgba(31, 41, 55, 0.8);
+  color: var(--admin-text-primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-:root.dark-theme .orders-table tbody tr:hover td {
-  color: var(--admin-text-primary, #e5e7eb) !important;
+:root.dark-theme .admin-dashboard .orders-table th,
+.admin-dashboard.dark-theme .orders-table th {
+  color: var(--admin-text-primary);
+  border-bottom-color: var(--admin-border);
+  background: rgba(31, 41, 55, 0.8);
 }
 
-:root.dark-theme .input-field,
-:root.dark-theme input,
-:root.dark-theme textarea,
-:root.dark-theme select {
-  background: rgba(31, 41, 55, 0.5) !important;
-  border-color: rgba(55, 65, 81, 0.6) !important;
-  color: var(--admin-text, #e5e7eb) !important;
+:root.dark-theme .admin-dashboard .orders-table th:hover,
+.admin-dashboard.dark-theme .orders-table th:hover {
+  color: var(--admin-accent);
+  background: rgba(68, 144, 49, 0.15);
 }
 
-:root.dark-theme .input-field:focus,
-:root.dark-theme input:focus,
-:root.dark-theme textarea:focus,
-:root.dark-theme select:focus {
-  background: rgba(31, 41, 55, 0.7) !important;
-  border-color: var(--admin-accent, #449031) !important;
-  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.2) !important;
+:root.dark-theme .admin-dashboard .orders-table td,
+.admin-dashboard.dark-theme .orders-table td {
+  color: var(--admin-text);
+  border-bottom-color: rgba(55, 65, 81, 0.4);
 }
 
-:root.dark-theme .input-field::placeholder,
-:root.dark-theme input::placeholder,
-:root.dark-theme textarea::placeholder {
-  color: var(--admin-text-light, #6b7280) !important;
+:root.dark-theme .admin-dashboard .orders-table tbody tr:hover,
+.admin-dashboard.dark-theme .orders-table tbody tr:hover {
+  background: transparent;
 }
 
-:root.dark-theme label {
-  color: var(--admin-text-secondary, #9ca3af) !important;
+:root.dark-theme .admin-dashboard .orders-table tbody tr:hover td,
+.admin-dashboard.dark-theme .orders-table tbody tr:hover td {
+  color: var(--admin-text-primary);
+}
+
+/* Dark theme form elements - proper specificity */
+:root.dark-theme .admin-dashboard .input-field,
+:root.dark-theme .admin-dashboard input,
+:root.dark-theme .admin-dashboard textarea,
+:root.dark-theme .admin-dashboard select,
+.admin-dashboard.dark-theme .input-field,
+.admin-dashboard.dark-theme input,
+.admin-dashboard.dark-theme textarea,
+.admin-dashboard.dark-theme select {
+  background: rgba(31, 41, 55, 0.5);
+  border-color: rgba(55, 65, 81, 0.6);
+  color: var(--admin-text);
+}
+
+:root.dark-theme .admin-dashboard .input-field:focus,
+:root.dark-theme .admin-dashboard input:focus,
+:root.dark-theme .admin-dashboard textarea:focus,
+:root.dark-theme .admin-dashboard select:focus,
+.admin-dashboard.dark-theme .input-field:focus,
+.admin-dashboard.dark-theme input:focus,
+.admin-dashboard.dark-theme textarea:focus,
+.admin-dashboard.dark-theme select:focus {
+  background: rgba(31, 41, 55, 0.7);
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.2);
+}
+
+:root.dark-theme .admin-dashboard .input-field::placeholder,
+:root.dark-theme .admin-dashboard input::placeholder,
+:root.dark-theme .admin-dashboard textarea::placeholder,
+.admin-dashboard.dark-theme .input-field::placeholder,
+.admin-dashboard.dark-theme input::placeholder,
+.admin-dashboard.dark-theme textarea::placeholder {
+  color: var(--admin-text-light);
+}
+
+:root.dark-theme .admin-dashboard label,
+.admin-dashboard.dark-theme label {
+  color: var(--admin-text-secondary);
 }
 
 :root.dark-theme .btn-primary {

@@ -15,28 +15,13 @@ import Chatbot from "../components/Chatbot";
 import "../styles/chatbot.css";
 import { useSmoothScroll } from "../hooks/useSmoothScroll";
 import { useRevealAnimation } from "../hooks/useRevealAnimation";
-import { useNotification } from "../contexts/NotificationContext";
 import { useLanguage } from "../contexts/LanguageContext";
 
 export default function HomePage() {
   const { t } = useLanguage();
-  const { info } = useNotification();
 
   useSmoothScroll();
   useRevealAnimation();
-
-  useEffect(() => {
-    // Show welcome notification on first visit
-    const hasVisited = sessionStorage.getItem("homiebites_visited");
-    if (!hasVisited) {
-      setTimeout(() => {
-        info(
-          t("header.announcement") || "Free delivery on orders ₹100 and above",
-        );
-      }, 1000);
-      sessionStorage.setItem("homiebites_visited", "true");
-    }
-  }, [info, t]);
 
   const handleContact = () => {
     window.open('https://wa.me/919958983578', '_blank', 'noopener');

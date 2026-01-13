@@ -74,7 +74,7 @@ const NotificationWrapper = () => {
 
   return (
     <div
-      className='admin-notification-container'
+      className='admin-notification-container toast-container'
       ref={containerRef}
       role='region'
       aria-label='Notifications'
@@ -91,7 +91,7 @@ const NotificationWrapper = () => {
               notificationRefs.current.delete(notification.id);
             }
           }}
-          className={`admin-notification admin-notification-${notification.type}`}
+          className={`admin-notification admin-notification-${notification.type} toast toast-${notification.type}`}
           role='alert'
           aria-live={notification.type === 'error' ? 'assertive' : 'polite'}
           onClick={() => handleNotificationClick(notification.id)}

@@ -1,0 +1,518 @@
+/* Analytics Tab Styles - Mobile First */
+
+/* Delivery Address Analytics Table */
+.analytics-delivery-table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+  background: var(--admin-bg);
+}
+
+.analytics-delivery-table {
+  width: 100%;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  background: var(--admin-bg);
+  color: var(--admin-text);
+}
+
+/* Table Headers */
+.analytics-delivery-table thead th {
+  text-align: left;
+  padding: 14px 12px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--admin-text);
+  background: var(--admin-bg);
+  border-bottom: 2px solid var(--admin-border, #d2d2d7);
+  border-top: 1px solid var(--admin-border, #d2d2d7);
+  border-left: 1px solid transparent;
+  border-right: 1px solid transparent;
+  white-space: nowrap;
+  position: relative;
+}
+
+.analytics-delivery-table thead th.analytics-th-right {
+  text-align: right;
+}
+
+.analytics-delivery-table thead th.analytics-th-center {
+  text-align: center;
+}
+
+.analytics-delivery-table thead th.analytics-th-sticky {
+  position: sticky;
+  left: 0;
+  background: var(--admin-bg);
+  z-index: 10;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+  width: 180px;
+  min-width: 150px;
+  max-width: 220px;
+}
+
+.analytics-delivery-table thead th.analytics-th-year {
+  min-width: 90px;
+  max-width: 110px;
+  width: 100px;
+}
+
+.analytics-delivery-table thead th.analytics-th-grand-total {
+  font-weight: 700;
+}
+
+.analytics-delivery-table thead th.analytics-th-monthly {
+  min-width: 600px;
+  width: auto;
+}
+
+.analytics-delivery-table tbody td.analytics-td-monthly {
+  min-width: 600px;
+  padding: 14px 12px;
+}
+
+/* Table Body */
+.analytics-delivery-table tbody tr {
+  border-bottom: 1px solid var(--admin-border, #d2d2d7);
+}
+
+.analytics-delivery-table tbody tr:last-child {
+  border-bottom: 1px solid var(--admin-border, #d2d2d7);
+}
+
+/* Remove hover effects */
+.analytics-delivery-table tbody tr:hover {
+  background: transparent !important;
+  border-bottom: 1px solid var(--admin-border, #d2d2d7) !important;
+}
+
+.analytics-delivery-table tbody tr:hover td {
+  background: transparent !important;
+  border-top: 1px solid var(--admin-border, #d2d2d7) !important;
+}
+
+.analytics-delivery-table tbody td {
+  padding: 14px 12px;
+  vertical-align: middle;
+  white-space: nowrap;
+  border-top: 1px solid var(--admin-border, #d2d2d7);
+  border-left: 1px solid transparent;
+  border-right: 1px solid transparent;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.analytics-delivery-table tbody tr:first-child td {
+  border-top: 1px solid var(--admin-border, #d2d2d7);
+}
+
+.analytics-delivery-table tbody td.analytics-td-address {
+  position: sticky;
+  left: 0;
+  background: var(--admin-bg);
+  font-weight: 600;
+  color: var(--admin-text);
+  white-space: normal;
+  min-width: 150px;
+  max-width: 220px;
+  width: 180px;
+  z-index: 5;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.analytics-delivery-table tbody td.analytics-td-right {
+  text-align: right;
+}
+
+.analytics-delivery-table tbody td.analytics-td-center {
+  text-align: center;
+}
+
+.analytics-delivery-table tbody td.analytics-td-year {
+  color: var(--admin-text);
+}
+
+.analytics-delivery-table tbody td.analytics-td-year-empty {
+  color: var(--admin-text-light);
+}
+
+.analytics-delivery-table tbody td.analytics-td-grand-total {
+  text-align: right;
+  font-weight: 700;
+  color: var(--admin-accent);
+  font-size: 0.9375rem;
+  min-width: 110px;
+}
+
+.analytics-delivery-table tbody td.analytics-td-trend {
+  text-align: center;
+  min-width: 60px;
+  width: 60px;
+}
+
+.analytics-trend-icon {
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: inline-block;
+  line-height: 1;
+}
+
+.analytics-trend-icon-up {
+  color: var(--admin-success);
+}
+
+.analytics-trend-icon-down {
+  color: var(--admin-danger);
+}
+
+.analytics-trend-icon-neutral {
+  color: var(--admin-text-secondary);
+}
+
+/* Monthly Breakdown Container */
+.analytics-monthly-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.analytics-monthly-year-row {
+  display: grid;
+  grid-template-columns: 60px repeat(12, 1fr);
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+}
+
+.analytics-monthly-year-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--admin-text-secondary);
+  flex-shrink: 0;
+  text-align: left;
+}
+
+.analytics-monthly-value {
+  font-size: 0.75rem;
+  padding: 4px 6px;
+  border-radius: 4px;
+  text-align: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.analytics-monthly-value-positive {
+  background: rgba(68, 144, 49, 0.12);
+  color: var(--admin-accent);
+  border: 1px solid rgba(68, 144, 49, 0.2);
+}
+
+.analytics-monthly-value-empty {
+  background: transparent;
+  color: var(--admin-text-light);
+}
+
+/* Year 3 Monthly Values with Gap Indicators */
+.analytics-monthly-year3-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.analytics-monthly-value-year3-positive {
+  background: rgba(68, 144, 49, 0.15);
+  color: var(--admin-success);
+  border: 1.5px solid var(--admin-success);
+  font-weight: 600;
+}
+
+.analytics-monthly-value-year3-negative {
+  background: rgba(220, 38, 38, 0.12);
+  color: var(--admin-danger);
+  border: 1.5px solid var(--admin-danger);
+  font-weight: 600;
+}
+
+/* Gap Indicators Row */
+.analytics-monthly-gap-row {
+  display: grid;
+  grid-template-columns: 60px repeat(12, 1fr);
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+  margin-left: 0;
+}
+
+.analytics-monthly-gap-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--admin-text-light);
+  flex-shrink: 0;
+  text-align: left;
+}
+
+.analytics-monthly-gap-value {
+  font-size: 0.7rem;
+  padding: 3px 5px;
+  border-radius: 3px;
+  text-align: center;
+  min-width: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.analytics-monthly-gap-value-positive {
+  background: rgba(68, 144, 49, 0.12);
+  color: var(--admin-success);
+  border: 1px solid rgba(68, 144, 49, 0.25);
+}
+
+.analytics-monthly-gap-value-negative {
+  background: rgba(220, 38, 38, 0.12);
+  color: var(--admin-danger);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+}
+
+/* Chart Section Styles */
+.analytics-chart-container {
+  padding: 20px;
+  border-top: 2px solid var(--admin-border);
+  margin-top: 0.5rem;
+  background: var(--admin-bg);
+}
+
+.analytics-delivery-table-wrapper {
+  background: var(--admin-bg);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.analytics-empty-state {
+  text-align: center;
+  padding: 48px;
+  color: var(--admin-text-light);
+}
+
+.analytics-empty-icon {
+  font-size: 48px;
+  opacity: 0.3;
+  margin-bottom: 16px;
+}
+
+/* Mobile First - Hide Monthly Breakdown on Mobile */
+@media (max-width: 768px) {
+  .analytics-delivery-table thead th.analytics-th-monthly,
+  .analytics-delivery-table tbody td.analytics-td-monthly {
+    display: none !important;
+  }
+
+  .analytics-monthly-year-row {
+    gap: 3px;
+  }
+
+  .analytics-monthly-gap-row {
+    gap: 3px;
+  }
+
+  .analytics-delivery-table {
+    min-width: 100%;
+  }
+
+  .analytics-delivery-table thead th,
+  .analytics-delivery-table tbody td {
+    padding: 8px 6px;
+    font-size: 0.875rem;
+  }
+
+  .analytics-delivery-table thead th.analytics-th-year {
+    min-width: 60px;
+    max-width: 75px;
+  }
+
+  .analytics-delivery-table thead th.analytics-th-sticky,
+  .analytics-delivery-table tbody td.analytics-td-address {
+    padding-left: 8px;
+    padding-right: 8px;
+    min-width: 100px;
+    max-width: 150px;
+  }
+
+  .analytics-delivery-table tbody td.analytics-td-right {
+    text-align: right;
+    padding-right: 8px;
+  }
+
+  .analytics-delivery-table tbody td.analytics-td-center {
+    text-align: center;
+  }
+
+  .analytics-trend-icon {
+    font-size: 1rem;
+  }
+
+  .analytics-delivery-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Tablet and Above - Show Monthly Breakdown */
+@media (min-width: 769px) {
+  .analytics-delivery-table {
+    min-width: 1500px;
+  }
+
+  .analytics-delivery-table thead th.analytics-th-monthly,
+  .analytics-delivery-table tbody td.analytics-td-monthly {
+    display: table-cell;
+  }
+
+  .analytics-delivery-table thead th.analytics-th-monthly {
+    min-width: 600px;
+  }
+
+  .analytics-delivery-table tbody td.analytics-td-monthly {
+    min-width: 600px;
+  }
+}
+
+/* Desktop - Better Spacing */
+@media (min-width: 1024px) {
+  .analytics-delivery-table {
+    min-width: 1600px;
+  }
+
+  .analytics-delivery-table thead th,
+  .analytics-delivery-table tbody td {
+    padding: 16px 14px;
+  }
+
+  .analytics-delivery-table tbody td.analytics-td-address {
+    min-width: 180px;
+    max-width: 220px;
+    width: 180px;
+  }
+
+  .analytics-delivery-table thead th.analytics-th-monthly {
+    min-width: 700px;
+  }
+
+  .analytics-delivery-table tbody td.analytics-td-monthly {
+    min-width: 700px;
+  }
+
+  .analytics-monthly-year-row {
+    grid-template-columns: 70px repeat(12, 1fr);
+    gap: 8px;
+  }
+
+  .analytics-monthly-gap-row {
+    grid-template-columns: 70px repeat(12, 1fr);
+    gap: 8px;
+  }
+
+  .analytics-monthly-year-label {
+    font-size: 0.875rem;
+  }
+
+  .analytics-monthly-value {
+    padding: 5px 8px;
+    font-size: 0.8125rem;
+  }
+
+  .analytics-monthly-gap-value {
+    padding: 4px 6px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Extra Small Mobile - Additional Optimizations */
+@media (max-width: 480px) {
+  .analytics-delivery-table thead th,
+  .analytics-delivery-table tbody td {
+    padding: 6px 4px;
+    font-size: 0.8125rem;
+  }
+
+  .analytics-delivery-table thead th.analytics-th-sticky,
+  .analytics-delivery-table tbody td.analytics-td-address {
+    padding-left: 6px;
+    padding-right: 6px;
+    min-width: 80px;
+    max-width: 120px;
+    font-size: 0.8125rem;
+  }
+
+  .analytics-trend-icon {
+    font-size: 0.9rem;
+  }
+}
+
+/* Dark Theme Styles for Analytics Tab - proper specificity */
+:root.dark-theme .admin-dashboard .analytics-delivery-table,
+.admin-dashboard.dark-theme .analytics-delivery-table {
+  background: var(--admin-bg);
+  color: var(--admin-text);
+}
+
+:root.dark-theme .admin-dashboard .analytics-delivery-table thead th,
+.admin-dashboard.dark-theme .analytics-delivery-table thead th {
+  background: rgba(31, 41, 55, 0.8);
+  color: var(--admin-text-primary);
+  border-bottom-color: var(--admin-border);
+  border-top-color: var(--admin-border);
+}
+
+:root.dark-theme .admin-dashboard .analytics-delivery-table tbody td,
+.admin-dashboard.dark-theme .analytics-delivery-table tbody td {
+  color: var(--admin-text);
+  border-top-color: var(--admin-border);
+  border-bottom-color: var(--admin-border);
+}
+
+:root.dark-theme .admin-dashboard .analytics-delivery-table tbody td.analytics-td-address,
+.admin-dashboard.dark-theme .analytics-delivery-table tbody td.analytics-td-address {
+  background: var(--admin-bg);
+  color: var(--admin-text);
+}
+
+:root.dark-theme .admin-dashboard .analytics-delivery-table thead th.analytics-th-sticky,
+.admin-dashboard.dark-theme .analytics-delivery-table thead th.analytics-th-sticky {
+  background: var(--admin-bg);
+}
+
+:root.dark-theme .admin-dashboard .analytics-delivery-table-wrapper,
+.admin-dashboard.dark-theme .analytics-delivery-table-wrapper {
+  background: var(--admin-bg);
+}
+
+:root.dark-theme .admin-dashboard .analytics-chart-container,
+.admin-dashboard.dark-theme .analytics-chart-container {
+  background: var(--admin-bg);
+  border-top-color: var(--admin-border);
+}
+
+:root.dark-theme .admin-dashboard .analytics-empty-state,
+.admin-dashboard.dark-theme .analytics-empty-state {
+  color: var(--admin-text-light);
+}
+
+:root.dark-theme .admin-dashboard .analytics-monthly-year-label,
+.admin-dashboard.dark-theme .analytics-monthly-year-label {
+  color: var(--admin-text-secondary);
+}
+
+:root.dark-theme .admin-dashboard .analytics-monthly-gap-label,
+.admin-dashboard.dark-theme .analytics-monthly-gap-label {
+  color: var(--admin-text-light);
+}

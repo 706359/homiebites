@@ -1,0 +1,43 @@
+/* [project]/Documents/HomieBites/web-admin/components/Header.css [app-client] (css) */
+.mobile-menu-user-info {
+  text-align: center;
+  padding: var(--space-6) 0 var(--space-4) 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.user-avatar-wrapper {
+  margin: 0 auto var(--space-2) auto;
+}
+
+.user-avatar-img {
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  border-radius: var(--border-radius-full);
+}
+
+.user-avatar {
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  border-radius: var(--border-radius-full);
+  background: var(--light-gray);
+  font-size: var(--font-size-avatar);
+  color: var(--text-light);
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  font-weight: 700;
+  display: flex;
+}
+
+.mobile-menu-user-name {
+  font-weight: 600;
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--space-1);
+}
+
+.mobile-menu-user-email {
+  font-size: var(--font-size-sm);
+  color: var(--text-light);
+}
+
+/*# sourceMappingURL=Documents_HomieBites_web-admin_components_Header_css_bad6b30c._.single.css.map*/

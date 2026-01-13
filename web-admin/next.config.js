@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  
+
   // Image optimization
   images: {
     remotePatterns: [
@@ -22,7 +22,7 @@ const nextConfig = {
     ],
     unoptimized: false,
   },
-  
+
   // Environment variables (will be available on both server and client)
   // All APIs are now in Next.js - no external backend needed
   env: {
@@ -31,15 +31,15 @@ const nextConfig = {
     VITE_API_URL: process.env.VITE_API_URL || '',
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || '',
   },
-  
+
   // Output configuration
   output: 'standalone',
-  
+
   // Experimental features
   experimental: {
     // Enable if needed
   },
-  
+
   // Turbopack configuration (Next.js 16 default)
   turbopack: {
     resolveAlias: {
@@ -49,4 +49,3 @@ const nextConfig = {
 };
 
 export default nextConfig;
-

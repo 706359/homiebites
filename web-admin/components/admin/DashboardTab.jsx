@@ -332,7 +332,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
       <div className='dashboard-grid-layout'>
         {/* Revenue Trend (Last 6 Months) */}
         <div className='dashboard-grid-item two-thirds'>
-          <div className='dashboard-card'>
+          <div className='dashboard-card widget'>
             <h3 className='dashboard-section-title'>
               <i className='fa-solid fa-chart-line' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
               Revenue Trend (Last 6 Months)
@@ -433,7 +433,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
 
         {/* Payment Mode Split */}
         <div className='dashboard-grid-item third-width'>
-          <div className='dashboard-card'>
+          <div className='dashboard-card widget'>
             <h3 className='dashboard-section-title'>
               <i className='fa-solid fa-chart-bar' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
               Payment Mode Split
@@ -564,7 +564,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                   View All Orders →
                 </button>
               </div>
-              <div className='dashboard-card'>
+              <div className='dashboard-card widget'>
                 <div className='recent-orders-table-container'>
                   <table className='recent-orders-table'>
                     <thead>

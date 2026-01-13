@@ -78,8 +78,6 @@ const Features = () => {
             <div
               key={index}
               className="feature-card"
-              data-aos="fade-up"
-              data-aos-delay={index * 100}
             >
               <div className="feature-badge">{feature.badge}</div>
               <div className="feature-icon-wrapper" data-color={feature.color}>

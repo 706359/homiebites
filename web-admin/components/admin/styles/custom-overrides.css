@@ -302,6 +302,57 @@ input[type='color']::-webkit-color-swatch {
    CUSTOM TOOLTIPS
    ============================================ */
 
+/* Tooltip wrapper pattern - Web/Desktop only */
+.tooltip-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Hide tooltip by default */
+.tooltip-wrapper .tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+/* Show tooltip on hover (web/desktop only) */
+.tooltip-wrapper:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Tooltip arrow */
+.tooltip-wrapper .tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.tooltip-wrapper:hover .tooltip::after {
+  opacity: 1;
+}
+
+/* Data attribute tooltips */
 [data-tooltip] {
   position: relative;
 }
@@ -723,22 +774,6 @@ input[type='time']::-webkit-calendar-picker-indicator:hover {
 }
 
 /* ============================================
-   RESPONSIVE TEXT SIZING
-   ============================================ */
-
-@media (max-width: 768px) {
-  html {
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 480px) {
-  html {
-    font-size: 13px;
-  }
-}
-
-/* ============================================
    DARK MODE SUPPORT (Future)
    ============================================ */
 
@@ -857,39 +892,4 @@ input[type='time']::-webkit-calendar-picker-indicator:hover {
 /* Button in Modal Footer */
 .modal-footer .btn {
   min-width: 100px;
-}
-
-/* Responsive Button Adjustments */
-@media (max-width: 768px) {
-  .btn {
-    padding: 8px 16px;
-    font-size: 13px;
-  }
-
-  .btn-small {
-    padding: 5px 10px;
-    font-size: 11px;
-  }
-
-  .btn-large {
-    padding: 12px 24px;
-    font-size: 15px;
-  }
-}
-
-@media (max-width: 480px) {
-  .btn {
-    padding: 8px 14px;
-    font-size: 12px;
-  }
-
-  .btn-small {
-    padding: 4px 8px;
-    font-size: 10px;
-  }
-
-  .action-buttons-group .btn {
-    flex: 1;
-    min-width: 0;
-  }
 }

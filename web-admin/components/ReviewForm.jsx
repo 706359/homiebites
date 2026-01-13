@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useNotification } from "../contexts/NotificationContext";
+import { useAutoKeyboardAvoidance } from "../hooks/useKeyboardAvoidance";
 import "./ReviewForm.css";
 
 const ReviewForm = ({ onReviewSubmitted, onClose }) => {
@@ -21,6 +22,12 @@ const ReviewForm = ({ onReviewSubmitted, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // Enable keyboard avoidance for mobile
+  useAutoKeyboardAvoidance({
+    containerSelector: 'form',
+    inputSelector: 'input, textarea, select',
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();

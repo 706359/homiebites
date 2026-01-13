@@ -25,7 +25,6 @@ const TopNav = ({
   // Global keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Search shortcut (Ctrl+K / Cmd+K)
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
         setShowSearchModal(true);
@@ -184,13 +183,10 @@ const TopNav = ({
         <div className='top-nav-center'>
           {tabAction && <div className='top-nav-action'>{tabAction}</div>}
         </div>
-        <div
-          className='top-nav-right'
-          style={{ display: 'flex', alignItems: 'center', gap: '12px' }}
-        >
+        <div className='top-nav-right'>
           {onRefresh && (
             <button
-              className='top-nav-search-btn'
+              className='top-nav-search-btn tooltip-wrapper'
               onClick={handleRefresh}
               title={refreshing ? 'Refreshing...' : 'Refresh Data'}
               aria-label={refreshing ? 'Refreshing Data' : 'Refresh Data'}
@@ -198,43 +194,43 @@ const TopNav = ({
               style={{
                 opacity: refreshing ? 0.7 : 1,
                 cursor: refreshing ? 'wait' : 'pointer',
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
               }}
             >
               {refreshing ? (
-                <i className='fa-solid fa-spinner fa-spin' style={{ display: 'inline-block' }}></i>
+                <i className='fa-solid fa-spinner fa-spin'></i>
               ) : (
-                <i className='fa-solid fa-rotate' style={{ display: 'inline-block' }}></i>
+                <i className='fa-solid fa-rotate'></i>
               )}
+              <span className='tooltip'>{refreshing ? 'Refreshing...' : 'Refresh Data'}</span>
             </button>
           )}
           {onNewOrder && (
             <button
-              className='top-nav-search-btn'
+              className='top-nav-search-btn tooltip-wrapper'
               onClick={() => onNewOrder()}
-              title='Add New Order (Ctrl+N)'
+              title='Add New Order'
               aria-label='Add New Order'
             >
               <i className='fa-solid fa-plus'></i>
               <span className='top-nav-search-shortcut'>Ctrl+N</span>
+              <span className='tooltip'>Add New Order</span>
             </button>
           )}
           <button
-            className='top-nav-search-btn'
+            className='top-nav-search-btn tooltip-wrapper'
             onClick={() => setShowSearchModal(true)}
-            title='Search (Ctrl+K or Cmd+K)'
+            title='Search'
             aria-label='Search'
           >
             <i className='fa-solid fa-search'></i>
-            <span className='top-nav-search-shortcut'>Ctrl+K</span>
+            <span className='tooltip'>Search</span>
           </button>
           <button
-            className='top-nav-notification-btn'
+            className='top-nav-notification-btn tooltip-wrapper'
             onClick={() => setActiveTab('notifications')}
-            title={`Notifications${unreadNotifications > 0 ? ` (${unreadNotifications} unread)` : ''}`}
+            title={`Notifications${
+              unreadNotifications > 0 ? ` (${unreadNotifications} unread)` : ''
+            }`}
             aria-label='Notifications'
           >
             <i className='fa-solid fa-bell'></i>
@@ -243,6 +239,9 @@ const TopNav = ({
                 {unreadNotifications > 99 ? '99+' : unreadNotifications}
               </span>
             )}
+            <span className='tooltip'>
+              Notifications{unreadNotifications > 0 ? ` (${unreadNotifications} unread)` : ''}
+            </span>
           </button>
         </div>
       </div>

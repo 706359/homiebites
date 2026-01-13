@@ -326,11 +326,11 @@ const NotificationsTab = ({
             </p>
           </div>
         ) : (
-          <div className='notification-grid-4-col'>
+          <div className='notification-grid-4-col list list-group'>
             {filteredNotifications.map((notif) => (
               <div
                 key={notif.id}
-                className={`notification-card-grid ${notif.read ? 'read' : 'unread'} ${notif.isOverdue ? 'overdue' : ''}`}
+                className={`notification-card-grid list-item ${notif.read ? 'read' : 'unread'} ${notif.isOverdue ? 'overdue' : ''}`}
                 onClick={() => handleAction(notif)}
               >
                 <div className='notification-card-grid-header'>

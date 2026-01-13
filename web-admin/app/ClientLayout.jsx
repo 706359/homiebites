@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import NotificationWrapper from "../components/NotificationWrapper";
 import FontSettingsLoader from "../components/FontSettingsLoader";
 import { LanguageProvider, useLanguage } from "../contexts/LanguageContext";
 import { NotificationProvider } from "../contexts/NotificationContext";
@@ -84,7 +83,6 @@ function ClientLayoutContent({ children }) {
       <ScrollToTop />
       <HashScrollHandler />
       {children}
-      <NotificationWrapper />
     </NotificationProvider>
   );
 }

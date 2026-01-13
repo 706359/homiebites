@@ -3,6 +3,7 @@ import api from '../../lib/api-admin.js';
 import './AdminLogin.css';
 import { useNotification } from './contexts/NotificationContext.jsx';
 import InstallPrompt from './InstallPrompt.jsx';
+import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
 import './styles/index.css';
 
 const AdminLogin = ({ onLoginSuccess }) => {
@@ -10,6 +11,12 @@ const AdminLogin = ({ onLoginSuccess }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { error: showError, success: showSuccess } = useNotification();
+
+  // Enable keyboard avoidance for mobile
+  useAutoKeyboardAvoidance({
+    containerSelector: '.login-form',
+    inputSelector: 'input, textarea, select',
+  });
 
   // Apply theme settings from localStorage
   useEffect(() => {
@@ -60,10 +67,10 @@ const AdminLogin = ({ onLoginSuccess }) => {
           }
         }
 
-        // Apply font family
+        // Apply font family - Use global font variable
         if (fontFamily) {
           const fontFamilyValue = `'${fontFamily}', sans-serif`;
-          root.style.setProperty('--admin-font-family', fontFamilyValue);
+          root.style.setProperty('--font-primary', fontFamilyValue);
           if (loginWrapper) {
             loginWrapper.style.fontFamily = fontFamilyValue;
           }
@@ -142,6 +149,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
       window.removeEventListener('themeChanged', handleThemeChange);
     };
   }, []);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
