@@ -835,8 +835,8 @@
     display: flex;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    gap: 6px;
-    padding: 8px 0;
+    gap: 0;
+    padding: 0;
     white-space: nowrap;
     scrollbar-width: thin;
   }
@@ -845,10 +845,10 @@
   .settings-tab-item {
     width: auto;
     min-width: auto;
-    padding: 10px 14px;
+    padding: 14px 18px;
     white-space: nowrap;
     min-height: 44px;
-    font-size: 13px;
+    font-size: 14px;
     flex-shrink: 0;
   }
 

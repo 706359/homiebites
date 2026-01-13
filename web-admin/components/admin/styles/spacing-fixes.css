@@ -220,6 +220,18 @@
   padding: 24px;
 }
 
+@media (max-width: 768px) {
+  .settings-tab-content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-tab-content {
+    padding: 16px;
+  }
+}
+
 .settings-tab-content .form-group {
   margin-bottom: 20px;
 }
@@ -336,19 +348,4 @@
 
 /* Responsive Spacing Adjustments - Mobile only */
 
-/* Dark Theme Spacing (no changes, just ensuring consistency) */
-:root.dark-theme .form-group,
-:root.dark-theme .input-group,
-:root.dark-theme .btn-group,
-:root.dark-theme .action-buttons-group,
-:root.dark-theme .dashboard-card,
-:root.dark-theme .dashboard-section,
-:root.dark-theme .orders-table-container,
-:root.dark-theme .modal-header,
-:root.dark-theme .modal-body,
-:root.dark-theme .modal-footer,
-:root.dark-theme .action-bar,
-:root.dark-theme .filter-panel,
-:root.dark-theme .settings-tab-content {
-  /* Spacing values remain the same in dark theme */
-}
+/* Dark Theme Spacing - Moved to theme.css (spacing values remain the same in dark theme) */
