@@ -61,14 +61,3 @@
   color: var(--text-white);
   font-size: 1.2em;
 }
-
-/* Responsive */
-@media (max-width: 768px) {
-  .offer-section {
-    padding: 3rem 1.5rem;
-  }
-
-  .offer-text {
-    font-size: 1.125rem;
-  }
-}

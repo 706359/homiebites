@@ -9,7 +9,7 @@ export default function NotFound() {
   const { t } = useLanguage();
 
   const openOrderModal = () => {
-    // Order modal functionality can be added here if needed
+    
   };
 
   return (

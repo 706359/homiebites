@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
 import { formatDate, formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
+import ExcelJS from 'exceljs';
 
 const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
   const [selectedReportType, setSelectedReportType] = useState('');
@@ -10,7 +11,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
   const [includeSummary, setIncludeSummary] = useState(true);
   const [groupByArea, setGroupByArea] = useState(false);
   const [groupByMode, setGroupByMode] = useState(false);
-  const [reportFormat, setReportFormat] = useState('csv'); // 'pdf', 'excel', 'csv'
+  const [reportFormat, setReportFormat] = useState('csv'); 
   const [showGenerator, setShowGenerator] = useState(false);
 
   const [scheduledReports, setScheduledReports] = useState([
@@ -76,7 +77,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
     return isNaN(amount) ? 0 : amount;
   };
 
-  const handleGenerateReport = () => {
+  const handleGenerateReport = async () => {
     if (!selectedReportType) {
       if (showNotification) showNotification('Please select a report type', 'warning');
       return;
@@ -108,7 +109,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
     const reportDate = new Date().toISOString().split('T')[0];
 
     if (selectedReportType === 'Sales Report') {
-      // Sales Report - Detailed order list
+      
       csvContent =
         'Order ID,Date,Delivery Address,Quantity,Unit Price (₹),Total Amount (₹),Mode,Status,Payment Mode\n';
       filteredOrders
@@ -151,7 +152,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
       csvContent += `Paid Orders,${paidOrders}\n`;
       csvContent += `Unpaid Orders,${unpaidOrders}\n`;
     } else if (selectedReportType === 'Payment Report') {
-      // Payment Report - Payment status breakdown
+      
       csvContent =
         'Payment Mode,Total Orders,Total Amount (₹),Paid Orders,Paid Amount (₹),Unpaid Orders,Unpaid Amount (₹),Pending Orders,Pending Amount (₹)\n';
 
@@ -196,7 +197,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           csvContent += `${escapeCSV(stat.paymentMode)},${escapeCSV(stat.totalOrders)},${escapeCSV(stat.totalAmount.toFixed(2))},${escapeCSV(stat.paidOrders)},${escapeCSV(stat.paidAmount.toFixed(2))},${escapeCSV(stat.unpaidOrders)},${escapeCSV(stat.unpaidAmount.toFixed(2))},${escapeCSV(stat.pendingOrders)},${escapeCSV(stat.pendingAmount.toFixed(2))}\n`;
         });
     } else if (selectedReportType === 'Monthly Statement') {
-      // Monthly Statement - Grouped by month
+      
       csvContent =
         'Month,Year,Total Orders,Total Revenue (₹),Paid Orders,Paid Amount (₹),Unpaid Orders,Unpaid Amount (₹),Average Order Value (₹)\n';
 
@@ -247,7 +248,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           csvContent += `${escapeCSV(stat.month)},${escapeCSV(stat.year)},${escapeCSV(stat.totalOrders)},${escapeCSV(stat.totalRevenue.toFixed(2))},${escapeCSV(stat.paidOrders)},${escapeCSV(stat.paidAmount.toFixed(2))},${escapeCSV(stat.unpaidOrders)},${escapeCSV(stat.unpaidAmount.toFixed(2))},${escapeCSV(avgOrderValue)}\n`;
         });
     } else if (selectedReportType === 'Area-wise Report' || groupByArea) {
-      // Area-wise Report
+      
       csvContent =
         'Delivery Area,Total Orders,Total Revenue (₹),Paid Orders,Paid Amount (₹),Unpaid Orders,Unpaid Amount (₹),Average Order Value (₹)\n';
 
@@ -289,7 +290,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           csvContent += `${escapeCSV(stat.address)},${escapeCSV(stat.totalOrders)},${escapeCSV(stat.totalRevenue.toFixed(2))},${escapeCSV(stat.paidOrders)},${escapeCSV(stat.paidAmount.toFixed(2))},${escapeCSV(stat.unpaidOrders)},${escapeCSV(stat.unpaidAmount.toFixed(2))},${escapeCSV(avgOrderValue)}\n`;
         });
     } else if (selectedReportType === 'Customer Report') {
-      // Customer Report - Per customer/address
+      
       csvContent =
         'Customer Address,Total Orders,Total Spent (₹),First Order Date,Last Order Date,Average Order Value (₹),Paid Orders,Unpaid Orders,Outstanding Amount (₹)\n';
 
@@ -347,7 +348,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           csvContent += `${escapeCSV(stat.address)},${escapeCSV(stat.totalOrders)},${escapeCSV(stat.totalSpent.toFixed(2))},${escapeCSV(firstOrder)},${escapeCSV(lastOrder)},${escapeCSV(avgOrderValue)},${escapeCSV(stat.paidOrders)},${escapeCSV(stat.unpaidOrders)},${escapeCSV(stat.outstandingAmount.toFixed(2))}\n`;
         });
     } else if (selectedReportType === 'Growth Report') {
-      // Growth Report - Month-over-month growth
+      
       csvContent =
         'Month,Year,Orders,Revenue (₹),Growth Rate (%),Orders Growth (%),Average Order Value (₹)\n';
 
@@ -391,7 +392,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         csvContent += `${escapeCSV(stat.month)},${escapeCSV(stat.year)},${escapeCSV(stat.orders)},${escapeCSV(stat.revenue.toFixed(2))},${escapeCSV(revenueGrowth)},${escapeCSV(ordersGrowth)},${escapeCSV(avgOrderValue)}\n`;
       });
     } else if (groupByMode) {
-      // Group by Mode
+      
       csvContent = 'Mode,Total Orders,Total Revenue (₹),Average Order Value (₹)\n';
 
       const modeStats = {};
@@ -411,7 +412,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           csvContent += `${escapeCSV(stat.mode)},${escapeCSV(stat.orders)},${escapeCSV(stat.revenue.toFixed(2))},${escapeCSV(avgOrderValue)}\n`;
         });
     } else {
-      // Default - Detailed order list
+      
       csvContent =
         'Order ID,Date,Delivery Address,Quantity,Unit Price (₹),Total Amount (₹),Mode,Status,Payment Mode\n';
       filteredOrders
@@ -439,12 +440,20 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         });
     }
 
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `${selectedReportType.toLowerCase().replace(/\s+/g, '_')}_${reportDate}.csv`;
-    link.click();
+    // Handle different export formats
+    if (reportFormat === 'excel') {
+      await handleExcelExport(filteredOrders, selectedReportType, reportDate);
+    } else if (reportFormat === 'pdf') {
+      await handlePDFExport(filteredOrders, selectedReportType, reportDate);
+    } else {
+      // CSV export (default)
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${selectedReportType.toLowerCase().replace(/\s+/g, '_')}_${reportDate}.csv`;
+      link.click();
+    }
 
     const period =
       reportDateFrom && reportDateTo
@@ -464,6 +473,271 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
     setShowGenerator(false);
   };
 
+  const handleExcelExport = async (filteredOrders, reportType, reportDate) => {
+    try {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet(reportType);
+
+      let headers = [];
+      let rows = [];
+
+      // Generate data based on report type (same logic as CSV)
+      if (reportType === 'Sales Report') {
+        headers = [
+          'Order ID',
+          'Date',
+          'Delivery Address',
+          'Quantity',
+          'Unit Price (₹)',
+          'Total Amount (₹)',
+          'Mode',
+          'Status',
+          'Payment Mode',
+        ];
+        rows = filteredOrders
+          .sort((a, b) => {
+            const dateA = parseOrderDate(a.date || a.order_date || null);
+            const dateB = parseOrderDate(b.date || b.order_date || null);
+            if (!dateA && !dateB) return 0;
+            if (!dateA) return 1;
+            if (!dateB) return -1;
+            return dateB - dateA;
+          })
+          .map((o) => {
+            const orderDate = parseOrderDate(o.date || o.order_date || null);
+            const dateStr = orderDate ? formatDate(orderDate) : 'N/A';
+            return [
+              o.orderId || o._id || 'N/A',
+              dateStr,
+              o.deliveryAddress || o.customerAddress || o.address || 'N/A',
+              o.quantity || 1,
+              parseFloat(o.unitPrice || 0),
+              parseFloat(getOrderAmount(o)),
+              o.mode || 'N/A',
+              o.status || 'N/A',
+              o.paymentMode || 'N/A',
+            ];
+          });
+
+        // Add summary
+        const totalRevenue = filteredOrders.reduce((sum, o) => sum + getOrderAmount(o), 0);
+        const totalOrders = filteredOrders.length;
+        const paidOrders = filteredOrders.filter(
+          (o) => (o.status || '').toLowerCase() === 'paid'
+        ).length;
+        const unpaidOrders = filteredOrders.filter((o) => {
+          const status = (o.status || '').toLowerCase();
+          return status === 'unpaid' || status === 'pending';
+        }).length;
+
+        worksheet.addRow([]);
+        worksheet.addRow(['Summary']);
+        worksheet.addRow(['Total Orders', totalOrders]);
+        worksheet.addRow(['Total Revenue (₹)', totalRevenue.toFixed(2)]);
+        worksheet.addRow(['Paid Orders', paidOrders]);
+        worksheet.addRow(['Unpaid Orders', unpaidOrders]);
+      } else if (reportType === 'Payment Report') {
+        headers = [
+          'Payment Mode',
+          'Total Orders',
+          'Total Amount (₹)',
+          'Paid Orders',
+          'Paid Amount (₹)',
+          'Unpaid Orders',
+          'Unpaid Amount (₹)',
+          'Pending Orders',
+          'Pending Amount (₹)',
+        ];
+        const paymentStats = {};
+        filteredOrders.forEach((o) => {
+          const paymentMode = o.paymentMode || 'Not Set';
+          if (!paymentStats[paymentMode]) {
+            paymentStats[paymentMode] = {
+              paymentMode,
+              totalOrders: 0,
+              totalAmount: 0,
+              paidOrders: 0,
+              paidAmount: 0,
+              unpaidOrders: 0,
+              unpaidAmount: 0,
+              pendingOrders: 0,
+              pendingAmount: 0,
+            };
+          }
+          const amount = getOrderAmount(o);
+          const status = (o.status || '').toLowerCase();
+          paymentStats[paymentMode].totalOrders++;
+          paymentStats[paymentMode].totalAmount += amount;
+          if (status === 'paid') {
+            paymentStats[paymentMode].paidOrders++;
+            paymentStats[paymentMode].paidAmount += amount;
+          } else if (status === 'unpaid') {
+            paymentStats[paymentMode].unpaidOrders++;
+            paymentStats[paymentMode].unpaidAmount += amount;
+          } else {
+            paymentStats[paymentMode].pendingOrders++;
+            paymentStats[paymentMode].pendingAmount += amount;
+          }
+        });
+        rows = Object.values(paymentStats)
+          .sort((a, b) => b.totalAmount - a.totalAmount)
+          .map((stat) => [
+            stat.paymentMode,
+            stat.totalOrders,
+            parseFloat(stat.totalAmount.toFixed(2)),
+            stat.paidOrders,
+            parseFloat(stat.paidAmount.toFixed(2)),
+            stat.unpaidOrders,
+            parseFloat(stat.unpaidAmount.toFixed(2)),
+            stat.pendingOrders,
+            parseFloat(stat.pendingAmount.toFixed(2)),
+          ]);
+      } else {
+        // For other report types, use a simplified structure
+        headers = ['Order ID', 'Date', 'Address', 'Amount (₹)', 'Status'];
+        rows = filteredOrders
+          .slice(0, 1000)
+          .map((o) => {
+            const orderDate = parseOrderDate(o.date || o.order_date || null);
+            return [
+              o.orderId || o._id || 'N/A',
+              orderDate ? formatDate(orderDate) : 'N/A',
+              o.deliveryAddress || o.customerAddress || o.address || 'N/A',
+              parseFloat(getOrderAmount(o)),
+              o.status || 'N/A',
+            ];
+          });
+      }
+
+      // Add headers
+      worksheet.addRow(headers);
+      const headerRow = worksheet.getRow(1);
+      headerRow.font = { bold: true, size: 12 };
+      headerRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE5E7EB' },
+      };
+      headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+
+      // Add data rows
+      rows.forEach((row) => {
+        worksheet.addRow(row);
+      });
+
+      // Auto-fit columns
+      worksheet.columns.forEach((column) => {
+        let maxLength = 0;
+        column.eachCell({ includeEmpty: true }, (cell) => {
+          const columnLength = cell.value ? cell.value.toString().length : 10;
+          if (columnLength > maxLength) {
+            maxLength = columnLength;
+          }
+        });
+        column.width = Math.min(maxLength + 2, 50);
+      });
+
+      // Generate Excel file
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${reportType.toLowerCase().replace(/\s+/g, '_')}_${reportDate}.xlsx`;
+      link.click();
+
+      if (showNotification) {
+        showNotification('Excel report generated successfully', 'success');
+      }
+    } catch (error) {
+      console.error('[ReportsTab] Excel export error:', error);
+      if (showNotification) {
+        showNotification('Failed to generate Excel report. Please try CSV format.', 'error');
+      }
+    }
+  };
+
+  const handlePDFExport = async (filteredOrders, reportType, reportDate) => {
+    try {
+      // For PDF, we'll create a simple HTML-based PDF using window.print or a basic implementation
+      // For a proper PDF, you'd need jsPDF or pdfmake library
+      // For now, we'll show a message and suggest using CSV/Excel
+      if (showNotification) {
+        showNotification(
+          'PDF export is being prepared. For now, please use CSV or Excel format.',
+          'info'
+        );
+      }
+
+      // Basic PDF generation using browser print
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>${reportType} - ${reportDate}</title>
+              <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; font-weight: bold; }
+                @media print { @page { margin: 1cm; } }
+              </style>
+            </head>
+            <body>
+              <h1>${reportType}</h1>
+              <p>Generated: ${new Date().toLocaleString()}</p>
+              <p>Total Records: ${filteredOrders.length}</p>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Address</th>
+                    <th>Amount (₹)</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${filteredOrders
+                    .slice(0, 100)
+                    .map(
+                      (o) => `
+                    <tr>
+                      <td>${o.orderId || o._id || 'N/A'}</td>
+                      <td>${
+                        parseOrderDate(o.date || o.order_date || null)
+                          ? formatDate(parseOrderDate(o.date || o.order_date || null))
+                          : 'N/A'
+                      }</td>
+                      <td>${o.deliveryAddress || o.customerAddress || o.address || 'N/A'}</td>
+                      <td>${getOrderAmount(o).toFixed(2)}</td>
+                      <td>${o.status || 'N/A'}</td>
+                    </tr>
+                  `
+                    )
+                    .join('')}
+                </tbody>
+              </table>
+              ${filteredOrders.length > 100 ? '<p>Showing first 100 records. Use CSV/Excel for full export.</p>' : ''}
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        setTimeout(() => {
+          printWindow.print();
+        }, 250);
+      }
+    } catch (error) {
+      console.error('[ReportsTab] PDF export error:', error);
+      if (showNotification) {
+        showNotification('Failed to generate PDF. Please use CSV or Excel format.', 'error');
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className='admin-content'>
@@ -474,71 +748,52 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
 
   return (
     <div className='admin-content'>
-      {/* QUICK ACTION BUTTONS */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '12px',
-          marginBottom: '24px',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-        }}
-      >
+      {}
+      <div className="flex-start gap-12 mb-24 flex-wrap">
         <button
-          className='btn btn-primary'
+          className='btn btn-primary btn-icon-inline'
           onClick={() => setShowGenerator(true)}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
         >
           <i className='fa-solid fa-file-alt'></i>
           Generate Report
         </button>
         <button
-          className='btn btn-secondary'
+          className='btn btn-secondary btn-icon-inline'
           onClick={handleGenerateReport}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           disabled={!selectedReportType}
         >
           <i className='fa-solid fa-download'></i>
           Download Report
         </button>
         <button
-          className='btn btn-outline'
+          className='btn btn-ghost btn-icon-inline'
           onClick={() => {
             setSelectedReportType('Sales Report');
             setShowGenerator(true);
           }}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
         >
           <i className='fa-solid fa-chart-bar'></i>
           Sales Report
         </button>
         <button
-          className='btn btn-outline'
+          className='btn btn-ghost btn-icon-inline'
           onClick={() => {
             setSelectedReportType('Payment Report');
             setShowGenerator(true);
           }}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
         >
           <i className='fa-solid fa-money-bill-wave'></i>
           Payment Report
         </button>
       </div>
 
-      {/* REPORT TYPES */}
-      <div className='dashboard-grid-layout' style={{ marginBottom: '32px' }}>
+      {}
+      <div className='dashboard-grid-layout mb-32'>
         <div className='dashboard-grid-item third-width'>
-          <div
-            className='dashboard-card'
-            style={{ textAlign: 'center' }}
-          >
-            <i
-              className='fa-solid fa-chart-bar'
-              style={{ fontSize: '32px', color: 'var(--admin-accent)', marginBottom: '12px' }}
-            ></i>
+          <div className='dashboard-card text-center'>
+            <i className='fa-solid fa-chart-bar icon-32 stat-card-icon-accent icon-mb-12'></i>
             <button
-              className='btn btn-primary'
-              style={{ width: '100%', marginTop: '8px' }}
+              className='btn btn-primary width-full mt-8'
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedReportType('Sales Report');
@@ -551,17 +806,10 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         </div>
 
         <div className='dashboard-grid-item third-width'>
-          <div
-            className='dashboard-card'
-            style={{ textAlign: 'center' }}
-          >
-            <i
-              className='fa-solid fa-money-bill-wave'
-              style={{ fontSize: '32px', color: 'var(--admin-success)', marginBottom: '12px' }}
-            ></i>
+          <div className='dashboard-card text-center'>
+            <i className='fa-solid fa-money-bill-wave icon-32 stat-card-icon-success icon-mb-12'></i>
             <button
-              className='btn btn-primary'
-              style={{ width: '100%', marginTop: '8px' }}
+              className='btn btn-primary width-full mt-8'
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedReportType('Payment Report');
@@ -574,17 +822,10 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         </div>
 
         <div className='dashboard-grid-item third-width'>
-          <div
-            className='dashboard-card'
-            style={{ textAlign: 'center' }}
-          >
-            <i
-              className='fa-solid fa-calendar-alt'
-              style={{ fontSize: '32px', color: 'var(--admin-secondary)', marginBottom: '12px' }}
-            ></i>
+          <div className='dashboard-card text-center'>
+            <i className='fa-solid fa-calendar-alt icon-32 stat-card-icon-secondary icon-mb-12'></i>
             <button
-              className='btn btn-primary'
-              style={{ width: '100%', marginTop: '8px' }}
+              className='btn btn-primary width-full mt-8'
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedReportType('Monthly Statement');
@@ -597,17 +838,10 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         </div>
 
         <div className='dashboard-grid-item third-width'>
-          <div
-            className='dashboard-card'
-            style={{ textAlign: 'center' }}
-          >
-            <i
-              className='fa-solid fa-map-marker-alt'
-              style={{ fontSize: '32px', color: 'var(--admin-accent)', marginBottom: '12px' }}
-            ></i>
+          <div className='dashboard-card text-center'>
+            <i className='fa-solid fa-map-marker-alt icon-32 stat-card-icon-accent icon-mb-12'></i>
             <button
-              className='btn btn-primary'
-              style={{ width: '100%', marginTop: '8px' }}
+              className='btn btn-primary width-full mt-8'
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedReportType('Area-wise Report');
@@ -621,17 +855,10 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         </div>
 
         <div className='dashboard-grid-item third-width'>
-          <div
-            className='dashboard-card'
-            style={{ textAlign: 'center' }}
-          >
-            <i
-              className='fa-solid fa-users'
-              style={{ fontSize: '32px', color: 'var(--admin-accent)', marginBottom: '12px' }}
-            ></i>
+          <div className='dashboard-card text-center'>
+            <i className='fa-solid fa-users icon-32 stat-card-icon-accent icon-mb-12'></i>
             <button
-              className='btn btn-primary'
-              style={{ width: '100%', marginTop: '8px' }}
+              className='btn btn-primary width-full mt-8'
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedReportType('Customer Report');
@@ -644,17 +871,10 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         </div>
 
         <div className='dashboard-grid-item third-width'>
-          <div
-            className='dashboard-card'
-            style={{ textAlign: 'center' }}
-          >
-            <i
-              className='fa-solid fa-chart-line'
-              style={{ fontSize: '32px', color: 'var(--admin-success)', marginBottom: '12px' }}
-            ></i>
+          <div className='dashboard-card text-center'>
+            <i className='fa-solid fa-chart-line icon-32 stat-card-icon-success icon-mb-12'></i>
             <button
-              className='btn btn-primary'
-              style={{ width: '100%', marginTop: '8px' }}
+              className='btn btn-primary width-full mt-8'
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedReportType('Growth Report');
@@ -667,13 +887,13 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         </div>
       </div>
 
-      {/* REPORT GENERATOR MODAL */}
+      {}
       {showGenerator && (
         <div className='modal-overlay' onClick={() => setShowGenerator(false)}>
           <div className='modal-container' onClick={(e) => e.stopPropagation()}>
             <div className='modal-header'>
               <h2>Generate Report</h2>
-              <button className='modal-close' onClick={() => setShowGenerator(false)}>
+              <button className='btn btn-ghost btn-icon modal-close' onClick={() => setShowGenerator(false)}>
                 <i className='fa-solid fa-times'></i>
               </button>
             </div>
@@ -698,7 +918,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
 
                 <div className='form-group'>
                   <label>Date Range</label>
-                  <div style={{ display: 'flex', gap: '12px' }}>
+                  <div className="flex-start gap-12">
                     <input
                       type='date'
                       className='input-field'
@@ -716,24 +936,10 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                   </div>
                 </div>
 
-                <div className='form-group' style={{ gridColumn: '1 / -1' }}>
+                <div className='form-group grid-col-full'>
                   <label>Filters</label>
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '12px',
-                      marginTop: '8px',
-                    }}
-                  >
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                  <div className="flex-column-gap-12">
+                    <label className="form-label-inline">
                       <input
                         type='checkbox'
                         checked={includeCharts}
@@ -741,14 +947,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                       />
                       <span>Include Charts</span>
                     </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                    <label className="form-label-inline">
                       <input
                         type='checkbox'
                         checked={includeSummary}
@@ -756,14 +955,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                       />
                       <span>Include Summary</span>
                     </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                    <label className="form-label-inline">
                       <input
                         type='checkbox'
                         checked={groupByArea}
@@ -774,14 +966,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                       />
                       <span>Group by Area</span>
                     </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                    <label className="form-label-inline">
                       <input
                         type='checkbox'
                         checked={groupByMode}
@@ -795,17 +980,10 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                   </div>
                 </div>
 
-                <div className='form-group' style={{ gridColumn: '1 / -1' }}>
+                <div className='form-group grid-col-full'>
                   <label>Format</label>
-                  <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                  <div className="flex-start gap-16 mt-8">
+                    <label className="form-label-inline">
                       <input
                         type='radio'
                         name='format'
@@ -815,14 +993,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                       />
                       <span>PDF</span>
                     </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                    <label className="form-label-inline">
                       <input
                         type='radio'
                         name='format'
@@ -832,14 +1003,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                       />
                       <span>Excel</span>
                     </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                    <label className="form-label-inline">
                       <input
                         type='radio'
                         name='format'
@@ -868,28 +1032,13 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         </div>
       )}
 
-      {/* SCHEDULED REPORTS AND REPORT HISTORY - SIDE BY SIDE */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '24px',
-          marginBottom: '24px',
-        }}
-        className='reports-side-by-side-container'
-      >
-        {/* SCHEDULED REPORTS */}
+      {}
+      <div className='reports-side-by-side-container' style={{ gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+        {}
         <div className='dashboard-card'>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '16px',
-            }}
-          >
-            <h3 className='dashboard-section-title' style={{ marginBottom: 0 }}>
-              <i className='fa-solid fa-clock' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
+          <div className="flex-between mb-16">
+            <h3 className='dashboard-section-title mb-0'>
+              <i className='fa-solid fa-clock opacity-70'></i>
               Automated Reports
             </h3>
             <button className='btn btn-primary btn-small'>
@@ -913,11 +1062,11 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                     <td>{report.schedule}</td>
                     <td>{report.format}</td>
                     <td>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button className='action-icon-btn action-icon-edit' title='Edit'>
+                      <div className="flex-start gap-8">
+                        <button className='btn btn-ghost btn-icon action-icon-edit' title='Edit'>
                           <i className='fa-solid fa-pencil'></i>
                         </button>
-                        <button className='action-icon-btn action-icon-delete' title='Delete'>
+                        <button className='btn btn-ghost btn-icon action-icon-delete' title='Delete'>
                           <i className='fa-solid fa-trash'></i>
                         </button>
                       </div>
@@ -929,10 +1078,10 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           </div>
         </div>
 
-        {/* REPORT HISTORY */}
+        {}
         <div className='dashboard-card'>
           <h3 className='dashboard-section-title'>
-            <i className='fa-solid fa-history' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
+            <i className='fa-solid fa-history opacity-70'></i>
             Recent Reports (Last 30 days)
           </h3>
           <div className='orders-table-container'>
@@ -948,7 +1097,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
               <tbody>
                 {reportHistory.length === 0 ? (
                   <tr>
-                    <td colSpan={4} style={{ textAlign: 'center', padding: '48px' }}>
+                    <td colSpan={4} className="text-center" style={{ padding: '48px' }}>
                       <div className='empty-state'>
                         <i className='fa-solid fa-inbox empty-state-icon'></i>
                         <p>No reports generated yet</p>
@@ -962,7 +1111,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                       <td>{report.type}</td>
                       <td>{report.period}</td>
                       <td>
-                        <button className='action-icon-btn' title='Download'>
+                        <button className='btn btn-ghost btn-icon' title='Download'>
                           <i className='fa-solid fa-download'></i>
                         </button>
                       </td>

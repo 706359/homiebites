@@ -1,7 +1,4 @@
-/**
- * Next.js API Route: Bulk Import Orders
- * Migrated from Express backend
- */
+
 import connectDB from '../../../../lib/db.js';
 import Order from '../../../../lib/models/Order.js';
 import { isAdmin, createErrorResponse } from '../../../../lib/middleware/auth.js';

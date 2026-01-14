@@ -1,12 +1,9 @@
-/**
- * Next.js API Route: Settings
- * Migrated from Express backend
- */
+
 import connectDB from '../../../lib/db.js';
 import { createErrorResponse, isAdmin } from '../../../lib/middleware/auth.js';
 import Settings from '../../../lib/models/Settings.js';
 
-// GET /api/settings - public
+
 export async function GET() {
   try {
     await connectDB();
@@ -46,7 +43,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    // Settings might not exist yet - return default values
+    
     if (error.message && error.message.includes('Settings not found')) {
       return Response.json({
         success: true,
@@ -86,7 +83,7 @@ export async function GET() {
   }
 }
 
-// PUT /api/settings - admin only
+
 export async function PUT(request) {
   try {
     await connectDB();
@@ -172,7 +169,7 @@ export async function PUT(request) {
 
     return Response.json({ success: true, data: settings });
   } catch (error) {
-    // Handle validation errors
+    
     if (error.name === 'ValidationError') {
       return Response.json(
         {
@@ -185,7 +182,7 @@ export async function PUT(request) {
         { status: 400 }
       );
     }
-    // Handle authentication/authorization errors
+    
     if (error.status === 401 || error.status === 403) {
       return createErrorResponse(error.status, error.message || 'Authentication failed');
     }

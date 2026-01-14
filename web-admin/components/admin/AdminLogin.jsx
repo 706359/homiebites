@@ -12,27 +12,27 @@ const AdminLogin = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
   const { error: showError, success: showSuccess } = useNotification();
 
-  // Enable keyboard avoidance for mobile
+  
   useAutoKeyboardAvoidance({
     containerSelector: '.login-form',
     inputSelector: 'input, textarea, select',
   });
 
-  // Apply theme settings from localStorage
+  
   useEffect(() => {
     const applyThemeSettings = () => {
       try {
-        // Get theme settings from localStorage
+        
         const primaryColor = localStorage.getItem('homiebites_primary_color') || '#449031';
         const fontFamily = localStorage.getItem('homiebites_font_family') || 'Baloo 2';
         const fontSize = localStorage.getItem('homiebites_font_size') || 'medium';
         const theme = localStorage.getItem('homiebites_theme') || 'light';
 
-        // Get root element or create a wrapper
+        
         const root = document.documentElement;
         const loginWrapper = document.querySelector('.login-page-wrapper');
 
-        // Helper to convert hex to RGB
+        
         const hexToRgb = (hex) => {
           const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
           return result
@@ -44,11 +44,11 @@ const AdminLogin = ({ onLoginSuccess }) => {
             : null;
         };
 
-        // Apply primary color
+        
         if (primaryColor) {
           root.style.setProperty('--admin-accent', primaryColor);
 
-          // Calculate light variant
+          
           const rgb = hexToRgb(primaryColor);
           if (rgb) {
             root.style.setProperty(
@@ -56,7 +56,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
               `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`
             );
 
-            // Calculate darker variant for gradients (80% of original)
+            
             const darkerR = Math.max(0, Math.floor(rgb.r * 0.7));
             const darkerG = Math.max(0, Math.floor(rgb.g * 0.7));
             const darkerB = Math.max(0, Math.floor(rgb.b * 0.7));
@@ -67,7 +67,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
           }
         }
 
-        // Apply font family - Use global font variable
+        
         if (fontFamily) {
           const fontFamilyValue = `'${fontFamily}', sans-serif`;
           root.style.setProperty('--font-primary', fontFamilyValue);
@@ -76,7 +76,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
           }
         }
 
-        // Apply font size
+        
         if (fontSize) {
           const fontSizeMap = {
             small: '14px',
@@ -91,7 +91,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
           }
         }
 
-        // Apply theme (light/dark)
+        
         if (theme === 'dark') {
           if (loginWrapper) {
             loginWrapper.classList.add('dark-theme');
@@ -103,7 +103,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
             loginWrapper.classList.remove('dark-theme');
           }
         } else if (theme === 'auto') {
-          // Auto theme based on system preference
+          
           const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
           if (loginWrapper) {
             if (prefersDark) {
@@ -116,14 +116,14 @@ const AdminLogin = ({ onLoginSuccess }) => {
           }
         }
       } catch (error) {
-        // Silently fail if theme application has issues
+        
       }
     };
 
-    // Apply theme on mount
+    
     applyThemeSettings();
 
-    // Listen for theme changes in localStorage (if changed in another tab)
+    
     const handleStorageChange = (e) => {
       if (
         e.key === 'homiebites_primary_color' ||
@@ -137,7 +137,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
 
     window.addEventListener('storage', handleStorageChange);
 
-    // Also listen for custom theme change events
+    
     const handleThemeChange = () => {
       applyThemeSettings();
     };
@@ -156,9 +156,9 @@ const AdminLogin = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
-      // Try backend API first
+      
       try {
-        // Use email for login (following ADMIN_PASSWORD.md)
+        
         const data = await api.login(email, password);
 
         if (
@@ -170,15 +170,15 @@ const AdminLogin = ({ onLoginSuccess }) => {
           localStorage.setItem('homiebites_user', JSON.stringify(data.user));
           localStorage.setItem('homiebites_admin', 'true');
 
-          // Check if password change is required (temporary password)
+          
           if (data.requirePasswordChange) {
-            // Redirect to change password page
+            
             window.location.href = '/admin/change-password?temporary=true';
             return;
           }
 
-          // Successfully logged in - redirect to dashboard immediately
-          // Use window.location.href for immediate, reliable redirect
+          
+          
           console.log('[AdminLogin] Login successful, redirecting to dashboard');
           window.location.href = '/admin/dashboard';
           return;
@@ -188,9 +188,9 @@ const AdminLogin = ({ onLoginSuccess }) => {
           return;
         }
       } catch (apiError) {
-        // API failed - check if it's a connection error or credential error
-        // If it's a network/connection error, try fallback
-        // If it's a credential error, don't try fallback
+        
+        
+        
         const isNetworkError =
           apiError.message &&
           (apiError.message.includes('HTML') ||
@@ -200,7 +200,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
             apiError.message.includes('Failed to fetch'));
 
         if (!isNetworkError) {
-          // Credential error or other API error - don't try fallback, show error
+          
           showError(
             apiError.message ||
               'Invalid credentials. Please check your username and password. Make sure the backend server is running.'
@@ -210,11 +210,11 @@ const AdminLogin = ({ onLoginSuccess }) => {
         }
       }
 
-      // No fallback - API must be working for authentication
+      
       showError('Invalid credentials. Please check your username and password.');
       setLoading(false);
     } catch (err) {
-      // No fallback credentials - API must be working
+      
       showError(
         'Login failed. Please check your credentials and ensure the backend server is running.'
       );
@@ -235,7 +235,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
             </div>
           </div>
           <img
-            src='https://images.pexels.com/photos/2474661/pexels-photo-2474661.jpeg'
+            src='https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80'
             alt='Admin access to HomieBites dashboard'
             className='login-image'
           />
@@ -324,7 +324,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
         </div>
       </div>
 
-      {/* PWA Install Prompt - Admin Only */}
+      {}
       <InstallPrompt />
     </div>
   );

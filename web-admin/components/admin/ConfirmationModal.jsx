@@ -6,12 +6,12 @@ const ConfirmationModal = ({
   message,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
-  type = 'warning', // 'warning', 'danger', 'info', 'success'
+  type = 'warning', 
   onConfirm,
   onCancel,
   isLoading = false,
 }) => {
-  // Handle Escape key
+  
   useEffect(() => {
     if (!show) return;
 
@@ -50,7 +50,7 @@ const ConfirmationModal = ({
           iconBg: 'rgba(68, 144, 49, 0.1)',
           confirmBtn: 'btn-primary',
         };
-      default: // warning
+      default: 
         return {
           icon: 'fa-exclamation-circle',
           iconColor: 'var(--admin-warning, #f59e0b)',
@@ -66,7 +66,7 @@ const ConfirmationModal = ({
     <div className="modal-overlay">
       <div className="modal-container" style={{ maxWidth: '480px' }}>
         <div className="modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
             <div
               style={{
                 width: '48px',
@@ -84,11 +84,11 @@ const ConfirmationModal = ({
                 style={{ fontSize: '24px', color: styles.iconColor }}
               ></i>
             </div>
-            <h2 style={{ margin: 0, fontSize: '20px' }}>{title}</h2>
+            <h2>{title}</h2>
           </div>
         </div>
         <div className="modal-body">
-          <p style={{ margin: 0, fontSize: '15px', lineHeight: '1.6', color: 'var(--admin-text, #1a202c)' }}>
+          <p style={{ margin: 0, lineHeight: '1.6', color: 'var(--admin-text, #1a202c)' }}>
             {message}
           </p>
         </div>

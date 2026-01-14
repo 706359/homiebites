@@ -1,12 +1,9 @@
-/**
- * Next.js API Route: Reviews
- * Migrated from Express backend
- */
+
 import connectDB from '../../../lib/db.js';
 import Review from '../../../lib/models/Review.js';
 import { isAdmin, createErrorResponse } from '../../../lib/middleware/auth.js';
 
-// GET /api/reviews - public
+
 export async function GET(request) {
   try {
     await connectDB();
@@ -37,7 +34,7 @@ export async function GET(request) {
   }
 }
 
-// POST /api/reviews - public
+
 export async function POST(request) {
   try {
     await connectDB();
@@ -76,7 +73,7 @@ export async function POST(request) {
       data: review,
     });
   } catch (error) {
-    // Handle validation errors
+    
     if (error.name === 'ValidationError') {
       return Response.json(
         { 

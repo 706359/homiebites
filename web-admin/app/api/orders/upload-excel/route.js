@@ -1,7 +1,4 @@
-/**
- * Next.js API Route: Upload Excel File
- * Migrated from Express backend - Full implementation matching backend/HomieBites/controllers/uploadExcelController.js
- */
+
 import ExcelJS from 'exceljs';
 import connectDB from '../../../../lib/db.js';
 import { createErrorResponse, isAdmin } from '../../../../lib/middleware/auth.js';
@@ -31,7 +28,7 @@ export async function POST(request) {
       return Response.json({ success: false, error: 'Invalid Excel file' }, { status: 400 });
     }
 
-    // Find the worksheet - prefer "AllData" sheet, otherwise use first sheet
+    
     let worksheet = null;
     const allDataSheet = workbook.worksheets.find(
       (ws) => ws.name.toLowerCase().replace(/\s+/g, '') === 'alldata'
@@ -46,11 +43,11 @@ export async function POST(request) {
       return Response.json({ success: false, error: 'Sheet not found' }, { status: 400 });
     }
 
-    // Convert worksheet to JSON array of arrays
+    
     const jsonData = [];
     let maxColumnCount = 0;
     
-    // First pass: find the maximum column count
+    
     worksheet.eachRow((row, rowNumber) => {
       const columnCount = row.cellCount;
       if (columnCount > maxColumnCount) {
@@ -58,28 +55,28 @@ export async function POST(request) {
       }
     });
     
-    // Second pass: extract all row data
+    
     worksheet.eachRow((row, rowNumber) => {
       const rowData = [];
       
-      // Get all cells in this row, ensuring we have maxColumnCount columns
+      
       for (let colNumber = 1; colNumber <= maxColumnCount; colNumber++) {
         const cell = row.getCell(colNumber);
         let value = '';
         
         if (cell.value !== null && cell.value !== undefined) {
-          // Handle different cell value types
+          
           if (cell.value instanceof Date) {
             value = cell.value;
           } else if (typeof cell.value === 'object') {
-            // Handle rich text, formulas, etc.
+            
             if (cell.value.text !== undefined) {
               value = cell.value.text;
             } else if (cell.value.result !== undefined) {
-              // Formula result
+              
               value = cell.value.result;
             } else if (cell.value.richText) {
-              // Rich text array
+              
               value = cell.value.richText.map((rt) => rt.text).join('');
             } else {
               value = String(cell.value);
@@ -181,77 +178,77 @@ export async function POST(request) {
 
         if (!order.deliveryAddress) return;
 
-        // FIX 2: Handle Excel serial numbers properly
+        
         if (order.date !== undefined && order.date !== null && order.date !== '') {
           let parsedDate = null;
           const originalDateValue = order.date;
 
-          // Handle Excel serial number (numeric value)
+          
           if (typeof order.date === 'number') {
-            // Excel dates are stored as days since 1900-01-01
-            // But Excel incorrectly treats 1900 as a leap year
-            const excelEpoch = new Date(Date.UTC(1899, 11, 30)); // Dec 30, 1899
+            
+            
+            const excelEpoch = new Date(Date.UTC(1899, 11, 30)); 
             const days = Math.floor(order.date);
 
-            // Excel's 1900 leap year bug: dates >= 60 need adjustment
+            
             const adjustedDays = order.date >= 60 ? days - 1 : days;
 
             parsedDate = new Date(excelEpoch.getTime() + adjustedDays * 86400000);
           }
-          // If it's already a Date object (from Excel with cellDates: true)
+          
           else if (order.date instanceof Date && !isNaN(order.date.getTime())) {
-            // Excel Date objects are typically date-only (no time component)
-            // Extract local date components to avoid timezone conversion issues
+            
+            
             const localYear = order.date.getFullYear();
             const localMonth = order.date.getMonth();
             const localDay = order.date.getDate();
-            // Create a UTC date from local date components (treat as date-only)
+            
             parsedDate = new Date(Date.UTC(localYear, localMonth, localDay, 0, 0, 0, 0));
           }
-          // Otherwise try parsing as string
+          
           else {
             const dateStr = String(order.date).trim();
 
-            // ISO format (YYYY-MM-DD)
+            
             if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
-              parsedDate = new Date(dateStr + 'T00:00:00Z'); // Z indicates UTC
+              parsedDate = new Date(dateStr + 'T00:00:00Z'); 
             }
-            // M/D/YY, M/D/YYYY, MM/DD/YY, MM/DD/YYYY (US format - most common in Excel)
+            
             else if (/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(dateStr)) {
               const parts = dateStr.split('/');
               const part1 = parseInt(parts[0]);
               const part2 = parseInt(parts[1]);
               let year = parseInt(parts[2]);
 
-              // Handle 2-digit year (YY -> YYYY)
+              
               if (year < 100) {
                 year = year < 50 ? 2000 + year : 1900 + year;
               }
 
-              // US format: M/D/YY or MM/DD/YYYY (first part is month, second is day)
-              // This is the standard Excel US date format
+              
+              
               if (part1 <= 12 && part2 <= 31) {
-                // MM/DD/YYYY or M/D/YY format (US)
+                
                 parsedDate = new Date(Date.UTC(year, part1 - 1, part2, 0, 0, 0, 0));
               } else if (part2 <= 12 && part1 <= 31) {
-                // DD/MM/YYYY format (international)
+                
                 parsedDate = new Date(Date.UTC(year, part2 - 1, part1, 0, 0, 0, 0));
               } else {
-                // Ambiguous - default to US format MM/DD/YYYY
+                
                 parsedDate = new Date(Date.UTC(year, part1 - 1, part2, 0, 0, 0, 0));
               }
             }
-            // DD-MM-YYYY or DD-MM-YY
+            
             else if (/^\d{1,2}-\d{1,2}-\d{2,4}$/.test(dateStr)) {
               const parts = dateStr.split('-');
               let year = parseInt(parts[2]);
               const yearFull = year < 100 ? (year < 50 ? 2000 + year : 1900 + year) : year;
-              // Assume DD-MM-YYYY format (international)
+              
               parsedDate = new Date(
                 Date.UTC(yearFull, parseInt(parts[1]) - 1, parseInt(parts[0]), 0, 0, 0, 0)
               );
             }
-            // DD-MMM-YY or DD-MMM-YYYY
+            
             else if (/^\d{1,2}-[A-Za-z]{3}-\d{2,4}$/i.test(dateStr)) {
               const parts = dateStr.split('-');
               const day = parseInt(parts[0], 10);
@@ -279,37 +276,37 @@ export async function POST(request) {
                 parsedDate = new Date(Date.UTC(year, monthIndex, day, 0, 0, 0, 0));
               }
             } else {
-              // Try standard Date parsing as fallback
+              
               parsedDate = new Date(dateStr);
             }
           }
 
-          // Validate and store as YYYY-MM-DD string
+          
           if (parsedDate && !isNaN(parsedDate.getTime())) {
             const minDate = new Date(2000, 0, 1);
             const maxDate = new Date(2100, 11, 31);
 
             if (parsedDate >= minDate && parsedDate <= maxDate) {
-              // Store as Date object (Mongoose expects Date type)
-              // Create UTC date to avoid timezone conversion issues
+              
+              
               const utcYear = parsedDate.getUTCFullYear();
-              const utcMonth = parsedDate.getUTCMonth(); // 0-indexed
+              const utcMonth = parsedDate.getUTCMonth(); 
               const utcDay = parsedDate.getUTCDate();
 
               order.date = new Date(Date.UTC(utcYear, utcMonth, utcDay, 0, 0, 0, 0));
 
-              // Store billing month and year directly from UTC date (1-indexed month)
+              
               order._billingMonth = utcMonth + 1;
               order._billingYear = utcYear;
             } else {
               console.error(
                 `[uploadExcel] ❌ Date out of range: ${parsedDate.toISOString()}, original: ${originalDateValue}`
               );
-              order.date = undefined; // Skip invalid dates
+              order.date = undefined; 
             }
           } else {
             console.error(`[uploadExcel] ❌ Failed to parse date: "${originalDateValue}"`);
-            // Set to undefined so order will be skipped in validation - never use today's date
+            
             order.date = undefined;
           }
         } else {
@@ -317,10 +314,10 @@ export async function POST(request) {
           return;
         }
 
-        // Skip orders with invalid or missing dates - never use today's date
+        
         if (!order.date || order.date === undefined) {
           console.warn(`[uploadExcel] ⚠️ Skipping order with invalid/missing date`);
-          return; // Skip this order
+          return; 
         }
 
         if (typeof order.unitPrice !== 'number' || isNaN(order.unitPrice)) {
@@ -350,11 +347,11 @@ export async function POST(request) {
 
         let orderDate;
         if (od.date) {
-          // Date should already be a Date object from parsing step
+          
           if (od.date instanceof Date) {
             orderDate = od.date;
           } else if (typeof od.date === 'string') {
-            // Fallback: parse ISO date string (YYYY-MM-DD) as UTC
+            
             orderDate = new Date(od.date + 'T00:00:00Z');
           } else {
             orderDate = new Date(od.date);
@@ -369,7 +366,7 @@ export async function POST(request) {
           continue;
         }
 
-        // Use stored billing month/year if available (from parsed date), otherwise calculate from orderDate using UTC
+        
         const billingMonth = od._billingMonth || orderDate.getUTCMonth() + 1;
         const billingYear = od._billingYear || orderDate.getUTCFullYear();
 
@@ -386,14 +383,14 @@ export async function POST(request) {
           (Number(od.quantity) || 1) *
           (typeof od.unitPrice === 'number' && !isNaN(od.unitPrice) ? od.unitPrice : 0);
 
-        // Always set billingMonth and billingYear from correctly parsed date
-        // Use stored values from upload parsing if available, otherwise use calculated values
+        
+        
         const finalBillingMonth = od._billingMonth || billingMonth;
         const finalBillingYear = od._billingYear || billingYear;
 
         const processed = {
           ...(od.orderId && od.orderId.trim() ? { orderId: String(od.orderId).trim() } : {}),
-          date: od.date, // Date object (Mongoose will store as Date)
+          date: od.date, 
           billingMonth: finalBillingMonth,
           billingYear: finalBillingYear,
           deliveryAddress: String(od.deliveryAddress).trim(),
@@ -432,7 +429,7 @@ export async function POST(request) {
           }
         });
 
-        // Process orders with IDs
+        
         if (ordersWithIds.length > 0) {
           const existingOrderIds = await Order.find(
             { orderId: { $in: ordersWithIds.map((o) => o.orderId).filter(Boolean) } },
@@ -457,7 +454,7 @@ export async function POST(request) {
             }
           }
 
-          // Update existing
+          
           if (ordersToUpdate.length > 0) {
             for (const orderData of ordersToUpdate) {
               try {
@@ -499,7 +496,7 @@ export async function POST(request) {
             }
           }
 
-          // Insert new with IDs
+          
           if (ordersToInsert.length > 0) {
             try {
               const result = await Order.insertMany(ordersToInsert, {
@@ -524,10 +521,10 @@ export async function POST(request) {
           }
         }
 
-        // Insert orders without IDs
+        
         if (ordersWithoutIds.length > 0) {
-          // NOTE: Order IDs must be provided in the upload file - we don't auto-generate them
-          // Skip orders without IDs and report as errors
+          
+          
           ordersWithoutIds.forEach((order) => {
             skipped++;
             insertionErrors.push({
@@ -536,8 +533,8 @@ export async function POST(request) {
             });
           });
 
-          // Orders without IDs have been skipped and reported as errors above
-          // No need to insert anything - all orders must have Order IDs from the upload file
+          
+          
         }
       } catch (bulkError) {
         console.error('[uploadExcel] ❌ Error processing orders:', bulkError.message);
@@ -563,7 +560,7 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch (error) {
-    // Handle authentication/authorization errors
+    
     if (error.status === 401 || error.status === 403) {
       return createErrorResponse(error.status, error.message || 'Authentication failed');
     }

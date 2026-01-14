@@ -1,15 +1,15 @@
-// Centralized API configuration and utilities
 
-// All APIs are now in Next.js - use relative URLs for both development and production
-// Next.js API routes run on the same server as the frontend
-// Endpoints already include '/api/' prefix, so base URL should be empty
+
+
+
+
 const API_BASE_URL =
   (typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL : null) ||
   process.env.API_URL ||
   process.env.VITE_API_URL ||
   '';
 
-// Use relative URL (empty string means same origin)
+
 let resolvedApiUrl = API_BASE_URL;
 
 export const api = {
@@ -26,13 +26,13 @@ export const api = {
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
-      // No credentials needed - we use JWT tokens in Authorization header, not cookies
+      
     };
 
     try {
       const response = await fetch(url, config);
 
-      // Handle non-JSON responses
+      
       let data;
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
@@ -43,7 +43,7 @@ export const api = {
         }
       } else {
         const text = await response.text();
-        // If we get HTML, it means we're hitting the wrong server (frontend instead of backend)
+        
         if (text.trim().startsWith('<!doctype') || text.trim().startsWith('<!DOCTYPE')) {
           console.error(
             `[API] Got HTML instead of JSON from ${url}. Backend server may not be running or API URL is incorrect.`
@@ -56,25 +56,25 @@ export const api = {
       }
 
       if (!response.ok) {
-        // Handle authentication errors
+        
         if (response.status === 401 || response.status === 403) {
-          // Don't redirect if this is a login request (login endpoint can return 401 for wrong credentials)
+          
           const isLoginRequest = endpoint.includes('/auth/login');
 
-          // Clear invalid token and admin state (except for login requests)
+          
           if (typeof window !== 'undefined' && !isLoginRequest) {
             localStorage.removeItem('homiebites_token');
             localStorage.removeItem('homiebites_admin');
             localStorage.removeItem('homiebites_user');
 
-            // Redirect to login if on admin route
+            
             if (window.location.pathname.startsWith('/admin')) {
               console.warn('[API] Authentication failed. Redirecting to login...');
               window.location.href = '/admin';
             }
           }
 
-          // For login requests, return the error message from the API
+          
           if (isLoginRequest && data && data.error) {
             throw new Error(data.error);
           }
@@ -91,7 +91,7 @@ export const api = {
       return data;
     } catch (error) {
       console.error(`[API] Request failed for ${url}:`, error.message);
-      // Re-throw with more context
+      
       if (error instanceof TypeError && error.message.includes('fetch')) {
         throw new Error(
           `Network error: Unable to connect to backend server at ${resolvedApiUrl}. Please check if the backend is running.`
@@ -101,9 +101,9 @@ export const api = {
     }
   },
 
-  // Auth endpoints
+  
   async login(emailOrUsername, password) {
-    // Support both email and username for login - trim whitespace
+    
     const loginData = {
       email: emailOrUsername?.trim() || emailOrUsername,
       username: emailOrUsername?.trim() || emailOrUsername,
@@ -122,7 +122,7 @@ export const api = {
     });
   },
 
-  // Menu endpoints
+  
   async getMenu() {
     return this.request('/api/menu');
   },
@@ -134,7 +134,7 @@ export const api = {
     });
   },
 
-  // Order endpoints
+  
   async createOrder(orderData) {
     return this.request('/api/orders', {
       method: 'POST',
@@ -142,7 +142,7 @@ export const api = {
     });
   },
 
-  // Manual order creation (uses new OrderID format: HB-Jan'25-15-000079)
+  
   async createManualOrder(orderData) {
     return this.request('/api/orders/manual', {
       method: 'POST',
@@ -150,7 +150,7 @@ export const api = {
     });
   },
 
-  // Admin order endpoints
+  
   async getAllOrders(filters = {}) {
     const params = new URLSearchParams();
     if (filters.status) params.append('status', filters.status);
@@ -175,7 +175,7 @@ export const api = {
   },
 
   async bulkImportOrders(orders) {
-    // Backend expects the request body to be directly an array, not wrapped in an object
+    
     if (!Array.isArray(orders)) {
       throw new Error('Orders must be an array');
     }
@@ -194,7 +194,7 @@ export const api = {
     });
   },
 
-  // Review endpoints
+  
   async createReview(reviewData) {
     return this.request('/api/reviews', {
       method: 'POST',
@@ -209,7 +209,7 @@ export const api = {
     return this.request(`/api/reviews?${params.toString()}`);
   },
 
-  // Offers endpoints
+  
   async getOffers() {
     return this.request('/api/offers');
   },
@@ -221,7 +221,7 @@ export const api = {
     });
   },
 
-  // Password recovery endpoints
+  
   async forgotPassword(email) {
     return this.request('/api/auth/forgot-password', {
       method: 'POST',
@@ -250,12 +250,12 @@ export const api = {
     });
   },
 
-  // Admin user endpoints
+  
   async getAllUsers() {
     return this.request('/api/auth/users');
   },
 
-  // Gallery endpoints
+  
   async getGallery() {
     return this.request('/api/gallery');
   },

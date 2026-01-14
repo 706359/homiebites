@@ -23,7 +23,7 @@ export default function ResetPasswordForm({ token }) {
     hasSpecialChar: false,
   });
 
-  // Enable keyboard avoidance for mobile
+  
   useAutoKeyboardAvoidance({
     containerSelector: '.reset-password-form',
     inputSelector: 'input, textarea, select',
@@ -33,8 +33,8 @@ export default function ResetPasswordForm({ token }) {
     if (!token) {
       showError('Invalid reset link. Please request a new password reset.');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]); // Only run when token changes
+    
+  }, [token]); 
 
   const checkPasswordStrength = (password) => {
     setPasswordStrength({

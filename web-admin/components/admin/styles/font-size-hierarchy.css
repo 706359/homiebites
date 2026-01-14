@@ -1,0 +1,449 @@
+/* ============================================
+   FONT SIZE HIERARCHY SYSTEM
+   Centralized typography system for entire admin dashboard
+   All font sizes must use these variables for consistency
+   ============================================ */
+
+/* ============================================
+   BASE FONT SIZE VARIABLES
+   ============================================ */
+.admin-dashboard,
+.admin-sidebar {
+  --admin-base-font-size: var(--admin-base-font-size, 16px);
+  --admin-font-size-h1: calc(var(--admin-base-font-size, 16px) * 1.75); /* 28px at default */
+  --admin-font-size-h2: calc(var(--admin-base-font-size, 16px) * 1.375); /* 22px at default */
+  --admin-font-size-h3: calc(var(--admin-base-font-size, 16px) * 1.125); /* 18px at default */
+  --admin-font-size-h4: var(--admin-base-font-size, 16px); /* 16px at default */
+  --admin-font-size-body-lg: calc(var(--admin-base-font-size, 16px) * 0.9375); /* 15px at default */
+  --admin-font-size-body: calc(var(--admin-base-font-size, 16px) * 0.875); /* 14px at default */
+  --admin-font-size-body-sm: calc(var(--admin-base-font-size, 16px) * 0.8125); /* 13px at default */
+  --admin-font-size-body-xs: calc(var(--admin-base-font-size, 16px) * 0.75); /* 12px at default */
+  --admin-font-size-body-xxs: calc(
+    var(--admin-base-font-size, 16px) * 0.6875
+  ); /* 11px at default */
+  --admin-font-size-caption: calc(var(--admin-base-font-size, 16px) * 0.625); /* 10px at default */
+
+  /* Icon Size Variables */
+  --admin-icon-size-sm: calc(var(--admin-base-font-size, 16px) * 0.5625); /* 9px at default */
+  --admin-icon-size-xs: calc(var(--admin-base-font-size, 16px) * 1.25); /* 20px at default */
+  --admin-icon-size-md: calc(var(--admin-base-font-size, 16px) * 1.375); /* 22px at default */
+  --admin-icon-size-lg: calc(var(--admin-base-font-size, 16px) * 1.5); /* 24px at default */
+  --admin-icon-size-xl: calc(var(--admin-base-font-size, 16px) * 1.75); /* 28px at default */
+  --admin-icon-size-2xl: calc(var(--admin-base-font-size, 16px) * 2.25); /* 36px at default */
+  --admin-icon-size-3xl: calc(var(--admin-base-font-size, 16px) * 2.5); /* 40px at default */
+  --admin-icon-size-4xl: calc(var(--admin-base-font-size, 16px) * 2.625); /* 42px at default */
+  --admin-icon-size-5xl: calc(var(--admin-base-font-size, 16px) * 3); /* 48px at default */
+
+}
+/* ============================================
+   HEADINGS (H1-H4)
+   ============================================ */
+.admin-dashboard h1,
+.admin-dashboard .h1,
+.top-nav-title,
+.dashboard-header h1 {
+  font-size: var(--admin-font-size-h1, 28px) !important;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+  color: var(--admin-text-primary, #1e293b);
+}
+
+.admin-dashboard h2,
+.admin-dashboard .h2,
+.dashboard-header h2,
+.modal-header h2,
+.settings-section-title {
+  font-size: var(--admin-font-size-h2, 22px) !important;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0;
+  color: var(--admin-text-primary, #1e293b);
+}
+
+.admin-dashboard h3,
+.admin-dashboard .h3,
+.dashboard-section-title,
+.stat-card h3,
+.menu-item-title {
+  font-size: var(--admin-font-size-h3, 18px) !important;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0;
+  color: var(--admin-text-primary, #1e293b);
+}
+
+.admin-dashboard h4,
+.admin-dashboard .h4 {
+  font-size: var(--admin-font-size-h4, 16px) !important;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+  color: var(--admin-text-primary, #1e293b);
+}
+
+/* ============================================
+   BODY TEXT
+   ============================================ */
+.admin-dashboard p,
+.admin-dashboard .body-text,
+.dashboard-header p,
+.dashboard-header .subtitle,
+.modal-body,
+.sidebar-item span,
+.orders-table td,
+.recent-orders-table td,
+.input-field,
+select,
+textarea,
+.btn,
+button:not(.btn-small):not(.btn-large) {
+  font-size: var(--admin-font-size-body, 14px) !important;
+  line-height: 1.5;
+  color: var(--admin-text, #1e293b);
+  margin: 0;
+}
+
+.admin-dashboard .body-lg,
+.btn-large {
+  font-size: var(--admin-font-size-body-lg, 15px) !important;
+  line-height: 1.5;
+}
+
+.admin-dashboard .body-sm,
+.stat-card p,
+.dashboard-card p,
+.filter-label-standard,
+.pagination-info {
+  font-size: var(--admin-font-size-body-sm, 13px) !important;
+  line-height: 1.5;
+  color: var(--admin-text-secondary, #64748b);
+}
+
+.admin-dashboard .body-xs,
+.orders-table th,
+.recent-orders-table th,
+.filter-label,
+.badge,
+.status-badge {
+  font-size: var(--admin-font-size-body-xs, 12px) !important;
+  line-height: 1.4;
+  color: var(--admin-text-secondary, #64748b);
+}
+
+.admin-dashboard .body-xxs,
+.menu-item-price-label,
+.category-badge {
+  font-size: var(--admin-font-size-body-xxs, 11px) !important;
+  line-height: 1.3;
+  color: var(--admin-text-light, #94a3b8);
+}
+
+.admin-dashboard .caption {
+  font-size: var(--admin-font-size-caption, 10px) !important;
+  line-height: 1.2;
+  color: var(--admin-text-light, #94a3b8);
+}
+
+/* ============================================
+   SIDEBAR SPECIFIC
+   ============================================ */
+.sidebar-item {
+  font-size: var(--admin-font-size-body, 14px) !important;
+}
+
+.sidebar-item span {
+  font-size: var(--admin-font-size-body, 14px) !important;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.sidebar-item.active span {
+  font-size: var(--admin-font-size-body, 14px) !important;
+  font-weight: 600;
+}
+
+.sidebar-item i {
+  font-size: var(--admin-font-size-h3, 18px) !important;
+}
+
+.sidebar-item.active i {
+  font-size: var(--admin-font-size-h3, 18px) !important;
+}
+
+.admin-sidebar.collapsed .sidebar-item i {
+  font-size: var(--admin-font-size-h2, 22px) !important;
+}
+
+.sidebar-collapse-btn {
+  font-size: var(--admin-font-size-body-sm, 13px) !important;
+}
+
+.sidebar-collapse-btn i {
+  font-size: var(--admin-font-size-body, 14px) !important;
+}
+
+.admin-sidebar.collapsed .sidebar-collapse-btn i {
+  font-size: var(--admin-font-size-h4, 16px) !important;
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+.orders-table th,
+.recent-orders-table th {
+  font-size: var(--admin-font-size-body-xs, 12px) !important;
+  font-weight: 700;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.orders-table td,
+.recent-orders-table td {
+  font-size: var(--admin-font-size-body, 14px) !important;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* ============================================
+   CARDS & STATS
+   ============================================ */
+.stat-card .stat-value {
+  font-size: var(--admin-font-size-h2, 22px) !important;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stat-card .stat-label {
+  font-size: var(--admin-font-size-body-xs, 12px) !important;
+  font-weight: 500;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-card i {
+  font-size: var(--admin-font-size-h2, 22px) !important;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+.btn,
+button:not(.btn-small):not(.btn-large) {
+  font-size: var(--admin-font-size-body, 14px) !important;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.btn-small,
+.btn-ghost {
+  font-size: var(--admin-font-size-body-sm, 13px) !important;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.btn-large {
+  font-size: var(--admin-font-size-body-lg, 15px) !important;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* ============================================
+   FORM ELEMENTS
+   ============================================ */
+.input-field,
+select,
+textarea {
+  font-size: var(--admin-font-size-body, 14px) !important;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.filter-label,
+.filter-label-standard {
+  font-size: var(--admin-font-size-body-xs, 12px) !important;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.filter-input-standard,
+.filter-select {
+  font-size: var(--admin-font-size-body, 14px) !important;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.filter-toggle-btn {
+  font-size: var(--admin-font-size-body, 14px) !important;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.search-input-with-icon {
+  font-size: var(--admin-font-size-body, 14px) !important;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* ============================================
+   MENU ITEMS
+   ============================================ */
+.menu-item-title {
+  font-size: var(--admin-font-size-h4, 16px) !important;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.menu-item-description {
+  font-size: var(--admin-font-size-body-sm, 13px) !important;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.menu-item-price-amount {
+  font-size: var(--admin-font-size-h2, 22px) !important;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.menu-item-price-label {
+  font-size: var(--admin-font-size-body-xxs, 11px) !important;
+  font-weight: 600;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================
+   MODALS
+   ============================================ */
+.modal-header h2 {
+  font-size: var(--admin-font-size-h2, 22px) !important;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.modal-body {
+  font-size: var(--admin-font-size-body, 14px) !important;
+  line-height: 1.6;
+}
+
+.modal-footer {
+  font-size: var(--admin-font-size-body, 14px) !important;
+}
+
+/* ============================================
+   BADGES & LABELS
+   ============================================ */
+.badge,
+.status-badge {
+  font-size: var(--admin-font-size-body-xs, 12px) !important;
+  font-weight: 600;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.category-badge {
+  font-size: var(--admin-font-size-body-xxs, 11px) !important;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* ============================================
+   PAGINATION
+   ============================================ */
+.pagination-info {
+  font-size: var(--admin-font-size-body-sm, 13px) !important;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.pagination-controls button {
+  font-size: var(--admin-font-size-body, 14px) !important;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* ============================================
+   SETTINGS TAB
+   ============================================ */
+.settings-section-title {
+  font-size: var(--admin-font-size-h3, 18px) !important;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.settings-section-subtitle {
+  font-size: var(--admin-font-size-body-sm, 13px) !important;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--admin-text-secondary, #64748b);
+}
+
+.settings-tab-item {
+  font-size: var(--admin-font-size-body, 14px) !important;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.settings-input-field {
+  font-size: var(--admin-font-size-body, 14px) !important;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.settings-form-label {
+  font-size: var(--admin-font-size-body-xs, 12px) !important;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* ============================================
+   TOP NAVIGATION
+   ============================================ */
+.top-nav-title {
+  font-size: var(--admin-font-size-h1, 28px) !important;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.top-nav-subtitle {
+  font-size: var(--admin-font-size-body-sm, 13px) !important;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--admin-text-secondary, #64748b);
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 480px) {
+  .admin-dashboard h1,
+  .top-nav-title {
+    font-size: var(--admin-font-size-h3, 18px) !important;
+  }
+
+  .admin-dashboard h2,
+  .dashboard-header h2 {
+    font-size: var(--admin-font-size-h4, 16px) !important;
+  }
+
+  .sidebar-item span {
+    font-size: var(--admin-font-size-body, 14px) !important;
+  }
+
+  .orders-table td {
+    font-size: var(--admin-font-size-body-sm, 13px) !important;
+  }
+}
+
+/* Ensure all text elements use hierarchy */
+.admin-dashboard p,
+.admin-dashboard span:not(.sidebar-item span):not(.stat-value):not(.stat-label),
+.admin-dashboard div:not(.sidebar-item):not(.stat-card):not(.dashboard-card) {
+  font-size: inherit;
+}

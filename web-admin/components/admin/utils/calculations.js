@@ -1,16 +1,13 @@
-/**
- * Calculation utilities for dashboard statistics and reports
- */
+
 import {
   formatCurrency,
   getDeliveredRevenue,
   getOrderDateOnly,
   getTotalRevenue,
 } from './orderUtils.js';
+import { parseOrderDate } from './dateUtils.js';
 
-/**
- * Get today's statistics
- */
+
 export const getTodayStats = (ordersList = []) => {
   try {
     const today = new Date();
@@ -21,7 +18,8 @@ export const getTodayStats = (ordersList = []) => {
     const todayOrders = ordersList.filter((order) => {
       try {
         if (!order || !order.orderId) return false;
-        const orderDate = new Date(order.createdAt || order.date || Date.now());
+        const orderDate = parseOrderDate(order.date || order.order_date || null);
+        if (!orderDate) return false;
         return orderDate >= today && orderDate < tomorrow;
       } catch (e) {
         return false;
@@ -51,23 +49,22 @@ export const getTodayStats = (ordersList = []) => {
   }
 };
 
-/**
- * Get weekly statistics
- */
+
 export const getWeeklyStats = (ordersList = []) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
+    weekStart.setDate(today.getDate() - today.getDay()); 
     const weekEnd = new Date(today);
-    weekEnd.setDate(today.getDate() + (6 - today.getDay())); // End of week (Saturday)
+    weekEnd.setDate(today.getDate() + (6 - today.getDay())); 
     weekEnd.setHours(23, 59, 59, 999);
 
     const weekOrders = ordersList.filter((order) => {
       try {
         if (!order || !order.orderId) return false;
-        const orderDate = new Date(order.createdAt || order.date);
+        const orderDate = parseOrderDate(order.date || order.order_date || null);
+        if (!orderDate) return false;
         return orderDate >= weekStart && orderDate <= weekEnd;
       } catch (e) {
         return false;
@@ -80,8 +77,8 @@ export const getWeeklyStats = (ordersList = []) => {
 
     return {
       orders: weekOrders.length,
-      revenue: weekDeliveredRevenue, // Only delivered for stats
-      totalRevenue: weekRevenue, // All orders for total
+      revenue: weekDeliveredRevenue, 
+      totalRevenue: weekRevenue, 
       deliveredRevenue: weekDeliveredRevenue,
       avgOrderValue:
         deliveredWeekOrders.length > 0
@@ -103,9 +100,7 @@ export const getWeeklyStats = (ordersList = []) => {
   }
 };
 
-/**
- * Get pending orders count
- */
+
 export const getPendingOrders = (ordersList = []) => {
   try {
     return ordersList.filter((o) => ['pending', 'confirmed', 'preparing'].includes(o.status))
@@ -116,9 +111,7 @@ export const getPendingOrders = (ordersList = []) => {
   }
 };
 
-/**
- * Filter orders by date range
- */
+
 export const getFilteredOrdersByDate = (ordersList, dateRange, customStartDate, customEndDate) => {
   try {
     if (!Array.isArray(ordersList)) {
@@ -172,49 +165,10 @@ export const getFilteredOrdersByDate = (ordersList, dateRange, customStartDate, 
     return ordersList.filter((order) => {
       try {
         if (!order) return false;
-        // Support all possible date fields (check multiple field names)
-        const dateValue =
-          order.order_date || order.createdAt || order.date || order.orderDate || order.created_at;
-        if (!dateValue) return false;
-
-        // Try to parse the date
-        let orderDate = new Date(dateValue);
-
-        // If parsing fails, try parsing as DD-MMM-YY format (e.g., "31-Dec-25")
-        if (isNaN(orderDate.getTime()) && typeof dateValue === 'string') {
-          const dateStr = dateValue.trim();
-          // Try to parse DD-MMM-YY or DD-MMM-YYYY format
-          const dateMatch = dateStr.match(/(\d{1,2})-([A-Za-z]{3})-(\d{2,4})/i);
-          if (dateMatch) {
-            const day = parseInt(dateMatch[1], 10);
-            const monthNames = [
-              'jan',
-              'feb',
-              'mar',
-              'apr',
-              'may',
-              'jun',
-              'jul',
-              'aug',
-              'sep',
-              'oct',
-              'nov',
-              'dec',
-            ];
-            const month = monthNames.indexOf(dateMatch[2].toLowerCase());
-            let year = parseInt(dateMatch[3], 10);
-            // Handle 2-digit years: 25 -> 2025, 24 -> 2024
-            if (year < 100) {
-              year = year < 50 ? 2000 + year : 1900 + year;
-            }
-            if (month >= 0 && day > 0 && day <= 31 && year > 1900) {
-              orderDate = new Date(year, month, day);
-            }
-          }
-        }
-
-        if (isNaN(orderDate.getTime())) return false;
-        // Compare dates (ignore time for date-only comparison)
+        
+        const orderDate = parseOrderDate(order.date || order.order_date || order.orderDate || null);
+        if (!orderDate) return false;
+        
         orderDate.setHours(0, 0, 0, 0);
         const start = new Date(startDate);
         start.setHours(0, 0, 0, 0);
@@ -231,9 +185,7 @@ export const getFilteredOrdersByDate = (ordersList, dateRange, customStartDate, 
   }
 };
 
-/**
- * Generate summary report grouped by month/year
- */
+
 export const getSummaryReport = (ordersList = []) => {
   try {
     if (!Array.isArray(ordersList) || ordersList.length === 0) {
@@ -271,16 +223,21 @@ export const getSummaryReport = (ordersList = []) => {
         const report = reportMap.get(key);
 
         let amount = null;
+        // Always use stored totalAmount/total if it exists - don't recalculate from qty * price
         if (order.totalAmount !== undefined && order.totalAmount !== null) {
+          // Use exact totalAmount value as stored (even if 0)
           amount = parseFloat(order.totalAmount);
         } else if (order.total !== undefined && order.total !== null) {
+          // Use exact total value as stored (even if 0)
           amount = parseFloat(order.total);
         }
 
+        // Only calculate from qty * price if totalAmount and total are both missing/null
         if (amount === null || isNaN(amount)) {
           const qty = parseFloat(order.quantity || 1);
           const price = parseFloat(order.unitPrice || 0);
-          amount = qty * price;
+          // Only round when calculating from qty * price to avoid floating-point precision issues
+          amount = Math.round(qty * price);
         }
 
         const isDelivered = String(order.status || '').toLowerCase() === 'delivered';
@@ -310,9 +267,7 @@ export const getSummaryReport = (ordersList = []) => {
   }
 };
 
-/**
- * Get all unique customers (by address)
- */
+
 export const getAllCustomers = (ordersList = []) => {
   try {
     if (!Array.isArray(ordersList) || ordersList.length === 0) {
@@ -343,29 +298,36 @@ export const getAllCustomers = (ordersList = []) => {
         const customer = customerMap.get(address);
 
         let amount = null;
+        // Always use stored totalAmount/total if it exists - don't recalculate from qty * price
         if (order.totalAmount !== undefined && order.totalAmount !== null) {
+          // Use exact totalAmount value as stored (even if 0)
           amount = parseFloat(order.totalAmount);
         } else if (order.total !== undefined && order.total !== null) {
+          // Use exact total value as stored (even if 0)
           amount = parseFloat(order.total);
         }
 
+        // Only calculate from qty * price if totalAmount and total are both missing/null
         if (amount === null || isNaN(amount)) {
           const qty = parseFloat(order.quantity || 1);
           const price = parseFloat(order.unitPrice || 0);
-          amount = qty * price;
+          // Only round when calculating from qty * price to avoid floating-point precision issues
+          amount = Math.round(qty * price);
         }
 
-        const orderDate = new Date(order.createdAt || order.date);
+        const orderDate = parseOrderDate(order.date || order.order_date || null);
 
         customer.totalOrders++;
         customer.totalAmount += isNaN(amount) ? 0 : amount;
         customer.orders.push(order);
 
-        if (!customer.lastOrderDate || orderDate > customer.lastOrderDate) {
-          customer.lastOrderDate = orderDate;
-        }
-        if (!customer.firstOrderDate || orderDate < customer.firstOrderDate) {
-          customer.firstOrderDate = orderDate;
+        if (orderDate) {
+          if (!customer.lastOrderDate || orderDate > customer.lastOrderDate) {
+            customer.lastOrderDate = orderDate;
+          }
+          if (!customer.firstOrderDate || orderDate < customer.firstOrderDate) {
+            customer.firstOrderDate = orderDate;
+          }
         }
       } catch (orderError) {
         console.warn('Error processing order in getAllCustomers:', orderError);
@@ -379,14 +341,7 @@ export const getAllCustomers = (ordersList = []) => {
   }
 };
 
-/**
- * Calculate total expenses based on revenue
- * Uses configurable expense percentage (default 70% for food business)
- * This includes COGS, operational costs, delivery, etc.
- * @param {number} revenue - Total revenue
- * @param {number} expensePercentage - Percentage of revenue that goes to expenses (default: 70)
- * @returns {number} Total expenses
- */
+
 export const calculateTotalExpenses = (revenue, expensePercentage = 70) => {
   try {
     const revenueNum = parseFloat(revenue) || 0;
@@ -398,13 +353,7 @@ export const calculateTotalExpenses = (revenue, expensePercentage = 70) => {
   }
 };
 
-/**
- * Calculate profit after expenses
- * @param {number} revenue - Total revenue
- * @param {number} expenses - Total expenses (optional, will calculate if not provided)
- * @param {number} expensePercentage - Percentage of revenue for expenses (default: 70)
- * @returns {number} Profit after expenses
- */
+
 export const calculateProfit = (revenue, expenses = null, expensePercentage = 70) => {
   try {
     const revenueNum = parseFloat(revenue) || 0;
@@ -419,15 +368,7 @@ export const calculateProfit = (revenue, expenses = null, expensePercentage = 70
   }
 };
 
-/**
- * Calculate profit with 30% margin
- * This represents the profit after covering all expenses, with a 30% margin on the profit
- * @param {number} revenue - Total revenue
- * @param {number} expenses - Total expenses (optional, will calculate if not provided)
- * @param {number} expensePercentage - Percentage of revenue for expenses (default: 70)
- * @param {number} profitMargin - Profit margin percentage (default: 30)
- * @returns {number} Profit with margin applied
- */
+
 export const calculateProfitWithMargin = (
   revenue,
   expenses = null,
@@ -444,13 +385,7 @@ export const calculateProfitWithMargin = (
   }
 };
 
-/**
- * Calculate profit margin percentage
- * @param {number} revenue - Total revenue
- * @param {number} expenses - Total expenses (optional, will calculate if not provided)
- * @param {number} expensePercentage - Percentage of revenue for expenses (default: 70)
- * @returns {number} Profit margin as percentage
- */
+
 export const calculateProfitMarginPercentage = (
   revenue,
   expenses = null,
@@ -467,13 +402,7 @@ export const calculateProfitMarginPercentage = (
   }
 };
 
-/**
- * Get comprehensive profit statistics
- * @param {number} revenue - Total revenue
- * @param {number} expensePercentage - Percentage of revenue for expenses (default: 70)
- * @param {number} targetProfitMargin - Target profit margin percentage (default: 30)
- * @returns {Object} Object containing all profit-related statistics
- */
+
 export const getProfitStats = (revenue, expensePercentage = 70, targetProfitMargin = 30) => {
   try {
     const revenueNum = parseFloat(revenue) || 0;

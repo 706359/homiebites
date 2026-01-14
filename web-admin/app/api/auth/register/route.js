@@ -1,7 +1,4 @@
-/**
- * Next.js API Route: Auth Register
- * Migrated from Express backend
- */
+
 import connectDB from '../../../../lib/db.js';
 import User from '../../../../lib/models/User.js';
 import jwt from 'jsonwebtoken';
@@ -18,7 +15,7 @@ export async function POST(request) {
     const body = await request.json();
     const { name, email, password, phone } = body;
 
-    // Check if user already exists
+    
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return Response.json(
@@ -27,18 +24,18 @@ export async function POST(request) {
       );
     }
 
-    // Create new user
+    
     const user = new User({
       name,
       email,
-      password, // TODO: Hash password before saving
+      password, 
       phone,
       role: 'user',
     });
 
     await user.save();
 
-    // Generate JWT token
+    
     const adminCreds = getAdminCredentials();
     const token = jwt.sign(
       {

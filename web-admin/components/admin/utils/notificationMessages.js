@@ -1,10 +1,7 @@
-/**
- * Standardized notification messages for admin dashboard
- * Ensures consistent, professional, and accurate messaging
- */
+
 
 export const notificationMessages = {
-  // Order operations
+  
   orders: {
     addSuccess: 'Order added successfully',
     addError: 'Failed to add order. Please check the details and try again.',
@@ -21,14 +18,14 @@ export const notificationMessages = {
       `${count} order${count !== 1 ? 's' : ''} could not be deleted. Please try again.`,
   },
 
-  // Settings operations
+  
   settings: {
     updateSuccess: 'Settings saved successfully',
     updateError: 'Failed to save settings. Please check your inputs and try again.',
     loadError: 'Failed to load settings. Using default values.',
   },
 
-  // Backup & Restore
+  
   backup: {
     createSuccess: 'Backup created successfully',
     createError: 'Failed to create backup. Please try again.',
@@ -37,7 +34,7 @@ export const notificationMessages = {
     restoreWarning: 'This will overwrite all current data. Are you sure?',
   },
 
-  // Menu operations
+  
   menu: {
     updateSuccess: 'Menu updated successfully',
     updateError: 'Failed to update menu. Please try again.',
@@ -50,7 +47,7 @@ export const notificationMessages = {
     itemDeleteError: 'Failed to delete menu item. Please try again.',
   },
 
-  // Gallery operations
+  
   gallery: {
     addSuccess: 'Gallery item added successfully',
     addError: 'Failed to add gallery item. Please check the details and try again.',
@@ -68,7 +65,7 @@ export const notificationMessages = {
     syncError: 'Failed to sync gallery items. Please try again.',
   },
 
-  // Reviews operations
+  
   reviews: {
     addSuccess: 'Review submitted successfully. It will be published after admin approval.',
     addError: 'Failed to submit review. Please try again.',
@@ -80,7 +77,7 @@ export const notificationMessages = {
     approveError: 'Failed to approve review. Please try again.',
   },
 
-  // Excel/CSV upload
+  
   upload: {
     excelSuccess: (imported, updated, skipped, errors) => {
       const parts = [];
@@ -96,7 +93,7 @@ export const notificationMessages = {
     processing: 'Processing Excel file... Please wait.',
   },
 
-  // Authentication
+  
   auth: {
     loginSuccess: 'Logged in successfully',
     loginError: 'Invalid credentials. Please check your username and password.',
@@ -105,7 +102,7 @@ export const notificationMessages = {
     unauthorized: 'You do not have permission to perform this action.',
   },
 
-  // Network & System
+  
   network: {
     connectionError:
       'Network error: Unable to connect to the server. Please check your internet connection and try again.',
@@ -114,7 +111,7 @@ export const notificationMessages = {
     databaseError: 'Database connection error. Please contact support if this persists.',
   },
 
-  // Validation
+  
   validation: {
     requiredFields: 'Please fill in all required fields',
     invalidDate: 'Invalid date format. Please use a valid date.',
@@ -126,7 +123,7 @@ export const notificationMessages = {
       `Order with ID "${orderId}" already exists. Please use a different Order ID.`,
   },
 
-  // General
+  
   general: {
     loading: 'Loading...',
     saving: 'Saving...',
@@ -137,20 +134,14 @@ export const notificationMessages = {
     info: 'Information',
   },
 
-  // Reminders & Notifications
+  
   reminders: {
     sentSuccess: 'Reminder sent successfully',
     sendError: 'Failed to send reminder. Please try again.',
   },
 };
 
-/**
- * Get formatted notification message
- * @param {string} category - Message category (e.g., 'orders', 'settings')
- * @param {string} key - Message key (e.g., 'addSuccess', 'updateError')
- * @param {...any} args - Additional arguments for message formatting
- * @returns {string} Formatted message
- */
+
 export const getNotificationMessage = (category, key, ...args) => {
   const categoryMessages = notificationMessages[category];
   if (!categoryMessages) {
@@ -162,7 +153,7 @@ export const getNotificationMessage = (category, key, ...args) => {
     return notificationMessages.general.error;
   }
 
-  // If message is a function, call it with args
+  
   if (typeof message === 'function') {
     return message(...args);
   }
@@ -170,20 +161,15 @@ export const getNotificationMessage = (category, key, ...args) => {
   return message;
 };
 
-/**
- * Get notification duration based on type
- * @param {string} type - Notification type ('success', 'error', 'warning', 'info')
- * @param {number|null} customDuration - Optional custom duration in milliseconds
- * @returns {number} Duration in milliseconds
- */
+
 export const getNotificationDuration = (type, customDuration = null) => {
   if (customDuration !== null) return customDuration;
 
   const durations = {
-    success: 4000, // 4 seconds for success messages
-    error: 6000, // 6 seconds for errors (users need more time to read)
-    warning: 5000, // 5 seconds for warnings
-    info: 4000, // 4 seconds for info messages
+    success: 4000, 
+    error: 6000, 
+    warning: 5000, 
+    info: 4000, 
   };
 
   return durations[type] || 4000;

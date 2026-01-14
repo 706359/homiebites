@@ -1,8 +1,8 @@
-// Simple error tracker utility
+
 const errorTracker = {
   log: (error, context = {}) => {
     console.error("[ErrorTracker]", context, error);
-    // In production, you might want to send this to an error tracking service
+    
   },
   track: (error, context = {}) => {
     console.error("[ErrorTracker]", context, error);
@@ -13,10 +13,10 @@ const errorTracker = {
   },
   captureError: (error, context = {}) => {
     console.error("[ErrorTracker] Error captured:", context, error);
-    // In production, send to error tracking service
+    
   },
   completeOperation: (opId, result = {}) => {
-    // Operation completed
+    
   },
   failOperation: (opId, error) => {
     console.error("[ErrorTracker] Operation failed:", opId, error);

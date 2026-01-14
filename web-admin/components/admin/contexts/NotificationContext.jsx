@@ -7,11 +7,11 @@ const NotificationContext = createContext(null);
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const timeoutsRef = useRef(new Map());
-  const lastNotificationRef = useRef(new Map()); // Track last notification by message+type
+  const lastNotificationRef = useRef(new Map()); 
 
   const removeNotification = useCallback((id) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
-    // Clear timeout if exists
+    
     const timeoutId = timeoutsRef.current.get(id);
     if (timeoutId) {
       clearTimeout(timeoutId);
@@ -25,9 +25,9 @@ export const NotificationProvider = ({ children }) => {
       const key = `${message}-${type}`;
       const lastTime = lastNotificationRef.current.get(key);
 
-      // Prevent duplicate notifications with same message and type within 2 seconds
+      
       if (lastTime && now - lastTime < 2000) {
-        return null; // Don't show duplicate
+        return null; 
       }
 
       lastNotificationRef.current.set(key, now);
@@ -36,16 +36,16 @@ export const NotificationProvider = ({ children }) => {
       const notification = {
         id,
         message: typeof message === 'string' ? message : String(message),
-        type, // 'success', 'error', 'warning', 'info'
-        duration: duration > 0 ? duration : 0, // 0 means no auto-dismiss
+        type, 
+        duration: duration > 0 ? duration : 0, 
       };
 
       setNotifications((prev) => {
-        // Limit to maximum 5 notifications at once
+        
         const maxNotifications = 5;
         const updated = [...prev, notification];
         if (updated.length > maxNotifications) {
-          // Remove oldest notification
+          
           const oldest = updated.shift();
           const timeoutId = timeoutsRef.current.get(oldest.id);
           if (timeoutId) {

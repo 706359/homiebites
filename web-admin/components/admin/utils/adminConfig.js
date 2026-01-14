@@ -1,4 +1,4 @@
-// Admin Features Configuration
+
 export const adminFeatures = {
   dashboard: {
     name: "Dashboard",

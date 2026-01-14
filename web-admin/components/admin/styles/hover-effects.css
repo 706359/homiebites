@@ -1,0 +1,699 @@
+/* ============================================
+   ADMIN HOVER EFFECTS
+   Hover styles specific to admin dashboard
+   Extracted from shared/styles/hover-effects.css
+   ============================================ */
+
+/* ============================================
+   ADMIN BUTTON HOVER EFFECTS
+   ============================================ */
+.admin-dashboard .btn-primary:hover:not(:disabled) {
+  background: var(--admin-accent-hover);
+  box-shadow: var(--admin-shadow-md);
+  transform: translateY(-1px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.admin-dashboard .btn-secondary:hover:not(:disabled) {
+  background: var(--admin-accent);
+  color: #ffffff;
+  transform: translateY(-1px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.admin-dashboard .btn-ghost:hover:not(:disabled) {
+  background: var(--admin-accent-light);
+  color: var(--admin-accent);
+  transform: translateY(-1px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.admin-dashboard .btn-success:hover:not(:disabled) {
+  background: var(--admin-success);
+  color: #ffffff;
+  box-shadow: var(--admin-shadow-md);
+  transform: translateY(-1px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.admin-dashboard .btn-warning:hover:not(:disabled) {
+  background: var(--admin-warning);
+  color: #ffffff;
+  box-shadow: var(--admin-shadow-md);
+  transform: translateY(-1px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.admin-dashboard .btn-danger:hover:not(:disabled) {
+  background: var(--admin-danger);
+  color: #ffffff;
+  box-shadow: var(--admin-shadow-md);
+  transform: translateY(-1px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.admin-dashboard .btn-special:hover:not(:disabled) {
+  background: var(--admin-accent);
+  color: #ffffff;
+  box-shadow: var(--admin-shadow-md);
+  transform: translateY(-1px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* ============================================
+   ADMIN INPUT HOVER EFFECTS
+   ============================================ */
+.file-input-label:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+}
+
+input[type='range']::-webkit-slider-thumb:hover {
+  transform: scale(1.01);
+  box-shadow: 0 4px 12px rgba(68, 144, 49, 0.4);
+}
+
+input[type='range']::-moz-range-thumb:hover {
+  transform: scale(1.01);
+}
+
+input[type='color']:hover {
+  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
+}
+
+input[type='date']::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.7;
+}
+
+input[type='time']::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.7;
+}
+
+select.input-field option:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+}
+
+.dark-theme .input-field:hover {
+  background: #374151;
+}
+
+.dark-theme select.input-field:hover {
+  background: #374151;
+}
+
+/* ============================================
+   ADMIN SETTINGS & DASHBOARD HOVER EFFECTS
+   ============================================ */
+.settings-tab-item:hover:not(.active) {
+  color: var(--admin-text);
+  background: var(--admin-bg-tertiary);
+}
+
+.dashboard-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.dashboard-card:hover i {
+  text-shadow: 0 2px 8px rgba(68, 144, 49, 0.4);
+}
+
+.dashboard-card[style*='text-align: center']:hover i {
+  opacity: 0.5;
+}
+
+.stat-card:hover {
+  box-shadow: var(--admin-shadow-lg);
+}
+
+.stat-card:hover::after {
+  opacity: 0.15;
+}
+
+.stat-card:hover .stat-icon {
+  background: var(--admin-accent);
+  color: var(--admin-text-white, #ffffff);
+  text-shadow: 0 2px 8px rgba(68, 144, 49, 0.4);
+}
+
+.stat-card:hover i {
+  text-shadow: 0 2px 8px rgba(68, 144, 49, 0.4);
+}
+
+.stat-card.customer-stat-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card.customer-stat-card:hover i,
+.stat-card.customer-stat-card:hover .customer-stat-icon {
+  text-shadow: 0 2px 8px rgba(68, 144, 49, 0.4);
+}
+
+/* ============================================
+   ADMIN TABLE HOVER EFFECTS
+   ============================================ */
+.orders-table tbody tr:hover {
+  background: var(--admin-accent-light);
+}
+
+.orders-table tbody tr.table-row-selected:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.15));
+}
+
+.orders-table th:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.05));
+}
+
+.table-row-selectable:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.05));
+  cursor: pointer;
+}
+
+.recent-orders-table tbody tr:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.05));
+}
+
+.analytics-delivery-table tbody tr:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.05));
+}
+
+.analytics-delivery-table tbody tr:hover td {
+  color: var(--admin-text-primary, #1a202c);
+}
+
+/* ============================================
+   ADMIN SIDEBAR HOVER EFFECTS
+   ============================================ */
+.sidebar-item:hover {
+  background: var(--admin-bg-tertiary);
+  color: var(--admin-text);
+}
+
+.sidebar-item:hover i {
+  color: var(--admin-accent);
+}
+
+.sidebar-item.active:hover {
+  background: var(--admin-accent-light);
+}
+
+.admin-sidebar.collapsed .sidebar-item:hover {
+  background: var(--admin-accent-light);
+}
+
+.sidebar-logo-img:hover {
+  transform: scale(1.01);
+}
+
+.sidebar-logo-fallback:hover {
+  transform: scale(1.01);
+}
+
+.sidebar-profile-btn:hover {
+  background: var(--admin-accent-light);
+}
+
+.sidebar-profile-btn:hover .sidebar-profile-avatar {
+  transform: scale(1.01);
+}
+
+.sidebar-profile-dropdown-item:hover {
+  background: var(--admin-accent-light);
+}
+
+.sidebar-profile-dropdown-item:hover i {
+  color: var(--admin-accent);
+}
+
+.sidebar-profile-dropdown-item-danger:hover {
+  background: var(--admin-danger-light);
+}
+
+.sidebar-profile-dropdown-item-danger:hover i {
+  color: var(--admin-danger);
+}
+
+.sidebar-profile:hover {
+  background: var(--admin-accent-light);
+}
+
+.sidebar-toggle-btn:hover {
+  background: var(--admin-accent-light);
+}
+
+.sidebar-toggle-btn:hover i {
+  color: var(--admin-accent);
+}
+
+.logout-btn:hover {
+  background: var(--admin-danger-light);
+}
+
+.logout-btn:hover i {
+  color: var(--admin-danger);
+}
+
+/* ============================================
+   ADMIN TOP NAV HOVER EFFECTS
+   ============================================ */
+.top-nav-toggle:hover {
+  background: var(--admin-accent-light);
+}
+
+.top-nav-search-btn:hover {
+  background: var(--admin-accent-light);
+}
+
+.top-nav-notification-btn:hover {
+  background: var(--admin-accent-light);
+}
+
+.top-nav-profile-btn:hover {
+  background: var(--admin-accent-light);
+}
+
+/* ============================================
+   ADMIN DROPDOWN & ACTION HOVER EFFECTS
+   ============================================ */
+.dropdown-item:hover {
+  background: var(--admin-accent-light);
+  color: var(--admin-accent);
+}
+
+.dropdown-item-danger:hover {
+  background: var(--admin-danger-light);
+  color: var(--admin-danger);
+}
+
+.action-button:hover,
+.action-icon-btn:hover {
+  background: var(--admin-bg);
+  color: var(--admin-accent);
+  transform: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.action-button.edit:hover,
+.action-icon-edit:hover {
+  color: var(--admin-accent);
+}
+
+.action-button.delete:hover,
+.action-icon-delete:hover {
+  color: var(--admin-danger, #dc2626);
+}
+
+.quick-action-icon-btn:hover {
+  background: var(--admin-accent-light);
+}
+
+.quick-action-icon-btn:hover i {
+  color: var(--admin-accent);
+}
+
+.filter-toggle-btn:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  color: var(--admin-accent);
+}
+
+.view-toggle-compact .btn-icon-compact:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  color: var(--admin-accent);
+}
+
+.sortable-header:hover {
+  background-color: var(--admin-accent-light, rgba(68, 144, 49, 0.05));
+}
+
+.global-search-item:hover {
+  background: var(--admin-accent-light);
+}
+
+.global-search-item:hover i {
+  color: var(--admin-accent);
+}
+
+/* ============================================
+   ADMIN MODAL HOVER EFFECTS
+   ============================================ */
+.modal-close:hover {
+  background: var(--admin-accent-light);
+  color: var(--admin-accent);
+}
+
+.confirm-modal-close:hover {
+  background: var(--admin-accent-light);
+  color: var(--admin-accent);
+}
+
+.confirm-modal-btn-cancel:hover {
+  background: var(--admin-accent-light);
+  color: var(--admin-accent);
+}
+
+.confirm-modal-btn-confirm:hover.confirm-modal-btn-danger {
+  background: var(--admin-danger);
+  color: #ffffff;
+}
+
+/* ============================================
+   ADMIN NOTIFICATION HOVER EFFECTS
+   ============================================ */
+.admin-notification:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.05));
+}
+
+.admin-notification:hover .admin-notification-icon {
+  color: var(--admin-accent);
+}
+
+.admin-notification-close:hover {
+  background: var(--admin-danger-light);
+  color: var(--admin-danger);
+}
+
+.notification-card-grid:hover {
+  transform: scale(1.01);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.notification:hover .notification-body {
+  background: rgba(68, 144, 49, 0.05);
+}
+
+.notification:hover .notification-icon {
+  color: var(--admin-accent);
+}
+
+.notification-close:hover {
+  background: var(--admin-danger-light);
+  color: var(--admin-danger);
+}
+
+/* ============================================
+   ADMIN STATUS & CARDS HOVER EFFECTS
+   ============================================ */
+.status-dropdown:hover {
+  background: var(--admin-accent-light);
+}
+
+.status-dropdown.status-paid:hover {
+  background: var(--admin-success-light);
+}
+
+.status-dropdown.status-unpaid:hover {
+  background: var(--admin-danger-light);
+}
+
+.alert-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.address-suggestion-item:hover {
+  background: var(--admin-accent-light);
+  cursor: pointer;
+}
+
+.important-notification-item:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.05));
+}
+
+.customer-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ============================================
+   ADMIN SETTINGS THEME HOVER EFFECTS
+   ============================================ */
+.theme-option:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.05));
+}
+
+:root.dark-theme .theme-option:hover {
+  background: var(--admin-accent-light, rgba(59, 130, 246, 0.1));
+}
+
+.color-preset:hover {
+  transform: scale(1.01);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================
+   ADMIN LOGIN HOVER EFFECTS
+   ============================================ */
+.login-submit-btn:hover:not(:disabled) {
+  background: var(--admin-accent-hover);
+  transform: translateY(-1px);
+}
+
+.admin-login-forgot-link:hover {
+  color: var(--admin-accent);
+  text-decoration: underline;
+}
+
+.login-page-wrapper.dark-theme .btn-secondary:hover:not(:disabled) {
+  background: #1f2937;
+}
+
+.login-page-wrapper.admin-forgot-password.dark-theme .btn-secondary:hover:not(:disabled) {
+  background: #1f2937;
+}
+
+/* ============================================
+   ADMIN MENU ITEM CARD HOVER EFFECTS
+   ============================================ */
+.menu-item-card .action-button:hover {
+  background: var(--admin-accent-light);
+}
+
+.menu-item-card .action-button.delete:hover {
+  background: var(--admin-danger-light);
+}
+
+/* ============================================
+   ADMIN SCROLLBAR HOVER EFFECTS
+   ============================================ */
+.admin-content::-webkit-scrollbar-thumb:hover,
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-accent);
+}
+
+.orders-table-container::-webkit-scrollbar-thumb:hover,
+.table-wrapper::-webkit-scrollbar-thumb:hover,
+.recent-orders-table-container::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-accent, #449031);
+}
+
+.admin-notification-container::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-accent, #449031);
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-accent, #449031);
+}
+
+.dark-theme ::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-accent);
+}
+
+.admin-dashboard .admin-main > .admin-content::-webkit-scrollbar-thumb:hover,
+.admin-dashboard .admin-content::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-accent, #449031);
+}
+
+/* ============================================
+   ADMIN TOOLTIP HOVER EFFECTS
+   ============================================ */
+.tooltip-wrapper:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.tooltip-wrapper:hover .tooltip::after {
+  opacity: 1;
+}
+
+[data-tooltip]:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.quick-action-icon-btn[data-tooltip]:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.quick-action-icon-btn[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ============================================
+   ADMIN CONTEXT MENU HOVER EFFECTS
+   ============================================ */
+.context-menu-item:hover {
+  background: var(--admin-accent-light);
+}
+
+.context-menu-item.danger:hover {
+  background: var(--admin-danger-light);
+}
+
+/* ============================================
+   ADMIN TOAST HOVER EFFECTS
+   ============================================ */
+.toast-close:hover {
+  background: var(--admin-danger-light);
+  color: var(--admin-danger);
+}
+
+/* ============================================
+   ADMIN ERROR & NOT FOUND HOVER EFFECTS
+   ============================================ */
+.error-actions .btn:hover,
+.not-found-actions .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   ADMIN CHART HOVER EFFECTS
+   ============================================ */
+.chart-bar:hover {
+  opacity: 0.8;
+}
+
+.chart-bar-empty:hover {
+  opacity: 0.5;
+}
+
+/* ============================================
+   ADMIN ANALYTICS HOVER EFFECTS
+   ============================================ */
+.pending-amounts-timeline-bar {
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.pending-amounts-timeline-bar:hover {
+  opacity: 0.8;
+}
+
+.analytics-day-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.analytics-day-card:hover {
+  transform: scale(1.01);
+}
+
+.analytics-day-card:hover[style*='box-shadow'] {
+  box-shadow: 0 6px 16px rgba(68, 144, 49, 0.4);
+}
+
+/* ============================================
+   ADMIN ORDER MODAL HOVER EFFECTS
+   ============================================ */
+.order-modal-calendar-btn {
+  transition: all 0.2s ease;
+}
+
+.order-modal-calendar-btn:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  color: var(--admin-accent, #449031);
+}
+
+.order-modal-address-suggestion {
+  transition: all 0.2s ease;
+}
+
+.order-modal-address-suggestion:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+}
+
+/* ============================================
+   ADMIN CSV UPLOAD HOVER EFFECTS
+   ============================================ */
+.csv-upload-minimize-btn {
+  transition: all 0.2s ease;
+}
+
+.csv-upload-minimize-btn:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  color: var(--admin-accent, #449031);
+}
+
+.csv-upload-progress-card {
+  transition: all 0.2s ease;
+}
+
+.csv-upload-progress-card:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.15));
+}
+
+.csv-upload-maximize-btn {
+  transition: all 0.2s ease;
+}
+
+.csv-upload-maximize-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--admin-accent, #449031);
+}
+
+.settings-theme-option {
+  transition: all 0.2s ease;
+}
+
+.settings-theme-option:hover {
+  transform: scale(1.01);
+  box-shadow: 0 4px 12px rgba(68, 144, 49, 0.3);
+}
+
+/* ============================================
+   ADMIN RESPONSIVE HOVER EFFECTS
+   ============================================ */
+@media (max-width: 480px) {
+  .sidebar-item:hover {
+    background: var(--admin-accent-light);
+  }
+
+  .sidebar-item:hover i {
+    color: var(--admin-accent);
+  }
+
+  .menu-item-card .action-button:hover {
+    background: var(--admin-accent-light);
+  }
+
+  .menu-item-card .action-button.delete:hover {
+    background: var(--admin-danger-light);
+  }
+}
+
+
+@media (max-width: 480px) {
+  button:hover,
+  a:hover,
+  [role='button']:hover {
+    transform: none;
+  }
+}

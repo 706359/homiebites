@@ -1,12 +1,9 @@
-/**
- * Next.js API Route: Orders (Admin)
- * Migrated from Express backend - Full implementation
- */
+
 import connectDB from '../../../lib/db.js';
 import { createErrorResponse, isAdmin } from '../../../lib/middleware/auth.js';
 import Order from '../../../lib/models/Order.js';
 
-// Utility: Normalize payment mode
+
 const normalizePaymentMode = (pm) => {
   if (!pm) return 'Online';
   const s = String(pm).toLowerCase();
@@ -16,7 +13,7 @@ const normalizePaymentMode = (pm) => {
   return 'Online';
 };
 
-// GET /api/orders - Get all orders (admin only)
+
 export async function GET(request) {
   try {
     await connectDB();
@@ -28,7 +25,7 @@ export async function GET(request) {
     const dateTo = searchParams.get('dateTo');
     const search = searchParams.get('search');
 
-    // Build query
+    
     const query = {};
     if (status) query.paymentStatus = status;
     if (dateFrom || dateTo) {
@@ -43,28 +40,28 @@ export async function GET(request) {
       ];
     }
 
-    // CRITICAL FOR PRODUCTION: Sort by orderId descending (newest first)
-    // Order IDs have sequence numbers: HB-Jan'25-15-000079 (higher number = newer)
-    // We'll sort on the client side using extractOrderIdSequence since MongoDB
-    // can't directly parse the sequence from the orderId string format
-    // For now, sort by createdAt descending as fallback, client will re-sort by orderId
-    let orders = await Order.find(query).sort({ createdAt: -1 });
+    
+    
+    
+    
+    
+    let orders = await Order.find(query).sort({ orderId: -1 });
 
-    // Normalize orders
+    
     const normalizedOrders = orders
       .filter((order) => order != null)
       .map((order) => {
         try {
           const normalized = order.toObject ? order.toObject() : { ...order };
 
-          // Normalize date
+          
           if (!normalized.date) {
             normalized.date =
               normalized.Date || normalized.order_date || normalized.orderDate || null;
           }
           if (normalized.Date) delete normalized.Date;
 
-          // Normalize other fields
+          
           if (!normalized.deliveryAddress) {
             normalized.deliveryAddress =
               normalized['Delivery Address'] ||
@@ -135,7 +132,7 @@ export async function GET(request) {
               normalized._id;
           }
 
-          // Convert date to YYYY-MM-DD string if it's a Date object
+          
           if (normalized.date instanceof Date) {
             if (!isNaN(normalized.date.getTime())) {
               const year = normalized.date.getFullYear();
@@ -144,7 +141,7 @@ export async function GET(request) {
               normalized.date = `${year}-${month}-${day}`;
             }
           } else if (typeof normalized.date === 'string' && normalized.date.includes('T')) {
-            // ISO string - convert to YYYY-MM-DD
+            
             const d = new Date(normalized.date);
             if (!isNaN(d.getTime())) {
               const year = d.getFullYear();
@@ -154,7 +151,7 @@ export async function GET(request) {
             }
           }
 
-          // Skip orders without orderId
+          
           if (!normalized.orderId || normalized.orderId === 'N/A' || normalized.orderId === '') {
             return null;
           }
@@ -166,7 +163,7 @@ export async function GET(request) {
       })
       .filter((order) => order != null);
 
-    // Deduplicate by orderId
+    
     const seenIds = new Set();
     const deduplicatedOrders = normalizedOrders.filter((order) => {
       if (!order.orderId || seenIds.has(order.orderId)) {
@@ -178,7 +175,7 @@ export async function GET(request) {
 
     return Response.json({ success: true, data: deduplicatedOrders });
   } catch (error) {
-    // Handle authentication/authorization errors
+    
     if (error.status === 401 || error.status === 403) {
       return createErrorResponse(error.status, error.message || 'Authentication failed');
     }
@@ -193,7 +190,7 @@ export async function GET(request) {
   }
 }
 
-// POST /api/orders - Create new order (admin only)
+
 export async function POST(request) {
   try {
     await connectDB();
@@ -231,7 +228,7 @@ export async function POST(request) {
 
     return Response.json({ success: true, data: order }, { status: 201 });
   } catch (error) {
-    // Handle validation errors
+    
     if (error.name === 'ValidationError') {
       return Response.json(
         { 
@@ -242,7 +239,7 @@ export async function POST(request) {
         { status: 400 }
       );
     }
-    // Handle duplicate key errors
+    
     if (error.code === 11000 || error.message?.includes('duplicate')) {
       return Response.json(
         { 
@@ -252,7 +249,7 @@ export async function POST(request) {
         { status: 409 }
       );
     }
-    // Handle authentication/authorization errors
+    
     if (error.status === 401 || error.status === 403) {
       return createErrorResponse(error.status, error.message || 'Authentication failed');
     }

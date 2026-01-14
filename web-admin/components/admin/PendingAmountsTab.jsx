@@ -20,35 +20,29 @@ const PendingAmountsTab = ({
   showOverdueFilter = false,
   onOverdueFilterApplied,
 }) => {
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [showReminderModal, setShowReminderModal] = useState(false);
-  const [reminderTemplate, setReminderTemplate] = useState('friendly');
-  const [sendViaSMS, setSendViaSMS] = useState(true);
-  const [sendViaWhatsApp, setSendViaWhatsApp] = useState(true);
-  const [sendViaEmail, setSendViaEmail] = useState(false);
 
-  // Filter state
-  const [filterUrgency, setFilterUrgency] = useState('all'); // 'all', 'urgent', 'normal'
-  const [filterDaysPending, setFilterDaysPending] = useState('all'); // 'all', '0-3', '4-7', '7+'
+  
+  const [filterUrgency, setFilterUrgency] = useState('all'); 
+  const [filterDaysPending, setFilterDaysPending] = useState('all'); 
   const [searchQuery, setSearchQuery] = useState('');
 
   const now = new Date();
 
-  // Calculate summary stats
+  
   const summaryStats = useMemo(() => {
     const paidOrders = orders.filter((o) => isPaidStatus(o.status));
     const pendingOrders = orders.filter((o) => isPendingStatus(o.status));
 
-    // Overdue orders (pending > 45 days)
+    
     const fortyFiveDaysAgo = new Date(now);
     fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
-    fortyFiveDaysAgo.setHours(0, 0, 0, 0); // Set to midnight for consistent date comparison
+    fortyFiveDaysAgo.setHours(0, 0, 0, 0); 
     const overdueOrders = pendingOrders.filter((o) => {
       try {
-        // Never use createdAt (today's date) as fallback - only use actual order date
+        
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         if (!orderDate) return false;
-        // Normalize orderDate to midnight for comparison
+        
         const orderDateMidnight = new Date(orderDate);
         orderDateMidnight.setHours(0, 0, 0, 0);
         return orderDateMidnight < fortyFiveDaysAgo;
@@ -57,7 +51,7 @@ const PendingAmountsTab = ({
       }
     });
 
-    // Current month stats
+    
     const currentMonthOrders = getFilteredOrdersByDate(orders, 'month', '', '');
     const currentMonthRevenue = getTotalRevenue(currentMonthOrders);
 
@@ -73,10 +67,10 @@ const PendingAmountsTab = ({
     };
   }, [orders, now]);
 
-  // Pending payments list
+  
   const pendingPayments = useMemo(() => {
     const pending = orders.filter((o) => isPendingStatus(o.status));
-    // Calculate fortyFiveDaysAgo to match notification logic exactly
+    
     const fortyFiveDaysAgo = new Date(now);
     fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
     fortyFiveDaysAgo.setHours(0, 0, 0, 0);
@@ -95,7 +89,7 @@ const PendingAmountsTab = ({
             };
           }
           const daysPending = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24));
-          // Use same logic as notification: normalize dates to midnight and compare
+          
           const orderDateMidnight = new Date(orderDate);
           orderDateMidnight.setHours(0, 0, 0, 0);
           const isOverdue = orderDateMidnight < fortyFiveDaysAgo;
@@ -104,7 +98,7 @@ const PendingAmountsTab = ({
             orderDate,
             daysPending,
             isUrgent: daysPending > 7,
-            isOverdue, // Match notification logic exactly
+            isOverdue, 
           };
         } catch (e) {
           return {
@@ -133,9 +127,9 @@ const PendingAmountsTab = ({
         return 0;
       });
 
-    // Apply filters
+    
     if (filterUrgency === 'urgent') {
-      // Use isOverdue to match notification logic exactly
+      
       payments = payments.filter((p) => p.isOverdue);
     } else if (filterUrgency === 'normal') {
       payments = payments.filter((p) => !p.isOverdue);
@@ -146,14 +140,14 @@ const PendingAmountsTab = ({
     } else if (filterDaysPending === '4-7') {
       payments = payments.filter((p) => p.daysPending >= 4 && p.daysPending <= 7);
     } else if (filterDaysPending === '7+') {
-      // Filter for orders > 7 days (but not necessarily overdue)
+      
       payments = payments.filter((p) => p.daysPending > 7);
     } else if (filterDaysPending === '45+') {
-      // Use isOverdue to match notification logic exactly (> 45 days)
+      
       payments = payments.filter((p) => p.isOverdue);
     }
 
-    // Search filter
+    
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       payments = payments.filter((p) => {
@@ -166,19 +160,19 @@ const PendingAmountsTab = ({
     return payments;
   }, [orders, now, filterUrgency, filterDaysPending, searchQuery]);
 
-  // Auto-filter to overdue when opened from notification
+  
   useEffect(() => {
     if (showOverdueFilter) {
       setFilterDaysPending('45+');
       setFilterUrgency('urgent');
-      // Reset the flag after applying filters
+      
       if (onOverdueFilterApplied) {
         onOverdueFilterApplied();
       }
     }
   }, [showOverdueFilter, onOverdueFilterApplied]);
 
-  // Payment collection timeline (last 30 days)
+  
   const paymentTimeline = useMemo(() => {
     const timeline = [];
     for (let i = 29; i >= 0; i--) {
@@ -190,7 +184,7 @@ const PendingAmountsTab = ({
 
       const dayOrders = orders.filter((o) => {
         try {
-          // Never use createdAt (today's date) as fallback - only use actual order date
+          
           const orderDate = parseOrderDate(o.date || o.order_date || null);
           return orderDate >= date && orderDate < nextDay;
         } catch (e) {
@@ -211,7 +205,7 @@ const PendingAmountsTab = ({
     return timeline;
   }, [orders, now]);
 
-  // Calculate average collection time
+  
   const avgCollectionTime = useMemo(() => {
     const paidOrders = orders.filter((o) => isPaidStatus(o.status));
     if (paidOrders.length === 0) return 0;
@@ -219,14 +213,14 @@ const PendingAmountsTab = ({
     let totalDays = 0;
     paidOrders.forEach((order) => {
       try {
-        const orderDate = parseOrderDate(order.createdAt || order.date || order.order_date);
+        const orderDate = parseOrderDate(order.date || order.order_date || null);
         if (!orderDate) return;
-        const paidDate = order.paidDate ? parseOrderDate(order.paidDate) : orderDate; // If paidDate exists, use it
+        const paidDate = order.paidDate ? parseOrderDate(order.paidDate) : orderDate; 
         if (!paidDate) return;
         const days = Math.floor((paidDate - orderDate) / (1000 * 60 * 60 * 24));
         totalDays += Math.max(0, days);
       } catch (e) {
-        // Ignore
+        
       }
     });
 
@@ -235,7 +229,7 @@ const PendingAmountsTab = ({
 
   const maxTimelineCollection = Math.max(...paymentTimeline.map((t) => t.collection), 1);
 
-  // Payment mode performance
+  
   const paymentModePerformance = useMemo(() => {
     const modeStats = {};
     orders.forEach((o) => {
@@ -267,7 +261,7 @@ const PendingAmountsTab = ({
 
   const totalPaymentAmount = paymentModePerformance.reduce((sum, p) => sum + p.amount, 0);
 
-  // Handle mark as paid
+  
   const handleMarkAsPaid = async (orderId) => {
     const order = orders.find((o) => (o._id || o.orderId) === orderId);
     const orderInfo = order
@@ -335,21 +329,6 @@ const PendingAmountsTab = ({
     }
   };
 
-  // Handle send reminder
-  const handleSendReminder = () => {
-    if (!selectedOrder) return;
-    // In a real app, this would send via SMS/WhatsApp/Email
-    if (showNotification) {
-      showNotification(
-        `Reminder sent to ${
-          selectedOrder.deliveryAddress || selectedOrder.customerAddress || selectedOrder.address
-        }`,
-        'success'
-      );
-    }
-    setShowReminderModal(false);
-    setSelectedOrder(null);
-  };
 
   if (loading) {
     return (
@@ -362,63 +341,7 @@ const PendingAmountsTab = ({
   return (
     <div className='admin-content'>
 
-      {/* FILTER BAR */}
-      <div className='dashboard-card dashboard-card-spaced'>
-        <div className='filter-container'>
-          <div className='search-input-wrapper search-input-wrapper-flex'>
-            <i className='fa-solid fa-search search-input-icon'></i>
-            <input
-              type='text'
-              className='input-field search-input-with-icon'
-              placeholder='Search by address or order ID...'
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className='filter-field-group-standard min-width-140'>
-            <label className='filter-label-standard'>Urgency</label>
-            <select
-              className='input-field filter-input-standard'
-              value={filterUrgency}
-              onChange={(e) => setFilterUrgency(e.target.value)}
-            >
-              <option value='all'>All</option>
-              <option value='urgent'>Urgent (&gt;7 days)</option>
-              <option value='normal'>Normal (≤7 days)</option>
-            </select>
-          </div>
-          <div className='filter-field-group-standard min-width-140'>
-            <label className='filter-label-standard'>Days Pending</label>
-            <select
-              className='input-field filter-input-standard'
-              value={filterDaysPending}
-              onChange={(e) => setFilterDaysPending(e.target.value)}
-            >
-              <option value='all'>All</option>
-              <option value='0-3'>0-3 days</option>
-              <option value='4-7'>4-7 days</option>
-              <option value='7+'>7+ days</option>
-              <option value='45+'>45+ days (Overdue)</option>
-            </select>
-          </div>
-          {(searchQuery || filterUrgency !== 'all' || filterDaysPending !== 'all') && (
-            <button
-              className='btn btn-ghost btn-small'
-              onClick={() => {
-                setSearchQuery('');
-                setFilterUrgency('all');
-                setFilterDaysPending('all');
-              }}
-              style={{ fontSize: '13px', padding: '10px 16px' }}
-            >
-              <i className='fa-solid fa-xmark' style={{ marginRight: '6px' }}></i>
-              Clear Filters
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* SUMMARY CARDS */}
+      {}
       <div className='admin-stats'>
         <div className='stat-card'>
           <i className='fa-solid fa-check-circle' style={{ color: 'var(--admin-success)' }}></i>
@@ -489,28 +412,93 @@ const PendingAmountsTab = ({
         </div>
       </div>
 
-      {/* PENDING PAYMENTS TABLE */}
+      {}
       <div className='dashboard-card margin-bottom-24'>
         <div
           style={{
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '16px',
+            justifyContent: 'flex-end',
+            alignItems: 'flex-start',
+            marginBottom: '20px',
+            flexWrap: 'wrap',
+            gap: '16px',
           }}
         >
-          <h3 className='dashboard-section-title' style={{ marginBottom: 0 }}>
-            <i
-              className='fa-solid fa-exclamation-triangle'
-              style={{ fontSize: '1rem', opacity: 0.7, color: 'var(--admin-danger)' }}
-            ></i>
-            Pending Payments {pendingPayments.filter((p) => p.isUrgent).length > 0 && '(Urgent)'}
-          </h3>
-          <div className='action-buttons-group'>
-            <button className='btn btn-success btn-small' onClick={handleBulkMarkAsPaid}>
-              Mark All as Paid
-            </button>
-            <button className='btn btn-secondary btn-small'>Send Bulk Reminder</button>
+          <div
+            className='filter-container'
+            style={{
+              display: 'flex',
+              alignItems: 'flex-end',
+              gap: '12px',
+              flexWrap: 'wrap',
+              flex: '1 1 auto',
+              justifyContent: 'flex-end',
+            }}
+          >
+            {}
+            <div className='search-input-wrapper search-input-wrapper-flex'>
+              <i className='fa-solid fa-search search-input-icon'></i>
+              <input
+                type='text'
+                className='input-field search-input-with-icon'
+                placeholder='Search by address or order ID...'
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className='filter-field-group-standard min-width-140'>
+              <label className='filter-label-standard'>Urgency</label>
+              <select
+                className='input-field filter-input-standard'
+                value={filterUrgency}
+                onChange={(e) => setFilterUrgency(e.target.value)}
+              >
+                <option value='all'>All</option>
+                <option value='urgent'>Urgent (&gt;7 days)</option>
+                <option value='normal'>Normal (≤7 days)</option>
+              </select>
+            </div>
+            <div className='filter-field-group-standard min-width-140'>
+              <label className='filter-label-standard'>Days Pending</label>
+              <select
+                className='input-field filter-input-standard'
+                value={filterDaysPending}
+                onChange={(e) => setFilterDaysPending(e.target.value)}
+              >
+                <option value='all'>All</option>
+                <option value='0-3'>0-3 days</option>
+                <option value='4-7'>4-7 days</option>
+                <option value='7+'>7+ days</option>
+                <option value='45+'>45+ days (Overdue)</option>
+              </select>
+            </div>
+            {(searchQuery || filterUrgency !== 'all' || filterDaysPending !== 'all') && (
+              <button
+                className='btn btn-ghost btn-small'
+                onClick={() => {
+                  setSearchQuery('');
+                  setFilterUrgency('all');
+                  setFilterDaysPending('all');
+                }}
+                style={{ 
+                  fontSize: '13px', 
+                  padding: '10px 16px',
+                  whiteSpace: 'nowrap',
+                  height: 'fit-content'
+                }}
+                title='Clear all filters'
+              >
+                <i className='fa-solid fa-xmark' style={{ marginRight: '6px' }}></i>
+                Clear
+              </button>
+            )}
+            {}
+            <div className='action-buttons-group'>
+              <button className='btn btn-success btn-small' onClick={handleBulkMarkAsPaid}>
+                <i className='fa-solid fa-check-circle' style={{ marginRight: '6px' }}></i>
+                Mark All as Paid
+              </button>
+            </div>
           </div>
         </div>
 
@@ -541,53 +529,79 @@ const PendingAmountsTab = ({
               <tbody>
                 {pendingPayments.map((order, idx) => {
                   const orderDate = parseOrderDate(
-                    // Never use createdAt (today's date) as fallback - only use actual order date
+                    
                     order.orderDate || order.date || order.order_date || null
                   );
                   const dateStr = formatDateMonthDay(orderDate);
 
+                  const urgencyLevel =
+                    order.daysPending > 45
+                      ? 'overdue'
+                      : order.daysPending > 7
+                        ? 'urgent'
+                        : order.daysPending > 3
+                          ? 'warning'
+                          : 'normal';
+
                   return (
                     <tr
                       key={order._id || order.orderId || idx}
-                      style={{
-                        background: order.isUrgent ? 'var(--admin-danger-light)' : 'transparent',
-                      }}
+                      className={`pending-payment-row pending-payment-row-${urgencyLevel}`}
                     >
-                      <td>{dateStr}</td>
                       <td>
-                        {order.deliveryAddress || order.customerAddress || order.address || 'N/A'}
-                      </td>
-                      <td style={{ fontWeight: '700', color: 'var(--admin-accent)' }}>
-                        ₹{formatCurrency(order.total || order.totalAmount || 0)}
-                      </td>
-                      <td>
-                        <span
-                          className={`badge ${order.isUrgent ? 'badge-danger' : 'badge-warning'}`}
-                        >
-                          {order.daysPending} days {order.isUrgent && '⚠️'}
-                        </span>
-                      </td>
-                      <td className='monospace-text'>{order.orderId || 'N/A'}</td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button
-                            className='btn btn-success btn-small'
-                            onClick={() => handleMarkAsPaid(order._id || order.orderId)}
-                            title='Mark as Paid'
-                          >
-                            <i className='fa-solid fa-check'></i> Paid
-                          </button>
-                          <button
-                            className='btn btn-secondary btn-small'
-                            onClick={() => {
-                              setSelectedOrder(order);
-                              setShowReminderModal(true);
-                            }}
-                            title='Send Reminder'
-                          >
-                            <i className='fa-solid fa-bell'></i> Remind
-                          </button>
+                        <div className='pending-payment-date'>
+                          <i className='fa-solid fa-calendar'></i>
+                          <span>{dateStr}</span>
                         </div>
+                      </td>
+                      <td>
+                        <div className='pending-payment-address'>
+                          <i className='fa-solid fa-location-dot'></i>
+                          <span>{order.deliveryAddress || order.customerAddress || order.address || 'N/A'}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className='pending-payment-amount'>
+                          <span className='pending-payment-amount-symbol'>₹</span>
+                          <span className='pending-payment-amount-value'>
+                            {formatCurrency(order.total || order.totalAmount || 0)}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className={`pending-payment-days-badge pending-payment-days-${urgencyLevel}`}>
+                          <i
+                            className={`fa-solid ${
+                              urgencyLevel === 'overdue'
+                                ? 'fa-exclamation-triangle'
+                                : urgencyLevel === 'urgent'
+                                  ? 'fa-clock'
+                                  : urgencyLevel === 'warning'
+                                    ? 'fa-hourglass-half'
+                                    : 'fa-check'
+                            }`}
+                          ></i>
+                          <span>
+                            {order.daysPending} {order.daysPending === 1 ? 'day' : 'days'}
+                          </span>
+                          {urgencyLevel === 'overdue' && <span className='overdue-indicator'>OVERDUE</span>}
+                        </div>
+                      </td>
+                      <td>
+                        <div className='pending-payment-order-id'>
+                          <i className='fa-solid fa-hashtag'></i>
+                          <span className='monospace-text'>{order.orderId || 'N/A'}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <button
+                          className='btn btn-success btn-small pending-payment-action-btn'
+                          onClick={() => handleMarkAsPaid(order._id || order.orderId)}
+                          title='Mark as Paid'
+                        >
+                          <i className='fa-solid fa-check-circle'></i>
+                          <span>Mark Paid</span>
+                        </button>
                       </td>
                     </tr>
                   );
@@ -598,9 +612,9 @@ const PendingAmountsTab = ({
         )}
       </div>
 
-      {/* CHARTS SECTION */}
+      {}
       <div className='dashboard-grid-layout'>
-        {/* Payment Collection Timeline */}
+        {}
         <div className='dashboard-grid-item two-thirds'>
           <div className='dashboard-card'>
             <h3 className='dashboard-section-title'>
@@ -636,17 +650,14 @@ const PendingAmountsTab = ({
                     title={`${day.date}: ₹${formatCurrency(day.collection)} (${day.orders} orders)`}
                   >
                     <div
+                      className="pending-amounts-timeline-bar"
                       style={{
                         width: '100%',
                         height: `${(day.collection / maxTimelineCollection) * 180}px`,
                         minHeight: '4px',
                         background: 'var(--admin-success, #16a34a)',
                         borderRadius: '4px 4px 0 0',
-                        cursor: 'pointer',
-                        transition: 'opacity 0.2s ease',
                       }}
-                      onMouseEnter={(e) => (e.target.style.opacity = '0.8')}
-                      onMouseLeave={(e) => (e.target.style.opacity = '1')}
                     />
                     {idx % 5 === 0 && (
                       <span
@@ -675,7 +686,7 @@ const PendingAmountsTab = ({
           </div>
         </div>
 
-        {/* Payment Mode Performance */}
+        {}
         <div className='dashboard-grid-item third-width'>
           <div className='dashboard-card'>
             <h3 className='dashboard-section-title'>
@@ -691,7 +702,7 @@ const PendingAmountsTab = ({
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {paymentModePerformance.map((mode, idx) => {
-                  // Calculate percentage: (amount / total) * 100, with accuracy based on total records / 100
+                  
                   const percentage =
                     totalPaymentAmount > 0
                       ? Math.min(
@@ -759,174 +770,6 @@ const PendingAmountsTab = ({
         </div>
       </div>
 
-      {/* SEND REMINDER MODAL */}
-      {showReminderModal && selectedOrder && (
-        <div className='modal-overlay' onClick={() => setShowReminderModal(false)}>
-          <div className='modal-container' onClick={(e) => e.stopPropagation()}>
-            <div className='modal-header'>
-              <h2>Send Payment Reminder</h2>
-              <button className='modal-close' onClick={() => setShowReminderModal(false)}>
-                <i className='fa-solid fa-times'></i>
-              </button>
-            </div>
-            <div className='modal-body'>
-              <div className='form-grid'>
-                <div className='form-group'>
-                  <label>To</label>
-                  <input
-                    type='text'
-                    className='input-field'
-                    value={
-                      selectedOrder.deliveryAddress ||
-                      selectedOrder.customerAddress ||
-                      selectedOrder.address ||
-                      'N/A'
-                    }
-                    readOnly
-                  />
-                </div>
-                <div className='form-group'>
-                  <label>Amount</label>
-                  <input
-                    type='text'
-                    className='input-field'
-                    value={`₹${formatCurrency(
-                      selectedOrder.total || selectedOrder.totalAmount || 0
-                    )}`}
-                    readOnly
-                  />
-                </div>
-                <div className='form-group'>
-                  <label>Order</label>
-                  <input
-                    type='text'
-                    className='input-field'
-                    value={selectedOrder.orderId || 'N/A'}
-                    readOnly
-                  />
-                </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-                  <label>Message Template</label>
-                  <select
-                    className='input-field'
-                    value={reminderTemplate}
-                    onChange={(e) => setReminderTemplate(e.target.value)}
-                  >
-                    <option value='friendly'>Friendly Reminder</option>
-                    <option value='urgent'>Urgent Reminder</option>
-                    <option value='final'>Final Notice</option>
-                  </select>
-                </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-                  <label>Message Preview</label>
-                  <div
-                    style={{
-                      padding: '16px',
-                      background: 'var(--admin-glass-bg)',
-                      borderRadius: '8px',
-                      border: '1px solid var(--admin-glass-border)',
-                      minHeight: '80px',
-                    }}
-                  >
-                    {reminderTemplate === 'friendly' && (
-                      <p>
-                        Hi, this is a friendly reminder for your pending payment of ₹
-                        {formatCurrency(selectedOrder.total || selectedOrder.totalAmount || 0)} for
-                        order {selectedOrder.orderId || 'N/A'}.
-                      </p>
-                    )}
-                    {reminderTemplate === 'urgent' && (
-                      <p>
-                        Urgent: Your payment of ₹
-                        {formatCurrency(selectedOrder.total || selectedOrder.totalAmount || 0)} for
-                        order {selectedOrder.orderId || 'N/A'} is overdue. Please settle at your
-                        earliest convenience.
-                      </p>
-                    )}
-                    {reminderTemplate === 'final' && (
-                      <p>
-                        Final Notice: Your payment of ₹
-                        {formatCurrency(selectedOrder.total || selectedOrder.totalAmount || 0)} for
-                        order {selectedOrder.orderId || 'N/A'} is long overdue. Please contact us
-                        immediately.
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-                  <label>Send via</label>
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '12px',
-                      marginTop: '8px',
-                    }}
-                  >
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <input
-                        type='checkbox'
-                        checked={sendViaSMS}
-                        onChange={(e) => setSendViaSMS(e.target.checked)}
-                      />
-                      <span>SMS</span>
-                    </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <input
-                        type='checkbox'
-                        checked={sendViaWhatsApp}
-                        onChange={(e) => setSendViaWhatsApp(e.target.checked)}
-                      />
-                      <span>WhatsApp</span>
-                    </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <input
-                        type='checkbox'
-                        checked={sendViaEmail}
-                        onChange={(e) => setSendViaEmail(e.target.checked)}
-                      />
-                      <span>Email</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className='modal-footer'>
-              <button className='btn btn-ghost' onClick={() => setShowReminderModal(false)}>
-                Cancel
-              </button>
-              <button
-                className='btn btn-primary'
-                onClick={handleSendReminder}
-                disabled={!sendViaSMS && !sendViaWhatsApp && !sendViaEmail}
-              >
-                <i className='fa-solid fa-paper-plane'></i> Send
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

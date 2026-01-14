@@ -44,10 +44,6 @@
   transition: all 0.3s ease;
 }
 
-.why-choose-section:hover {
-  border-color: var(--primary-green);
-  scale: 1.01;
-}
 
 .why-choose-heading {
   font-size: clamp(1.75rem, 3.5vw, 2.25rem);
@@ -76,17 +72,3 @@
   border-left: 4px solid var(--primary-green);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .about-section {
-    padding: 3rem 1.5rem;
-  }
-
-  .why-choose-section {
-    padding: 2rem 1.5rem;
-  }
-
-  .why-choose-intro {
-    padding: 1.5rem;
-  }
-}

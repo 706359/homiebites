@@ -1,12 +1,9 @@
-/**
- * Next.js API Route: Menu
- * Migrated from Express backend
- */
+
 import connectDB from '../../../lib/db.js';
 import { createErrorResponse, isAdmin } from '../../../lib/middleware/auth.js';
 import Menu from '../../../lib/models/Menu.js';
 
-// GET /api/menu - public
+
 export async function GET() {
   try {
     await connectDB();
@@ -16,7 +13,7 @@ export async function GET() {
     }
     return Response.json({ success: true, data: doc.data });
   } catch (error) {
-    // Handle authentication/authorization errors
+    
     if (error.status === 401 || error.status === 403) {
       return createErrorResponse(error.status, error.message || 'Authentication failed');
     }
@@ -31,7 +28,7 @@ export async function GET() {
   }
 }
 
-// PUT /api/menu - admin only
+
 export async function PUT(request) {
   try {
     await connectDB();
@@ -53,7 +50,7 @@ export async function PUT(request) {
       return Response.json({ success: false, error: 'Menu must be an array' }, { status: 400 });
     }
 
-    // Log full payload for debugging
+    
     console.log('[Menu API] Full payload received:', JSON.stringify(data, null, 2));
     console.log('[Menu API] Saving data:', {
       dataLength: data.length,
@@ -61,7 +58,7 @@ export async function PUT(request) {
       firstCategoryItemsCount: data[0]?.items?.length || 0,
     });
 
-    // Validate that data is not empty
+    
     if (data.length === 0) {
       console.warn('[Menu API] Warning: Attempting to save empty menu data');
       return Response.json(
@@ -73,7 +70,7 @@ export async function PUT(request) {
       );
     }
 
-    // Validate each category has items
+    
     const categoriesWithItems = data.filter((cat) => cat.items && Array.isArray(cat.items) && cat.items.length > 0);
     const totalItems = categoriesWithItems.reduce((sum, cat) => sum + (cat.items?.length || 0), 0);
     
@@ -83,7 +80,7 @@ export async function PUT(request) {
       totalItems: totalItems,
     });
 
-    // Validate that we have at least one item to save
+    
     if (totalItems === 0) {
       console.error('[Menu API] Error: No items found in any category');
       return Response.json(
@@ -95,7 +92,7 @@ export async function PUT(request) {
       );
     }
 
-    // Validate data structure - each category should have required fields
+    
     for (const category of data) {
       if (!category.category) {
         console.error('[Menu API] Error: Category missing name field:', category);
@@ -119,12 +116,12 @@ export async function PUT(request) {
       }
     }
 
-    // Check if document exists first - don't auto-create empty records
+    
     const existingDoc = await Menu.findOne({ key: 'default' }).lean();
     
     let updateResult;
     if (existingDoc) {
-      // Update existing document only
+      
       updateResult = await Menu.findOneAndUpdate(
         { key: 'default' },
         { $set: { data: data, updatedAt: new Date() } },
@@ -132,7 +129,7 @@ export async function PUT(request) {
       );
       console.log('[Menu API] Updated existing menu document');
     } else {
-      // Only create if we have valid data with items
+      
       if (totalItems > 0) {
         updateResult = await Menu.create({
           key: 'default',
@@ -187,7 +184,7 @@ export async function PUT(request) {
 
     return Response.json({ success: true, data: savedDoc.data });
   } catch (error) {
-    // Handle validation errors
+    
     if (error.name === 'ValidationError') {
       return Response.json(
         { 
@@ -198,7 +195,7 @@ export async function PUT(request) {
         { status: 400 }
       );
     }
-    // Handle authentication/authorization errors
+    
     if (error.status === 401 || error.status === 403) {
       return createErrorResponse(error.status, error.message || 'Authentication failed');
     }
@@ -213,7 +210,7 @@ export async function PUT(request) {
   }
 }
 
-// DELETE /api/menu - admin only - Delete the default menu record
+
 export async function DELETE(request) {
   try {
     await connectDB();
@@ -237,7 +234,7 @@ export async function DELETE(request) {
       message: 'Menu record deleted successfully' 
     });
   } catch (error) {
-    // Handle authentication/authorization errors
+    
     if (error.status === 401 || error.status === 403) {
       return createErrorResponse(error.status, error.message || 'Authentication failed');
     }

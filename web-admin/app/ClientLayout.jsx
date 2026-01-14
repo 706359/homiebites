@@ -10,7 +10,7 @@ function ScrollToTop() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Scroll to top on route change, unless there's a hash
+    
     const hash = window.location.hash;
     if (!hash || hash === "#") {
       window.scrollTo({
@@ -27,11 +27,11 @@ function HashScrollHandler() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Handle hash navigation when route changes to home page
+    
     if (pathname === "/") {
       const hash = window.location.hash;
       if (hash && hash !== "#") {
-        // Wait for DOM to be ready
+        
         const scrollToHash = () => {
           const targetElement = document.querySelector(hash);
           if (targetElement) {
@@ -49,7 +49,7 @@ function HashScrollHandler() {
           return false;
         };
 
-        // Try immediately, then retry with delays if needed
+        
         if (!scrollToHash()) {
           setTimeout(() => {
             if (!scrollToHash()) {
@@ -68,7 +68,7 @@ function LanguageHandler() {
   const { language } = useLanguage();
 
   useEffect(() => {
-    // Update HTML lang attribute based on selected language
+    
     document.documentElement.lang = language === "hi" ? "hi" : "en";
   }, [language]);
 

@@ -1,7 +1,4 @@
-/**
- * Next.js API Route: Create Manual Order
- * Migrated from Express backend
- */
+
 import connectDB from '../../../../lib/db.js';
 import Order from '../../../../lib/models/Order.js';
 import { isAdmin, createErrorResponse } from '../../../../lib/middleware/auth.js';
@@ -103,7 +100,7 @@ export async function POST(request) {
       message: `Order created successfully with ID: ${order.orderId}`,
     }, { status: 201 });
   } catch (error) {
-    // Handle validation errors
+    
     if (error.name === 'ValidationError') {
       return Response.json(
         { 
@@ -114,7 +111,7 @@ export async function POST(request) {
         { status: 400 }
       );
     }
-    // Handle duplicate key errors
+    
     if (error.code === 11000 || error.message?.includes('duplicate')) {
       return Response.json(
         { 
@@ -124,11 +121,11 @@ export async function POST(request) {
         { status: 409 }
       );
     }
-    // Handle authentication/authorization errors
+    
     if (error.status === 401 || error.status === 403) {
       return createErrorResponse(error.status, error.message || 'Authentication failed');
     }
-    // Handle database connection errors
+    
     if (error.message && (error.message.includes('connect') || error.message.includes('ECONNREFUSED'))) {
       return Response.json(
         { 

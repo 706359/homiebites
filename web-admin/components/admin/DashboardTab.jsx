@@ -1,76 +1,159 @@
-import { getFilteredOrdersByDate, getProfitStats } from './utils/calculations.js';
-import { formatDate, formatDateShort, parseOrderDate } from './utils/dateUtils.js';
-import { formatCurrency, formatNumberIndian, getTotalRevenue, isPendingStatus, sortOrdersByOrderId } from './utils/orderUtils.js';
+import React from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
+import { getProfitStats } from './utils/calculations.js';
+import { formatDate, parseOrderDate } from './utils/dateUtils.js';
+import {
+  extractOrderIdSequence,
+  formatCurrency,
+  formatNumberIndian,
+  getTotalRevenue,
+  isPendingStatus,
+} from './utils/orderUtils.js';
 
 const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
+  // Early return if loading to avoid unnecessary calculations
+  if (loading) {
+    return (
+      <div className='admin-content'>
+        <PremiumLoader message='Loading dashboard data...' size='large' />
+      </div>
+    );
+  }
+
   const now = new Date();
   const today = new Date(now);
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  // CURRENT MONTH ORDERS
-  const currentMonthOrders = getFilteredOrdersByDate(orders, 'month', '', '');
-  const currentMonthTotal = currentMonthOrders.length;
-  const currentMonthRevenue = getTotalRevenue(currentMonthOrders);
-
-  // PROFIT STATISTICS (30% margin after expenses)
-  const profitStats = getProfitStats(currentMonthRevenue, 70, 30);
-
-  const currentMonthUnpaidAmount = currentMonthOrders
-    .filter((o) => isPendingStatus(o.status))
-    .reduce((sum, o) => {
-      let amount = null;
-      
-      if (o.totalAmount !== undefined && o.totalAmount !== null) {
-        amount = parseFloat(o.totalAmount);
-      } else if (o.total !== undefined && o.total !== null) {
-        amount = parseFloat(o.total);
+  // Use raw orders array directly for all-time calculations to ensure no orders are excluded
+  const allTimeOrders = Array.isArray(orders) ? orders : [];
+  const allTimeTotal = allTimeOrders.length;
+  
+  // Simple direct calculation: Sum totalAmount field from all orders, one by one
+  let allTimeRevenue = 0;
+  for (let i = 0; i < allTimeOrders.length; i++) {
+    const order = allTimeOrders[i];
+    if (order && order.totalAmount !== undefined && order.totalAmount !== null) {
+      const amount = parseFloat(order.totalAmount);
+      if (!isNaN(amount)) {
+        allTimeRevenue += amount;
       }
-      
-      if (amount === null || isNaN(amount)) {
-        const qty = parseFloat(o.quantity || 1);
-        const price = parseFloat(o.unitPrice || 0);
-        amount = qty * price;
-      }
-      
-      return sum + (isNaN(amount) ? 0 : amount);
-    }, 0);
-  const unpaidOrdersCount = currentMonthOrders.filter((o) => isPendingStatus(o.status)).length;
+    }
+  }
+  
+  // Log calculation results with sample order details
+  const sampleOrder = allTimeOrders.length > 0 ? allTimeOrders[0] : null;
+  let sampleAmount = null;
+  if (sampleOrder) {
+    if (sampleOrder.totalAmount !== undefined && sampleOrder.totalAmount !== null) {
+      sampleAmount = parseFloat(sampleOrder.totalAmount);
+    } else if (sampleOrder.total !== undefined && sampleOrder.total !== null) {
+      sampleAmount = parseFloat(sampleOrder.total);
+    }
+    if (sampleAmount === null || isNaN(sampleAmount)) {
+      const qty = parseFloat(sampleOrder.quantity || 1);
+      const price = parseFloat(sampleOrder.unitPrice || 0);
+      sampleAmount = Math.round(qty * price);
+    }
+  }
+  
+  console.log('📊 DashboardTab Calculations:', {
+    ordersCount: allTimeTotal,
+    totalRevenue: allTimeRevenue,
+    expectedRevenue: 374345,
+    revenueMatch: allTimeRevenue === 374345,
+    revenueDiff: 374345 - allTimeRevenue,
+    sampleOrder: sampleOrder ? {
+      orderId: sampleOrder.orderId,
+      totalAmount: sampleOrder.totalAmount,
+      total: sampleOrder.total,
+      quantity: sampleOrder.quantity,
+      unitPrice: sampleOrder.unitPrice,
+      calculatedAmount: sampleAmount,
+      usingStored: sampleOrder.totalAmount !== undefined && sampleOrder.totalAmount !== null
+    } : null
+  });
+  
+  const profitStats = getProfitStats(allTimeRevenue, 70, 30);
 
-  // TOTAL CUSTOMERS (unique addresses)
+  // Calculate pending amount using the exact same logic as getTotalRevenue
+  const pendingOrders = allTimeOrders.filter((o) => {
+    if (!o) return false;
+    return isPendingStatus(o.status, o.paymentStatus);
+  });
+
+  // Simple direct calculation: Sum totalAmount field from pending orders, one by one
+  let allTimeUnpaidAmount = 0;
+  for (let i = 0; i < pendingOrders.length; i++) {
+    const order = pendingOrders[i];
+    if (order && order.totalAmount !== undefined && order.totalAmount !== null) {
+      const amount = parseFloat(order.totalAmount);
+      if (!isNaN(amount)) {
+        allTimeUnpaidAmount += amount;
+      }
+    }
+  }
+  const unpaidOrdersCount = pendingOrders.length;
+  
+  // Log pending calculations
+  console.log('💰 DashboardTab Pending:', {
+    pendingOrdersCount: unpaidOrdersCount,
+    pendingAmount: allTimeUnpaidAmount,
+    expectedPending: 7858,
+    pendingMatch: allTimeUnpaidAmount === 7858,
+    pendingDiff: 7858 - allTimeUnpaidAmount
+  });
+  
+  // Critical validation - log only if values don't match expected (after calculations complete)
+  if (allTimeOrders.length > 0) {
+    if (Math.abs(allTimeRevenue - 374345) > 10) {
+      console.warn('⚠️ Revenue mismatch!', {
+        calculated: allTimeRevenue,
+        expected: 374345,
+        difference: 374345 - allTimeRevenue,
+        ordersCount: allTimeTotal
+      });
+    }
+    if (Math.abs(allTimeUnpaidAmount - 7858) > 10) {
+      console.warn('⚠️ Pending amount mismatch!', {
+        calculated: allTimeUnpaidAmount,
+        expected: 7858,
+        difference: 7858 - allTimeUnpaidAmount,
+        pendingOrdersCount: unpaidOrdersCount
+      });
+    }
+  }
+
+
   const allUniqueAddresses = new Set(
     orders.map((o) => o.deliveryAddress || o.customerAddress || o.address).filter(Boolean)
   ).size;
 
-  // MONTH-OVER-MONTH GROWTH
-  const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
-  const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-  const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-  const lastMonthOrders = orders.filter((o) => {
+  const lastYear = currentYear - 1;
+  const lastYearOrders = orders.filter((o) => {
     try {
       const orderDate = parseOrderDate(o.date || o.order_date || null);
-      return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === lastMonthYear;
+      if (!orderDate) return false;
+      return orderDate.getFullYear() === lastYear;
     } catch (e) {
       return false;
     }
   });
-  const lastMonthRevenue = getTotalRevenue(lastMonthOrders);
-  const monthOverMonthGrowth =
-    lastMonthRevenue > 0
-      ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
-      : currentMonthRevenue > 0
-        ? Infinity
-        : 0;
-  const isNewGrowth = lastMonthRevenue === 0 && currentMonthRevenue > 0;
+  const lastYearRevenue = getTotalRevenue(lastYearOrders);
+  const yearOverYearGrowth =
+    lastYearRevenue > 0
+      ? ((allTimeRevenue - lastYearRevenue) / lastYearRevenue) * 100
+      : allTimeRevenue > 0
+      ? Infinity
+      : 0;
+  const isNewGrowth = lastYearRevenue === 0 && allTimeRevenue > 0;
 
-  // SECONDARY STATS
-  // Today's Revenue
   const todayOrders = orders.filter((o) => {
     try {
       const orderDate = parseOrderDate(o.date || o.order_date || null);
+      if (!orderDate) return false;
       return orderDate >= today && orderDate < tomorrow;
     } catch (e) {
       return false;
@@ -79,13 +162,13 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   const todayOrdersCount = todayOrders.length;
   const todayRevenue = getTotalRevenue(todayOrders);
 
-  // This Week Revenue
   const thisWeekStart = new Date(now);
   thisWeekStart.setDate(now.getDate() - now.getDay());
   thisWeekStart.setHours(0, 0, 0, 0);
   const thisWeekOrders = orders.filter((o) => {
     try {
       const orderDate = parseOrderDate(o.date || o.order_date || null);
+      if (!orderDate) return false;
       return orderDate >= thisWeekStart;
     } catch (e) {
       return false;
@@ -94,62 +177,160 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   const thisWeekRevenue = getTotalRevenue(thisWeekOrders);
   const thisWeekOrdersCount = thisWeekOrders.length;
 
-  // Avg Order Value
-  const currentMonthAvgOrderValue =
-    currentMonthTotal > 0 ? Math.round(currentMonthRevenue / currentMonthTotal) : 0;
+  const allTimeAvgOrderValue = allTimeTotal > 0 ? Math.round(allTimeRevenue / allTimeTotal) : 0;
 
-  // Cancel Rate
   const cancelledOrders = orders.filter((o) => {
     const status = (o.status || '').toLowerCase();
     return status === 'cancelled' || status === 'cancel';
   });
   const cancelRate = orders.length > 0 ? (cancelledOrders.length / orders.length) * 100 : 0;
 
-  // CHARTS DATA
-  // Revenue Trend (Last 6 Months)
-  const last6MonthsRevenue = [];
-  for (let i = 5; i >= 0; i--) {
-    const date = new Date(now);
-    date.setMonth(date.getMonth() - i);
-    date.setDate(1);
-    date.setHours(0, 0, 0, 0);
-    const nextMonth = new Date(date);
-    nextMonth.setMonth(nextMonth.getMonth() + 1);
-
-    const monthOrders = orders.filter((o) => {
-      try {
-        // Never use createdAt (today's date) as fallback - only use actual order date
-        const orderDate = parseOrderDate(o.date || o.order_date || null);
-        if (!orderDate) return false;
-        return orderDate >= date && orderDate < nextMonth;
-      } catch (e) {
-        return false;
+  // Get all unique years from orders
+  const yearsInData = new Set();
+  orders.forEach((o) => {
+    try {
+      const orderDate = parseOrderDate(o.date || o.order_date || null);
+      if (orderDate) {
+        yearsInData.add(orderDate.getFullYear());
       }
+    } catch (e) {}
+  });
+  const sortedYears = Array.from(yearsInData).sort((a, b) => a - b);
+
+  // Calculate revenue for all 12 months with year-over-year comparison
+  const monthlyRevenueData = [];
+  const monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+    const monthData = {
+      monthIndex: monthIndex,
+      monthName: monthNames[monthIndex],
+      years: {},
+    };
+
+    // Calculate revenue for each year for this month
+    sortedYears.forEach((year) => {
+      const date = new Date(year, monthIndex, 1);
+      date.setHours(0, 0, 0, 0);
+      const nextMonth = new Date(year, monthIndex + 1, 1);
+
+      const monthOrders = orders.filter((o) => {
+        try {
+          const orderDate = parseOrderDate(o.date || o.order_date || null);
+          if (!orderDate) return false;
+          return orderDate >= date && orderDate < nextMonth;
+        } catch (e) {
+          return false;
+        }
+      });
+
+      monthData.years[year] = {
+        revenue: getTotalRevenue(monthOrders),
+        orders: monthOrders.length,
+      };
     });
 
-    // Format as "Feb 2025" (month abbreviation + year)
-    const monthName = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    const revenue = getTotalRevenue(monthOrders);
-    last6MonthsRevenue.push({
-      month: monthName,
-      revenue: revenue,
-      orders: monthOrders.length,
-    });
+    monthlyRevenueData.push(monthData);
   }
-  
 
-  // Orders by Mode (Lunch vs Dinner)
+  // Calculate payment mode data for all 12 months with year-over-year comparison
+  const monthlyPaymentModeData = [];
+  for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+    const monthData = {
+      monthIndex: monthIndex,
+      monthName: monthNames[monthIndex],
+      years: {},
+    };
+
+    // Calculate payment mode amounts for each year for this month
+    sortedYears.forEach((year) => {
+      const date = new Date(year, monthIndex, 1);
+      date.setHours(0, 0, 0, 0);
+      const nextMonth = new Date(year, monthIndex + 1, 1);
+
+      const monthOrders = orders.filter((o) => {
+        try {
+          const orderDate = parseOrderDate(o.date || o.order_date || null);
+          if (!orderDate) return false;
+          return orderDate >= date && orderDate < nextMonth;
+        } catch (e) {
+          return false;
+        }
+      });
+
+      // Calculate Cash and Online amounts for this month
+      const cashAmount = monthOrders
+        .filter((o) => {
+          const mode = (o.paymentMode || '').toLowerCase();
+          return mode === 'cash';
+        })
+        .reduce((sum, o) => {
+          let amount = null;
+          if (o.totalAmount !== undefined && o.totalAmount !== null && o.totalAmount !== 0) {
+            amount = parseFloat(o.totalAmount);
+          } else if (o.total !== undefined && o.total !== null && o.total !== 0) {
+            amount = parseFloat(o.total);
+          }
+          if (amount === null || isNaN(amount) || amount === 0) {
+            const qty = parseFloat(o.quantity || 1);
+            const price = parseFloat(o.unitPrice || 0);
+            amount = Math.round(qty * price);
+          }
+          return sum + (isNaN(amount) ? 0 : amount);
+        }, 0);
+
+      const onlineAmount = monthOrders
+        .filter((o) => {
+          const mode = (o.paymentMode || '').toLowerCase();
+          return mode === 'online';
+        })
+        .reduce((sum, o) => {
+          let amount = null;
+          if (o.totalAmount !== undefined && o.totalAmount !== null && o.totalAmount !== 0) {
+            amount = parseFloat(o.totalAmount);
+          } else if (o.total !== undefined && o.total !== null && o.total !== 0) {
+            amount = parseFloat(o.total);
+          }
+          if (amount === null || isNaN(amount) || amount === 0) {
+            const qty = parseFloat(o.quantity || 1);
+            const price = parseFloat(o.unitPrice || 0);
+            amount = Math.round(qty * price);
+          }
+          return sum + (isNaN(amount) ? 0 : amount);
+        }, 0);
+
+      monthData.years[year] = {
+        cash: cashAmount,
+        online: onlineAmount,
+      };
+    });
+
+    monthlyPaymentModeData.push(monthData);
+  }
+
   const ordersByMode = {
     Lunch: 0,
     Dinner: 0,
     'Not Set': 0,
   };
-  currentMonthOrders.forEach((o) => {
+  allTimeOrders.forEach((o) => {
     const mode = o.mode || 'Not Set';
     ordersByMode[mode] = (ordersByMode[mode] || 0) + 1;
   });
 
-  // Daily Orders This Month
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
   const daysInMonth = currentMonthEnd.getDate();
@@ -159,9 +340,8 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     const nextDay = new Date(date);
     nextDay.setDate(nextDay.getDate() + 1);
 
-    const dayOrders = currentMonthOrders.filter((o) => {
+    const dayOrders = allTimeOrders.filter((o) => {
       try {
-        // Never use createdAt (today's date) as fallback - only use actual order date
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         if (!orderDate) return false;
         return orderDate >= date && orderDate < nextDay;
@@ -177,37 +357,63 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     });
   }
   const maxDailyOrders = Math.max(...dailyOrdersData.map((d) => d.orders), 1);
-  
 
   const paymentModeStats = {};
-  currentMonthOrders.forEach((o) => {
+  allTimeOrders.forEach((o) => {
     const mode = o.paymentMode || 'Not Set';
     if (!paymentModeStats[mode]) {
       paymentModeStats[mode] = { count: 0, amount: 0 };
     }
     paymentModeStats[mode].count++;
-    
+
     let amount = null;
-    
+
     if (o.totalAmount !== undefined && o.totalAmount !== null) {
       amount = parseFloat(o.totalAmount);
     } else if (o.total !== undefined && o.total !== null) {
       amount = parseFloat(o.total);
     }
-    
+
     if (amount === null || isNaN(amount)) {
       const qty = parseFloat(o.quantity || 1);
       const price = parseFloat(o.unitPrice || 0);
       amount = qty * price;
     }
-    
+
     paymentModeStats[mode].amount += isNaN(amount) ? 0 : amount;
   });
 
-  // RECENT ORDERS (Last 10) - sorted by orderId (newest first)
-  const recentOrders = sortOrdersByOrderId(orders).slice(0, 10);
+  // Sort by date (newest first), then by orderId as fallback
+  const recentOrders = [...orders]
+    .sort((a, b) => {
+      const dateA = parseOrderDate(a.date || a.order_date || null);
+      const dateB = parseOrderDate(b.date || b.order_date || null);
 
-  // MONTH LOCK STATUS
+      // If both have dates, sort by date (newest first)
+      if (dateA && dateB) {
+        const timeDiff = dateB.getTime() - dateA.getTime();
+        if (timeDiff !== 0) return timeDiff;
+      }
+
+      // If one has a date and the other doesn't, prioritize the one with a date
+      if (dateA && !dateB) return -1;
+      if (!dateA && dateB) return 1;
+
+      // If dates are equal or both missing, fall back to orderId sorting
+      const seqA = extractOrderIdSequence(a.orderId);
+      const seqB = extractOrderIdSequence(b.orderId);
+      if (seqA > 0 && seqB > 0) {
+        return seqB - seqA;
+      }
+      const idA = (a.orderId || '').toString();
+      const idB = (b.orderId || '').toString();
+      if (idA && idB) {
+        return idB.localeCompare(idA);
+      }
+      return 0;
+    })
+    .slice(0, 10);
+
   const getMonthLockStatus = () => {
     if (!settings || !settings.monthLockedTill) {
       return { status: 'OPEN', lockedTill: null };
@@ -239,14 +445,27 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   };
   const monthLockStatus = getMonthLockStatus();
 
-  // LOADING STATE
-  if (loading) {
+  // Show message if no orders after loading completes
+  if (!loading && allTimeOrders.length === 0) {
     return (
       <div className='admin-content'>
-        <div className='dashboard-header'>
-          <h2>Dashboard</h2>
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <h2>No Orders Found</h2>
+          <p style={{ marginTop: '1rem', color: '#666' }}>
+            No orders are currently loaded. Please check:
+          </p>
+          <ul style={{ marginTop: '1rem', textAlign: 'left', display: 'inline-block' }}>
+            <li>Is the backend API running?</li>
+            <li>Are you authenticated as admin?</li>
+            <li>Check the browser console for API errors</li>
+          </ul>
+          <button
+            onClick={() => window.location.reload()}
+            style={{ marginTop: '1rem', padding: '0.5rem 1rem', cursor: 'pointer' }}
+          >
+            Reload Page
+          </button>
         </div>
-        <PremiumLoader message='Loading dashboard data...' size='large' />
       </div>
     );
   }
@@ -255,306 +474,290 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     <div className='admin-content'>
       <div className='dashboard-with-sidebar'>
         <div className='dashboard-main-content'>
-          {/* KEY METRICS - Only Important Ones */}
-      <div className='admin-stats'>
-        <div className='stat-card'>
-          <i className='fa-solid fa-rupee-sign'></i>
-          <div>
-            <h3>₹{formatCurrency(currentMonthRevenue)}</h3>
-            <p>Total Revenue</p>
-            <p className='stat-card-subtitle'>
-              {isNewGrowth
-                ? 'New ↑'
-                : `${monthOverMonthGrowth >= 0 ? '+' : ''}${monthOverMonthGrowth.toFixed(1)}% ${monthOverMonthGrowth >= 0 ? '↑' : '↓'}`}
-            </p>
+          {}
+          <div className='admin-stats' key={`stats-${allTimeTotal}-${allTimeRevenue}-${allTimeUnpaidAmount}`}>
+            <div className='stat-card'>
+              <i className='fa-solid fa-rupee-sign'></i>
+              <div>
+                <h3 data-revenue={allTimeRevenue} data-expected='374345'>
+                  ₹{formatCurrency(allTimeRevenue)}
+                </h3>
+                <p>Total Revenue</p>
+                <p className='stat-card-subtitle'>
+                  {isNewGrowth
+                    ? 'New ↑'
+                    : `${yearOverYearGrowth >= 0 ? '+' : ''}${yearOverYearGrowth.toFixed(1)}% ${
+                        yearOverYearGrowth >= 0 ? '↑' : '↓'
+                      } vs last year`}
+                </p>
+              </div>
+            </div>
+            <div className='stat-card'>
+              <i className='fa-solid fa-shopping-cart icon-color-accent'></i>
+              <div>
+                <h3>{allTimeTotal}</h3>
+                <p>Total Orders</p>
+                <p className='stat-card-subtitle'>All time</p>
+              </div>
+            </div>
+            <div className='stat-card'>
+              <i className='fa-solid fa-exclamation-triangle stat-card-icon-warning'></i>
+              <div>
+                <h3 data-pending={allTimeUnpaidAmount} data-expected='7858'>
+                  ₹{formatCurrency(allTimeUnpaidAmount)}
+                </h3>
+                <p>Pending Payments</p>
+                <p className='stat-card-subtitle'>
+                  {unpaidOrdersCount} {unpaidOrdersCount === 1 ? 'order' : 'orders'}
+                </p>
+              </div>
+            </div>
+            <div className='stat-card'>
+              <i className='fa-solid fa-users icon-color-accent'></i>
+              <div>
+                <h3>{allUniqueAddresses}</h3>
+                <p>Total Customers</p>
+                <p className='stat-card-subtitle'>Unique addresses</p>
+              </div>
+            </div>
+            <div className='stat-card'>
+              <i className='fa-solid fa-chart-line stat-card-icon-success'></i>
+              <div>
+                <h3>₹{formatCurrency(allTimeAvgOrderValue)}</h3>
+                <p>Avg Order Value</p>
+              </div>
+            </div>
+            <div className='stat-card'>
+              <i className='fa-solid fa-chart-line stat-card-icon-success'></i>
+              <div>
+                <h3>₹{formatCurrency(profitStats.profit)}</h3>
+                <p>Profit After Expenses</p>
+                <p className='stat-card-subtitle'>
+                  {profitStats.profitMarginPercent.toFixed(1)}% margin
+                </p>
+              </div>
+            </div>
+            <div className='stat-card'>
+              <i className='fa-solid fa-percent stat-card-icon-secondary'></i>
+              <div>
+                <h3>{profitStats.profitMarginPercent.toFixed(1)}%</h3>
+                <p>Profit Margin</p>
+                <p className='stat-card-subtitle'>Target: {profitStats.targetProfitMargin}%</p>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-shopping-cart' style={{ color: 'var(--admin-accent)' }}></i>
-          <div>
-            <h3>{currentMonthTotal}</h3>
-            <p>Total Orders</p>
-            <p className='stat-card-subtitle'>
-              Current month
-            </p>
-          </div>
-        </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-exclamation-triangle stat-card-icon-warning'></i>
-          <div>
-            <h3>₹{formatCurrency(currentMonthUnpaidAmount)}</h3>
-            <p>Pending Payments</p>
-            <p className='stat-card-subtitle'>
-              {unpaidOrdersCount} {unpaidOrdersCount === 1 ? 'order' : 'orders'}
-            </p>
-          </div>
-        </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-users' style={{ color: 'var(--admin-accent)' }}></i>
-          <div>
-            <h3>{allUniqueAddresses}</h3>
-            <p>Total Customers</p>
-            <p className='stat-card-subtitle'>
-              Unique addresses
-            </p>
-          </div>
-        </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-chart-line stat-card-icon-success'></i>
-          <div>
-            <h3>₹{formatCurrency(currentMonthAvgOrderValue)}</h3>
-            <p>Avg Order Value</p>
-          </div>
-        </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-chart-line stat-card-icon-success'></i>
-          <div>
-            <h3>₹{formatCurrency(profitStats.profit)}</h3>
-            <p>Profit After Expenses</p>
-            <p className='stat-card-subtitle'>
-              {profitStats.profitMarginPercent.toFixed(1)}% margin
-            </p>
-          </div>
-        </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-percent stat-card-icon-secondary'></i>
-          <div>
-            <h3>{profitStats.profitMarginPercent.toFixed(1)}%</h3>
-            <p>Profit Margin</p>
-            <p className='stat-card-subtitle'>
-              Target: {profitStats.targetProfitMargin}%
-            </p>
-          </div>
-        </div>
-      </div>
 
-      {/* CHARTS SECTION - Essential Visualizations Only */}
-      <div className='dashboard-grid-layout'>
-        {/* Revenue Trend (Last 6 Months) */}
-        <div className='dashboard-grid-item two-thirds'>
-          <div className='dashboard-card widget'>
-            <h3 className='dashboard-section-title'>
-              <i className='fa-solid fa-chart-line' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
-              Revenue Trend (Last 6 Months)
-            </h3>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'flex-end',
-                gap: '1rem',
-                minHeight: '200px',
-                padding: '1rem',
-                borderTop: '2px solid var(--admin-border)',
-                marginTop: '0.5rem',
-              }}
-            >
-              {last6MonthsRevenue.length > 0 ? (
-                (() => {
-                  const maxRevenue = Math.max(...last6MonthsRevenue.map((m) => m.revenue), 1);
-                  return last6MonthsRevenue.map((month, idx) => {
-                    const barHeight = maxRevenue > 0 ? (month.revenue / maxRevenue) * 180 : 0;
-                    return (
-                      <div
-                        key={idx}
-                        style={{
-                          flex: 1,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: '100%',
-                            maxWidth: '80px',
-                            height: `${Math.max(barHeight, 10)}px`,
-                            minHeight: '10px',
-                            background: month.revenue > 0 ? 'var(--admin-accent, #449031)' : 'var(--admin-border, #e2e8f0)',
-                            borderRadius: '8px 8px 0 0',
-                            display: 'flex',
-                            alignItems: 'flex-end',
-                            justifyContent: 'center',
-                            paddingBottom: month.revenue > 0 ? '0.5rem' : '0',
-                            cursor: 'pointer',
-                            position: 'relative',
-                            boxShadow: month.revenue > 0 ? '0 2px 8px rgba(0, 0, 0, 0.1)' : 'none',
-                            transition: 'all 0.2s ease',
-                          }}
-                          title={`${month.month}: ₹${formatCurrency(month.revenue)} (${
-                            month.orders
-                          } orders)`}
-                          onMouseEnter={(e) => {
-                            if (month.revenue > 0) {
-                              e.currentTarget.style.transform = 'scaleY(1.05)';
-                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'scaleY(1)';
-                            e.currentTarget.style.boxShadow = month.revenue > 0 ? '0 2px 8px rgba(0, 0, 0, 0.1)' : 'none';
-                          }}
-                        >
-                          {month.revenue > 0 && (
-                            <span
-                              style={{
-                                color: 'white',
-                                fontSize: '0.75rem',
-                                fontWeight: '600',
-                              }}
-                            >
-                              ₹{formatNumberIndian(month.revenue)}
+          {}
+          <div className='dashboard-charts-container'>
+            {}
+            <div className='dashboard-chart-full-width'>
+              <div className='dashboard-card widget'>
+                <h3 className='dashboard-section-title'>
+                  <i className='fa-solid fa-chart-line icon-opacity'></i>
+                  Revenue Trend (Year-over-Year Comparison)
+                </h3>
+                <div className='chart-container'>
+                  {monthlyRevenueData.length > 0 ? (
+                    (() => {
+                      // Find max revenue across all months and years for scaling
+                      const maxRevenue = Math.max(
+                        ...monthlyRevenueData.flatMap((m) =>
+                          Object.values(m.years).map((y) => y.revenue)
+                        ),
+                        1
+                      );
+
+                      return monthlyRevenueData.map((monthData, idx) => {
+                        const yearEntries = Object.entries(monthData.years).sort(
+                          ([a], [b]) => a - b
+                        );
+
+                        return (
+                          <div
+                            key={idx}
+                            className={`bar-chart-item ${
+                              yearEntries.length > 1
+                                ? 'bar-chart-item-multi-year'
+                                : 'bar-chart-item-single-year'
+                            }`}
+                          >
+                            <div className='chart-bars-container'>
+                              {yearEntries.map(([year, data]) => {
+                                const barHeight =
+                                  maxRevenue > 0 ? (data.revenue / maxRevenue) * 180 : 0;
+                                const isCurrentYear = parseInt(year) === now.getFullYear();
+                                const isLastYear = parseInt(year) === now.getFullYear() - 1;
+
+                                return (
+                                  <div
+                                    key={year}
+                                    className={`chart-year-entry ${
+                                      yearEntries.length > 1
+                                        ? 'chart-year-entry-multi'
+                                        : 'chart-year-entry-single'
+                                    }`}
+                                  >
+                                    <div
+                                      className={`chart-bar ${
+                                        data.revenue > 0 ? '' : 'chart-bar-empty'
+                                      } ${
+                                        isCurrentYear
+                                          ? 'chart-bar-current-year'
+                                          : isLastYear
+                                          ? 'chart-bar-last-year'
+                                          : 'chart-bar-other-year'
+                                      }`}
+                                      style={{
+                                        height: `${Math.max(barHeight, 10)}px`,
+                                      }}
+                                      title={`${monthData.monthName} ${year}: ₹${formatCurrency(
+                                        data.revenue
+                                      )} (${data.orders} orders)`}
+                                    >
+                                    </div>
+                                    {yearEntries.length > 1 && (
+                                      <span className='text-xs text-light chart-year-label'>
+                                        {year.toString().slice(-2)}
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <span className='text-xs text-light text-center font-medium chart-month-label'>
+                              {monthData.monthName}
                             </span>
-                          )}
-                        </div>
-                        <span
-                          style={{
-                            fontSize: '0.75rem',
-                            color: 'var(--admin-text-light)',
-                            textAlign: 'center',
-                            lineHeight: '1.2',
-                            fontWeight: '500',
-                          }}
-                        >
-                          {month.month}
-                        </span>
-                      </div>
-                    );
-                  });
-                })()
-              ) : (
-                <div className='empty-state-text'>
-                  No revenue data available
+                          </div>
+                        );
+                      });
+                    })()
+                  ) : (
+                    <div className='empty-state-text'>No revenue data available</div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Payment Mode Split */}
-        <div className='dashboard-grid-item third-width'>
-          <div className='dashboard-card widget'>
-            <h3 className='dashboard-section-title'>
-              <i className='fa-solid fa-chart-bar' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
-              Payment Mode Split
-            </h3>
-            <div
-              style={{
-                padding: '1.5rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1rem',
-                borderTop: '2px solid var(--admin-border)',
-                marginTop: '0.5rem',
-              }}
-            >
-              {Object.entries(paymentModeStats)
-                .sort(([, a], [, b]) => b.count - a.count)
-                .map(([mode, stats]) => {
-                  const totalCount = Object.values(paymentModeStats).reduce(
-                    (sum, s) => sum + s.count,
-                    0
-                  );
-                  const percentage =
-                    totalCount > 0
-                      ? Math.min(100, parseFloat(((stats.count / totalCount) * 100).toFixed(2)))
-                      : 0;
-                  return (
-                    <div
-                      key={mode}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.5rem',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontWeight: '600',
-                            color: 'var(--admin-text)',
-                          }}
-                        >
-                          {mode}
-                        </span>
-                        <span
-                          style={{
-                            fontWeight: '700',
-                            color: 'var(--admin-accent)',
-                            fontSize: '1rem',
-                          }}
-                        >
-                          {stats.count}
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          width: '100%',
-                          height: '28px',
-                          background: 'var(--admin-glass-border)',
-                          borderRadius: '6px',
-                          overflow: 'hidden',
-                          position: 'relative',
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: `${percentage}%`,
-                            height: '100%',
-                            background: `var(--admin-accent, #449031)`,
-                            borderRadius: '6px',
-                            transition: 'width 0.5s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'flex-end',
-                            paddingRight: '0.5rem',
-                            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.1)',
-                          }}
-                        >
-                          {percentage > 15 && (
-                            <span
-                              style={{
-                                color: 'white',
-                                fontSize: '0.75rem',
-                                fontWeight: '600',
-                              }}
-                            >
-                              {percentage.toFixed(0)}%
-                            </span>
-                          )}
+                {sortedYears.length > 1 && (
+                  <div className='chart-legend-container'>
+                    {sortedYears.map((year) => {
+                      const isCurrentYear = year === now.getFullYear();
+                      const isLastYear = year === now.getFullYear() - 1;
+                      return (
+                        <div key={year} className='chart-legend-item'>
+                          <div
+                            className={`chart-legend-color ${
+                              isCurrentYear
+                                ? 'chart-legend-color-current'
+                                : isLastYear
+                                ? 'chart-legend-color-last'
+                                : 'chart-legend-color-other'
+                            }`}
+                          />
+                          <span>{year}</span>
                         </div>
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '0.85rem',
-                          color: 'var(--admin-text-light)',
-                        }}
-                      >
-                        ₹{formatCurrency(stats.amount)}
-                      </div>
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {}
+            <div className='dashboard-chart-full-width'>
+              <div className='dashboard-card widget'>
+                <h3 className='dashboard-section-title'>
+                  <i className='fa-solid fa-chart-bar icon-opacity'></i>
+                  Payment Mode Trend (Year-over-Year Comparison)
+                </h3>
+                <div className='chart-container'>
+                  {monthlyPaymentModeData.length > 0 ? (
+                    (() => {
+                      // Find max amount across all months, years, and payment modes for scaling
+                      const maxAmount = Math.max(
+                        ...monthlyPaymentModeData.flatMap((m) =>
+                          Object.values(m.years).flatMap((y) => [y.cash || 0, y.online || 0])
+                        ),
+                        1
+                      );
+
+                      return monthlyPaymentModeData.map((monthData, idx) => {
+                        // Aggregate Cash and Online across all years for this month
+                        const totalCash = Object.values(monthData.years).reduce(
+                          (sum, y) => sum + (y.cash || 0),
+                          0
+                        );
+                        const totalOnline = Object.values(monthData.years).reduce(
+                          (sum, y) => sum + (y.online || 0),
+                          0
+                        );
+
+                        const cashHeight =
+                          maxAmount > 0 ? (totalCash / maxAmount) * 180 : 0;
+                        const onlineHeight =
+                          maxAmount > 0 ? (totalOnline / maxAmount) * 180 : 0;
+
+                        return (
+                          <div
+                            key={idx}
+                            className='bar-chart-item bar-chart-item-single-year'
+                          >
+                            <div className='chart-bars-container chart-bars-container-payment-mode'>
+                              <div className='chart-payment-mode-group'>
+                                <div
+                                  className={`chart-bar chart-bar-cash ${
+                                    totalCash > 0 ? '' : 'chart-bar-empty'
+                                  }`}
+                                  style={{
+                                    height: `${Math.max(cashHeight, 10)}px`,
+                                    minHeight: '10px',
+                                  }}
+                                  title={`${monthData.monthName} - Cash: ₹${formatCurrency(
+                                    totalCash
+                                  )}`}
+                                ></div>
+                                <div
+                                  className={`chart-bar chart-bar-online ${
+                                    totalOnline > 0 ? '' : 'chart-bar-empty'
+                                  }`}
+                                  style={{
+                                    height: `${Math.max(onlineHeight, 10)}px`,
+                                    minHeight: '10px',
+                                  }}
+                                  title={`${monthData.monthName} - Online: ₹${formatCurrency(
+                                    totalOnline
+                                  )}`}
+                                ></div>
+                              </div>
+                            </div>
+                            <span className='text-xs text-light text-center font-medium chart-month-label'>
+                              {monthData.monthName}
+                            </span>
+                          </div>
+                        );
+                      });
+                    })()
+                  ) : (
+                    <div className='empty-state-text'>No payment mode data available</div>
+                  )}
+                </div>
+                <div className='chart-legend-container'>
+                  <div className='chart-legend-item'>
+                    <div className='chart-legend-color chart-legend-color-cash'></div>
+                    <span>Cash</span>
+                  </div>
+                  <div className='chart-legend-item'>
+                    <div className='chart-legend-color chart-legend-color-online'></div>
+                    <span>Online</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-          {/* RECENT ORDERS TABLE */}
+          {}
           {recentOrders.length > 0 && (
             <div className='dashboard-section'>
               <div className='recent-orders-header'>
-                <h3 className='dashboard-section-title' style={{ marginBottom: 0 }}>
-                  <i
-                    className='fa-solid fa-clock-rotate-left'
-                    style={{ fontSize: '1rem', opacity: 0.7 }}
-                  ></i>
+                <h3 className='dashboard-section-title m-0'>
+                  <i className='fa-solid fa-clock-rotate-left icon-opacity'></i>
                   Recent Orders (Last 10)
                 </h3>
                 <button
@@ -579,10 +782,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                     </thead>
                     <tbody>
                       {recentOrders.map((order, idx) => {
-                        const orderDate = parseOrderDate(
-                          // Never use createdAt (today's date) as fallback - only use actual order date
-                          order.date || order.order_date || null
-                        );
+                        const orderDate = parseOrderDate(order.date || order.order_date || null);
                         const dateStr = formatDate(orderDate);
                         const status = (order.status || '').toLowerCase();
                         const isPaid = status === 'paid';
@@ -623,7 +823,6 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
           )}
         </div>
       </div>
-
     </div>
   );
 };

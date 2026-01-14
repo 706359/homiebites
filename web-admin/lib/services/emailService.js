@@ -1,25 +1,14 @@
-/**
- * Email Service Utility - Gmail Only
- * FREE OTP delivery via Gmail SMTP using Nodemailer
- * Configured for Gmail App Passwords
- */
 
-/**
- * Send email using Gmail SMTP (Nodemailer)
- * @param {string} to - Recipient email address
- * @param {string} subject - Email subject
- * @param {string} html - HTML email body
- * @param {string} text - Plain text email body (optional)
- * @returns {Promise<{success: boolean, messageId?: string, error?: string}>}
- */
+
+
 export async function sendEmail(to, subject, html, text = null) {
-  // In development, just log if not enabled
+  
   if (process.env.NODE_ENV === 'development' && !process.env.ENABLE_EMAIL_IN_DEV) {
     console.log(`[Email Service] Development mode - Email sending is disabled.`);
     console.log(`[Email Service] To enable emails in development, set ENABLE_EMAIL_IN_DEV=true in your .env file`);
     console.log(`[Email Service] Email would be sent to ${to}:`);
     console.log(`[Email Service] Subject: ${subject}`);
-    // Return success but indicate it's dev mode
+    
     return { success: true, messageId: 'dev-mode', devMode: true };
   }
 
@@ -31,22 +20,20 @@ export async function sendEmail(to, subject, html, text = null) {
   }
 }
 
-/**
- * Send email via Gmail SMTP using Nodemailer
- */
+
 async function sendViaGmail(to, subject, html, text) {
   try {
-    // Dynamic import to avoid requiring nodemailer if not needed
+    
     const nodemailer = await import('nodemailer');
     
-    // Gmail SMTP configuration from environment
+    
     const smtpConfig = {
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for 587
+      secure: process.env.SMTP_SECURE === 'true', 
       auth: {
         user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD || process.env.SMTP_APP_PASSWORD, // Gmail App Password
+        pass: process.env.SMTP_PASSWORD || process.env.SMTP_APP_PASSWORD, 
       },
     };
 
@@ -61,7 +48,7 @@ async function sendViaGmail(to, subject, html, text) {
       to,
       subject,
       html,
-      text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML if no text provided
+      text: text || html.replace(/<[^>]*>/g, ''), 
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -76,13 +63,7 @@ async function sendViaGmail(to, subject, html, text) {
   }
 }
 
-/**
- * Send OTP email with formatted message
- * @param {string} email - Recipient email address
- * @param {string} otp - 6-digit OTP code
- * @param {string} serviceName - Service name (default: 'HomieBites')
- * @returns {Promise<{success: boolean, messageId?: string, error?: string}>}
- */
+
 export async function sendOTPEmail(email, otp, serviceName = 'HomieBites') {
   const subject = `${serviceName} - Password Recovery OTP`;
   const html = `
@@ -125,14 +106,7 @@ export async function sendOTPEmail(email, otp, serviceName = 'HomieBites') {
   return await sendEmail(email, subject, html);
 }
 
-/**
- * Send password reset email with reset link
- * Following ADMIN_PASSWORD.md specification
- * @param {string} to - Recipient email address
- * @param {string} resetUrl - Password reset URL with token
- * @param {string} userName - User's name
- * @returns {Promise<{success: boolean, messageId?: string, error?: string, devMode?: boolean}>}
- */
+
 export async function sendPasswordResetEmail(to, resetUrl, userName = 'User') {
   const subject = 'Password Reset Request - HomieBites Admin';
   const html = `<!DOCTYPE html>

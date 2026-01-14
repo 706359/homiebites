@@ -1,6 +1,4 @@
-/**
- * Rate limiting - Prevent brute force attacks
- */
+
 const rateLimitMap = new Map();
 
 export function rateLimit(maxRequests = 100, windowMs = 15 * 60 * 1000) {
@@ -30,9 +28,7 @@ export function rateLimit(maxRequests = 100, windowMs = 15 * 60 * 1000) {
   };
 }
 
-/**
- * Get client IP address
- */
+
 function getClientIP(request) {
   const forwarded = request.headers.get('x-forwarded-for');
   const realIP = request.headers.get('x-real-ip');
@@ -50,9 +46,7 @@ function getClientIP(request) {
   return 'unknown';
 }
 
-/**
- * Validate API key (for server-to-server communication)
- */
+
 export function validateAPIKey(request) {
   const apiKey = request.headers.get('x-api-key');
   const validAPIKey = process.env.API_KEY;
@@ -68,14 +62,12 @@ export function validateAPIKey(request) {
   return true;
 }
 
-/**
- * Check if request is from allowed origin
- */
+
 export function validateOrigin(request) {
   const origin = request.headers.get('origin') || request.headers.get('referer');
   const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
-    : ['http://localhost:5050', 'https://homiebites.com'];
+    : ['http:
 
   if (!origin) {
     return true;
@@ -91,9 +83,7 @@ export function validateOrigin(request) {
   return true;
 }
 
-/**
- * Sanitize input to prevent injection attacks
- */
+
 export function sanitizeInput(input) {
   if (typeof input === 'string') {
     return input
@@ -118,9 +108,7 @@ export function sanitizeInput(input) {
   return input;
 }
 
-/**
- * Validate request size to prevent DoS attacks
- */
+
 export function validateRequestSize(request, maxSize = 10 * 1024 * 1024) {
   const contentLength = request.headers.get('content-length');
 
@@ -131,9 +119,7 @@ export function validateRequestSize(request, maxSize = 10 * 1024 * 1024) {
   return true;
 }
 
-/**
- * Security headers middleware
- */
+
 export function securityHeaders() {
   return {
     'X-Content-Type-Options': 'nosniff',
@@ -145,9 +131,7 @@ export function securityHeaders() {
   };
 }
 
-/**
- * Comprehensive security check for API routes
- */
+
 export async function secureAPI(request, options = {}) {
   const {
     requireAuth = false,

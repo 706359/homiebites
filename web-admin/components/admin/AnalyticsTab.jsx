@@ -11,13 +11,15 @@ import {
 import './AnalyticsTab.css';
 
 const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
-  const [period, setPeriod] = useState('thisMonth'); // 'thisMonth', 'thisYear', 'custom'
+  const [period, setPeriod] = useState('thisMonth'); 
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
+  const [sortColumn, setSortColumn] = useState(null); 
+  const [sortDirection, setSortDirection] = useState('desc'); 
 
   const now = new Date();
 
-  // Get filtered orders based on period
+  
   const periodOrders = useMemo(() => {
     switch (period) {
       case 'thisMonth':
@@ -31,8 +33,8 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         to.setHours(23, 59, 59, 999);
         return orders.filter((o) => {
           try {
-            // Never use createdAt (today's date) as fallback - only use actual order date
             const orderDate = parseOrderDate(o.date || o.order_date || null);
+            if (!orderDate) return false;
             return orderDate >= from && orderDate <= to;
           } catch (e) {
             return false;
@@ -44,12 +46,12 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     }
   }, [orders, period, customFrom, customTo]);
 
-  // Key Metrics - Only Important Ones
+  
   const keyMetrics = useMemo(() => {
     const totalRevenue = getTotalRevenue(periodOrders);
     const totalOrders = periodOrders.length;
 
-    // Calculate growth rate for indicator
+    
     let previousPeriodOrders = [];
     if (period === 'thisMonth') {
       const lastMonth = new Date(now);
@@ -105,16 +107,16 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
       return sum + (isNaN(amount) ? 0 : amount);
     }, 0);
 
-    // Total customers (unique addresses)
+    
     const uniqueAddresses = new Set(
       periodOrders.map((o) => o.deliveryAddress || o.customerAddress || o.address).filter(Boolean)
     );
     const totalCustomers = uniqueAddresses.size;
 
-    // Average order value
+    
     const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
 
-    // Calculate profit statistics
+    
     const profitStats = getProfitStats(totalRevenue, 70, 30);
 
     return {
@@ -129,9 +131,9 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     };
   }, [periodOrders, orders, period, now]);
 
-  // Monthly Revenue Trend (Last 12 Months from most recent order date)
+  
   const monthlyRevenueTrend = useMemo(() => {
-    // Find the most recent order date to determine the end date for "last 12 months"
+    
     let mostRecentDate = now;
     const validOrders = orders.filter((o) => {
       const orderDate = parseOrderDate(o.date || o.order_date || null);
@@ -158,7 +160,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
 
       const monthOrders = orders.filter((o) => {
         try {
-          // Never use createdAt (today's date) as fallback - only use actual order date
+          
           const orderDate = parseOrderDate(o.date || o.order_date || null);
           if (!orderDate) return false;
           return orderDate >= date && orderDate < nextMonth;
@@ -183,7 +185,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     monthlyRevenueTrend[0]
   );
 
-  // Top 10 Delivery Areas
+  
   const topAreas = useMemo(() => {
     const areaStats = {};
     periodOrders.forEach((o) => {
@@ -217,19 +219,19 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
 
   const maxAreaRevenue = Math.max(...topAreas.map((a) => a.revenue), 1);
 
-  // Orders by Day of Week
+  
   const ordersByDay = useMemo(() => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const dayStats = { Sun: 0, Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0 };
     periodOrders.forEach((o) => {
       try {
-        // Never use createdAt (today's date) as fallback - only use actual order date
+        
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         if (!orderDate) return;
         const dayName = days[orderDate.getDay()];
         dayStats[dayName]++;
       } catch (e) {
-        // Ignore
+        
       }
     });
     return days.map((day) => ({ day, count: dayStats[day] }));
@@ -237,7 +239,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
 
   const maxDayOrders = Math.max(...ordersByDay.map((d) => d.count), 1);
 
-  // Order Frequency Distribution
+  
   const frequencyDistribution = useMemo(() => {
     const customerData = {};
     periodOrders.forEach((o) => {
@@ -264,11 +266,11 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         customerData[addr].spent += isNaN(amount) ? 0 : amount;
       }
     });
-    // Customer segmentation based on spending:
-    // New: < ₹2,000
-    // Regular: ₹2,000 - ₹7,999
-    // VIP: ≥ ₹8,000
-    // Super VIP: ≥ ₹15,000
+    
+    
+    
+    
+    
     const oneTime = Object.values(customerData).filter((c) => c.orders === 1).length;
     const regular = Object.values(customerData).filter(
       (c) => c.spent >= 2000 && c.spent < 8000
@@ -280,7 +282,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     return { oneTime, regular, vip, superVip };
   }, [periodOrders]);
 
-  // Payment Mode Trends
+  
   const paymentTrends = useMemo(() => {
     const trends = {};
     periodOrders.forEach((o) => {
@@ -312,17 +314,17 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
 
   const totalPaymentAmount = paymentTrends.reduce((sum, t) => sum + t.amount, 0);
 
-  // Top 7 Days All Time by Revenue
+  
   const top20Days = useMemo(() => {
     const dayStats = {};
 
-    // Group orders by date and sum amounts
+    
     orders.forEach((o) => {
       try {
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         if (!orderDate) return;
 
-        // Create a date key (YYYY-MM-DD format)
+        
         const dateKey = orderDate.toISOString().split('T')[0];
 
         if (!dayStats[dateKey]) {
@@ -331,7 +333,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
             dateObj: orderDate,
             revenue: 0,
             orders: 0,
-            orderIds: [], // Store order IDs for this day
+            orderIds: [], 
           };
         }
 
@@ -350,16 +352,16 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
 
         dayStats[dateKey].revenue += isNaN(amount) ? 0 : amount;
         dayStats[dateKey].orders += 1;
-        // Store order ID if available
+        
         if (o.orderId || o._id) {
           dayStats[dateKey].orderIds.push(o.orderId || o._id);
         }
       } catch (e) {
-        // Ignore invalid dates
+        
       }
     });
 
-    // Convert to array, sort by revenue descending, and take top 7
+    
     return Object.values(dayStats)
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 7)
@@ -380,7 +382,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
 
   const maxDayRevenue = Math.max(...top20Days.map((d) => d.revenue), 1);
 
-  // Helper function to get order amount
+  
   const getOrderAmount = (order) => {
     let amount = null;
 
@@ -399,7 +401,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     return isNaN(amount) ? 0 : amount;
   };
 
-  // Delivery Address Yearly & Monthly Analytics
+  
   const deliveryAddressAnalytics = useMemo(() => {
     const addressData = {};
     const currentYear = now.getFullYear();
@@ -408,7 +410,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     const year3 = currentYear;
     const years = [year1, year2, year3];
 
-    // Get all unique years from orders to include them dynamically
+    
     const allYears = new Set();
     orders.forEach((o) => {
       try {
@@ -417,11 +419,11 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           allYears.add(orderDate.getFullYear());
         }
       } catch (e) {
-        // Ignore
+        
       }
     });
 
-    // Process orders and calculate totals
+    
     let processedCount = 0;
     orders.forEach((o) => {
       try {
@@ -434,7 +436,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         processedCount++;
 
         const year = orderDate.getFullYear();
-        const month = orderDate.getMonth(); // 0-11
+        const month = orderDate.getMonth(); 
 
         if (!addressData[addr]) {
           addressData[addr] = {
@@ -445,7 +447,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           };
         }
 
-        // Initialize year if not exists
+        
         if (!addressData[addr].yearly[year]) {
           addressData[addr].yearly[year] = 0;
         }
@@ -455,37 +457,37 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
 
         let amount = getOrderAmount(o);
 
-        // Add to yearly total
+        
         addressData[addr].yearly[year] += amount;
 
-        // Add to monthly total
+        
         addressData[addr].monthly[year][month] += amount;
 
-        // Add to grand total
+        
         addressData[addr].grandTotal += amount;
       } catch (e) {
-        // Ignore invalid orders
+        
         console.warn('[Analytics] Error processing order:', e, o);
       }
     });
     
     console.log('[Analytics] Processed orders:', processedCount, 'out of', orders.length);
 
-    // Calculate trends and gaps
-    // Gap calculation: Compare each month of current year (year3) with December of previous year (year2)
-    const currentMonth = now.getMonth(); // 0-11 (current month index)
-    const dec2025 = 11; // December is month index 11
+    
+    
+    const currentMonth = now.getMonth(); 
+    const dec2025 = 11; 
     
     const result = Object.values(addressData).map((data) => {
       const y1 = data.yearly[year1] || 0;
       const y2 = data.yearly[year2] || 0;
       const y3 = data.yearly[year3] || 0;
 
-      // Calculate trends (year-over-year growth)
+      
       const trendY1toY2 = y1 > 0 ? ((y2 - y1) / y1) * 100 : (y2 > 0 ? Infinity : 0);
       const trendY2toY3 = y2 > 0 ? ((y3 - y2) / y2) * 100 : (y3 > 0 ? Infinity : 0);
 
-      // Calculate monthly gaps: Compare each month of current year (year3) with Dec of previous year (year2)
+      
       const monthlyGaps = [];
       const dec2025Value = (data.monthly[year2] && data.monthly[year2][dec2025]) ? data.monthly[year2][dec2025] : 0;
       
@@ -502,7 +504,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         }
       }
 
-      // Overall gap: Sum of all monthly gaps up to current month
+      
       const totalGap = monthlyGaps.reduce((sum, mg) => sum + mg.gap, 0);
 
       return {
@@ -517,18 +519,41 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           [`${year2}-${year3}`]: y3 - y2,
         },
         monthlyGaps: monthlyGaps,
-        totalGap: totalGap, // Total gap comparing current year months vs Dec 2025
+        totalGap: totalGap, 
       };
     });
 
-    // Sort by 2026 (year3) descending, then by grand total if 2026 values are equal
+    
     const sortedData = result.sort((a, b) => {
-      const year3A = a.yearly[year3] || 0;
-      const year3B = b.yearly[year3] || 0;
-      if (year3B !== year3A) {
-        return year3B - year3A; // Sort by 2026 high to low
+      let valueA, valueB;
+      
+      if (sortColumn === 'year1') {
+        valueA = a.yearly[year1] || 0;
+        valueB = b.yearly[year1] || 0;
+      } else if (sortColumn === 'year2') {
+        valueA = a.yearly[year2] || 0;
+        valueB = b.yearly[year2] || 0;
+      } else if (sortColumn === 'year3') {
+        valueA = a.yearly[year3] || 0;
+        valueB = b.yearly[year3] || 0;
+      } else if (sortColumn === 'grandTotal') {
+        valueA = a.grandTotal || 0;
+        valueB = b.grandTotal || 0;
+      } else {
+        
+        const year3A = a.yearly[year3] || 0;
+        const year3B = b.yearly[year3] || 0;
+        if (year3B !== year3A) {
+          return year3B - year3A; 
+        }
+        return b.grandTotal - a.grandTotal; 
       }
-      return b.grandTotal - a.grandTotal; // If 2026 values are equal, sort by grand total
+      
+      if (sortDirection === 'asc') {
+        return valueA - valueB;
+      } else {
+        return valueB - valueA;
+      }
     });
     console.log('[Analytics] Delivery Address Analytics:', {
       totalAddresses: sortedData.length,
@@ -536,9 +561,9 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
       years: { year1, year2, year3 },
     });
     return { data: sortedData, year1, year2, year3 };
-  }, [orders, now]);
+  }, [orders, now, sortColumn, sortDirection]);
 
-  // Helper function to escape CSV values
+  
   const escapeCSV = (value) => {
     if (value === null || value === undefined) return '';
     const str = String(value);
@@ -548,13 +573,13 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     return str;
   };
 
-  // Export reports
+  
   const handleExportReport = (type) => {
     let csvContent = '';
     const reportDate = new Date().toISOString().split('T')[0];
 
     if (type === 'monthly') {
-      // Monthly Report - Last 12 months
+      
       csvContent = 'Month,Year,Revenue (₹),Orders,Average Order Value (₹)\n';
       monthlyRevenueTrend.forEach((m) => {
         const avgOrderValue = m.orders > 0 ? (m.revenue / m.orders).toFixed(2) : '0.00';
@@ -563,24 +588,24 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         )},${escapeCSV(avgOrderValue)}\n`;
       });
     } else if (type === 'quarterly') {
-      // Quarterly Report - Last 4 quarters
+      
       csvContent = 'Quarter,Year,Revenue (₹),Orders,Average Order Value (₹)\n';
       const quarters = [];
 
-      // Get all unique years from orders
+      
       const years = new Set();
       orders.forEach((o) => {
         try {
           const orderDate = parseOrderDate(o.date || o.order_date || null);
           if (orderDate) years.add(orderDate.getFullYear());
         } catch (e) {
-          // Ignore
+          
         }
       });
 
       const sortedYears = Array.from(years).sort((a, b) => b - a);
 
-      // Process last 4 quarters from most recent year
+      
       const mostRecentYear = sortedYears.length > 0 ? sortedYears[0] : now.getFullYear();
 
       for (let i = 3; i >= 0; i--) {
@@ -617,7 +642,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         )},${escapeCSV(q.orders)},${escapeCSV(q.avgOrderValue)}\n`;
       });
     } else if (type === 'annual') {
-      // Annual Report - All years
+      
       csvContent =
         'Year,Revenue (₹),Orders,Average Order Value (₹),Paid Orders,Unpaid Orders,Paid Amount (₹),Unpaid Amount (₹)\n';
       const years = {};
@@ -653,7 +678,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
             years[year].unpaidAmount += amount;
           }
         } catch (e) {
-          // Ignore
+          
         }
       });
 
@@ -669,7 +694,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         });
     }
 
-    // Add BOM for Excel compatibility
+    
     const BOM = '\uFEFF';
     const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -681,9 +706,6 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
   if (loading) {
     return (
       <div className='admin-content'>
-        <div className='dashboard-header'>
-          <h2>Analytics</h2>
-        </div>
         <PremiumLoader message='Loading analytics...' size='large' />
       </div>
     );
@@ -693,50 +715,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     <div className='admin-content'>
       <div className='dashboard-with-sidebar'>
         <div className='dashboard-main-content'>
-          {/* TIME PERIOD SELECTOR */}
-          <div className='dashboard-card dashboard-card-spaced'>
-            <div className='filter-container'>
-              <div className='filter-field-group-standard min-width-160'>
-                <label className='filter-label-standard'>
-                  <i className='fa-solid fa-calendar-alt filter-label-icon'></i>
-                  Time Period
-                </label>
-                <select
-                  className='input-field filter-input-standard'
-                  value={period}
-                  onChange={(e) => setPeriod(e.target.value)}
-                >
-                  <option value='thisMonth'>This Month</option>
-                  <option value='thisYear'>This Year</option>
-                  <option value='custom'>Custom Range</option>
-                </select>
-              </div>
-              {period === 'custom' && (
-                <>
-                  <div className='filter-field-group-standard min-width-160'>
-                    <label className='filter-label-standard'>From Date</label>
-                    <input
-                      type='date'
-                      className='input-field filter-input-standard'
-                      value={customFrom}
-                      onChange={(e) => setCustomFrom(e.target.value)}
-                    />
-                  </div>
-                  <div className='filter-field-group-standard min-width-160'>
-                    <label className='filter-label-standard'>To Date</label>
-                    <input
-                      type='date'
-                      className='input-field filter-input-standard'
-                      value={customTo}
-                      onChange={(e) => setCustomTo(e.target.value)}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* KEY METRICS GRID - Only Important Metrics */}
+          {}
           <div className='admin-stats'>
             <div className='stat-card'>
               <i className='fa-solid fa-rupee-sign'></i>
@@ -755,23 +734,16 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               </div>
             </div>
             <div className='stat-card'>
-              <i className='fa-solid fa-shopping-cart' style={{ color: 'var(--admin-accent)' }}></i>
+              <i className='fa-solid fa-shopping-cart icon-color-accent'></i>
               <div>
                 <h3>{keyMetrics.totalOrders}</h3>
                 <p>Total Orders</p>
-                <p className='stat-card-subtitle'>
-                  {period === 'thisMonth'
-                    ? 'Current month'
-                    : period === 'thisYear'
-                    ? 'This year'
-                    : 'Selected period'}
-                </p>
               </div>
             </div>
             <div className='stat-card'>
               <i
                 className='fa-solid fa-exclamation-triangle'
-                style={{ color: 'var(--admin-warning)' }}
+                className='icon-color-warning'
               ></i>
               <div>
                 <h3>₹{formatCurrency(keyMetrics.pendingAmount)}</h3>
@@ -783,7 +755,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               </div>
             </div>
             <div className='stat-card'>
-              <i className='fa-solid fa-users' style={{ color: 'var(--admin-accent)' }}></i>
+              <i className='fa-solid fa-users icon-color-accent'></i>
               <div>
                 <h3>{keyMetrics.totalCustomers}</h3>
                 <p>Total Customers</p>
@@ -791,7 +763,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               </div>
             </div>
             <div className='stat-card'>
-              <i className='fa-solid fa-chart-line' style={{ color: 'var(--admin-success)' }}></i>
+              <i className='fa-solid fa-chart-line icon-color-success'></i>
               <div>
                 <h3>₹{formatCurrency(keyMetrics.avgOrderValue)}</h3>
                 <p>Avg Order Value</p>
@@ -819,101 +791,58 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
             </div>
           </div>
 
-          {/* CHARTS SECTION */}
+          {}
           <div className='dashboard-grid-layout'>
-            {/* Monthly Revenue Trend */}
+            {}
             <div className='dashboard-grid-item full-width'>
               <div className='dashboard-card'>
                 <h3 className='dashboard-section-title'>
                   <i
                     className='fa-solid fa-chart-line'
-                    style={{ fontSize: '1rem', opacity: 0.7 }}
+                    className='icon-opacity'
                   ></i>
                   Monthly Revenue Trend (Last 12M)
                 </h3>
-                <div
-                  style={{
-                    padding: '16px',
-                    borderTop: '2px solid var(--admin-border)',
-                    marginTop: '0.5rem',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-end',
-                      gap: '1rem',
-                      minHeight: '200px',
-                      marginBottom: '16px',
-                    }}
-                  >
+                <div className='chart-container-padding'>
+                  <div className='chart-container mb-16'>
                     {monthlyRevenueTrend.map((month, idx) => (
                       <div
                         key={idx}
-                        style={{
-                          flex: 1,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                        }}
+                        className='bar-chart-item'
                       >
                         <div
+                          className='chart-bar chart-bar-small'
                           style={{
-                            width: '100%',
-                            maxWidth: '60px',
                             height: `${(month.revenue / maxMonthlyRevenue) * 180}px`,
-                            minHeight: '10px',
-                            background: 'var(--admin-accent, #449031)',
-                            borderRadius: '8px 8px 0 0',
-                            display: 'flex',
-                            alignItems: 'flex-end',
-                            justifyContent: 'center',
-                            paddingBottom: '0.5rem',
-                            cursor: 'pointer',
-                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                           }}
                           title={`${month.month}: ₹${formatCurrency(month.revenue)} (${
                             month.orders
                           } orders)`}
                         >
-                          <span style={{ color: 'white', fontSize: '0.7rem', fontWeight: '600' }}>
+                          <span className='chart-bar-label-small'>
                             ₹{formatNumberIndian(month.revenue)}
                           </span>
                         </div>
-                        <span
-                          style={{
-                            fontSize: '0.75rem',
-                            color: 'var(--admin-text-light)',
-                            textAlign: 'center',
-                            fontWeight: '500',
-                          }}
-                        >
+                        <span className='chart-bar-label'>
                           {month.month}
                         </span>
                       </div>
                     ))}
                   </div>
-                  <div
-                    style={{
-                      textAlign: 'center',
-                      color: 'var(--admin-text-secondary)',
-                      fontSize: '0.9rem',
-                    }}
-                  >
+                  <div className='chart-summary'>
                     Peak: ₹{formatCurrency(peakMonth.revenue)} ({peakMonth.month})
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Top 10 Delivery Areas */}
+            {}
             <div className='dashboard-grid-item full-width'>
               <div className='dashboard-card'>
                 <h3 className='dashboard-section-title'>
                   <i
                     className='fa-solid fa-map-marker-alt'
-                    style={{ fontSize: '1rem', opacity: 0.7 }}
+                    className='icon-opacity'
                   ></i>
                   Top 10 Delivery Areas
                 </h3>
@@ -939,66 +868,29 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                       <p style={{ marginTop: '16px' }}>No delivery areas found</p>
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className='flex-col gap-12'>
                       {topAreas.map((area, idx) => (
                         <div
                           key={idx}
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '8px',
-                            padding: '12px',
-                            background: idx % 2 === 0 ? 'transparent' : 'var(--admin-glass-border)',
-                            borderRadius: '8px',
-                          }}
+                          className={`area-item ${idx % 2 === 0 ? 'area-item-even' : 'area-item-odd'}`}
                         >
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                            }}
-                          >
-                            <span
-                              style={{
-                                fontWeight: '600',
-                                color: 'var(--admin-text)',
-                                fontSize: '0.95rem',
-                              }}
-                            >
+                          <div className='area-header'>
+                            <span className='area-name'>
                               {idx + 1}. {area.address}
                             </span>
-                            <span
-                              style={{
-                                fontWeight: '700',
-                                color: 'var(--admin-accent)',
-                                fontSize: '0.95rem',
-                              }}
-                            >
+                            <span className='area-revenue'>
                               ₹{formatCurrency(area.revenue)} ({area.orders}{' '}
                               {area.orders === 1 ? 'order' : 'orders'})
                             </span>
                           </div>
-                          <div
-                            style={{
-                              width: '100%',
-                              height: '20px',
-                              background: 'var(--admin-glass-border)',
-                              borderRadius: '10px',
-                              overflow: 'hidden',
-                              position: 'relative',
-                            }}
-                          >
+                          <div className='progress-bar-container' style={{ height: '20px', borderRadius: '10px' }}>
                             <div
+                              className='progress-bar-fill'
                               style={{
                                 width: `${
                                   maxAreaRevenue > 0 ? (area.revenue / maxAreaRevenue) * 100 : 0
                                 }%`,
-                                height: '100%',
-                                background: 'var(--admin-accent, #449031)',
                                 borderRadius: '10px',
-                                transition: 'width 0.5s ease',
-                                boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.1)',
                               }}
                             />
                           </div>
@@ -1010,26 +902,20 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               </div>
             </div>
 
-            {/* Payment Mode Trends */}
+            {}
             <div className='dashboard-grid-item full-width'>
               <div className='dashboard-card'>
                 <h3 className='dashboard-section-title'>
                   <i
                     className='fa-solid fa-credit-card'
-                    style={{ fontSize: '1rem', opacity: 0.7 }}
+                    className='icon-opacity'
                   ></i>
                   Payment Mode Trends
                 </h3>
-                <div
-                  style={{
-                    padding: '16px',
-                    borderTop: '2px solid var(--admin-border)',
-                    marginTop: '0.5rem',
-                  }}
-                >
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div className='chart-container-padding'>
+                  <div className='flex-col gap-12'>
                     {paymentTrends.map((trend, idx) => {
-                      // Calculate percentage: (amount / total) * 100, with accuracy based on total records / 100
+                      
                       const percentage =
                         totalPaymentAmount > 0
                           ? Math.min(
@@ -1040,34 +926,18 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                       return (
                         <div
                           key={idx}
-                          style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}
+                          className='flex-col gap-6'
                         >
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                            }}
-                          >
-                            <span style={{ fontWeight: '600', color: 'var(--admin-text)' }}>
+                          <div className='flex justify-between items-center'>
+                            <span className='font-semibold text-primary'>
                               {trend.mode}
                             </span>
-                            <span
-                              style={{
-                                fontWeight: '700',
-                                color: 'var(--admin-accent)',
-                                fontSize: '1rem',
-                              }}
-                            >
+                            <span className='font-bold text-accent text-lg'>
                               ₹{formatCurrency(trend.amount)} ({percentage.toFixed(2)}%)
                             </span>
                           </div>
-                          <div
+                          <div className='progress-bar-container progress-bar-container-alt'
                             style={{
-                              width: '100%',
-                              height: '28px',
-                              background: 'var(--admin-glass-border)',
-                              borderRadius: '6px',
                               overflow: 'hidden',
                             }}
                           >
@@ -1086,7 +956,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                             >
                               {percentage > 15 && (
                                 <span
-                                  style={{ color: 'white', fontSize: '0.75rem', fontWeight: '600' }}
+                                  className='progress-bar-label'
                                 >
                                   {percentage.toFixed(0)}%
                                 </span>
@@ -1101,18 +971,18 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               </div>
             </div>
 
-            {/* Delivery Address Yearly & Monthly Analytics */}
+            {}
             <div className='dashboard-grid-item full-width'>
               <div className='dashboard-card'>
                 <h3 className='dashboard-section-title'>
-                  <i className='fa-solid fa-map-marker-alt' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
+                  <i className='fa-solid fa-map-marker-alt icon-opacity'></i>
                   Delivery Address Analytics (Yearly & Monthly)
                 </h3>
                 <div className='analytics-chart-container'>
                   {!deliveryAddressAnalytics || !deliveryAddressAnalytics.data || deliveryAddressAnalytics.data.length === 0 ? (
                     <div className='analytics-empty-state'>
                       <i className='fa-solid fa-inbox analytics-empty-icon'></i>
-                      <p style={{ marginTop: '16px' }}>No delivery address data available</p>
+                      <p className='mt-16'>No delivery address data available</p>
                     </div>
                   ) : (
                     <div className='analytics-delivery-table-wrapper'>
@@ -1122,9 +992,63 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                             <th className='analytics-th-sticky'>
                               Delivery Address
                             </th>
-                            <th className='analytics-th-right'>{deliveryAddressAnalytics?.year1 || 'Year 1'}</th>
-                            <th className='analytics-th-right'>{deliveryAddressAnalytics?.year2 || 'Year 2'}</th>
-                            <th className='analytics-th-right analytics-th-year'>{deliveryAddressAnalytics?.year3 || 'Year 3'}</th>
+                            <th 
+                              className='analytics-th-right analytics-th-sortable' 
+                              onClick={() => {
+                                if (sortColumn === 'year1') {
+                                  setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                                } else {
+                                  setSortColumn('year1');
+                                  setSortDirection('desc');
+                                }
+                              }}
+                              style={{ cursor: 'pointer', userSelect: 'none' }}
+                            >
+                              {deliveryAddressAnalytics?.year1 || 'Year 1'}
+                              {sortColumn === 'year1' && (
+                                <span style={{ marginLeft: '4px' }}>
+                                  {sortDirection === 'asc' ? '↑' : '↓'}
+                                </span>
+                              )}
+                            </th>
+                            <th 
+                              className='analytics-th-right analytics-th-sortable' 
+                              onClick={() => {
+                                if (sortColumn === 'year2') {
+                                  setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                                } else {
+                                  setSortColumn('year2');
+                                  setSortDirection('desc');
+                                }
+                              }}
+                              style={{ cursor: 'pointer', userSelect: 'none' }}
+                            >
+                              {deliveryAddressAnalytics?.year2 || 'Year 2'}
+                              {sortColumn === 'year2' && (
+                                <span style={{ marginLeft: '4px' }}>
+                                  {sortDirection === 'asc' ? '↑' : '↓'}
+                                </span>
+                              )}
+                            </th>
+                            <th 
+                              className='analytics-th-right analytics-th-year analytics-th-sortable' 
+                              onClick={() => {
+                                if (sortColumn === 'year3') {
+                                  setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                                } else {
+                                  setSortColumn('year3');
+                                  setSortDirection('desc');
+                                }
+                              }}
+                              style={{ cursor: 'pointer', userSelect: 'none' }}
+                            >
+                              {deliveryAddressAnalytics?.year3 || 'Year 3'}
+                              {sortColumn === 'year3' && (
+                                <span style={{ marginLeft: '4px' }}>
+                                  {sortDirection === 'asc' ? '↑' : '↓'}
+                                </span>
+                              )}
+                            </th>
                             <th className='analytics-th-right analytics-th-grand-total'>
                               Grand Total
                             </th>
@@ -1143,13 +1067,13 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                             const trendY1toY2 = data.trends[trendKey1];
                             const trendY2toY3 = data.trends[trendKey2];
                             
-                            // Gap: Total gap comparing current year months vs Dec 2025
+                            
                             const totalGap = data.totalGap || 0;
                             const dec2025Value = data.monthlyGaps && data.monthlyGaps.length > 0 
                               ? data.monthlyGaps[0].dec2025Value 
                               : 0;
 
-                            // Determine overall trend indicator (based on gap vs Dec 2025)
+                            
                             let trendIcon = '—';
                             let trendColor = 'var(--admin-text-secondary)';
                             if (totalGap > 0) {
@@ -1186,7 +1110,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                                 </td>
                                 <td className='analytics-td-monthly'>
                                   <div className='analytics-monthly-breakdown'>
-                                    {/* Year 1 Monthly */}
+                                    {}
                                     {data.monthly[year1] && (
                                       <div className='analytics-monthly-year-row'>
                                         <span className='analytics-monthly-year-label'>{year1}:</span>
@@ -1201,7 +1125,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                                         ))}
                                       </div>
                                     )}
-                                    {/* Year 2 Monthly */}
+                                    {}
                                     {data.monthly[year2] && (
                                       <div className='analytics-monthly-year-row'>
                                         <span className='analytics-monthly-year-label'>{year2}:</span>
@@ -1216,13 +1140,13 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                                         ))}
                                       </div>
                                     )}
-                                    {/* Year 3 Monthly with Gap indicators */}
+                                    {}
                                     {data.monthly[year3] && (
                                       <div className='analytics-monthly-year3-container'>
                                         <div className='analytics-monthly-year-row'>
                                           <span className='analytics-monthly-year-label'>{year3}:</span>
                                           {data.monthly[year3].map((monthVal, mIdx) => {
-                                            // Get gap for this month vs Dec 2025
+                                            
                                             const monthGap = data.monthlyGaps && data.monthlyGaps[mIdx] 
                                               ? data.monthlyGaps[mIdx].gap 
                                               : (monthVal - dec2025Value);
@@ -1244,24 +1168,6 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                                             );
                                           })}
                                         </div>
-                                        {/* Gap indicators row */}
-                                        {data.monthlyGaps && data.monthlyGaps.length > 0 && (
-                                          <div className='analytics-monthly-gap-row'>
-                                            <span className='analytics-monthly-gap-label'>Gap:</span>
-                                            {data.monthlyGaps.map((mg, mIdx) => {
-                                              const isPositive = mg.gap >= 0;
-                                              return (
-                                                <span
-                                                  key={`gap-${mIdx}`}
-                                                  className={`analytics-monthly-gap-value ${isPositive ? 'analytics-monthly-gap-value-positive' : 'analytics-monthly-gap-value-negative'}`}
-                                                  title={`${monthNames[mg.month]} gap vs Dec ${year2}: ${isPositive ? '+' : ''}₹${formatCurrency(Math.abs(mg.gap))}`}
-                                                >
-                                                  {mg.gap !== 0 ? (isPositive ? '+' : '') + formatCurrency(Math.abs(mg.gap)) : '—'}
-                                                </span>
-                                              );
-                                            })}
-                                          </div>
-                                        )}
                                       </div>
                                     )}
                                   </div>
@@ -1277,11 +1183,11 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               </div>
             </div>
 
-            {/* Top 7 Days All Time */}
+            {}
             <div className='dashboard-grid-item full-width'>
               <div className='dashboard-card'>
                 <h3 className='dashboard-section-title'>
-                  <i className='fa-solid fa-trophy' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
+                  <i className='fa-solid fa-trophy icon-opacity'></i>
                   Top 7 Days All Time (By Revenue)
                 </h3>
                 <div
@@ -1353,22 +1259,11 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                                 position: 'relative',
                                 transition: 'all 0.3s ease',
                               }}
+                              className="analytics-day-card"
                               onClick={() => {
                                 if (onViewDayDetails) {
                                   onViewDayDetails(day.date);
                                 }
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-4px)';
-                                e.currentTarget.style.boxShadow =
-                                  '0 6px 16px rgba(68, 144, 49, 0.4)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow =
-                                  idx < 3
-                                    ? '0 4px 12px rgba(68, 144, 49, 0.3)'
-                                    : '0 2px 8px rgba(0, 0, 0, 0.1)';
                               }}
                               title={`Click to view orders for ${
                                 day.formattedDate
@@ -1378,64 +1273,26 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                             >
                               {idx < 3 && (
                                 <span
+                                  className='rank-badge'
                                   style={{
                                     position: 'absolute',
                                     top: '-8px',
                                     right: '-8px',
                                     background: 'var(--admin-warning, #f59e0b)',
-                                    color: 'white',
-                                    borderRadius: '50%',
-                                    width: '24px',
-                                    height: '24px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: '0.7rem',
-                                    fontWeight: '700',
-                                    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)',
                                   }}
                                 >
                                   {idx + 1}
                                 </span>
                               )}
-                              <span
-                                style={{
-                                  color: 'white',
-                                  fontSize: '0.7rem',
-                                  fontWeight: '600',
-                                  textAlign: 'center',
-                                  lineHeight: '1.2',
-                                }}
-                              >
+                              <span className='chart-bar-value'>
                                 ₹{formatNumberIndian(day.revenue)}
                               </span>
                             </div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '2px',
-                              }}
-                            >
-                              <span
-                                style={{
-                                  fontSize: '0.7rem',
-                                  color: 'var(--admin-text-light)',
-                                  textAlign: 'center',
-                                  fontWeight: '500',
-                                  whiteSpace: 'nowrap',
-                                }}
-                              >
+                            <div className='chart-bar-date'>
+                              <span className='chart-bar-date-label'>
                                 {day.shortDate}
                               </span>
-                              <span
-                                style={{
-                                  fontSize: '0.65rem',
-                                  color: 'var(--admin-text-secondary)',
-                                  textAlign: 'center',
-                                }}
-                              >
+                              <span className='chart-bar-date-sublabel'>
                                 {day.orders} {day.orders === 1 ? 'order' : 'orders'}
                               </span>
                             </div>

@@ -9,21 +9,21 @@ const ImportantNotificationsBanner = ({
   onViewPendingAmounts,
   dismissedNotifications = [],
 }) => {
-  // Calculate important notifications
+  
   const importantNotifications = useMemo(() => {
     const notifications = [];
     const now = new Date();
     const fortyFiveDaysAgo = new Date(now);
     fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
-    fortyFiveDaysAgo.setHours(0, 0, 0, 0); // Set to midnight for consistent date comparison
+    fortyFiveDaysAgo.setHours(0, 0, 0, 0); 
 
-    // 1. Overdue payments (pending > 45 days)
+    
     const overdueOrders = orders.filter((order) => {
       if (!isPendingStatus(order.status)) return false;
-      // Never use createdAt (today's date) as fallback - only use actual order date
+      
       const orderDate = parseOrderDate(order.date || order.order_date || null);
       if (!orderDate) return false;
-      // Normalize orderDate to midnight for comparison
+      
       const orderDateMidnight = new Date(orderDate);
       orderDateMidnight.setHours(0, 0, 0, 0);
       return orderDateMidnight < fortyFiveDaysAgo;
@@ -55,14 +55,14 @@ const ImportantNotificationsBanner = ({
       });
     }
 
-    // 2. Urgent payments (pending 3-7 days)
+    
     const threeDaysAgo = new Date(now);
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
     const sevenDaysAgo = new Date(now);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const urgentOrders = orders.filter((order) => {
       if (!isPendingStatus(order.status)) return false;
-      // Never use createdAt (today's date) as fallback - only use actual order date
+      
       const orderDate = parseOrderDate(order.date || order.order_date || null);
       if (!orderDate) return false;
       return orderDate >= threeDaysAgo && orderDate < sevenDaysAgo;
@@ -139,7 +139,7 @@ const ImportantNotificationsBanner = ({
       });
     }
 
-    // Filter out dismissed notifications
+    
     return notifications
       .filter((notif) => !dismissedNotifications.includes(notif.id))
       .sort((a, b) => a.priority - b.priority);
@@ -163,7 +163,7 @@ const ImportantNotificationsBanner = ({
           iconColor: 'var(--admin-warning, #f59e0b)',
           textColor: 'var(--admin-warning, #f59e0b)',
         };
-      default: // info
+      default: 
         return {
           background: 'rgba(68, 144, 49, 0.08)',
           borderColor: 'var(--admin-accent, #449031)',

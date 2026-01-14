@@ -27,34 +27,38 @@ const OrderModal = ({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState(null);
   const [formErrors, setFormErrors] = useState({});
-  const [touchedFields, setTouchedFields] = useState({}); // Track which fields have been interacted with
+  const [touchedFields, setTouchedFields] = useState({}); 
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [autoPopulatedAddress, setAutoPopulatedAddress] = useState(null);
   const [isClickingSuggestion, setIsClickingSuggestion] = useState(false);
   const dropdownRef = useRef(null);
-  const selectedAddressRef = useRef(null); // Store selected address to prevent clearing
+  const selectedAddressRef = useRef(null); 
   const addressDebounceTimerRef = useRef(null);
+  const dateInputRef = useRef(null);
+  const datePickerRef = useRef(null);
+  const persistedDateRef = useRef(null); 
+  const lastOrderIdRef = useRef(null); 
 
-  // Enable keyboard avoidance for mobile
+  
   useAutoKeyboardAvoidance({
     containerSelector: '.modal-container',
     inputSelector: 'input, textarea, select',
   });
 
-  // Generate OrderID preview (format: HB-Feb'24-02-000079)
-  // Format: HB-[MonthAbbr]'[YY]-[MM]-[Sequence]
-  // Where MM is month number (01-12), not day
-  // Shows next number from the very last record
+  
+  
+  
+  
   const generateOrderIdPreview = () => {
     if (editingOrder) return editingOrder.orderId || 'N/A';
     if (!newOrder.date) return 'HB-XXX-XX-XXXXXX';
 
     try {
-      // Parse date from DD/MM/YYYY or YYYY-MM-DD format
+      
       let date;
       if (typeof newOrder.date === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(newOrder.date)) {
-        // DD/MM/YYYY format
+        
         const [day, month, year] = newOrder.date.split('/').map(Number);
         date = new Date(year, month - 1, day);
       } else {
@@ -67,18 +71,18 @@ const OrderModal = ({
 
       const monthAbbr = date.toLocaleString('en-US', { month: 'short' });
       const year = date.getFullYear().toString().slice(-2);
-      const monthNum = String(date.getMonth() + 1).padStart(2, '0'); // Month number (01-12)
+      const monthNum = String(date.getMonth() + 1).padStart(2, '0'); 
 
-      // Find the maximum sequence number from ALL orders (not just alphabetically last)
-      // Use a fresh copy of orders to ensure we have the latest data
+      
+      
       const currentOrders = orders || [];
       if (currentOrders.length > 0) {
         let maxSequence = 0;
 
-        // Extract sequence numbers from all orders and find the maximum
+        
         currentOrders.forEach((order) => {
           if (order.orderId) {
-            // Extract sequence number from order ID (format: HB-Feb'24-02-000079)
+            
             const match = order.orderId.match(/HB-\w+'?\d{2}-\d{2}-(\d+)$/);
             if (match && match[1]) {
               const seq = parseInt(match[1], 10);
@@ -101,7 +105,7 @@ const OrderModal = ({
     }
   };
 
-  // Check for duplicate address on same day
+  
   useEffect(() => {
     if (!show || editingOrder || !newOrder.date || !newOrder.deliveryAddress) {
       setDuplicateWarning(null);
@@ -139,7 +143,7 @@ const OrderModal = ({
     }
   }, [show, editingOrder, newOrder.date, newOrder.deliveryAddress, orders]);
 
-  // Cleanup debounce timer on unmount
+  
   useEffect(() => {
     return () => {
       if (addressDebounceTimerRef.current) {
@@ -148,23 +152,23 @@ const OrderModal = ({
     };
   }, []);
 
-  // Smart defaults based on time and context
+  
   useEffect(() => {
     if (!show || editingOrder) {
-      // Reset auto-populated address when modal closes or editing
+      
       setAutoPopulatedAddress(null);
-      // Clear debounce timer
+      
       if (addressDebounceTimerRef.current) {
         clearTimeout(addressDebounceTimerRef.current);
       }
       return;
     }
 
-    // Don't set any defaults - form should start empty for new orders
-    // User will fill all fields manually
+    
+    
   }, [show, editingOrder]);
 
-  // Validate form fields
+  
   const validateForm = useCallback(
     (orderToValidate = null) => {
       const errors = {};
@@ -175,7 +179,7 @@ const OrderModal = ({
       } else {
         let dateToValidate = order.date;
         if (typeof order.date === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(order.date)) {
-          // Convert DD/MM/YYYY to YYYY-MM-DD for validation
+          
           dateToValidate = parseDateFromInput(order.date);
           if (!dateToValidate) {
             errors.date = 'Invalid date format. Please use DD/MM/YYYY format (e.g., 01/08/2026)';
@@ -187,7 +191,7 @@ const OrderModal = ({
           if (!date || isNaN(date.getTime())) {
             errors.date = 'Invalid date format. Please use DD/MM/YYYY format (e.g., 01/08/2026)';
           } else {
-            // Check if date is in the future
+            
             const today = new Date();
             today.setHours(23, 59, 59, 999);
             if (date > today) {
@@ -231,7 +235,7 @@ const OrderModal = ({
         errors.status = 'Status must be either Paid or Unpaid';
       }
 
-      // Payment mode is optional - can be None, Cash, Online, or empty
+      
       const normalizedPaymentMode = order.paymentMode ? String(order.paymentMode).trim() : '';
       if (normalizedPaymentMode && !['None', 'Cash', 'Online'].includes(normalizedPaymentMode)) {
         errors.paymentMode = 'Payment mode must be None, Cash, or Online';
@@ -243,7 +247,7 @@ const OrderModal = ({
     [editingOrder, newOrder]
   );
 
-  // Real-time validation - only for fields that have been touched
+  
   useEffect(() => {
     if (!show) {
       setFormErrors({});
@@ -256,7 +260,7 @@ const OrderModal = ({
       return;
     }
 
-    // Debounce validation to avoid too frequent updates
+    
     const timer = setTimeout(() => {
       const errors = {};
       const orderToValidate = order;
@@ -325,7 +329,7 @@ const OrderModal = ({
     newOrder?.status,
   ]);
 
-  // Track form changes
+  
   useEffect(() => {
     if (show && !editingOrder) {
       setHasUnsavedChanges(
@@ -342,6 +346,7 @@ const OrderModal = ({
         setTouchedFields({});
         setDuplicateWarning(null);
         setAutoPopulatedAddress(null);
+        persistedDateRef.current = null; 
         onClose();
       }
     } else {
@@ -349,64 +354,92 @@ const OrderModal = ({
       setFormErrors({});
       setDuplicateWarning(null);
       setAutoPopulatedAddress(null);
+      persistedDateRef.current = null; 
       onClose();
     }
   };
 
   const handleSave = async () => {
-    // Prevent multiple simultaneous saves
+    
     if (isSaving) {
       return;
     }
 
-    // Normalize status and paymentMode before validation (trim whitespace)
-    // Use current state values to ensure we have all fields
+    
+    
+    
     const orderToValidate = editingOrder || newOrder;
-    const normalizedOrder = {
-      ...orderToValidate,
-      // Ensure we have all required fields from current state
-      date: orderToValidate.date || newOrder.date,
-      deliveryAddress: orderToValidate.deliveryAddress || newOrder.deliveryAddress,
-      quantity: orderToValidate.quantity || newOrder.quantity,
-      unitPrice: orderToValidate.unitPrice || newOrder.unitPrice,
-      mode: orderToValidate.mode || newOrder.mode,
-      status: orderToValidate.status || newOrder.status,
-      paymentMode: orderToValidate.paymentMode || newOrder.paymentMode,
-      orderId: orderToValidate.orderId || newOrder.orderId,
-    };
+    
+    
+    const normalizedOrder = editingOrder ? { ...editingOrder } : { ...newOrder };
+    
+    
+    if (normalizedOrder.quantity === null || normalizedOrder.quantity === undefined) {
+      normalizedOrder.quantity = 1;
+    }
+    if (normalizedOrder.unitPrice === null || normalizedOrder.unitPrice === undefined) {
+      normalizedOrder.unitPrice = 0;
+    }
+    if (!normalizedOrder.mode) {
+      normalizedOrder.mode = 'Lunch';
+    }
+    if (!normalizedOrder.status) {
+      normalizedOrder.status = 'Unpaid';
+    }
+    if (normalizedOrder.date === null || normalizedOrder.date === undefined) {
+      normalizedOrder.date = '';
+    }
+    if (normalizedOrder.deliveryAddress === null || normalizedOrder.deliveryAddress === undefined) {
+      normalizedOrder.deliveryAddress = '';
+    }
+    if (normalizedOrder.paymentMode === null || normalizedOrder.paymentMode === undefined) {
+      normalizedOrder.paymentMode = '';
+    }
+    if (normalizedOrder.orderId === null || normalizedOrder.orderId === undefined) {
+      normalizedOrder.orderId = '';
+    }
 
-    // Normalize status to ensure consistency
+    
     if (normalizedOrder.status) {
       normalizedOrder.status = String(normalizedOrder.status).trim();
-      // Also update paymentStatus for consistency with database schema
+      
       if (normalizedOrder.status === 'Paid' || normalizedOrder.status.toLowerCase() === 'paid') {
         normalizedOrder.paymentStatus = 'Paid';
       } else if (
         normalizedOrder.status === 'Unpaid' ||
         normalizedOrder.status.toLowerCase() === 'unpaid'
       ) {
-        normalizedOrder.paymentStatus = 'Pending'; // Database default for unpaid
+        normalizedOrder.paymentStatus = 'Pending'; 
       } else {
         normalizedOrder.paymentStatus = normalizedOrder.paymentStatus || 'Pending';
       }
     }
 
-    // Normalize paymentMode (trim whitespace, allow empty string for 'None')
+    
     if (normalizedOrder.paymentMode !== undefined && normalizedOrder.paymentMode !== null) {
       if (normalizedOrder.paymentMode === '' || normalizedOrder.paymentMode === 'None') {
-        normalizedOrder.paymentMode = ''; // Empty string is allowed
+        normalizedOrder.paymentMode = ''; 
       } else {
         normalizedOrder.paymentMode = String(normalizedOrder.paymentMode).trim();
       }
     }
 
-    // Update state with normalized values
+    
     if (
       normalizedOrder.status !== orderToValidate.status ||
       normalizedOrder.paymentMode !== orderToValidate.paymentMode
     ) {
       if (editingOrder) {
-        onEditingOrderChange(normalizedOrder);
+        
+        if (normalizedOrder.status !== orderToValidate.status) {
+          onEditingOrderChange('status', normalizedOrder.status);
+        }
+        if (normalizedOrder.paymentMode !== orderToValidate.paymentMode) {
+          onEditingOrderChange('paymentMode', normalizedOrder.paymentMode);
+        }
+        if (normalizedOrder.paymentStatus !== orderToValidate.paymentStatus) {
+          onEditingOrderChange('paymentStatus', normalizedOrder.paymentStatus);
+        }
       } else {
         Object.keys(normalizedOrder).forEach((key) => {
           if (normalizedOrder[key] !== orderToValidate[key]) {
@@ -416,41 +449,52 @@ const OrderModal = ({
       }
     }
 
-    // Convert date from DD/MM/YYYY to YYYY-MM-DD before validation and saving
+    
+    
+    let finalDate = normalizedOrder.date;
     if (
-      !editingOrder &&
       normalizedOrder.date &&
       typeof normalizedOrder.date === 'string' &&
       /^\d{2}\/\d{2}\/\d{4}$/.test(normalizedOrder.date)
     ) {
       const backendDate = parseDateFromInput(normalizedOrder.date);
       if (backendDate) {
+        finalDate = backendDate;
         normalizedOrder.date = backendDate;
-        onNewOrderChange('date', backendDate);
+        if (editingOrder) {
+          onEditingOrderChange('date', backendDate);
+        } else {
+          onNewOrderChange('date', backendDate);
+        }
       }
+    } else if (normalizedOrder.date && typeof normalizedOrder.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(normalizedOrder.date)) {
+      
+      finalDate = normalizedOrder.date;
     }
+    
+    normalizedOrder.date = finalDate;
 
-    // Auto-set order ID for new records if not already set
-    // Generate fresh ID at save time to prevent duplicates from rapid clicks
+    
+    
     if (!editingOrder) {
-      // Use current orders list to check for duplicates
+      
       const currentOrders = orders || [];
       let generatedId = generateOrderIdPreview();
 
       if (generatedId && generatedId !== 'HB-XXX-XX-XXXXXX') {
-        // Check if this ID already exists in orders (prevent duplicate)
+        
         let idExists = currentOrders.some((o) => o.orderId === generatedId);
 
-        // If ID exists, increment sequence until we find a unique one
+        
         if (idExists) {
           const match = generatedId.match(/^(HB-\w+'?\d{2}-\d{2}-)(\d+)$/);
           if (match) {
             const prefix = match[1];
             let currentSeq = parseInt(match[2], 10);
             let attempts = 0;
-            const maxAttempts = 1000; // Prevent infinite loop
+            const maxAttempts = 1000; 
 
-            // Keep incrementing until we find a unique ID
+            
             while (idExists && attempts < maxAttempts) {
               currentSeq++;
               generatedId = `${prefix}${String(currentSeq).padStart(6, '0')}`;
@@ -464,7 +508,7 @@ const OrderModal = ({
           }
         }
 
-        // Set the unique order ID
+        
         normalizedOrder.orderId = generatedId;
         onNewOrderChange('orderId', generatedId);
       } else {
@@ -482,7 +526,7 @@ const OrderModal = ({
       paymentMode: true,
     });
 
-    // Validate with normalized order
+    
     if (!validateForm(normalizedOrder)) {
       return;
     }
@@ -495,7 +539,7 @@ const OrderModal = ({
       return;
     }
 
-    // Double-check: Ensure we're not already saving
+    
     if (isSaving) {
       return;
     }
@@ -504,12 +548,15 @@ const OrderModal = ({
     setSaveSuccess(false);
 
     try {
-      // Pass the normalized order data to onSave
+      
       if (editingOrder) {
         const cleanOrderData = {};
 
-        // Define allowed fields that can be updated
+        
+        
+        
         const allowedFields = {
+          orderId: normalizedOrder.orderId,
           date: normalizedOrder.date,
           deliveryAddress: normalizedOrder.deliveryAddress,
           quantity: normalizedOrder.quantity,
@@ -517,14 +564,18 @@ const OrderModal = ({
           mode: normalizedOrder.mode,
           status: normalizedOrder.status,
           paymentStatus: normalizedOrder.paymentStatus,
-          paymentMode: normalizedOrder.paymentMode, // Can be empty string
+          paymentMode: normalizedOrder.paymentMode,
           notes: normalizedOrder.notes,
           customerName: normalizedOrder.customerName,
           addressId: normalizedOrder.addressId,
         };
 
+        
         Object.keys(allowedFields).forEach((key) => {
           const value = allowedFields[key];
+          
+          
+          
           if (value !== undefined) {
             if (
               key === 'paymentMode' ||
@@ -532,35 +583,47 @@ const OrderModal = ({
               key === 'customerName' ||
               key === 'addressId'
             ) {
-              // These fields can be empty strings
-              cleanOrderData[key] = value === null ? '' : value;
+              
+              cleanOrderData[key] = value === null ? '' : String(value);
+            } else if (key === 'orderId') {
+              
+              cleanOrderData[key] = value || '';
             } else {
+              
               cleanOrderData[key] = value;
             }
+          } else if (key === 'paymentMode' || key === 'notes' || key === 'customerName' || key === 'addressId') {
+            
+            cleanOrderData[key] = '';
           }
         });
 
-        // Include billingMonth/billingYear if they exist (from date calculation)
-        if (normalizedOrder.billingMonth !== undefined) {
+        
+        const editOrderDate = parseOrderDate(normalizedOrder.date);
+        if (editOrderDate) {
+          cleanOrderData.billingMonth = extractBillingMonth(editOrderDate);
+          cleanOrderData.billingYear = extractBillingYear(editOrderDate);
+        } else if (normalizedOrder.billingMonth !== undefined) {
           cleanOrderData.billingMonth = normalizedOrder.billingMonth;
         }
-        if (normalizedOrder.billingYear !== undefined) {
+        if (normalizedOrder.billingYear !== undefined && !editOrderDate) {
           cleanOrderData.billingYear = normalizedOrder.billingYear;
         }
 
         await onSave(editingOrder.orderId || editingOrder._id, cleanOrderData);
-        // Close modal after editing
-        setTimeout(() => {
-          setIsSaving(false);
-          onClose();
-        }, 500);
+        
+        setSaveSuccess(true);
+        setIsSaving(false);
+        
+        
+        onClose();
       } else {
-        // For new orders, ensure order ID is set before saving
+        
         if (!normalizedOrder.orderId) {
           throw new Error('Order ID is required. Please try again.');
         }
 
-        // Final check: Verify order ID doesn't exist (race condition protection)
+        
         const currentOrders = orders || [];
         const finalIdCheck = currentOrders.some((o) => o.orderId === normalizedOrder.orderId);
         if (finalIdCheck) {
@@ -569,11 +632,11 @@ const OrderModal = ({
 
         await onSave(normalizedOrder);
 
-        // Show success message briefly
+        
         setSaveSuccess(true);
 
-        // Form reset is handled by AdminDashboard after data refresh
-        // Just clear local state and show success
+        
+        
         setTimeout(() => {
           setSaveSuccess(false);
           setIsSaving(false);
@@ -588,19 +651,19 @@ const OrderModal = ({
       setIsSaving(false);
       setSaveSuccess(false);
 
-      // Show error to user
+      
       if (error.message) {
         alert(error.message);
       }
 
-      // Keep button disabled briefly after error to prevent rapid retries
+      
       setTimeout(() => {
-        // Button will be re-enabled after timeout
+        
       }, 2000);
     }
   };
 
-  // Keyboard shortcuts
+  
   useEffect(() => {
     if (!show) return;
 
@@ -622,53 +685,60 @@ const OrderModal = ({
 
   if (!show) return null;
 
-  // Enhanced address suggestions with frequency and recent orders
-  // Show top 5 addresses: top 5 when empty, or top 5 matching when typing
+  
+  
   const getAddressSuggestions = (query) => {
-    const queryLower = query.trim().toLowerCase();
+    const queryLower = (query || '').trim().toLowerCase();
 
-    // Calculate address frequency for all addresses
+    
     const addressFrequency = {};
     orders.forEach((order) => {
       const addr = order.deliveryAddress || order.customerAddress || order.address;
-      if (addr) {
+      if (addr && addr.trim()) {
         addressFrequency[addr] = (addressFrequency[addr] || 0) + 1;
       }
     });
 
+    
     if (!queryLower) {
-      // Show top 5 most frequently used addresses when empty
       return Object.entries(addressFrequency)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
         .map(([addr]) => addr);
     }
 
-    // When typing, filter and rank by relevance, show top 5 matching addresses
+    
     const allAddresses = Object.keys(addressFrequency);
     const filtered = allAddresses
-      .filter((addr) => addr.toLowerCase().includes(queryLower))
+      .filter((addr) => {
+        const addrLower = addr.toLowerCase().trim();
+        return addrLower.includes(queryLower);
+      })
       .map((addr) => {
-        // Calculate relevance score
-        const exactMatch = addr.toLowerCase() === queryLower ? 100 : 0;
-        const startsWith = addr.toLowerCase().startsWith(queryLower) ? 50 : 0;
+        const addrLower = addr.toLowerCase().trim();
+        
+        const exactMatch = addrLower === queryLower ? 1000 : 0;
+        const startsWith = addrLower.startsWith(queryLower) ? 500 : 0;
         const frequency = addressFrequency[addr] || 0;
+        
+        const lengthBonus = Math.max(0, 100 - addr.length);
 
         return {
           address: addr,
-          score: exactMatch + startsWith + frequency,
+          score: exactMatch + startsWith + frequency + lengthBonus,
         };
       })
       .sort((a, b) => b.score - a.score)
-      .slice(0, 5)
       .map((item) => item.address);
 
+    
+    
     return filtered;
   };
 
   const handleAddressChange = (value) => {
-    // Don't process if we're in the middle of clicking a suggestion
-    // UNLESS the value is being cleared (empty string) - then allow it
+    
+    
     if (isClickingSuggestion && value.trim().length > 0) {
       return;
     }
@@ -676,26 +746,27 @@ const OrderModal = ({
     setTouchedFields((prev) => ({ ...prev, deliveryAddress: true }));
 
     if (editingOrder) {
-      onEditingOrderChange({ ...editingOrder, deliveryAddress: value });
+      onEditingOrderChange('deliveryAddress', value);
     } else {
       onNewOrderChange('deliveryAddress', value);
-      // Show enhanced suggestions as user types (or top 5 when empty)
+      
+      
       const suggestions = getAddressSuggestions(value);
       setAddressSuggestions(suggestions);
-      // Show suggestions if there are any (including when empty for top 5)
+      
       setShowAddressSuggestions(suggestions.length > 0);
 
-      // Debounce auto-population to avoid triggering on every keystroke
-      // Clear previous timer
+      
+      
       if (addressDebounceTimerRef.current) {
         clearTimeout(addressDebounceTimerRef.current);
       }
 
-      // Set new timer to check after user stops typing (800ms)
+      
       addressDebounceTimerRef.current = setTimeout(() => {
         const normalizedValue = value.trim().toLowerCase();
 
-        // Reset auto-populated address if user clears the address
+        
         if (normalizedValue.length < 3) {
           if (autoPopulatedAddress) {
             setAutoPopulatedAddress(null);
@@ -704,10 +775,10 @@ const OrderModal = ({
         }
 
         if (normalizedValue !== autoPopulatedAddress) {
-          // Check if this address exists in orders
+          
           const lastOrder = getLastOrderForAddress(orders, normalizedValue);
           if (lastOrder) {
-            // Verify exact match (case-insensitive)
+            
             const lastOrderAddress = String(
               lastOrder.deliveryAddress || lastOrder.customerAddress || lastOrder.address || ''
             )
@@ -715,23 +786,24 @@ const OrderModal = ({
               .toLowerCase();
 
             if (lastOrderAddress === normalizedValue) {
-              // Mark this address as auto-populated (for tracking only)
+              
               setAutoPopulatedAddress(normalizedValue);
-              // Don't auto-populate any other fields - only address
+              
             }
           } else {
-            // No previous order found - clear auto-populated state
+            
             if (autoPopulatedAddress) {
               setAutoPopulatedAddress(null);
             }
           }
         }
-      }, 800); // Wait 800ms after user stops typing
+      }, 800); 
     }
   };
 
   const handleAddressFocus = () => {
     if (!editingOrder) {
+      
       const query = String(newOrder.deliveryAddress || '').trim();
       const suggestions = getAddressSuggestions(query);
       setAddressSuggestions(suggestions);
@@ -742,20 +814,20 @@ const OrderModal = ({
   const handleAddressBlur = () => {
     setTouchedFields((prev) => ({ ...prev, deliveryAddress: true }));
 
-    // Simple timeout - if clicking on suggestion, flag will prevent hiding
-    // Use longer timeout to ensure click handler has finished
+    
+    
     setTimeout(() => {
       if (!isClickingSuggestion) {
         setShowAddressSuggestions(false);
 
-        // Auto-fill last order details when leaving address field
+        
         if (!editingOrder && newOrder.deliveryAddress) {
           const normalizedValue = newOrder.deliveryAddress.trim().toLowerCase();
 
           if (normalizedValue.length >= 3 && normalizedValue !== autoPopulatedAddress) {
             const lastOrder = getLastOrderForAddress(orders, normalizedValue);
             if (lastOrder) {
-              // Verify exact match (case-insensitive)
+              
               const lastOrderAddress = String(
                 lastOrder.deliveryAddress || lastOrder.customerAddress || lastOrder.address || ''
               )
@@ -764,7 +836,7 @@ const OrderModal = ({
 
               if (lastOrderAddress === normalizedValue) {
                 setAutoPopulatedAddress(normalizedValue);
-                // Don't auto-populate any other fields - only address
+                
               }
             }
           }
@@ -777,37 +849,37 @@ const OrderModal = ({
     const normalizedAddr = addr.trim().toLowerCase();
     const trimmedAddr = addr.trim();
 
-    // Store in ref to prevent clearing
+    
     selectedAddressRef.current = trimmedAddr;
 
-    // Set flag FIRST to prevent blur handler from interfering
+    
     setIsClickingSuggestion(true);
     onNewOrderChange('deliveryAddress', trimmedAddr);
 
     setAutoPopulatedAddress(normalizedAddr);
 
-    // Focus the input FIRST to prevent blur issues
+    
     const input = document.getElementById('delivery-address-input');
     if (input) {
-      // Focus immediately to prevent blur
+      
       input.focus();
     }
 
-    // Delay hiding suggestions to ensure state update has propagated
-    // This prevents the address from being cleared when dropdown disappears
+    
+    
     setTimeout(() => {
       setShowAddressSuggestions(false);
 
-      // Safety check: Ensure address is still set after hiding
+      
       if (input && selectedAddressRef.current) {
         const currentValue = editingOrder
           ? editingOrder.deliveryAddress || ''
           : newOrder.deliveryAddress || '';
 
-        // If address was cleared, restore it
+        
         if (!currentValue || currentValue !== selectedAddressRef.current) {
           onNewOrderChange('deliveryAddress', selectedAddressRef.current);
-          // Also update input directly as backup
+          
           if (input) {
             input.value = selectedAddressRef.current;
           }
@@ -815,16 +887,16 @@ const OrderModal = ({
       }
     }, 150);
 
-    // Keep flag set longer to prevent any blur interference
+    
     setTimeout(() => {
       setIsClickingSuggestion(false);
     }, 500);
 
-    // Don't auto-populate any fields - only set the address
-    // User will fill other fields manually
+    
+    
   };
 
-  // Get address order history for suggestions
+  
   const getAddressOrderInfo = (addr) => {
     const addressOrders = orders.filter(
       (o) => (o.deliveryAddress || o.customerAddress || o.address) === addr
@@ -835,18 +907,18 @@ const OrderModal = ({
       lastPrice: lastOrder
         ? lastOrder.unitPrice || lastOrder.totalAmount / (lastOrder.quantity || 1)
         : null,
-      // Never use createdAt (today's date) as fallback - only use actual order date
+      
       lastDate: lastOrder ? lastOrder.date || lastOrder.order_date || null : null,
     };
   };
 
-  // Helper function to convert YYYY-MM-DD to DD/MM/YYYY
+  
   const formatDateForInput = (dateValue) => {
     if (!dateValue) return '';
     try {
       const date = parseOrderDate(dateValue);
       if (!date) {
-        // Try parsing as DD/MM/YYYY string
+        
         if (typeof dateValue === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(dateValue)) {
           return dateValue;
         }
@@ -861,7 +933,7 @@ const OrderModal = ({
     }
   };
 
-  // Helper function to convert DD/MM/YYYY to YYYY-MM-DD for backend
+  
   const parseDateFromInput = (dateStr) => {
     if (!dateStr) return '';
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
@@ -870,17 +942,79 @@ const OrderModal = ({
         return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       }
     }
-    // If already in YYYY-MM-DD format, return as is
+    
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
       return dateStr;
     }
     return '';
   };
 
-  // Get current date value for input (DD/MM/YYYY format)
+  
+  
+  useEffect(() => {
+    if (show) {
+      const currentOrderId = editingOrder ? (editingOrder._id || editingOrder.orderId) : null;
+      
+      
+      if (currentOrderId && lastOrderIdRef.current !== currentOrderId) {
+        lastOrderIdRef.current = currentOrderId;
+        persistedDateRef.current = null; 
+      }
+      
+      
+      
+      if (persistedDateRef.current === null || persistedDateRef.current === undefined || persistedDateRef.current === '') {
+        if (editingOrder) {
+          if (editingOrder.date) {
+            
+            if (typeof editingOrder.date === 'string' && editingOrder.date.includes('/')) {
+              persistedDateRef.current = editingOrder.date;
+            } else {
+              
+              persistedDateRef.current = formatDateForInput(editingOrder.date);
+            }
+          } else if (editingOrder.order_date) {
+            persistedDateRef.current = formatDateForInput(editingOrder.order_date);
+          } else {
+            persistedDateRef.current = formatDateForInput(new Date());
+          }
+        } else {
+          if (newOrder.date) {
+            
+            if (typeof newOrder.date === 'string' && newOrder.date.includes('/')) {
+              persistedDateRef.current = newOrder.date;
+            } else {
+              
+              persistedDateRef.current = formatDateForInput(newOrder.date);
+            }
+          } else {
+            persistedDateRef.current = formatDateForInput(new Date());
+          }
+        }
+      }
+    } else {
+      
+      persistedDateRef.current = null;
+      lastOrderIdRef.current = null;
+    }
+  }, [show, editingOrder?._id, editingOrder?.orderId]); 
+
+  
+  
   const getCurrentDateValue = () => {
+    
+    if (persistedDateRef.current) {
+      return persistedDateRef.current;
+    }
+
+    
     if (editingOrder) {
       if (editingOrder.date) {
+        
+        if (typeof editingOrder.date === 'string' && editingOrder.date.includes('/')) {
+          return editingOrder.date;
+        }
+        
         return formatDateForInput(editingOrder.date);
       }
       if (editingOrder.order_date) {
@@ -889,23 +1023,23 @@ const OrderModal = ({
       return formatDateForInput(new Date());
     } else {
       if (newOrder.date) {
-        // If it's already in DD/MM/YYYY format, return as is
-        if (/^\d{2}\/\d{2}\/\d{4}$/.test(newOrder.date)) {
+        
+        if (typeof newOrder.date === 'string' && newOrder.date.includes('/')) {
           return newOrder.date;
         }
-        // Otherwise format it
+        
         return formatDateForInput(newOrder.date);
       }
       return formatDateForInput(new Date());
     }
   };
 
-  // Calculate derived fields for display
+  
   const getOrderDateForCalculation = () => {
     if (editingOrder) {
       return parseOrderDate(editingOrder.date || editingOrder.order_date);
     } else {
-      // Convert DD/MM/YYYY to Date object for calculation
+      
       const dateStr = newOrder.date;
       if (dateStr && /^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
         const backendDate = parseDateFromInput(dateStr);
@@ -926,311 +1060,338 @@ const OrderModal = ({
       <div className='modal-container' onClick={(e) => e.stopPropagation()}>
         <div className='modal-header'>
           <h2>{editingOrder ? 'Edit Order' : 'Add New Order'}</h2>
-          <button className='modal-close' onClick={onClose}>
+          <button className='btn btn-ghost btn-icon modal-close' onClick={onClose}>
             <i className='fa-solid fa-times'></i>
           </button>
         </div>
         <div className='modal-body'>
-          {/* Order ID moved to top for quick reference */}
-          <div className='form-group'>
-            <label>
-              <i className='fa-solid fa-hashtag mr-2'></i>
-              Order ID
-            </label>
-            {editingOrder ? (
-              <input
-                type='text'
-                className={`input-field ${formErrors.orderId ? 'error' : ''}`}
-                value={editingOrder.orderId || ''}
-                onChange={(e) =>
-                  onEditingOrderChange({
-                    ...editingOrder,
-                    orderId: e.target.value,
-                  })
-                }
-                placeholder="Enter Order ID (e.g., HB-Feb'24-05-000001)"
-              />
-            ) : (
-              <input
-                type='text'
-                className='input-field'
-                value={generateOrderIdPreview()}
-                readOnly
-                style={{
-                  backgroundColor: 'var(--admin-bg-secondary, #f8fafc)',
-                  cursor: 'not-allowed',
-                  fontFamily: 'monospace',
-                }}
-                title='Auto-generated on save'
-              />
-            )}
-            <span className='helper-text'>
-              {editingOrder ? '(Editable)' : '(Auto-generated - shown for preview only)'}
-            </span>
-            {formErrors.orderId && <span className='error-text'>{formErrors.orderId}</span>}
-          </div>
-          <div className='form-group'>
-            <label className={editingOrder?.dateNeedsReview ? 'required error' : 'required'}>
-              <i className='fa-solid fa-calendar mr-2'></i>
-              Date
-              {editingOrder?.dateNeedsReview && (
-                <span className='error-text ml-2'>⚠️ Invalid Date Format - Please Correct</span>
-              )}
-            </label>
-            {editingOrder?.dateNeedsReview && editingOrder?.originalDateString && (
-              <div className='badge badge-warning mb-2 p-3'>
-                <strong>Original Invalid Date:</strong> {editingOrder.originalDateString}
-                <br />
-                <span className='helper-text mt-1 block'>
-                  Please select the correct date below. This will clear the error flag.
-                </span>
-              </div>
-            )}
-            <input
-              type='text'
-              className={`input-field ${editingOrder?.dateNeedsReview ? 'error' : ''}`}
-              value={getCurrentDateValue()}
-              onChange={(e) => {
-                const inputValue = e.target.value;
-                // Allow user to type DD/MM/YYYY format
-                // Remove any non-digit characters except /
-                const cleaned = inputValue.replace(/[^\d/]/g, '');
-
-                // Auto-format as user types: DD/MM/YYYY
-                let formatted = cleaned;
-                if (cleaned.length > 2 && !cleaned.includes('/')) {
-                  formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2);
-                }
-                if (formatted.length > 5 && formatted.split('/').length === 2) {
-                  formatted = formatted.slice(0, 5) + '/' + formatted.slice(5, 9);
-                }
-
-                // Limit to DD/MM/YYYY format (10 characters)
-                if (formatted.length <= 10) {
-                  if (editingOrder) {
-                    // Convert to YYYY-MM-DD for backend storage
-                    const backendDate = parseDateFromInput(formatted);
-                    onEditingOrderChange({
-                      ...editingOrder,
-                      date: backendDate || formatted, // Store formatted if parsing fails (will validate later)
-                      dateNeedsReview: false,
-                      originalDateString: undefined,
-                    });
-                  } else {
-                    // Store in DD/MM/YYYY format for display, convert to YYYY-MM-DD on save
-                    onNewOrderChange('date', formatted);
+          {}
+          <div className='form-row'>
+            <div className='form-group'>
+              <label>
+                <i className='fa-solid fa-hashtag mr-2'></i>
+                Order ID
+              </label>
+              {editingOrder ? (
+                <input
+                  type='text'
+                  className={`input-field ${formErrors.orderId ? 'error' : ''}`}
+                  value={editingOrder.orderId || ''}
+                  onChange={(e) =>
+                    onEditingOrderChange('orderId', e.target.value)
                   }
-                }
-              }}
-              onBlur={(e) => {
-                // Validate and format on blur
-                const inputValue = e.target.value.trim();
-                if (inputValue) {
-                  const backendDate = parseDateFromInput(inputValue);
-                  if (backendDate) {
-                    // Valid date, convert back to DD/MM/YYYY for display
-                    const formatted = formatDateForInput(backendDate);
+                  placeholder="Enter Order ID (e.g., HB-Feb'24-05-000001)"
+                />
+              ) : (
+                <input
+                  type='text'
+                  className='input-field order-id-preview'
+                  value={generateOrderIdPreview()}
+                  readOnly
+                  title='Auto-generated on save'
+                />
+              )}
+              <span className='helper-text'>
+                {editingOrder ? '(Editable)' : '(Auto-generated)'}
+              </span>
+              {formErrors.orderId && <span className='error-text'>{formErrors.orderId}</span>}
+            </div>
+            <div className='form-group'>
+              <label className={editingOrder?.dateNeedsReview ? 'required error' : 'required'}>
+                <i className='fa-solid fa-calendar mr-2'></i>
+                Date
+                {editingOrder?.dateNeedsReview && (
+                  <span className='error-text ml-2'>⚠️ Invalid Date Format - Please Correct</span>
+                )}
+              </label>
+              {editingOrder?.dateNeedsReview && editingOrder?.originalDateString && (
+                <div className='badge badge-warning mb-2 p-3'>
+                  <strong>Original Invalid Date:</strong> {editingOrder.originalDateString}
+                  <br />
+                  <span className='helper-text mt-1 block'>
+                    Please select the correct date below. This will clear the error flag.
+                  </span>
+                </div>
+              )}
+              <div className='date-input-wrapper'>
+                <input
+                  ref={dateInputRef}
+                  type='text'
+                  className={`input-field ${editingOrder?.dateNeedsReview ? 'error' : ''}`}
+                  value={getCurrentDateValue()}
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    
+                    
+                    if (inputValue === '') {
+                      
+                      persistedDateRef.current = '';
+                      
+                      if (editingOrder) {
+                        onEditingOrderChange('date', '');
+                        onEditingOrderChange('dateNeedsReview', false);
+                        onEditingOrderChange('originalDateString', undefined);
+                      } else {
+                        onNewOrderChange('date', '');
+                      }
+                      return;
+                    }
+
+                    
+                    
+                    const cleaned = inputValue.replace(/[^\d/]/g, '');
+
+                    
+                    let formatted = cleaned;
+                    
+                    
+                    if (cleaned.length > 2 && !cleaned.includes('/')) {
+                      formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2);
+                    }
+                    if (formatted.length > 5 && formatted.split('/').length === 2) {
+                      formatted = formatted.slice(0, 5) + '/' + formatted.slice(5, 9);
+                    }
+
+                    
+                    if (formatted.length <= 10) {
+                      
+                      persistedDateRef.current = formatted;
+                      
+                      if (editingOrder) {
+                        
+                        
+                        const backendDate = parseDateFromInput(formatted);
+                        onEditingOrderChange('date', backendDate || formatted); 
+                        onEditingOrderChange('dateNeedsReview', false);
+                        onEditingOrderChange('originalDateString', undefined);
+                      } else {
+                        
+                        onNewOrderChange('date', formatted);
+                      }
+                    }
+                  }}
+                  onBlur={(e) => {
+                    
+                    const inputValue = e.target.value.trim();
+                    if (inputValue) {
+                      const backendDate = parseDateFromInput(inputValue);
+                      if (backendDate) {
+                        
+                        const formatted = formatDateForInput(backendDate);
+                        
+                        persistedDateRef.current = formatted;
+                        
+                        if (editingOrder) {
+                          onEditingOrderChange('date', backendDate);
+                          onEditingOrderChange('dateNeedsReview', false);
+                        } else {
+                          onNewOrderChange('date', formatted);
+                        }
+                      } else {
+                        
+                        persistedDateRef.current = inputValue;
+                        
+                        if (editingOrder) {
+                          onEditingOrderChange('dateNeedsReview', true);
+                          onEditingOrderChange('originalDateString', inputValue);
+                        }
+                      }
+                    } else {
+                      
+                      persistedDateRef.current = '';
+                    }
+                  }}
+                  placeholder='DD/MM/YYYY'
+                  required
+                  maxLength={10}
+                  pattern='\\d{2}/\\d{2}/\\d{4}'
+                />
+                <input
+                  ref={datePickerRef}
+                  type='date'
+                  className='date-picker-input'
+                  value={(() => {
+                    const currentValue = getCurrentDateValue();
+                    if (currentValue && /^\d{2}\/\d{2}\/\d{4}$/.test(currentValue)) {
+                      const backendDate = parseDateFromInput(currentValue);
+                      return backendDate || '';
+                    }
+                    return '';
+                  })()}
+                  max={new Date().toISOString().split('T')[0]}
+                onChange={(e) => {
+                  const selectedDate = e.target.value;
+                  if (selectedDate) {
+                    
+                    const formatted = formatDateForInput(selectedDate);
+                    
+                    persistedDateRef.current = formatted;
+                    
                     if (editingOrder) {
-                      onEditingOrderChange({
-                        ...editingOrder,
-                        date: backendDate,
-                        dateNeedsReview: false,
-                      });
+                      onEditingOrderChange('date', selectedDate);
+                      onEditingOrderChange('dateNeedsReview', false);
+                      onEditingOrderChange('originalDateString', undefined);
                     } else {
                       onNewOrderChange('date', formatted);
                     }
-                  } else {
-                    // Invalid date format
-                    if (editingOrder) {
-                      onEditingOrderChange({
-                        ...editingOrder,
-                        dateNeedsReview: true,
-                        originalDateString: inputValue,
-                      });
-                    }
                   }
-                }
-              }}
-              placeholder='DD/MM/YYYY'
-              required
-              maxLength={10}
-              pattern='\\d{2}/\\d{2}/\\d{4}'
-            />
-            <span className='helper-text'>Format: DD/MM/YYYY (e.g., 01/08/2026)</span>
-            {formErrors.date && <span className='error-text'>{formErrors.date}</span>}
+                }}
+                />
+                <button
+                  type='button'
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (datePickerRef.current?.showPicker) {
+                      datePickerRef.current.showPicker();
+                    } else {
+                      datePickerRef.current?.click();
+                    }
+                  }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onFocus={(e) => {
+                    e.stopPropagation();
+                  }}
+                  className="order-modal-calendar-btn"
+                  title='Choose date from calendar'
+                >
+                  <i className='fa-solid fa-calendar-days'></i>
+                </button>
+              </div>
+              <span className='helper-text'>Format: DD/MM/YYYY</span>
+              {formErrors.date && <span className='error-text'>{formErrors.date}</span>}
+            </div>
           </div>
-          <div className='form-group' style={{ position: 'relative' }}>
-            <label className='required'>
-              <i className='fa-solid fa-home mr-2'></i>
-              Delivery Address
-            </label>
-            <input
-              type='text'
-              className={`input-field ${formErrors.deliveryAddress ? 'error' : ''}`}
-              value={
-                editingOrder
-                  ? editingOrder.deliveryAddress || ''
-                  : newOrder.deliveryAddress || selectedAddressRef.current || ''
-              }
-              onChange={(e) => {
-                // Clear ref when user manually types
-                if (!isClickingSuggestion) {
-                  selectedAddressRef.current = null;
+
+          {}
+          <div className='form-row'>
+            <div className='form-group form-group-relative'>
+              <label className='required'>
+                <i className='fa-solid fa-home mr-2'></i>
+                Delivery Address
+              </label>
+              <input
+                type='text'
+                className={`input-field ${formErrors.deliveryAddress ? 'error' : ''}`}
+                value={
+                  editingOrder
+                    ? editingOrder.deliveryAddress || ''
+                    : newOrder.deliveryAddress || selectedAddressRef.current || ''
                 }
-                handleAddressChange(e.target.value);
-              }}
-              onFocus={handleAddressFocus}
-              onBlur={handleAddressBlur}
-              placeholder='Start typing address (e.g., A3-1206)'
-              required
-              autoComplete='off'
-              id='delivery-address-input'
-            />
-            {showAddressSuggestions && addressSuggestions.length > 0 && !editingOrder && (
-              <div
-                ref={dropdownRef}
-                className='address-suggestions-dropdown'
-                onMouseDown={(e) => {
-                  // Prevent input blur when clicking anywhere in dropdown
-                  e.preventDefault();
+                onChange={(e) => {
+                  
+                  if (!isClickingSuggestion) {
+                    selectedAddressRef.current = null;
+                  }
+                  handleAddressChange(e.target.value);
                 }}
-                style={{
-                  maxHeight: '300px',
-                  overflowY: 'auto',
-                  zIndex: 1000,
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  marginTop: '4px',
-                  background: 'var(--admin-bg, #ffffff)',
-                  border: '1px solid var(--admin-border, #cbd5e1)',
-                  borderRadius: '12px',
-                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08)',
-                }}
-              >
+                onFocus={handleAddressFocus}
+                onBlur={handleAddressBlur}
+                placeholder='Start typing address (e.g., A3-1206)'
+                required
+                autoComplete='off'
+                id='delivery-address-input'
+              />
+              {showAddressSuggestions && addressSuggestions.length > 0 && !editingOrder && (
                 <div
-                  className='address-suggestions-header'
-                  style={{
-                    padding: '12px 16px',
-                    borderBottom: '1px solid var(--admin-border, #cbd5e1)',
-                    background: 'var(--admin-accent-light, rgba(68, 144, 49, 0.05))',
-                    fontWeight: '600',
-                    fontSize: '13px',
-                    color: 'var(--admin-text-secondary, #475569)',
+                  ref={dropdownRef}
+                  className='address-suggestions-dropdown positioned'
+                  onMouseDown={(e) => {
+                    
+                    e.preventDefault();
                   }}
                 >
-                  <i className='fa-solid fa-lightbulb mr-2'></i>
-                  {addressSuggestions.length} suggestion{addressSuggestions.length !== 1 ? 's' : ''}{' '}
-                  found
-                </div>
-                {addressSuggestions.map((addr, idx) => {
-                  const info = getAddressOrderInfo(addr);
-                  return (
-                    <button
-                      key={idx}
-                      type='button'
-                      className='address-suggestion-item'
-                      onMouseDown={(e) => {
-                        // MouseDown fires before blur - prevent blur
-                        setIsClickingSuggestion(true);
-                        e.preventDefault(); // Prevent input blur
-                      }}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleSuggestionClick(addr);
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        cursor: 'pointer',
-                        border: 'none',
-                        background: 'transparent',
-                        textAlign: 'left',
-                        borderBottom:
-                          idx < addressSuggestions.length - 1
-                            ? '1px solid var(--admin-border, #e2e8f0)'
-                            : 'none',
-                        transition: 'all 0.2s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background =
-                          'var(--admin-accent-light, rgba(68, 144, 49, 0.1))';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-                        <i
-                          className='fa-solid fa-map-marker-alt'
-                          style={{ color: 'var(--admin-accent, #449031)', fontSize: '16px' }}
-                        ></i>
-                        <div style={{ flex: 1 }}>
-                          <div
-                            style={{
-                              fontWeight: '600',
-                              color: 'var(--admin-text-primary, #1e293b)',
-                              marginBottom: '4px',
-                            }}
-                          >
-                            {addr}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              color: 'var(--admin-text-secondary, #475569)',
-                              display: 'flex',
-                              gap: '12px',
-                              alignItems: 'center',
-                            }}
-                          >
-                            {info.count > 0 && (
-                              <span>
-                                <i
-                                  className='fa-solid fa-shopping-cart'
-                                  style={{ marginRight: '4px' }}
-                                ></i>
-                                {info.count} order{info.count !== 1 ? 's' : ''}
-                              </span>
-                            )}
-                            {info.lastPrice && (
-                              <span>
-                                <i
-                                  className='fa-solid fa-rupee-sign'
-                                  style={{ marginRight: '4px' }}
-                                ></i>
-                                Last: ₹{info.lastPrice}
-                              </span>
-                            )}
+                  <div className='address-suggestions-header'>
+                    <i className='fa-solid fa-lightbulb mr-2'></i>
+                    {addressSuggestions.length} suggestion{addressSuggestions.length !== 1 ? 's' : ''}{' '}
+                    found
+                  </div>
+                  {addressSuggestions.map((addr, idx) => {
+                    const info = getAddressOrderInfo(addr);
+                    return (
+                      <button
+                        key={idx}
+                        type='button'
+                        className='address-suggestion-item'
+                        onMouseDown={(e) => {
+                          
+                          setIsClickingSuggestion(true);
+                          e.preventDefault(); 
+                        }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleSuggestionClick(addr);
+                        }}
+                        className="address-suggestion-item button-style order-modal-address-suggestion"
+                      >
+                        <div className='address-suggestion-content'>
+                          <i className='fa-solid fa-map-marker-alt address-suggestion-icon'></i>
+                          <div className='address-suggestion-content-wrapper'>
+                            <div className='address-suggestion-title'>
+                              {addr}
+                            </div>
+                            <div className='address-suggestion-info'>
+                              {info.count > 0 && (
+                                <span>
+                                  <i className='fa-solid fa-shopping-cart'></i>
+                                  {info.count} order{info.count !== 1 ? 's' : ''}
+                                </span>
+                              )}
+                              {info.lastPrice && (
+                                <span>
+                                  <i className='fa-solid fa-rupee-sign'></i>
+                                  Last: ₹{info.lastPrice}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <i
-                        className='fa-solid fa-chevron-right'
-                        style={{ color: 'var(--admin-text-light, #64748b)', fontSize: '12px' }}
-                      ></i>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-            {touchedFields.deliveryAddress && formErrors.deliveryAddress && (
-              <span className='error-text'>{formErrors.deliveryAddress}</span>
-            )}
-            {duplicateWarning && (
-              <div className='badge badge-warning mt-2 p-3'>
-                <strong>⚠️ Warning:</strong> {duplicateWarning.address} already has an order today (
-                {duplicateWarning.mode})
-                <br />
-                <span className='helper-text mt-1 block'>Do you want to add another order?</span>
-              </div>
-            )}
+                        <i className='fa-solid fa-chevron-right address-suggestion-chevron'></i>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {touchedFields.deliveryAddress && formErrors.deliveryAddress && (
+                <span className='error-text'>{formErrors.deliveryAddress}</span>
+              )}
+              {duplicateWarning && (
+                <div className='badge badge-warning mt-2 p-3'>
+                  <strong>⚠️ Warning:</strong> {duplicateWarning.address} already has an order today (
+                  {duplicateWarning.mode})
+                  <br />
+                  <span className='helper-text mt-1 block'>Do you want to add another order?</span>
+                </div>
+              )}
+            </div>
+            <div className='form-group'>
+              <label className='required'>
+                <i className='fa-solid fa-utensils mr-2'></i>
+                Mode
+              </label>
+              <select
+                className={`input-field ${formErrors.mode ? 'error' : ''}`}
+                value={editingOrder ? editingOrder.mode || 'Lunch' : newOrder.mode || 'Lunch'}
+                onChange={(e) =>
+                  editingOrder
+                    ? onEditingOrderChange('mode', e.target.value)
+                    : onNewOrderChange('mode', e.target.value)
+                }
+                required
+              >
+                <option value='Lunch'>Lunch</option>
+                <option value='Dinner'>Dinner</option>
+                <option value='Breakfast'>Breakfast</option>
+              </select>
+              {formErrors.mode && <span className='error-text'>{formErrors.mode}</span>}
+            </div>
           </div>
+
+          {}
           <div className='form-row'>
             <div className='form-group'>
               <label className='required'>
@@ -1243,10 +1404,7 @@ const OrderModal = ({
                 value={editingOrder ? editingOrder.quantity : newOrder.quantity}
                 onChange={(e) =>
                   editingOrder
-                    ? onEditingOrderChange({
-                        ...editingOrder,
-                        quantity: parseInt(e.target.value) || 1,
-                      })
+                    ? onEditingOrderChange('quantity', parseInt(e.target.value) || 1)
                     : onNewOrderChange('quantity', e.target.value)
                 }
                 min='1'
@@ -1254,33 +1412,6 @@ const OrderModal = ({
               />
               {formErrors.quantity && <span className='error-text'>{formErrors.quantity}</span>}
             </div>
-            <div className='form-group'>
-              <label className='required'>
-                <i className='fa-solid fa-rupee-sign mr-2'></i>
-                Unit Price (₹)
-              </label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type='number'
-                  className={`input-field ${formErrors.unitPrice ? 'error' : ''}`}
-                  value={editingOrder ? editingOrder.unitPrice : newOrder.unitPrice}
-                  onChange={(e) =>
-                    editingOrder
-                      ? onEditingOrderChange({
-                          ...editingOrder,
-                          unitPrice: parseFloat(e.target.value) || 0,
-                        })
-                      : onNewOrderChange('unitPrice', e.target.value)
-                  }
-                  min='10'
-                  max='1000'
-                  step='0.01'
-                />
-              </div>
-              {formErrors.unitPrice && <span className='error-text'>{formErrors.unitPrice}</span>}
-            </div>
-          </div>
-          <div className='form-row'>
             <div className='form-group'>
               <label className='required'>
                 <i className='fa-solid fa-check-circle mr-2'></i>
@@ -1291,10 +1422,7 @@ const OrderModal = ({
                 value={editingOrder ? editingOrder.status || 'Unpaid' : newOrder.status || 'Unpaid'}
                 onChange={(e) =>
                   editingOrder
-                    ? onEditingOrderChange({
-                        ...editingOrder,
-                        status: e.target.value,
-                      })
+                    ? onEditingOrderChange('status', e.target.value)
                     : onNewOrderChange('status', e.target.value)
                 }
                 required
@@ -1305,29 +1433,29 @@ const OrderModal = ({
               </select>
               {formErrors.status && <span className='error-text'>{formErrors.status}</span>}
             </div>
+          </div>
+
+          {}
+          <div className='form-row'>
             <div className='form-group'>
               <label className='required'>
-                <i className='fa-solid fa-utensils mr-2'></i>
-                Mode
+                <i className='fa-solid fa-rupee-sign mr-2'></i>
+                Unit Price (₹)
               </label>
-              <select
-                className={`input-field ${formErrors.mode ? 'error' : ''}`}
-                value={editingOrder ? editingOrder.mode || 'Lunch' : newOrder.mode || 'Lunch'}
+              <input
+                type='number'
+                className={`input-field ${formErrors.unitPrice ? 'error' : ''}`}
+                value={editingOrder ? editingOrder.unitPrice : newOrder.unitPrice}
                 onChange={(e) =>
                   editingOrder
-                    ? onEditingOrderChange({
-                        ...editingOrder,
-                        mode: e.target.value,
-                      })
-                    : onNewOrderChange('mode', e.target.value)
+                    ? onEditingOrderChange('unitPrice', parseFloat(e.target.value) || 0)
+                    : onNewOrderChange('unitPrice', e.target.value)
                 }
-                required
-              >
-                <option value='Lunch'>Lunch</option>
-                <option value='Dinner'>Dinner</option>
-                <option value='Breakfast'>Breakfast</option>
-              </select>
-              {formErrors.mode && <span className='error-text'>{formErrors.mode}</span>}
+                min='10'
+                max='1000'
+                step='0.01'
+              />
+              {formErrors.unitPrice && <span className='error-text'>{formErrors.unitPrice}</span>}
             </div>
             <div className='form-group'>
               <label>
@@ -1339,10 +1467,7 @@ const OrderModal = ({
                 value={editingOrder ? editingOrder.paymentMode || '' : newOrder.paymentMode || ''}
                 onChange={(e) =>
                   editingOrder
-                    ? onEditingOrderChange({
-                        ...editingOrder,
-                        paymentMode: e.target.value,
-                      })
+                    ? onEditingOrderChange('paymentMode', e.target.value)
                     : onNewOrderChange('paymentMode', e.target.value)
                 }
               >
@@ -1357,33 +1482,12 @@ const OrderModal = ({
             </div>
           </div>
         </div>
-        {/* Summary chip: Total Amount (computed on save) */}
-        <div
-          style={{
-            padding: '16px 28px',
-            borderTop: '1px solid var(--admin-border, #e2e8f0)',
-            background: 'var(--admin-bg-secondary, #f7f9fc)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <span
-            style={{
-              fontSize: '14px',
-              fontWeight: '600',
-              color: 'var(--admin-text-secondary, #64748b)',
-            }}
-          >
+        {}
+        <div className='order-form-total'>
+          <span className='order-form-total-label'>
             Total Amount
           </span>
-          <span
-            style={{
-              fontSize: '18px',
-              fontWeight: '700',
-              color: 'var(--admin-accent, #449031)',
-            }}
-          >
+          <span className='order-form-total-value'>
             ₹
             {formatCurrency(
               calculateTotalAmount(

@@ -1,5 +1,72 @@
 # Cursor AI Rules - HomieBites
 
+## 📖 MANDATORY: Read Rules Before Starting
+
+**CRITICAL RULE**: **ALWAYS read this entire `.cursorrules` file before starting any new task or making any changes.**
+
+### ⚠️ ENFORCEMENT: Tool-Based Verification Required
+
+**To ensure compliance, you MUST use the `read_file` tool to read `.cursorrules` as the FIRST action:**
+
+1. **MANDATORY FIRST STEP - Before ANY task:**
+
+   ```javascript
+   // REQUIRED: Always do this FIRST before any work
+   read_file('.cursorrules');
+   ```
+
+   - Use the `read_file` tool to read the entire `.cursorrules` file
+   - This ensures the rules are in your working context
+   - Do NOT skip this step or assume you remember the rules
+
+2. **Task-Specific Rule Review:**
+
+   - After reading the full file, identify which sections apply to your task
+   - Re-read those specific sections if needed
+   - Create a mental checklist of rules that must be followed
+
+3. **Verification Before Completion:**
+   - Before claiming a task is complete, verify compliance with all relevant rules
+   - Check that no forbidden patterns were used
+   - Confirm all required steps were followed
+
+### Required Steps:
+
+1. **Before Every Task:**
+
+   - **MUST**: Use `read_file('.cursorrules')` tool FIRST - this is non-negotiable
+   - Understand all rules, especially critical ones marked with 🔒 or ⚠️
+   - Review relevant sections for the task at hand
+   - Check button system rules if working with buttons
+   - Review accuracy and truthfulness standards
+   - Check border width rules if modifying CSS
+   - Review !important usage rules if using CSS
+
+2. **Before Making Changes:**
+
+   - Re-read relevant sections of `.cursorrules` that apply to your changes
+   - Verify your approach complies with all rules
+   - Check for any forbidden patterns or practices
+   - Ensure you understand the coding standards
+
+3. **When in Doubt:**
+
+   - Re-read the relevant section of `.cursorrules` using `read_file` tool
+   - Don't assume - check the rules explicitly
+   - Follow the rules strictly, even if it seems inconvenient
+
+4. **Compliance Checklist (verify before completing):**
+   - [ ] Used `read_file('.cursorrules')` at the start
+   - [ ] Read relevant rule sections for the task
+   - [ ] Verified changes comply with all applicable rules
+   - [ ] Checked for forbidden patterns
+   - [ ] Ran lint checks as required
+   - [ ] Verified accuracy of all statements made
+
+**NEVER** start coding or making changes without first using `read_file('.cursorrules')` to read and understand the rules in this file.
+
+---
+
 ## 🔒 BUTTON SYSTEM LOCK
 
 **CRITICAL**: Only 5 button variants exist. Creating new button styles is FORBIDDEN.
@@ -27,7 +94,6 @@
 - Creating new button variants
 - Admin-specific button classes
 - Inline styles overriding button colors
-- no !imporatnt should use, only give proper fix
 
 ### If you need a custom button:
 
@@ -60,6 +126,7 @@ Use `.btn-special` with CSS variables:
 - `backend/` - Backend API (Node.js/Express)
 - `shared/` - Shared styles and utilities
 - `docs/` - Documentation
+- `.backups/` - Backup files (automatically ignored by git)
 
 ---
 
@@ -84,14 +151,50 @@ Use `.btn-special` with CSS variables:
    - Check for TypeScript/JavaScript errors
    - Verify no console errors or warnings
 
-2. **Before Marking Tasks Complete:**
+---
+
+## ✅ Accuracy and Truthfulness
+
+**CRITICAL RULE**: Only make serious, true statements. Do proper work - no bluffing or wrong statements without actually doing the work.
+
+### Required Standards:
+
+1. **Before Claiming Something is Fixed:**
+
+   - Actually verify the fix works by checking the code
+   - Read the relevant files to understand the current state
+   - Test your understanding before making changes
+   - Don't claim something is "done" or "fixed" unless you've actually verified it
+
+2. **When Making Statements:**
+
+   - Only state facts you can verify from the codebase
+   - Don't assume - check the actual files
+   - If unsure, say "I need to check" rather than guessing
+   - Admit when you don't know something rather than making up an answer
+
+3. **When Completing Tasks:**
+
+   - Actually read the files you're modifying
+   - Verify your changes address the actual problem
+   - Check for related issues in the same area
+   - Don't just make surface-level changes without understanding the root cause
+
+4. **Quality Over Speed:**
+
+   - Take time to understand the problem fully
+   - Read multiple related files if needed
+   - Test your logic before implementing
+   - Better to say "I need more information" than to guess wrong
+
+5. **Before Marking Tasks Complete:**
 
    - Ensure all lint errors are resolved
    - Verify no build errors exist
    - Check that modified files pass linting rules
    - Confirm button system compliance (if adding buttons)
 
-3. **Error Types to Check:**
+6. **Error Types to Check:**
 
    - Linting errors (ESLint, style warnings)
    - Type errors (TypeScript)
@@ -100,7 +203,7 @@ Use `.btn-special` with CSS variables:
    - Unused variables or imports
    - Missing dependencies
 
-4. **Files to Always Check:**
+7. **Files to Always Check:**
    - All modified files in the current session
    - Related files that might be affected
    - Configuration files if changed
@@ -117,6 +220,257 @@ Use `.btn-special` with CSS variables:
 ```
 
 **NEVER** complete a task without checking for and fixing build/lint errors.
+
+---
+
+## 💾 Backup Files Management
+
+**CRITICAL RULE**: Always create backup files in the `.backups/` folder.
+
+### Backup Rules:
+
+1. **Backup Location:**
+
+   - All backup files (`.bak`, `.bak2`, etc.) MUST be placed in `.backups/` folder
+   - Never create backup files in the root or component directories
+   - The `.backups/` folder is automatically ignored by git
+
+2. **When Creating Backups:**
+
+   - Before making significant changes to files
+   - When refactoring or restructuring code
+   - Before removing or modifying critical functionality
+   - Use format: `original-filename.ext.bak` or `original-filename.ext.bak2`
+
+3. **Backup Naming:**
+
+   - Use descriptive names: `filename.ext.bak`
+   - For multiple backups: `filename.ext.bak`, `filename.ext.bak2`, etc.
+   - Include timestamp if needed: `filename-YYYYMMDD.ext.bak`
+
+4. **File Management:**
+   - Move existing `.bak` files to `.backups/` folder
+   - Keep `.backups/` organized and clean
+   - The `.backups/` folder is git-ignored, so backups won't be committed
+
+**Example:**
+
+```bash
+# Before editing a file, create backup:
+cp components/admin/styles/theme.css .backups/theme.css.bak
+
+# Or move existing backup:
+mv components/admin/styles/theme.css.bak .backups/theme.css.bak
+```
+
+---
+
+## 📏 Border Width Rule
+
+**CRITICAL RULE**: No border should be above 1px in any condition. All borders must be exactly 1px.
+
+### Rules for Border Width:
+
+1. **Maximum Border Width:**
+
+   - **ALL borders must be 1px maximum**
+   - No exceptions: `1.5px`, `2px`, `3px`, `4px`, `5px` are FORBIDDEN
+   - This applies to: `border`, `border-top`, `border-bottom`, `border-left`, `border-right`, `border-width`
+
+2. **When 1px is Required:**
+
+   - All card borders: `border: 1px solid`
+   - All table borders: `border: 1px solid`
+   - All input/form borders: `border: 1px solid`
+   - All divider borders: `border-top: 1px solid`, `border-bottom: 1px solid`
+   - All sidebar borders: `border-right: 1px solid`
+   - All modal borders: `border: 1px solid`
+
+3. **Special Cases:**
+
+   - **Transparent borders**: Can use `border: 1px solid transparent` for spacing (but still 1px)
+   - **Dashed borders**: Must be `border: 1px dashed` (not 2px)
+   - **Accent color borders**: Must be `border: 1px solid var(--admin-accent)` (not 2px or 3px)
+
+4. **FORBIDDEN:**
+
+   - `border: 2px solid` ❌ → Use `border: 1px solid` ✅
+   - `border: 1.5px solid` ❌ → Use `border: 1px solid` ✅
+   - `border-left: 3px solid` ❌ → Use `border-left: 1px solid` ✅
+   - `border: 4px solid` ❌ → Use `border: 1px solid` ✅
+   - `border-width: 2px` ❌ → Use `border-width: 1px` ✅
+
+5. **Border Radius Exception:**
+   - `border-radius` values are NOT affected by this rule
+   - `border-radius: 8px`, `border-radius: 12px` are allowed
+
+### Example - WRONG:
+
+```css
+.card {
+  border: 2px solid var(--admin-border); /* ❌ BAD - 2px is forbidden */
+}
+```
+
+### Example - CORRECT:
+
+```css
+.card {
+  border: 1px solid var(--admin-border); /* ✅ GOOD - 1px maximum */
+}
+```
+
+**NEVER** use borders thicker than 1px. Always use exactly 1px for all borders.
+
+---
+
+## ⚠️ CSS !important Usage Rule
+
+**CRITICAL RULE**: Never use `!important` without actual need. Always prefer proper CSS specificity and selector hierarchy.
+
+### Rules for !important Usage:
+
+1. **When !important is ALLOWED:**
+
+   - Overriding third-party library styles that use !important
+   - Fixing critical accessibility issues that cannot be resolved with specificity
+   - Overriding inline styles (when necessary for user settings/theme changes)
+   - Font size hierarchy enforcement (only in dedicated font-size-hierarchy.css file)
+
+2. **When !important is FORBIDDEN:**
+
+   - Regular styling conflicts (use more specific selectors instead)
+   - Component styling (increase selector specificity)
+   - Layout adjustments (use proper CSS cascade)
+   - Color/background changes (use CSS variables and specificity)
+   - Spacing/padding adjustments (use proper selector hierarchy)
+
+3. **Best Practices:**
+
+   - **First attempt**: Increase selector specificity (e.g., `.parent .child` instead of `.child`)
+   - **Second attempt**: Use more specific class names or IDs
+   - **Third attempt**: Restructure CSS to avoid conflicts
+   - **Last resort**: Use !important only if absolutely necessary and document why
+
+4. **Font Size Hierarchy Exception:**
+   - The `font-size-hierarchy.css` file may use !important to ensure font size consistency
+   - This is the ONLY exception for systematic use of !important
+   - All other CSS files must avoid !important
+
+### Example - WRONG:
+
+```css
+.button {
+  color: blue !important; /* ❌ BAD - use more specific selector */
+}
+```
+
+### Example - CORRECT:
+
+```css
+.dashboard-card .button {
+  color: blue; /* ✅ GOOD - proper specificity */
+}
+```
+
+**NEVER** use !important as a quick fix. Always find the root cause and fix it properly.
+
+---
+
+## 📐 Alignment & Centering Standards
+
+**CRITICAL RULE**: Fix alignment issues ONLY where they exist. Do NOT globally override existing styles. Be conservative and targeted.
+
+### Alignment Rules:
+
+1. **Targeted Fixes Only:**
+
+   - **ONLY** fix alignment in specific problematic areas
+   - **NEVER** globally override `display` properties
+   - **NEVER** change existing working layouts
+   - **ONLY** add alignment fixes where there are actual visual issues
+
+2. **Common Alignment Patterns (When Needed):**
+
+   ```css
+   /* ✅ CORRECT - Targeted fix for specific issue */
+   .filter-bar-container {
+     display: flex;
+     align-items: center;
+     min-height: 44px;
+   }
+
+   /* ❌ WRONG - Global override that breaks existing styles */
+   .admin-dashboard input,
+   .admin-dashboard select {
+     display: flex; /* Don't override existing display */
+   }
+   ```
+
+3. **Filter Bar & Action Bar Alignment (Common Issue):**
+
+   - **ONLY** fix filter bars and bulk action bars when misaligned
+   - Use `display: flex; align-items: center; min-height: 44px;`
+   - **DO NOT** override child elements unless necessary
+
+4. **Table Alignment:**
+
+   - Use `vertical-align: middle` for table cells when needed
+   - **DO NOT** change table display properties
+
+5. **FORBIDDEN Alignment Patterns:**
+
+   - Globally overriding `display` properties ❌
+   - Changing existing working flexbox layouts ❌
+   - Forcing `display: flex` on form elements (inputs, selects) ❌
+   - Forcing `display: inline-flex` on all spans/labels ❌
+   - Overriding stat-card or card layouts ❌
+   - Changing grid layouts that already work ❌
+
+### Example - WRONG:
+
+```css
+/* ❌ BAD - Too aggressive, breaks existing styles */
+.admin-dashboard input,
+.admin-dashboard select {
+  display: flex;
+  align-items: center;
+}
+
+.admin-dashboard span {
+  display: inline-flex;
+  align-items: center;
+}
+```
+
+### Example - CORRECT:
+
+```css
+/* ✅ GOOD - Targeted fix only for specific issue */
+.filter-bar-container {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.bulk-actions-bar-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+```
+
+### Alignment Checklist (verify before completing):
+
+- [ ] Only fixed specific problematic areas
+- [ ] Did NOT globally override display properties
+- [ ] Did NOT change existing working layouts
+- [ ] Filter bars and action bars are aligned (if they were the issue)
+- [ ] Table cells use `vertical-align: middle` (if needed)
+- [ ] No unintended side effects on other components
+
+**ALWAYS** fix alignment issues conservatively and only where they exist. Do NOT create new problems by being too aggressive.
 
 ---
 

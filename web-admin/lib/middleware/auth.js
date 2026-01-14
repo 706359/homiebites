@@ -1,9 +1,9 @@
-// Authentication middleware for Next.js API routes
+
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'homiebites_secret';
 
-// Authenticate user by verifying JWT token in Authorization header
+
 export function authenticate(request) {
   return new Promise((resolve, reject) => {
     const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
@@ -24,11 +24,11 @@ export function authenticate(request) {
   });
 }
 
-// Check if authenticated user is admin
+
 export async function isAdmin(request) {
   try {
     const user = await authenticate(request);
-    // Check for both lowercase and uppercase Admin role (case-insensitive)
+    
     const userRole = user?.role?.toLowerCase();
     if (user && (userRole === 'admin' || user.role === 'Admin' || user.isAdmin)) {
       return user;
@@ -39,7 +39,7 @@ export async function isAdmin(request) {
   }
 }
 
-// Helper to create error response
+
 export function createErrorResponse(status, message) {
   return Response.json({ success: false, error: message }, { status });
 }

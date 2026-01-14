@@ -1,12 +1,9 @@
-/**
- * Next.js API Route: Gallery Bulk Update
- * Migrated from Express backend
- */
+
 import connectDB from '../../../../lib/db.js';
 import Gallery from '../../../../lib/models/Gallery.js';
 import { isAdmin, createErrorResponse } from '../../../../lib/middleware/auth.js';
 
-// PUT /api/gallery/bulk-update - admin only
+
 export async function PUT(request) {
   try {
     await connectDB();

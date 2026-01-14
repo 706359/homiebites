@@ -1,8 +1,4 @@
-/**
- * Next.js API Route: Verify Token
- * Check if user is authenticated
- * Following ADMIN_PASSWORD.md - GET /api/auth/verify
- */
+
 import connectDB from '../../../../lib/db.js';
 import User from '../../../../lib/models/User.js';
 import jwt from 'jsonwebtoken';

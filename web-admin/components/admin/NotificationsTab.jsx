@@ -3,7 +3,7 @@ import { formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
 import { isPendingStatus, sortOrdersByOrderId } from './utils/orderUtils.js';
 import PremiumLoader from './PremiumLoader.jsx';
 
-// Get time ago helper
+
 function getTimeAgo(date) {
   if (!date) return 'N/A';
   const now = new Date();
@@ -28,7 +28,7 @@ const NotificationsTab = ({
   setActiveTab,
   showConfirmation,
 }) => {
-  const [filter, setFilter] = useState('all'); // 'all', 'unread', 'payments', 'orders', 'system'
+  const [filter, setFilter] = useState('all'); 
   const [readNotifications, setReadNotifications] = useState(new Set());
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [notificationSettings, setNotificationSettings] = useState({
@@ -43,16 +43,16 @@ const NotificationsTab = ({
     deliverySMS: false,
   });
 
-  // Generate notifications from orders - REAL DATA
+  
   const notifications = [];
   const now = new Date();
 
-  // Calculate overdue threshold (45 days like PendingAmountsTab)
+  
   const fortyFiveDaysAgo = new Date(now);
   fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
   fortyFiveDaysAgo.setHours(0, 0, 0, 0);
 
-  // Overdue payments notifications (most urgent - show first)
+  
   const pendingOrders = orders.filter((o) => isPendingStatus(o.status));
   const overduePayments = pendingOrders
     .map((order) => {
@@ -71,7 +71,7 @@ const NotificationsTab = ({
     })
     .filter((item) => item && (item.isOverdue || item.isUrgent))
     .sort((a, b) => b.daysPending - a.daysPending)
-    .slice(0, 15); // Show up to 15 overdue/urgent payments
+    .slice(0, 15); 
 
   overduePayments.forEach(({ order, orderDate, daysPending, isOverdue }) => {
     const timeAgo = getTimeAgo(orderDate);
@@ -91,10 +91,10 @@ const NotificationsTab = ({
     });
   });
 
-  // Recent orders notifications (last 7 days, limit to 10)
+  
   const sevenDaysAgo = new Date(now);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  // Get recent orders from last 7 days, sorted by orderId (newest first)
+  
   const recentOrders = sortOrdersByOrderId(
     orders.filter((order) => {
       try {
@@ -128,11 +128,11 @@ const NotificationsTab = ({
     });
   });
 
-  // Sort notifications: overdue payments first, then by date (newest first)
+  
   notifications.sort((a, b) => {
     if (a.isOverdue && !b.isOverdue) return -1;
     if (!a.isOverdue && b.isOverdue) return 1;
-    // For same type, sort by time (newer first)
+    
     const timeA = a.timeAgo.includes('mins') ? 0 : a.timeAgo.includes('hour') ? 1 : 2;
     const timeB = b.timeAgo.includes('mins') ? 0 : b.timeAgo.includes('hour') ? 1 : 2;
     return timeA - timeB;
@@ -143,7 +143,7 @@ const NotificationsTab = ({
     read: readNotifications.has(notif.id) || notif.read,
   }));
 
-  // Filter notifications
+  
   const filteredNotifications = notificationsWithReadState.filter((notif) => {
     if (filter === 'all') return true;
     if (filter === 'unread') return !notif.read;
@@ -153,7 +153,7 @@ const NotificationsTab = ({
     return true;
   });
 
-  // Counts
+  
   const unreadCount = notificationsWithReadState.filter((n) => !n.read).length;
   const paymentCount = notifications.filter((n) => n.type === 'payment').length;
   const orderCount = notifications.filter((n) => n.type === 'order').length;
@@ -174,7 +174,7 @@ const NotificationsTab = ({
     if (showNotification) showNotification('All notifications marked as read', 'success');
   };
 
-  // Handle notification action
+  
   const handleAction = (notif) => {
     switch (notif.action) {
       case 'viewOrder':
@@ -222,12 +222,12 @@ const NotificationsTab = ({
         if (setActiveTab) setActiveTab('reports');
         break;
       case 'viewDetails':
-        // Show details
+        
         break;
     }
   };
 
-  // Get notification icon
+  
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'order':
@@ -241,7 +241,7 @@ const NotificationsTab = ({
     }
   };
 
-  // Get notification color
+  
   const getNotificationColor = (type) => {
     switch (type) {
       case 'order':
@@ -265,7 +265,7 @@ const NotificationsTab = ({
 
   return (
     <div className='admin-content'>
-      {/* HEADER */}
+      {}
       <div className='dashboard-header'>
         <div>{unreadCount > 0 && <h2>Notifications ({unreadCount} unread)</h2>}</div>
         <div className='action-buttons-group'>
@@ -278,7 +278,7 @@ const NotificationsTab = ({
         </div>
       </div>
 
-      {/* FILTER TABS */}
+      {}
       <div className='action-bar action-bar-spaced'>
         <button
           className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-small`}
@@ -312,7 +312,7 @@ const NotificationsTab = ({
         </button>
       </div>
 
-      {/* NOTIFICATION LIST */}
+      {}
       <div className='dashboard-card'>
         {filteredNotifications.length === 0 ? (
           <div className='empty-state' style={{ padding: '48px', textAlign: 'center' }}>
@@ -401,13 +401,13 @@ const NotificationsTab = ({
         )}
       </div>
 
-      {/* NOTIFICATION SETTINGS MODAL */}
+      {}
       {showSettingsModal && (
         <div className='modal-overlay' onClick={() => setShowSettingsModal(false)}>
           <div className='modal-container' onClick={(e) => e.stopPropagation()}>
             <div className='modal-header'>
               <h2>Notification Settings</h2>
-              <button className='modal-close' onClick={() => setShowSettingsModal(false)}>
+              <button className='btn btn-ghost btn-icon modal-close' onClick={() => setShowSettingsModal(false)}>
                 <i className='fa-solid fa-times'></i>
               </button>
             </div>
@@ -616,7 +616,7 @@ const NotificationsTab = ({
               <button
                 className='btn btn-primary'
                 onClick={() => {
-                  // In real app, would save via API
+                  
                   if (showNotification) showNotification('Notification settings saved', 'success');
                   setShowSettingsModal(false);
                 }}

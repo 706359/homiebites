@@ -11,10 +11,10 @@ export default function Admin() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if already logged in
+    
     const admin = localStorage.getItem('homiebites_admin');
     const user = localStorage.getItem('homiebites_user');
-    // Check for both lowercase and uppercase Admin role
+    
     const userRole = user ? JSON.parse(user).role : null;
     const isAdminRole = userRole && (userRole.toLowerCase() === 'admin' || userRole === 'Admin');
     if (admin === 'true' || isAdminRole) {

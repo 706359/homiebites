@@ -15,23 +15,23 @@ const CSVUploadModal = ({
   const [totalRecords, setTotalRecords] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [isProgressMinimized, setIsProgressMinimized] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState(null); // 'success', 'error', null
+  const [uploadStatus, setUploadStatus] = useState(null); 
   const [previewData, setPreviewData] = useState(null);
   const [validationErrors, setValidationErrors] = useState([]);
   const [uploadOptions, setUploadOptions] = useState({
-    skipDuplicates: false, // Changed: Allow duplicates to be replaced
+    skipDuplicates: false, 
     autoGenerateOrderIds: false,
-    updateExisting: true, // Changed: Default to true - replace existing records by Order ID
+    updateExisting: true, 
   });
   const fileInputRef = useRef(null);
   const dragCounter = useRef(0);
-  const xhrRef = useRef(null); // Store XHR for cancellation
+  const xhrRef = useRef(null); 
 
-  // Handle file selection
+  
   const handleFileSelect = (selectedFile) => {
     if (!selectedFile) return;
 
-    // Validate file type
+    
     const validTypes = [
       'text/csv',
       'application/vnd.ms-excel',
@@ -49,7 +49,7 @@ const CSVUploadModal = ({
       return;
     }
 
-    // Validate file size (10MB max)
+    
     if (selectedFile.size > 10 * 1024 * 1024) {
       if (showNotification) {
         showNotification('File size exceeds 10MB limit.', 'error');
@@ -62,20 +62,20 @@ const CSVUploadModal = ({
     setValidationErrors([]);
     setPreviewData(null);
 
-    // Read and preview file
+    
     if (selectedFile.type === 'text/csv' || selectedFile.name.toLowerCase().endsWith('.csv')) {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const text = e.target.result;
-          // Split by newlines (handle both \n and \r\n)
+          
           const allLines = text.split(/\r?\n/);
 
-          // Filter out completely empty lines
+          
           const lines = allLines.filter((line) => line.trim().length > 0);
 
           if (lines.length > 0) {
-            // Parse CSV with proper handling of quoted values
+            
             const parseCSVLine = (line) => {
               const result = [];
               let current = '';
@@ -98,7 +98,7 @@ const CSVUploadModal = ({
 
             const headers = parseCSVLine(lines[0]).map((h) => h.replace(/^"|"$/g, '').trim());
 
-            // Parse preview rows (first data row only)
+            
             const previewRows = lines.slice(1, 2).map((line) => {
               const values = parseCSVLine(line).map((v) => v.replace(/^"|"$/g, '').trim());
               return headers.reduce((obj, header, idx) => {
@@ -107,11 +107,11 @@ const CSVUploadModal = ({
               }, {});
             });
 
-            // Calculate total rows correctly (excluding header)
-            // Count only non-empty data rows
+            
+            
             const dataRows = lines.slice(1).filter((line) => {
               const parsed = parseCSVLine(line);
-              // Check if row has at least one non-empty value
+              
               return parsed.some((val) => val.trim().length > 0);
             });
             const totalRows = dataRows.length;
@@ -137,8 +137,8 @@ const CSVUploadModal = ({
       };
       reader.readAsText(selectedFile);
     } else {
-      // For Excel files, we don't parse client-side for security reasons
-      // The file will be parsed on the server during upload using exceljs
+      
+      
       setPreviewData({
         headers: [],
         rows: [],
@@ -157,7 +157,7 @@ const CSVUploadModal = ({
     }
   };
 
-  // Validate CSV data
+  
   const validateCSVData = (headers, rows) => {
     const errors = [];
     const requiredColumns = [
@@ -170,7 +170,7 @@ const CSVUploadModal = ({
       'Payment Mode',
     ];
 
-    // Check required columns
+    
     const missingColumns = requiredColumns.filter(
       (col) => !headers.some((h) => h.toLowerCase().includes(col.toLowerCase().split(' ')[0]))
     );
@@ -178,7 +178,7 @@ const CSVUploadModal = ({
       errors.push(`Missing required columns: ${missingColumns.join(', ')}`);
     }
 
-    // Validate date format
+    
     const dateColumn = headers.find((h) => h.toLowerCase().includes('date'));
     if (dateColumn) {
       rows.forEach((row, idx) => {
@@ -192,21 +192,21 @@ const CSVUploadModal = ({
     setValidationErrors(errors);
   };
 
-  // Check if date is valid
+  
   const isValidDate = (dateString) => {
     if (!dateString) return false;
-    // Try multiple date formats
+    
     const formats = [
-      /^\d{1,2}-\d{1,2}-\d{2,4}$/, // DD-MM-YY or DD-MM-YYYY
-      /^\d{1,2}\/\d{1,2}\/\d{2,4}$/, // DD/MM/YY or DD/MM/YYYY
-      /^\d{1,2}-[A-Za-z]{3}-\d{2,4}$/, // DD-MMM-YY or DD-MMM-YYYY
+      /^\d{1,2}-\d{1,2}-\d{2,4}$/, 
+      /^\d{1,2}\/\d{1,2}\/\d{2,4}$/, 
+      /^\d{1,2}-[A-Za-z]{3}-\d{2,4}$/, 
     ];
     return (
       formats.some((format) => format.test(dateString)) || !isNaN(new Date(dateString).getTime())
     );
   };
 
-  // Handle drag and drop
+  
   const handleDragEnter = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -241,7 +241,7 @@ const CSVUploadModal = ({
     }
   };
 
-  // Handle upload
+  
   const handleUpload = async () => {
     if (!file) {
       if (showNotification) {
@@ -262,7 +262,7 @@ const CSVUploadModal = ({
       setUploadProgress(0);
       setUploadedRecords(0);
       setIsProgressMinimized(false);
-      // For Excel files, totalRows might be null - will be updated from server response
+      
       const totalRows =
         previewData?.totalRows !== null && previewData?.totalRows !== undefined
           ? previewData.totalRows
@@ -275,31 +275,37 @@ const CSVUploadModal = ({
         formData.append('file', file);
         formData.append('options', JSON.stringify(uploadOptions));
 
-        // Use XMLHttpRequest for real progress tracking
+        
         const xhr = new XMLHttpRequest();
-        xhrRef.current = xhr; // Store for cancellation
+        xhrRef.current = xhr; 
 
-        // Track upload progress
+        
         xhr.upload.addEventListener('progress', (e) => {
-          if (e.lengthComputable && totalRows > 0) {
-            // File upload progress (0-90%)
+          if (e.lengthComputable) {
+            
             const fileProgress = (e.loaded / e.total) * 90;
-            setUploadProgress(Math.min(90, fileProgress));
+            const progress = Math.min(90, Math.max(1, fileProgress)); 
+            setUploadProgress(progress);
 
-            // Estimate records uploaded based on file upload progress
-            const estimatedRecords = Math.floor((fileProgress / 90) * totalRows);
-            setUploadedRecords(Math.min(totalRows, estimatedRecords));
+            
+            if (totalRows > 0) {
+              const estimatedRecords = Math.floor((fileProgress / 90) * totalRows);
+              setUploadedRecords(Math.min(totalRows, estimatedRecords));
+            }
+          } else {
+            
+            setUploadProgress(5);
           }
         });
 
-        // Handle response
+        
         xhr.addEventListener('load', () => {
           try {
             let response;
             try {
               response = JSON.parse(xhr.responseText);
             } catch (parseError) {
-              // If response is not JSON, it might be HTML error page
+              
               setUploadStatus('error');
               setIsUploading(false);
               xhrRef.current = null;
@@ -322,7 +328,7 @@ const CSVUploadModal = ({
               const totalCount =
                 response.data?.total || response.data?.imported + updatedCount || importedCount;
 
-              // Update total records if it was unknown (Excel files)
+              
               if (previewData?.isExcel && totalCount > 0) {
                 setTotalRecords(totalCount);
               }
@@ -332,7 +338,7 @@ const CSVUploadModal = ({
 
               if (response.success !== false) {
                 setUploadStatus('success');
-                setIsProgressMinimized(false); // Show success message
+                setIsProgressMinimized(false); 
                 if (showNotification) {
                   let message = '';
                   if (updatedCount > 0 && importedCount > 0) {
@@ -365,7 +371,7 @@ const CSVUploadModal = ({
                 }
               }
             } else {
-              // Non-200 status code
+              
               setUploadStatus('error');
               console.error('[CSVUpload] Upload failed:', {
                 status: xhr.status,
@@ -390,7 +396,7 @@ const CSVUploadModal = ({
             }
           } finally {
             setIsUploading(false);
-            xhrRef.current = null; // Clear reference
+            xhrRef.current = null; 
           }
         });
 
@@ -398,24 +404,24 @@ const CSVUploadModal = ({
           setUploadStatus('error');
           setUploadProgress(0);
           setUploadedRecords(0);
-          setIsProgressMinimized(false); // Show error message
+          setIsProgressMinimized(false); 
           setIsUploading(false);
-          xhrRef.current = null; // Clear reference
+          xhrRef.current = null; 
           if (showNotification) {
             showNotification('Error uploading file', 'error');
           }
         });
 
-        // Get token for authorization
+        
         const token =
           typeof window !== 'undefined' ? localStorage.getItem('homiebites_token') : null;
 
-        // Start upload - use relative URL for Next.js API routes
-        // api.baseURL is empty for Next.js API routes (they run on the same server)
+        
+        
         const apiUrl = api.baseURL || '';
         xhr.open('POST', `${apiUrl}/api/orders/upload-excel`);
 
-        // Set authorization header if token exists
+        
         if (token) {
           xhr.setRequestHeader('Authorization', `Bearer ${token}`);
         }
@@ -447,7 +453,7 @@ const CSVUploadModal = ({
     }
   };
 
-  // Handle cancel upload
+  
   const handleCancelUpload = () => {
     if (xhrRef.current) {
       xhrRef.current.abort();
@@ -464,14 +470,14 @@ const CSVUploadModal = ({
     }
   };
 
-  // Handle close
+  
   const handleClose = () => {
-    // Cancel upload if in progress
+    
     if (isUploading && xhrRef.current) {
       handleCancelUpload();
     }
 
-    // Don't close if upload is in progress - warn user (if not cancelled)
+    
     if (isUploading) {
       if (showNotification) {
         showNotification(
@@ -496,7 +502,7 @@ const CSVUploadModal = ({
     onClose();
   };
 
-  // Download sample CSV template
+  
   const handleDownloadTemplate = () => {
     const template = `Order ID,Date,Delivery Address,Quantity,Unit Price,Mode,Status,Payment Mode,Billing Month,Year,Customer Name,Phone
 HB-Jan'25-15-000001,2025-01-15,A3-1206,2,100,Lunch,Paid,Online,1,2025,John Doe,9876543210
@@ -521,12 +527,12 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
       >
         <div className='modal-header'>
           <h2>Upload Orders (CSV/Excel)</h2>
-          <button className='modal-close' onClick={handleClose}>
+          <button className='btn btn-ghost btn-icon modal-close' onClick={handleClose}>
             <i className='fa-solid fa-times'></i>
           </button>
         </div>
         <div className='modal-body'>
-          {/* File Drop Zone */}
+          {}
           {!file && (
             <div
               className='dashboard-card file-upload'
@@ -562,7 +568,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
             </div>
           )}
 
-          {/* File Selected */}
+          {}
           {file && !isUploading && uploadStatus !== 'success' && (
             <>
               <div className='dashboard-card margin-bottom-24'>
@@ -595,7 +601,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                   </button>
                 </div>
 
-                {/* Preview */}
+                {}
                 {previewData && (
                   <div>
                     <h4 style={{ marginBottom: '12px' }}>Preview (First row with headers):</h4>
@@ -636,7 +642,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                   </div>
                 )}
 
-                {/* Validation Errors */}
+                {}
                 {validationErrors.length > 0 && (
                   <div className='alert alert-danger'>
                     <div className='alert-icon'>
@@ -655,7 +661,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                   </div>
                 )}
 
-                {/* Validation Success */}
+                {}
                 {validationErrors.length === 0 && previewData && (
                   <div className='alert alert-success'>
                     <div className='alert-icon'>
@@ -675,7 +681,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                   </div>
                 )}
 
-                {/* Upload Options */}
+                {}
                 <div
                   style={{
                     marginTop: '24px',
@@ -763,7 +769,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
             </>
           )}
 
-          {/* Upload Progress */}
+          {}
           {isUploading && !isProgressMinimized && (
             <div
               className='dashboard-card'
@@ -784,54 +790,40 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                   transition: 'all 0.2s ease',
                   fontSize: '18px',
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background =
-                    'var(--admin-accent-light, rgba(68, 144, 49, 0.1))';
-                  e.currentTarget.style.color = 'var(--admin-accent, #449031)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = 'var(--admin-text-secondary)';
-                }}
                 title='Minimize and continue in background'
-                className='tooltip-wrapper'
+                className='csv-upload-minimize-btn tooltip-wrapper'
               >
                 <i className='fa-solid fa-window-minimize'></i>
                 <span className='tooltip'>Minimize and continue in background</span>
               </button>
-              <h3 className='margin-bottom-24'>Uploading Orders...</h3>
-              <div className='margin-bottom-24'>
-                <div className='progress-label'>
-                  <span>Upload Progress</span>
-                  <span className='progress-percentage'>
+              <h3 style={{ marginBottom: '20px', textAlign: 'center' }}>Uploading Orders</h3>
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '14px', color: 'var(--admin-text-secondary)', fontWeight: '500' }}>
+                    {totalRecords > 0
+                      ? `Processing ${uploadedRecords} of ${totalRecords} records`
+                      : 'Uploading file'}
+                  </span>
+                  <span style={{ fontSize: '14px', color: 'var(--admin-text)', fontWeight: '600' }}>
                     {uploadedRecords > 0 && totalRecords > 0
                       ? `${uploadedRecords} / ${totalRecords}`
                       : `${Math.round(uploadProgress)}%`}
                   </span>
                 </div>
-                <div className='progress progress-bar-container'>
+                <div className='progress progress-bar-container' style={{ height: '8px', borderRadius: '4px', overflow: 'hidden', background: 'var(--admin-bg-tertiary)' }}>
                   <div
                     className='progress-bar progress-fill'
                     style={{
-                      width: `${uploadProgress}%`,
+                      width: `${Math.max(1, uploadProgress)}%`,
+                      height: '100%',
+                      background: 'var(--admin-accent)',
+                      transition: 'width 0.3s ease',
+                      borderRadius: '4px',
                     }}
-                  >
-                    {uploadProgress >= 10 && (
-                      <span>
-                        {uploadedRecords > 0 && totalRecords > 0
-                          ? `${uploadedRecords} / ${totalRecords}`
-                          : `${Math.round(uploadProgress)}%`}
-                      </span>
-                    )}
-                  </div>
+                  />
                 </div>
               </div>
-              <p style={{ color: 'var(--admin-text-secondary)' }}>
-                {totalRecords > 0
-                  ? `Processing ${uploadedRecords} of ${totalRecords} records... Please wait.`
-                  : 'Processing your file... Please wait.'}
-              </p>
-              <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'center' }}>
                 <button
                   className='btn btn-ghost btn-small'
                   onClick={() => setIsProgressMinimized(true)}
@@ -845,7 +837,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
             </div>
           )}
 
-          {/* Minimized Progress Indicator */}
+          {}
           {isUploading && isProgressMinimized && (
             <div
               className='dashboard-card'
@@ -861,14 +853,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                 transition: 'all 0.2s ease',
               }}
               onClick={() => setIsProgressMinimized(false)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background =
-                  'var(--admin-accent-light, rgba(68, 144, 49, 0.15))';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background =
-                  'var(--admin-accent-light, rgba(68, 144, 49, 0.1))';
-              }}
+              className="csv-upload-progress-card"
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
                 <div
@@ -929,14 +914,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                     fontSize: '16px',
                     transition: 'all 0.2s ease',
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)';
-                    e.currentTarget.style.color = 'var(--admin-accent, #449031)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = 'var(--admin-text-secondary)';
-                  }}
+                  className="csv-upload-maximize-btn"
                   title='Show full progress'
                 >
                   <i className='fa-solid fa-window-maximize'></i>
@@ -945,7 +923,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
             </div>
           )}
 
-          {/* Upload Success */}
+          {}
           {uploadStatus === 'success' && (
             <div
               className='dashboard-card'
@@ -969,7 +947,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
             </div>
           )}
 
-          {/* CSV Format Requirements */}
+          {}
           {!file && (
             <div className='dashboard-card' style={{ marginTop: '24px' }}>
               <h4 style={{ marginBottom: '12px' }}>

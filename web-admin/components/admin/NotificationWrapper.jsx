@@ -8,11 +8,11 @@ const NotificationWrapper = () => {
   const containerRef = useRef(null);
   const notificationRefs = useRef(new Map());
 
-  // Auto-scroll to latest notification with smooth behavior
+  
   useEffect(() => {
     if (containerRef.current && notifications.length > 0) {
       const container = containerRef.current;
-      // Smooth scroll to bottom
+      
       container.scrollTo({
         top: container.scrollHeight,
         behavior: 'smooth',
@@ -20,7 +20,7 @@ const NotificationWrapper = () => {
     }
   }, [notifications]);
 
-  // Add entrance animation delay based on position
+  
   useEffect(() => {
     notifications.forEach((notification, index) => {
       const element = notificationRefs.current.get(notification.id);
@@ -65,7 +65,7 @@ const NotificationWrapper = () => {
   };
 
   const handleNotificationClick = (id) => {
-    // Only dismiss on click if it's not an error (errors should require explicit close)
+    
     const notification = notifications.find((n) => n.id === id);
     if (notification && notification.type !== 'error') {
       removeNotification(id);

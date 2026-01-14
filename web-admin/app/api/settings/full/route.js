@@ -1,12 +1,9 @@
-/**
- * Next.js API Route: Full Settings (Admin)
- * Migrated from Express backend
- */
+
 import connectDB from '../../../../lib/db.js';
 import Settings from '../../../../lib/models/Settings.js';
 import { isAdmin, createErrorResponse } from '../../../../lib/middleware/auth.js';
 
-// GET /api/settings/full - admin only
+
 export async function GET(request) {
   try {
     await connectDB();

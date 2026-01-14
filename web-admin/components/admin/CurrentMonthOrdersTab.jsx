@@ -30,8 +30,8 @@ const CurrentMonthOrdersTab = ({
   const now = new Date();
   const currentMonthName = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-  // Quick filter state
-  const [quickFilter, setQuickFilter] = useState('all'); // 'all', 'today', 'yesterday', 'thisWeek', 'pending', 'paid'
+  
+  const [quickFilter, setQuickFilter] = useState('all'); 
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddOrderModal, setShowAddOrderModal] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
@@ -48,10 +48,10 @@ const CurrentMonthOrdersTab = ({
     paymentMode: 'Online',
   });
 
-  // Keyboard shortcut for new order (Ctrl+N / Cmd+N) and custom event listener
+  
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Only handle if not typing in an input/textarea/select
+      
       if (
         (e.ctrlKey || e.metaKey) &&
         e.key === 'n' &&
@@ -75,12 +75,12 @@ const CurrentMonthOrdersTab = ({
     };
   }, []);
 
-  // Get current month orders
+  
   const currentMonthOrders = useMemo(() => {
     return getFilteredOrdersByDate(orders, 'month', '', '');
   }, [orders]);
 
-  // Calculate stats
+  
   const currentMonthStats = useMemo(() => {
     const revenue = getTotalRevenue(currentMonthOrders);
     const total = currentMonthOrders.length;
@@ -103,14 +103,14 @@ const CurrentMonthOrdersTab = ({
       return sum + (isNaN(amount) ? 0 : amount);
     }, 0);
 
-    // Calculate month-over-month growth
+    
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
     const lastMonthOrders = orders.filter((o) => {
       try {
-        // Never use createdAt (today's date) as fallback - only use actual order date
+        
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === lastMonthYear;
       } catch (e) {
@@ -134,7 +134,7 @@ const CurrentMonthOrdersTab = ({
     };
   }, [currentMonthOrders, orders, now]);
 
-  // Quick filter dates
+  
   const today = new Date(now);
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
@@ -147,7 +147,7 @@ const CurrentMonthOrdersTab = ({
   thisWeekStart.setDate(now.getDate() - now.getDay());
   thisWeekStart.setHours(0, 0, 0, 0);
 
-  // Filter orders based on quick filter
+  
   const filteredOrders = useMemo(() => {
     let filtered = [...currentMonthOrders];
 
@@ -155,7 +155,7 @@ const CurrentMonthOrdersTab = ({
       case 'today':
         filtered = filtered.filter((o) => {
           try {
-            // Never use createdAt (today's date) as fallback - only use actual order date
+            
             const orderDate = parseOrderDate(o.date || o.order_date || null);
             return orderDate >= today && orderDate < tomorrow;
           } catch (e) {
@@ -166,7 +166,7 @@ const CurrentMonthOrdersTab = ({
       case 'yesterday':
         filtered = filtered.filter((o) => {
           try {
-            // Never use createdAt (today's date) as fallback - only use actual order date
+            
             const orderDate = parseOrderDate(o.date || o.order_date || null);
             return orderDate >= yesterday && orderDate < today;
           } catch (e) {
@@ -177,7 +177,7 @@ const CurrentMonthOrdersTab = ({
       case 'thisWeek':
         filtered = filtered.filter((o) => {
           try {
-            // Never use createdAt (today's date) as fallback - only use actual order date
+            
             const orderDate = parseOrderDate(o.date || o.order_date || null);
             return orderDate >= thisWeekStart;
           } catch (e) {
@@ -192,11 +192,11 @@ const CurrentMonthOrdersTab = ({
         filtered = filtered.filter((o) => isPaidStatus(o.status));
         break;
       default:
-        // 'all' - no filter
+        
         break;
     }
 
-    // Apply search filter
+    
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((order) => {
@@ -211,15 +211,15 @@ const CurrentMonthOrdersTab = ({
       });
     }
 
-    // Sort by orderId (newest first)
+    
     return sortOrdersByOrderId(filtered);
   }, [currentMonthOrders, quickFilter, searchQuery, today, tomorrow, yesterday, thisWeekStart]);
 
-  // Quick filter counts
+  
   const quickFilterCounts = useMemo(() => {
     const todayOrders = currentMonthOrders.filter((o) => {
       try {
-        // Never use createdAt (today's date) as fallback - only use actual order date
+        
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         return orderDate >= today && orderDate < tomorrow;
       } catch (e) {
@@ -229,7 +229,7 @@ const CurrentMonthOrdersTab = ({
 
     const yesterdayOrders = currentMonthOrders.filter((o) => {
       try {
-        // Never use createdAt (today's date) as fallback - only use actual order date
+        
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         return orderDate >= yesterday && orderDate < today;
       } catch (e) {
@@ -239,7 +239,7 @@ const CurrentMonthOrdersTab = ({
 
     const thisWeekOrders = currentMonthOrders.filter((o) => {
       try {
-        // Never use createdAt (today's date) as fallback - only use actual order date
+        
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         return orderDate >= thisWeekStart;
       } catch (e) {
@@ -260,16 +260,16 @@ const CurrentMonthOrdersTab = ({
     };
   }, [currentMonthOrders, today, tomorrow, yesterday, thisWeekStart]);
 
-  // Pagination
+  
   const totalPages = Math.ceil(filteredOrders.length / recordsPerPage);
   const startIndex = (currentPage - 1) * recordsPerPage;
   const paginatedOrders = filteredOrders.slice(startIndex, startIndex + recordsPerPage);
 
-  // Handle new order change
+  
   const handleNewOrderChange = (field, value) => {
     const updated = { ...newOrder, [field]: value };
 
-    // Auto-calculate total when quantity or unitPrice changes
+    
     if (field === 'quantity' || field === 'unitPrice') {
       const qty = field === 'quantity' ? parseInt(value) || 1 : parseInt(updated.quantity) || 1;
       const price =
@@ -280,7 +280,7 @@ const CurrentMonthOrdersTab = ({
     setNewOrder(updated);
   };
 
-  // Handle save order
+  
   const handleSaveOrder = async () => {
     try {
       if (onAddOrder) {
@@ -305,7 +305,7 @@ const CurrentMonthOrdersTab = ({
     }
   };
 
-  // Get recent addresses for autocomplete
+  
   const recentAddresses = useMemo(() => {
     const addresses = new Set();
     currentMonthOrders.forEach((o) => {
@@ -318,9 +318,6 @@ const CurrentMonthOrdersTab = ({
   if (loading) {
     return (
       <div className='admin-content'>
-        <div className='dashboard-header'>
-          <h2>Current Month Orders</h2>
-        </div>
         <PremiumLoader message='Loading orders...' size='large' />
       </div>
     );
@@ -328,10 +325,10 @@ const CurrentMonthOrdersTab = ({
 
   return (
     <div className='admin-content'>
-      {/* STATS ROW */}
+      {}
       <div className='admin-stats'>
         <div className='stat-card'>
-          <i className='fa-solid fa-rupee-sign'></i>
+          <i className='fa-solid fa-coins'></i>
           <div>
             <h3>₹{formatCurrency(currentMonthStats.revenue)}</h3>
             <p>This Month Revenue</p>
@@ -345,26 +342,17 @@ const CurrentMonthOrdersTab = ({
           </div>
         </div>
         <div className='stat-card'>
-          <i
-            className='fa-solid fa-exclamation-triangle'
-            style={{ color: 'var(--admin-warning)' }}
-          ></i>
+          <i className='fa-solid fa-exclamation-triangle icon-color-warning'></i>
           <div>
             <h3>₹{formatCurrency(currentMonthStats.pendingAmount)}</h3>
             <p>Pending Payments</p>
-            <p
-              style={{
-                fontSize: '0.85rem',
-                marginTop: '0.25rem',
-                color: 'var(--admin-text-light)',
-              }}
-            >
+            <p className='stat-card-subtitle'>
               {currentMonthStats.pendingCount} orders
             </p>
           </div>
         </div>
         <div className='stat-card'>
-          <i className='fa-solid fa-chart-line' style={{ color: 'var(--admin-success)' }}></i>
+          <i className='fa-solid fa-chart-line icon-color-success'></i>
           <div>
             <h3>
               {currentMonthStats.growth === Infinity
@@ -373,102 +361,88 @@ const CurrentMonthOrdersTab = ({
                     1
                   )}%`}
             </h3>
-            <p>vs Last Month</p>
-            <p
-              style={{
-                fontSize: '0.85rem',
-                marginTop: '0.25rem',
-                color: 'var(--admin-text-light)',
-              }}
-            >
-              {currentMonthStats.growth >= 0 ? '↑' : '↓'}
+            <p>
+              vs Last Month {currentMonthStats.growth !== Infinity && (
+                <span className='stat-card-arrow'>{currentMonthStats.growth >= 0 ? '↑' : '↓'}</span>
+              )}
             </p>
           </div>
         </div>
       </div>
 
-      {/* FILTER & ACTION BAR */}
+      {}
       <div className='dashboard-card dashboard-card-spaced'>
-        {/* Quick Filter Buttons */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
-          <button
-            className={`btn ${quickFilter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-            onClick={() => {
-              setQuickFilter('all');
-              if (onPageChange) onPageChange(1);
-            }}
-            style={{ fontSize: '13px', padding: '8px 16px' }}
-          >
-            All ({quickFilterCounts.all})
-          </button>
-          <button
-            className={`btn ${quickFilter === 'today' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-            onClick={() => {
-              setQuickFilter('today');
-              if (onPageChange) onPageChange(1);
-            }}
-            style={{ fontSize: '13px', padding: '8px 16px' }}
-          >
-            <i className='fa-solid fa-calendar-day' style={{ marginRight: '6px' }}></i>
-            Today ({quickFilterCounts.today})
-          </button>
-          <button
-            className={`btn ${quickFilter === 'yesterday' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-            onClick={() => {
-              setQuickFilter('yesterday');
-              if (onPageChange) onPageChange(1);
-            }}
-            style={{ fontSize: '13px', padding: '8px 16px' }}
-          >
-            <i className='fa-solid fa-calendar' style={{ marginRight: '6px' }}></i>
-            Yesterday ({quickFilterCounts.yesterday})
-          </button>
-          <button
-            className={`btn ${quickFilter === 'thisWeek' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-            onClick={() => {
-              setQuickFilter('thisWeek');
-              if (onPageChange) onPageChange(1);
-            }}
-            style={{ fontSize: '13px', padding: '8px 16px' }}
-          >
-            <i className='fa-solid fa-calendar-week' style={{ marginRight: '6px' }}></i>
-            This Week ({quickFilterCounts.thisWeek})
-          </button>
-          <button
-            className={`btn ${quickFilter === 'pending' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-            onClick={() => {
-              setQuickFilter('pending');
-              if (onPageChange) onPageChange(1);
-            }}
-            style={{
-              fontSize: '13px',
-              padding: '8px 16px',
-              color: quickFilter === 'pending' ? 'var(--admin-warning)' : undefined,
-            }}
-          >
-            <i className='fa-solid fa-exclamation-triangle' style={{ marginRight: '6px' }}></i>
-            Pending ({quickFilterCounts.pending})
-          </button>
-          <button
-            className={`btn ${quickFilter === 'paid' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-            onClick={() => {
-              setQuickFilter('paid');
-              if (onPageChange) onPageChange(1);
-            }}
-            style={{
-              fontSize: '13px',
-              padding: '8px 16px',
-              color: quickFilter === 'paid' ? 'var(--admin-success)' : undefined,
-            }}
-          >
-            <i className='fa-solid fa-check-circle' style={{ marginRight: '6px' }}></i>
-            Paid ({quickFilterCounts.paid})
-          </button>
-        </div>
+        {}
+        <div className='filter-bar-flex mb-12'>
+          {}
+          <div className='flex flex-wrap gap-8'>
+            <button
+              className={`btn ${quickFilter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+              onClick={() => {
+                setQuickFilter('all');
+                if (onPageChange) onPageChange(1);
+              }}
+            >
+              All ({quickFilterCounts.all})
+            </button>
+            <button
+              className={`btn ${quickFilter === 'today' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+              onClick={() => {
+                setQuickFilter('today');
+                if (onPageChange) onPageChange(1);
+              }}
+            >
+              <i className='fa-solid fa-calendar-day mr-6'></i>
+              Today ({quickFilterCounts.today})
+            </button>
+            <button
+              className={`btn ${quickFilter === 'yesterday' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+              onClick={() => {
+                setQuickFilter('yesterday');
+                if (onPageChange) onPageChange(1);
+              }}
+            >
+              <i className='fa-solid fa-calendar mr-6'></i>
+              Yesterday ({quickFilterCounts.yesterday})
+            </button>
+            <button
+              className={`btn ${quickFilter === 'thisWeek' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+              onClick={() => {
+                setQuickFilter('thisWeek');
+                if (onPageChange) onPageChange(1);
+              }}
+            >
+              <i className='fa-solid fa-calendar-week mr-6'></i>
+              This Week ({quickFilterCounts.thisWeek})
+            </button>
+          </div>
 
-        {/* Search and Actions */}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div className='search-input-wrapper' style={{ flex: 1, minWidth: '250px' }}>
+          {}
+          <div className='flex flex-wrap gap-8'>
+            <button
+              className={`btn ${quickFilter === 'pending' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+              onClick={() => {
+                setQuickFilter('pending');
+                if (onPageChange) onPageChange(1);
+              }}
+            >
+              <i className='fa-solid fa-exclamation-triangle mr-6'></i>
+              Pending ({quickFilterCounts.pending})
+            </button>
+            <button
+              className={`btn ${quickFilter === 'paid' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+              onClick={() => {
+                setQuickFilter('paid');
+                if (onPageChange) onPageChange(1);
+              }}
+            >
+              <i className='fa-solid fa-check-circle mr-6'></i>
+              Paid ({quickFilterCounts.paid})
+            </button>
+          </div>
+
+          {}
+          <div className='search-input-wrapper search-input-flex-250'>
             <i className='fa-solid fa-search search-input-icon'></i>
             <input
               type='text'
@@ -478,70 +452,13 @@ const CurrentMonthOrdersTab = ({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className='action-buttons-group'>
-            <button
-              className='btn btn-secondary btn-small'
-              title='Upload CSV'
-              onClick={() => {
-                // TODO: Open CSV upload modal
-                if (showNotification) showNotification('CSV upload coming soon', 'info');
-              }}
-            >
-              <i className='fa-solid fa-upload'></i> Upload CSV
-            </button>
-            <button
-              className='btn btn-secondary btn-small'
-              title='Export Month'
-              onClick={() => {
-                const csvContent =
-                  'Date,Address,Quantity,Amount,Mode,Status,Payment\n' +
-                  filteredOrders
-                    .map((o) => {
-                      // Never use createdAt (today's date) as fallback - only use actual order date
-                      const date = new Date(o.date || o.order_date || 0);
-                      const orderDate = parseOrderDate(o.date || o.order_date || null);
-                      return `"${formatDate(orderDate)}","${
-                        o.deliveryAddress || o.customerAddress || o.address || 'N/A'
-                      }","${o.quantity || 1}","${o.total || o.totalAmount || 0}","${
-                        o.mode || 'N/A'
-                      }","${o.status || 'N/A'}","${o.paymentMode || 'N/A'}"`;
-                    })
-                    .join('\n');
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `current_month_export_${
-                  new Date().toISOString().split('T')[0]
-                }.csv`;
-                link.click();
-                if (showNotification)
-                  showNotification('Month data exported successfully', 'success');
-              }}
-            >
-              <i className='fa-solid fa-download'></i> Export Month
-            </button>
-            <button
-              className='btn btn-ghost btn-small'
-              title='Refresh'
-              onClick={() => loadOrders && loadOrders()}
-            >
-              <i className='fa-solid fa-refresh'></i> Refresh
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* DATA TABLE */}
+      {}
       <div className='dashboard-card'>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '16px',
-          }}
-        >
-          <div style={{ color: 'var(--admin-text-secondary)', fontSize: '0.9rem' }}>
+        <div className='flex justify-between items-center mb-16'>
+          <div className='text-secondary text-base'>
             Showing {startIndex + 1}-{Math.min(startIndex + recordsPerPage, filteredOrders.length)}{' '}
             of {filteredOrders.length} orders
           </div>
@@ -549,11 +466,11 @@ const CurrentMonthOrdersTab = ({
 
         {filteredOrders.length === 0 ? (
           <EmptyState
-            icon='fa-solid fa-inbox'
+            icon='fa-inbox'
             title='No orders found'
             message='Try adjusting your filters or add a new order'
-            actionLabel='Add New Order'
-            onAction={() => setShowAddOrderModal(true)}
+            addOrderLabel='Add New Order'
+            onAddOrder={() => setShowAddOrderModal(true)}
           />
         ) : (
           <>
@@ -577,7 +494,7 @@ const CurrentMonthOrdersTab = ({
                 <tbody>
                   {paginatedOrders.map((order, idx) => {
                     const orderDate = parseOrderDate(
-                      // Never use createdAt (today's date) as fallback - only use actual order date
+                      
                       order.date || order.order_date || null
                     );
                     const dateStr = formatDate(orderDate);
@@ -590,7 +507,7 @@ const CurrentMonthOrdersTab = ({
                           setEditingOrder(order);
                           setShowAddOrderModal(true);
                         }}
-                        style={{ cursor: 'pointer' }}
+                        className='cursor-pointer'
                       >
                         <td>{startIndex + idx + 1}</td>
                         <td>{dateStr}</td>
@@ -622,9 +539,9 @@ const CurrentMonthOrdersTab = ({
                         <td>{order.paymentMode || 'N/A'}</td>
                         <td className='monospace-text'>{order.orderId || 'N/A'}</td>
                         <td>
-                          <div style={{ display: 'flex', gap: '8px' }}>
+                          <div className='flex gap-8'>
                             <button
-                              className='action-icon-btn action-icon-edit'
+                              className='btn btn-ghost btn-icon action-icon-edit'
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setEditingOrder(order);
@@ -635,7 +552,7 @@ const CurrentMonthOrdersTab = ({
                               <i className='fa-solid fa-pencil'></i>
                             </button>
                             <button
-                              className='action-icon-btn action-icon-delete'
+                              className='btn btn-ghost btn-icon action-icon-delete'
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (onDeleteOrder) onDeleteOrder(order._id || order.orderId);
@@ -653,7 +570,7 @@ const CurrentMonthOrdersTab = ({
               </table>
             </div>
 
-            {/* PAGINATION */}
+            {}
             <div className='pagination-controls'>
               <div>
                 <button
@@ -663,7 +580,7 @@ const CurrentMonthOrdersTab = ({
                 >
                   <i className='fa-solid fa-chevron-left'></i> Previous
                 </button>
-                <span style={{ margin: '0 16px', fontWeight: '600' }}>
+                <span className='mx-16 font-semibold'>
                   Page {currentPage} of {totalPages || 1}
                 </span>
                 <button
@@ -674,11 +591,10 @@ const CurrentMonthOrdersTab = ({
                   Next <i className='fa-solid fa-chevron-right'></i>
                 </button>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className='flex items-center gap-8'>
                 <span>Show:</span>
                 <select
-                  className='input-field'
-                  style={{ width: '80px', padding: '6px 8px' }}
+                  className='input-field w-80 p-8'
                   value={recordsPerPage}
                   onChange={(e) => {
                     const value = parseInt(e.target.value);
@@ -697,7 +613,7 @@ const CurrentMonthOrdersTab = ({
         )}
       </div>
 
-      {/* ADD ORDER MODAL */}
+      {}
       {showAddOrderModal && (
         <OrderModal
           show={showAddOrderModal}

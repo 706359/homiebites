@@ -1,7 +1,4 @@
-/**
- * Next.js API Route: Auth Login
- * Complete password management system - following ADMIN_PASSWORD.md
- */
+
 import connectDB from '../../../../lib/db.js';
 import User from '../../../../lib/models/User.js';
 import jwt from 'jsonwebtoken';
@@ -9,11 +6,11 @@ import { verifyPassword } from '../../../../lib/utils/password.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'homiebites_secret';
 const MAX_LOGIN_ATTEMPTS = 5;
-const LOCK_TIME = 15 * 60 * 1000; // 15 minutes
+const LOCK_TIME = 15 * 60 * 1000; 
 
 export async function POST(request) {
   try {
-    // Connect to database first
+    
     try {
       await connectDB();
     } catch (dbError) {
@@ -31,7 +28,7 @@ export async function POST(request) {
     const body = await request.json();
     const { email, password } = body;
 
-    // Following ADMIN_PASSWORD.md - use email for login
+    
     const normalizedEmail = String(email || '').trim().toLowerCase();
     const trimmedPassword = String(password || '').trim();
 
@@ -52,7 +49,7 @@ export async function POST(request) {
       );
     }
 
-    // Find user by email (following ADMIN_PASSWORD.md)
+    
     let user;
     try {
       user = await User.findOne({ email: normalizedEmail });
@@ -92,7 +89,7 @@ export async function POST(request) {
       return Response.json(errorResponse, { status: 401 });
     }
 
-    // Check if account is locked (following ADMIN_PASSWORD.md)
+    
     if (user.lockUntil && user.lockUntil > Date.now()) {
       const minutesLeft = Math.ceil((user.lockUntil.getTime() - Date.now()) / 60000);
       console.error('[Login API] Account locked:', {
@@ -111,7 +108,7 @@ export async function POST(request) {
       );
     }
 
-    // Verify password
+    
     let isMatch = false;
     if (user.password) {
       try {
@@ -139,7 +136,7 @@ export async function POST(request) {
     }
 
     if (!isMatch) {
-      // Increment failed login attempts
+      
       const previousAttempts = user.loginAttempts || 0;
       user.loginAttempts = previousAttempts + 1;
 
@@ -189,12 +186,12 @@ export async function POST(request) {
       return Response.json(errorResponse, { status: 401 });
     }
 
-    // Reset login attempts on successful login
+    
     user.loginAttempts = 0;
     user.lockUntil = null;
     await user.save();
 
-    // Generate JWT token
+    
     let token;
     try {
       token = jwt.sign(
@@ -219,7 +216,7 @@ export async function POST(request) {
       );
     }
 
-    // Check if temporary password
+    
     if (user.isTemporaryPassword) {
       console.log('[Login API] Successful login with temporary password:', {
         email: normalizedEmail,
@@ -279,7 +276,7 @@ export async function POST(request) {
       timestamp: new Date().toISOString()
     });
     
-    // Handle validation errors
+    
     if (error.name === 'ValidationError') {
       console.error('[Login API] Validation error:', {
         errors: Object.values(error.errors || {}).map(e => e.message),
@@ -295,7 +292,7 @@ export async function POST(request) {
       );
     }
     
-    // Handle database connection errors
+    
     const errorMessage = error.message || '';
     if (errorMessage.includes('connect') || 
         errorMessage.includes('ECONNREFUSED') || 
@@ -316,7 +313,7 @@ export async function POST(request) {
       );
     }
     
-    // Handle JSON parsing errors
+    
     if (error instanceof SyntaxError || errorMessage.includes('JSON')) {
       console.error('[Login API] JSON parsing error:', {
         error: errorMessage,

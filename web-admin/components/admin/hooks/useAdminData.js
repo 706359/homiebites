@@ -1,6 +1,4 @@
-/**
- * Custom hook for loading admin dashboard data
- */
+
 import { useCallback, useEffect, useState } from 'react';
 import api from '../../../lib/api-admin.js';
 import { getMenuData, getMenuDataSync } from '../../../lib/menuData.js';
@@ -48,11 +46,13 @@ export const useAdminData = () => {
   }, []);
 
   const loadOrders = useCallback(async (filters = {}, hardRefresh = false) => {
+    console.log('[useAdminData] loadOrders called', { filters, hardRefresh });
     try {
       const token = localStorage.getItem('homiebites_token');
       const isAdmin = localStorage.getItem('homiebites_admin') === 'true';
 
-      // Don't attempt API calls without authentication
+      console.log('[useAdminData] Auth check:', { hasToken: !!token, isAdmin });
+      
       if (!token || !isAdmin) {
         console.warn('[useAdminData] Cannot load orders: missing token or admin status', {
           hasToken: !!token,
@@ -63,38 +63,52 @@ export const useAdminData = () => {
       }
 
       try {
-        // Load ALL orders from backend (filters are applied in UI)
-        // Pass hardRefresh flag to bypass cache
+        console.log('[useAdminData] Calling api.getAllOrders...');
+        
         const response = await api.getAllOrders({}, { hardRefresh });
+        
+        console.log('[useAdminData] API response:', {
+          success: response?.success,
+          dataLength: response?.data?.length,
+          hasData: !!response?.data,
+          error: response?.error
+        });
 
         if (response.success && response.data) {
           let nextOrders = Array.isArray(response.data) ? response.data : [];
+          console.log('[useAdminData] Orders received:', nextOrders.length);
           if (nextOrders.length > 0) {
             nextOrders = sortOrdersByOrderId(nextOrders);
+            console.log('[useAdminData] Orders sorted, first order:', nextOrders[0]?.orderId);
           }
           setOrders((prev) => {
             const prevArr = Array.isArray(prev) ? prev : [];
-            if (prevArr.length === 0 && nextOrders.length === 0) return prevArr;
+            if (prevArr.length === 0 && nextOrders.length === 0) {
+              console.warn('[useAdminData] Both prev and next orders are empty, keeping prev');
+              return prevArr;
+            }
+            console.log('[useAdminData] Setting orders:', nextOrders.length);
             return nextOrders;
           });
         } else {
           console.warn('[useAdminData] API returned unsuccessful response:', response);
-          // Only clear orders if we got a clear error response, not on HTML errors
+          
           if (response && response.error) {
+            console.error('[useAdminData] API error, clearing orders');
             setOrders([]);
           }
         }
       } catch (apiError) {
         console.error('[useAdminData] Failed to load orders from API:', apiError.message);
 
-        // Don't retry on auth errors - API client will handle redirect
+        
         if (apiError.message && apiError.message.includes('Authentication failed')) {
           console.warn('[useAdminData] Authentication failed. Stopping data load.');
           setOrders([]);
-          return; // Don't throw, just return empty
+          return; 
         }
 
-        // Check if it's a backend not available error
+        
         if (
           apiError.message &&
           (apiError.message.includes('HTML') ||
@@ -107,15 +121,15 @@ export const useAdminData = () => {
           );
         }
 
-        // Don't clear orders on error - keep existing data (might be stale but better than empty)
-        // setOrders([]);
-        throw apiError; // Re-throw to let caller handle
+        
+        
+        throw apiError; 
       }
     } catch (error) {
       console.error('[useAdminData] Error loading orders:', error);
-      // Don't clear orders on error - keep existing data
-      // setOrders([]);
-      throw error; // Re-throw to let caller handle
+      
+      
+      throw error; 
     }
   }, []);
 
@@ -130,12 +144,12 @@ export const useAdminData = () => {
             localStorage.setItem('homiebites_users', JSON.stringify(response.data));
             return;
           }
-          // If endpoint doesn't exist (404), silently fall back to cache
+          
           if (response.error && response.error.includes('Route not found')) {
-            // Silently fall through to localStorage fallback
+            
           }
         } catch (apiError) {
-          // Only log non-404 errors
+          
           if (!apiError.message.includes('Route not found') && !apiError.message.includes('404')) {
             console.warn('Failed to load users from API, using cached data:', apiError.message);
           }
@@ -151,7 +165,7 @@ export const useAdminData = () => {
         }
       }
     } catch (error) {
-      // Silently handle errors for optional endpoint
+      
       if (!error.message.includes('Route not found') && !error.message.includes('404')) {
         console.error('Error loading users:', error);
       }
@@ -203,9 +217,9 @@ export const useAdminData = () => {
     }
   }, []);
 
-  // Load all data on mount - ONLY if authenticated
+  
   useEffect(() => {
-    // Check authentication before loading
+    
     const token = localStorage.getItem('homiebites_token');
     const isAdmin = localStorage.getItem('homiebites_admin') === 'true';
 
@@ -256,7 +270,7 @@ export const useAdminData = () => {
           }),
         ]);
 
-        // Load synchronous data
+        
         try {
           loadSettings();
         } catch (err) {
@@ -333,7 +347,7 @@ export const useAdminData = () => {
   ]);
 
   return {
-    // Data
+    
     menuData,
     offersData,
     orders,
@@ -343,7 +357,7 @@ export const useAdminData = () => {
     notifications,
     currentUser,
     loading,
-    // Setters
+    
     setMenuData,
     setOffersData,
     setOrders,
@@ -352,7 +366,7 @@ export const useAdminData = () => {
     setSettings,
     setNotifications,
     setCurrentUser,
-    // Loaders
+    
     loadMenuData,
     loadOffersData,
     loadOrders,

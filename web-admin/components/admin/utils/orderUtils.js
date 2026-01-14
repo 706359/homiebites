@@ -1,10 +1,8 @@
-/**
- * Order-related utility functions and calculations
- */
 
-/**
- * Format currency in Indian format (rupees only, no paisa)
- */
+
+
+import { parseOrderDate } from './dateUtils.js';
+
 export const formatCurrency = (amount) => {
   try {
     const num = parseFloat(amount) || 0;
@@ -18,10 +16,7 @@ export const formatCurrency = (amount) => {
   }
 };
 
-/**
- * Format number in Indian format without decimals (for chart labels)
- * Shows full amount like 250, 2,450, 35,682 instead of abbreviated like 2k, 1k
- */
+
 export const formatNumberIndian = (amount) => {
   try {
     const num = parseFloat(amount) || 0;
@@ -32,10 +27,7 @@ export const formatNumberIndian = (amount) => {
   }
 };
 
-/**
- * Get total revenue (all orders)
- * Prioritizes totalAmount (server-calculated), falls back to total, then calculates from quantity * unitPrice
- */
+
 export const getTotalRevenue = (ordersList = []) => {
   try {
     return ordersList.reduce((sum, order) => {
@@ -43,17 +35,24 @@ export const getTotalRevenue = (ordersList = []) => {
       
       let amount = null;
       
+      // Always use stored totalAmount/total if it exists - don't recalculate from qty * price
       if (order.totalAmount !== undefined && order.totalAmount !== null) {
+        // Use exact totalAmount value as stored (even if 0)
         amount = parseFloat(order.totalAmount);
       } else if (order.total !== undefined && order.total !== null) {
+        // Use exact total value as stored (even if 0)
         amount = parseFloat(order.total);
       }
       
+      // Only calculate from qty * price if totalAmount and total are both missing/null
       if (amount === null || isNaN(amount)) {
         const qty = parseFloat(order.quantity || 1);
         const price = parseFloat(order.unitPrice || 0);
-        amount = qty * price;
+        // Only round when calculating from qty * price to avoid floating-point precision issues (e.g., 33.33333333 * 3 = 99.99999999)
+        amount = Math.round(qty * price);
       }
+      // If totalAmount/total exists, use it as-is (it's the source of truth)
+      // Only round when calculating from qty * price to avoid precision errors
       
       return sum + (isNaN(amount) ? 0 : amount);
     }, 0);
@@ -63,9 +62,7 @@ export const getTotalRevenue = (ordersList = []) => {
   }
 };
 
-/**
- * Get delivered revenue (only delivered orders)
- */
+
 export const getDeliveredRevenue = (ordersList = []) => {
   try {
     return ordersList
@@ -73,16 +70,21 @@ export const getDeliveredRevenue = (ordersList = []) => {
       .reduce((sum, order) => {
         let amount = null;
         
+        // Always use stored totalAmount/total if it exists - don't recalculate from qty * price
         if (order.totalAmount !== undefined && order.totalAmount !== null) {
+          // Use exact totalAmount value as stored (even if 0)
           amount = parseFloat(order.totalAmount);
         } else if (order.total !== undefined && order.total !== null) {
+          // Use exact total value as stored (even if 0)
           amount = parseFloat(order.total);
         }
         
+        // Only calculate from qty * price if totalAmount and total are both missing/null
         if (amount === null || isNaN(amount)) {
           const qty = parseFloat(order.quantity || 1);
           const price = parseFloat(order.unitPrice || 0);
-          amount = qty * price;
+          // Only round when calculating from qty * price to avoid floating-point precision issues
+          amount = Math.round(qty * price);
         }
         
         return sum + (isNaN(amount) ? 0 : amount);
@@ -93,18 +95,12 @@ export const getDeliveredRevenue = (ordersList = []) => {
   }
 };
 
-/**
- * Get order date only (no time component)
- */
+
 export const getOrderDateOnly = (order) => {
   try {
     if (!order) return null;
-    const dateValue = order.createdAt || order.date;
-    if (!dateValue) return null;
-    const orderDate = new Date(dateValue);
-    if (isNaN(orderDate.getTime())) {
-      return null;
-    }
+    const orderDate = parseOrderDate(order.date || order.order_date || null);
+    if (!orderDate) return null;
     const year = orderDate.getFullYear();
     const month = String(orderDate.getMonth() + 1).padStart(2, '0');
     const day = String(orderDate.getDate()).padStart(2, '0');
@@ -114,31 +110,22 @@ export const getOrderDateOnly = (order) => {
   }
 };
 
-/**
- * Get order year
- */
+
 export const getOrderYear = (order) => {
   try {
     if (!order) return null;
     if (order.year) {
       return String(order.year);
     }
-    const dateValue = order.createdAt || order.date;
-    if (!dateValue) return null;
-    const orderDate = new Date(dateValue);
-    if (isNaN(orderDate.getTime())) {
-      return null;
-    }
+    const orderDate = parseOrderDate(order.date || order.order_date || null);
+    if (!orderDate) return null;
     return String(orderDate.getFullYear());
   } catch (error) {
     return null;
   }
 };
 
-/**
- * Calculate total amount from quantity and unit price
- * This is the ONLY way total_amount should be calculated
- */
+
 export const calculateTotalAmount = (quantity, unitPrice) => {
   try {
     const qty = parseInt(quantity) || 0;
@@ -150,24 +137,20 @@ export const calculateTotalAmount = (quantity, unitPrice) => {
   }
 };
 
-/**
- * Extract billing month (1-12) from order date
- */
+
 export const extractBillingMonth = (orderDate) => {
   try {
     if (!orderDate) return null;
     const date = new Date(orderDate);
     if (isNaN(date.getTime())) return null;
-    return date.getMonth() + 1; // 1-12
+    return date.getMonth() + 1; 
   } catch (error) {
     console.error('Error extracting billing month:', error);
     return null;
   }
 };
 
-/**
- * Extract billing year from order date
- */
+
 export const extractBillingYear = (orderDate) => {
   try {
     if (!orderDate) return null;
@@ -180,10 +163,7 @@ export const extractBillingYear = (orderDate) => {
   }
 };
 
-/**
- * Format billing month for display only (e.g., "February'24")
- * This is NEVER stored, only calculated for display
- */
+
 export const formatBillingMonth = (month, year) => {
   try {
     if (!month || !year) return '';
@@ -211,10 +191,7 @@ export const formatBillingMonth = (month, year) => {
   }
 };
 
-/**
- * Format reference month for display only (e.g., "2(Feb'24)")
- * This is NEVER stored, only calculated for display
- */
+
 export const formatReferenceMonth = (month, year) => {
   try {
     if (!month || !year) return '';
@@ -242,9 +219,7 @@ export const formatReferenceMonth = (month, year) => {
   }
 };
 
-/**
- * Normalize order date to YYYY-MM-DD format for comparison
- */
+
 export const normalizeOrderDate = (dateValue) => {
   try {
     if (!dateValue) return null;
@@ -260,9 +235,7 @@ export const normalizeOrderDate = (dateValue) => {
   }
 };
 
-/**
- * Create composite key from date and address for duplicate detection
- */
+
 export const createOrderKey = (orderDate, deliveryAddress) => {
   try {
     const normalizedDate = normalizeOrderDate(orderDate);
@@ -277,9 +250,7 @@ export const createOrderKey = (orderDate, deliveryAddress) => {
   }
 };
 
-/**
- * Find existing order by date and address (for update/insert logic)
- */
+
 export const findOrderByKey = (orders, orderDate, deliveryAddress) => {
   try {
     const key = createOrderKey(orderDate, deliveryAddress);
@@ -287,7 +258,7 @@ export const findOrderByKey = (orders, orderDate, deliveryAddress) => {
     return (
       orders.find((order) => {
         const orderKey = createOrderKey(
-          order.date || order.createdAt,
+          order.date || order.order_date || null,
           order.deliveryAddress || order.customerAddress
         );
         return orderKey === key;
@@ -299,15 +270,13 @@ export const findOrderByKey = (orders, orderDate, deliveryAddress) => {
   }
 };
 
-/**
- * Get last unit price used for a specific address (for auto-fill)
- */
+
 export const getLastUnitPriceForAddress = (orders, deliveryAddress) => {
   try {
     if (!deliveryAddress || !Array.isArray(orders)) return null;
     const normalizedAddress = String(deliveryAddress).trim().toLowerCase();
 
-    // Find most recent order for this address
+    
     const addressOrders = orders
       .filter((order) => {
         const orderAddress = String(order.deliveryAddress || order.customerAddress || '')
@@ -316,8 +285,11 @@ export const getLastUnitPriceForAddress = (orders, deliveryAddress) => {
         return orderAddress === normalizedAddress && order.unitPrice;
       })
       .sort((a, b) => {
-        const dateA = new Date(a.createdAt || a.date || 0);
-        const dateB = new Date(b.createdAt || b.date || 0);
+        const dateA = parseOrderDate(a.date || a.order_date || null);
+        const dateB = parseOrderDate(b.date || b.order_date || null);
+        if (!dateA && !dateB) return 0;
+        if (!dateA) return 1;
+        if (!dateB) return -1;
         return dateB - dateA;
       });
 
@@ -328,19 +300,13 @@ export const getLastUnitPriceForAddress = (orders, deliveryAddress) => {
   }
 };
 
-/**
- * Get last complete order data for a specific address (for auto-fill)
- * Returns the most recent order matching the address, sorted by date descending
- * @param {Array} orders - Array of all orders
- * @param {string} deliveryAddress - Address to search for
- * @returns {Object|null} Last order object or null if not found
- */
+
 export const getLastOrderForAddress = (orders, deliveryAddress) => {
   try {
     if (!deliveryAddress || !Array.isArray(orders)) return null;
     const normalizedAddress = String(deliveryAddress).trim().toLowerCase();
 
-    // Find all orders for this address
+    
     const addressOrders = orders
       .filter((order) => {
         const orderAddress = String(order.deliveryAddress || order.customerAddress || order.address || '')
@@ -349,14 +315,17 @@ export const getLastOrderForAddress = (orders, deliveryAddress) => {
         return orderAddress === normalizedAddress;
       })
       .sort((a, b) => {
-        // Sort by date descending (most recent first)
-        // Use date field first, then order_date, then createdAt
-        const dateA = new Date(a.date || a.order_date || a.createdAt || 0);
-        const dateB = new Date(b.date || b.order_date || b.createdAt || 0);
+        
+        
+        const dateA = parseOrderDate(a.date || a.order_date || null);
+        const dateB = parseOrderDate(b.date || b.order_date || null);
+        if (!dateA && !dateB) return 0;
+        if (!dateA) return 1;
+        if (!dateB) return -1;
         if (dateB.getTime() !== dateA.getTime()) {
           return dateB.getTime() - dateA.getTime();
         }
-        // If dates are same, sort by orderId descending to get the very last one
+        
         const idA = (a.orderId || '').toString();
         const idB = (b.orderId || '').toString();
         return idB.localeCompare(idA);
@@ -369,9 +338,7 @@ export const getLastOrderForAddress = (orders, deliveryAddress) => {
   }
 };
 
-/**
- * Get unique addresses for autocomplete
- */
+
 export const getUniqueAddresses = (orders) => {
   try {
     if (!Array.isArray(orders)) return [];
@@ -389,52 +356,36 @@ export const getUniqueAddresses = (orders) => {
   }
 };
 
-/**
- * Check if order status is considered "Paid"
- * Standardizes status checking across the application
- * @param {string} status - Order status
- * @returns {boolean} True if status is paid/delivered
- */
+
 export const isPaidStatus = (status, paymentStatus = null) => {
-  // Check paymentStatus first if provided (more reliable)
+  
   if (paymentStatus) {
     const ps = String(paymentStatus).toLowerCase().trim();
     if (ps === 'paid') return true;
   }
   
-  // Check status field
+  
   if (!status) return false;
   const s = String(status).toLowerCase().trim();
   return s === 'paid' || s === 'delivered';
 };
 
-/**
- * Check if order status is considered "Pending" or "Unpaid"
- * Standardizes status checking across the application
- * Checks both status and paymentStatus fields for consistency
- * @param {string} status - Order status
- * @param {string} paymentStatus - Payment status (optional, checked as fallback)
- * @returns {boolean} True if status is pending/unpaid
- */
+
 export const isPendingStatus = (status, paymentStatus = null) => {
-  // Check paymentStatus first if provided (more reliable)
+  
   if (paymentStatus) {
     const ps = String(paymentStatus).toLowerCase().trim();
     if (ps === 'pending' || ps === 'unpaid') return true;
     if (ps === 'paid') return false;
   }
   
-  // Check status field
-  if (!status) return true; // Treat missing status as pending
+  
+  if (!status) return true; 
   const s = String(status).toLowerCase().trim();
   return s === 'pending' || s === 'unpaid';
 };
 
-/**
- * Normalize order status to standard values
- * @param {string} status - Order status
- * @returns {string} Normalized status: 'Paid', 'Pending', or 'Unpaid'
- */
+
 export const normalizeStatus = (status) => {
   if (!status) return 'Pending';
   const s = String(status).toLowerCase().trim();
@@ -443,34 +394,23 @@ export const normalizeStatus = (status) => {
   return 'Pending';
 };
 
-/**
- * @deprecated Order IDs are now generated by the backend automatically.
- * This function is kept for backward compatibility only.
- * Backend generates IDs in format: HB-Jan'25-15-000079 via Order model pre('validate') hook.
- * @param {Array} orders - Array of orders to process
- * @returns {Array} Array of orders (IDs should come from backend)
- */
+
 export const ensureAllOrdersHaveUniqueIds = (orders) => {
   console.warn(
     '[DEPRECATED] ensureAllOrdersHaveUniqueIds: Order IDs are now generated by backend. This function is kept for backward compatibility only.'
   );
-  // Return orders as-is - backend handles ID generation
+  
   return orders;
 };
 
-/**
- * Extract sequence number from orderId (format: HB-Feb'24-21-000001)
- * @returns Sequence number or 0 if not found
- */
+
 export const extractOrderIdSequence = (orderId) => {
   if (!orderId) return 0;
   const match = orderId.toString().match(/HB-\w+'?\d{2}-\d{2}-(\d+)$/);
   return match && match[1] ? parseInt(match[1], 10) : 0;
 };
 
-/**
- * Sort orders by orderId descending (newest first)
- */
+
 export const sortOrdersByOrderId = (orders) => {
   if (!Array.isArray(orders) || orders.length === 0) return orders;
   

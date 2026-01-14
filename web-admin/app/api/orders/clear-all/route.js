@@ -1,7 +1,4 @@
-/**
- * Next.js API Route: Clear All Orders
- * Migrated from Express backend
- */
+
 import connectDB from '../../../../lib/db.js';
 import Order from '../../../../lib/models/Order.js';
 import { isAdmin, createErrorResponse } from '../../../../lib/middleware/auth.js';
@@ -52,11 +49,11 @@ export async function DELETE(request) {
       afterCount: 0,
     });
   } catch (error) {
-    // Handle authentication/authorization errors
+    
     if (error.status === 401 || error.status === 403) {
       return createErrorResponse(error.status, error.message || 'Authentication failed');
     }
-    // Handle database connection errors
+    
     if (error.message && (error.message.includes('connect') || error.message.includes('ECONNREFUSED'))) {
       return Response.json(
         { 

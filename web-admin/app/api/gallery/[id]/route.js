@@ -1,17 +1,14 @@
-/**
- * Next.js API Route: Gallery Item by ID
- * Migrated from Express backend
- */
+
 import connectDB from '../../../../lib/db.js';
 import Gallery from '../../../../lib/models/Gallery.js';
 import { isAdmin, createErrorResponse } from '../../../../lib/middleware/auth.js';
 
-// PUT /api/gallery/:id - admin only
+
 export async function PUT(request, { params }) {
   try {
     await connectDB();
     await isAdmin(request);
-    // Next.js 15+ requires awaiting params (safe even if params is synchronous)
+    
     const resolvedParams = params && typeof params.then === 'function' ? await params : params;
     const { id } = resolvedParams || {};
     
@@ -40,7 +37,7 @@ export async function PUT(request, { params }) {
       data: galleryItem,
     });
   } catch (error) {
-    // Handle validation errors
+    
     if (error.name === 'ValidationError') {
       return Response.json(
         { 
@@ -51,7 +48,7 @@ export async function PUT(request, { params }) {
         { status: 400 }
       );
     }
-    // Handle authentication/authorization errors
+    
     if (error.status === 401 || error.status === 403) {
       return createErrorResponse(error.status, error.message || 'Authentication failed');
     }
@@ -66,12 +63,12 @@ export async function PUT(request, { params }) {
   }
 }
 
-// DELETE /api/gallery/:id - admin only
+
 export async function DELETE(request, { params }) {
   try {
     await connectDB();
     await isAdmin(request);
-    // Next.js 15+ requires awaiting params (safe even if params is synchronous)
+    
     const resolvedParams = params && typeof params.then === 'function' ? await params : params;
     const { id } = resolvedParams || {};
     
@@ -96,7 +93,7 @@ export async function DELETE(request, { params }) {
       message: 'Gallery item deleted successfully',
     });
   } catch (error) {
-    // Handle authentication/authorization errors
+    
     if (error.status === 401 || error.status === 403) {
       return createErrorResponse(error.status, error.message || 'Authentication failed');
     }

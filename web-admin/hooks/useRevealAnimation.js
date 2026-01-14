@@ -2,16 +2,16 @@ import { useEffect } from "react";
 
 export const useRevealAnimation = () => {
   useEffect(() => {
-    // Small delay to ensure DOM is ready
+    
     const timer = setTimeout(() => {
       const revealElements = document.querySelectorAll("[data-animate]");
 
       revealElements.forEach((el) => {
-        // Only add reveal class if not already present
+        
         if (!el.classList.contains("reveal")) {
           el.classList.add("reveal");
         }
-        // If element already has 'in' class, keep it visible
+        
         if (el.classList.contains("in")) {
           el.style.opacity = "1";
           el.style.transform = "translateY(0)";
@@ -38,7 +38,7 @@ export const useRevealAnimation = () => {
       );
 
       revealElements.forEach((el) => {
-        // Only observe if not already visible
+        
         if (!el.classList.contains("in")) {
           observer.observe(el);
         }

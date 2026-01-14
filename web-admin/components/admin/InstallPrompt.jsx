@@ -9,37 +9,37 @@ const InstallPrompt = () => {
   const [showIOSPrompt, setShowIOSPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
 
-  // Only show on admin pages (not on public website)
-  // Admin routes: /admin, /admin/* (dashboard, login, forgot-password, etc.)
-  // Public routes: /, /menu, /offers, /faq, /search, etc. - should NOT show InstallPrompt
+  
+  
+  
   const isAdminPage = pathname && (pathname === '/admin' || pathname.startsWith('/admin/'));
 
   useEffect(() => {
-    // Don't run if not on admin page
+    
     if (!isAdminPage) {
       return;
     }
 
-    // Check if already installed
+    
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     if (isStandalone) {
       setIsInstalled(true);
       return;
     }
 
-    // Aggressive iOS detection - works for ANY browser on iOS
+    
     const isIOS = () => {
       const userAgent = navigator.userAgent || navigator.vendor || window.opera || '';
       const platform = navigator.platform || '';
       const vendor = navigator.vendor || '';
 
-      // Multiple detection methods
+      
       const checks = [
-        /iPad|iPhone|iPod/.test(userAgent), // Standard iOS devices
-        platform === 'MacIntel' && navigator.maxTouchPoints > 1, // iPad iOS 13+
-        /iPhone|iPad|iPod/.test(vendor), // Vendor check
-        /iPhone|iPad|iPod/.test(platform), // Platform check
-        window.DeviceMotionEvent !== undefined && /iPhone|iPad|iPod/.test(userAgent), // Device motion
+        /iPad|iPhone|iPod/.test(userAgent), 
+        platform === 'MacIntel' && navigator.maxTouchPoints > 1, 
+        /iPhone|iPad|iPod/.test(vendor), 
+        /iPhone|iPad|iPod/.test(platform), 
+        window.DeviceMotionEvent !== undefined && /iPhone|iPad|iPod/.test(userAgent), 
       ];
 
       const isIOSDevice = checks.some((check) => check === true);
@@ -48,8 +48,8 @@ const InstallPrompt = () => {
 
     const detectedIOS = isIOS();
 
-    // Show prompt for ANY browser on iOS (iPhone/iPad)
-    // Also check for mobile Safari specifically
+    
+    
     const isMobile = window.innerWidth < 1024;
     const shouldShow =
       detectedIOS ||
@@ -58,7 +58,7 @@ const InstallPrompt = () => {
         !/Chrome|CriOS|FxiOS/.test(navigator.userAgent));
 
     if (shouldShow || detectedIOS) {
-      // Add a delay to ensure the page is fully loaded
+      
       const timer = setTimeout(() => {
         const hasSeenPrompt = localStorage.getItem('pwa-ios-prompt-seen');
         if (!hasSeenPrompt) {
@@ -69,9 +69,9 @@ const InstallPrompt = () => {
       return () => clearTimeout(timer);
     }
 
-    // Listen for beforeinstallprompt (Android/Chrome)
+    
     const handleBeforeInstallPrompt = (e) => {
-      // Prevent default browser install prompt - we'll show custom button instead
+      
       e.preventDefault();
       setDeferredPrompt(e);
     };
@@ -85,7 +85,7 @@ const InstallPrompt = () => {
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
-      // Android/Chrome install
+      
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
@@ -99,12 +99,12 @@ const InstallPrompt = () => {
     localStorage.setItem('pwa-ios-prompt-seen', 'true');
   };
 
-  // Don't show if not on admin page or already installed
+  
   if (!isAdminPage || isInstalled) {
     return null;
   }
 
-  // iOS Install Instructions
+  
   if (showIOSPrompt) {
     return (
       <div
@@ -210,7 +210,7 @@ const InstallPrompt = () => {
     );
   }
 
-  // Android/Chrome Install Button
+  
   if (deferredPrompt) {
     return (
       <div

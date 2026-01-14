@@ -62,9 +62,6 @@
   transition: color 0.2s;
 }
 
-.review-form-close:hover {
-  color: var(--text-primary);
-}
 
 .review-success,
 .review-error {
@@ -141,7 +138,6 @@
   transition: color 0.2s;
 }
 
-.rating-star:hover,
 .rating-star.active {
   color: var(--primary-green);
 }

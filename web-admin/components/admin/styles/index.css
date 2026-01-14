@@ -1,119 +1,21 @@
-/* Admin Dashboard Styles - Premium Design */
-
-/* Component Styles */
 @import './theme.css';
+@import './buttons.css';
 @import './tailwind-components.css';
-@import './custom-overrides.css';
+@import './font-size-hierarchy.css';
+@import './utilities.css';
+@import './fixes.css';
+@import './components.css';
+@import './sidebar-redesign.css';
 @import './dashboard-enhancements.css';
 @import './settings-theme.css';
-@import './theme-utilities.css';
-@import './enterprise-responsive.css'; /* Enterprise-level responsive design */
-@import './mobile-first-480px.css';
-@import './spacing-fixes.css';
-@import './tab-scrolling-fixes.css';
+@import './custom-overrides.css';
+@import './responsive.css';
+@import './hover-effects.css';
+@import './order-form-fixes.css';
 
-/* Only Color Variables - No other design tokens */
-/* Admin Dashboard Color System - HomieBites Brand Colors */
-/* Light Theme Defaults - Will be overridden by dark theme */
-:root:not(.dark-theme),
-:root.light-theme {
-  /* HomieBites Brand Accent Colors */
-  --admin-accent: #a4672e; /* Brown - Primary (Chef's Shirt) */
-  --admin-secondary: #b8d84e; /* Lime Green - Secondary (Bites Text) */
-  --admin-success: #34c759; /* Success Green */
-  --admin-warning: #ff9500; /* Warning Orange */
-  --admin-danger: #ff3b30; /* Danger Red */
-  --admin-info: #007aff; /* Info Blue */
-
-  /* Extended color palette - Enterprise */
-  --admin-accent-light: rgba(164, 103, 46, 0.1);
-  --admin-secondary-light: rgba(184, 216, 78, 0.1);
-  --admin-success-light: rgba(52, 199, 89, 0.1);
-  --admin-warning-light: rgba(255, 149, 0, 0.12);
-  --admin-danger-light: rgba(255, 59, 48, 0.1);
-  --admin-info-light: rgba(0, 122, 255, 0.1);
-
-  /* Neutral Colors - Enterprise Gray Scale */
-  --admin-text: #1d1d1f; /* Primary text - Almost Black */
-  --admin-text-primary: #1d1d1f;
-  --admin-text-secondary: #6e6e73; /* Secondary text - Medium Gray */
-  --admin-text-light: #86868b; /* Light text - Light Gray */
-  --admin-text-muted: #a1a1a6; /* Muted text */
-
-  /* Background Colors - Clean & Professional */
-  --admin-bg: #ffffff; /* Pure white for cards */
-  --admin-bg-secondary: #f5f5f7; /* Light gray background */
-  --admin-bg-tertiary: #fafafa; /* Very light gray */
-
-  /* Border and Surface - Refined */
-  --admin-border: #d2d2d7; /* Professional border */
-  --admin-border-light: #e5e5ea; /* Light border */
-  --admin-glass-bg: rgba(255, 255, 255, 0.95);
-  --admin-glass-border: rgba(0, 0, 0, 0.06);
-  --admin-glass-overlay: rgba(255, 255, 255, 0.7);
-
-  /* Shadows - Professional Depth */
-  --admin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --admin-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --admin-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
-  --admin-shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.16);
-}
-
-/* Dark Theme Overrides - Higher Specificity (no !important needed) */
-/* This comes after light theme, so it naturally overrides */
-:root.dark-theme,
-:root.dark-theme .admin-dashboard,
-.admin-dashboard.dark-theme {
-  /* HomieBites Brand Accent Colors - Dark Theme */
-  --admin-accent: #449031; /* Primary green - visible in dark */
-  --admin-secondary: #c45c2d; /* Orange accent */
-  --admin-success: #16a34a; /* Success green */
-  --admin-warning: #f59e0b; /* Warning amber */
-  --admin-danger: #ef4444; /* Danger red */
-  --admin-info: #3b82f6; /* Info blue */
-
-  /* Extended color palette - Dark Theme */
-  --admin-accent-light: rgba(68, 144, 49, 0.2);
-  --admin-secondary-light: rgba(196, 92, 45, 0.2);
-  --admin-success-light: rgba(22, 163, 74, 0.2);
-  --admin-warning-light: rgba(245, 158, 11, 0.25);
-  --admin-danger-light: rgba(239, 68, 68, 0.2);
-  --admin-info-light: rgba(59, 130, 246, 0.2);
-
-  /* Neutral Colors - Dark Theme */
-  --admin-text: #e5e7eb; /* Primary text - Light */
-  --admin-text-primary: #e5e7eb;
-  --admin-text-secondary: #9ca3af; /* Secondary text */
-  --admin-text-light: #6b7280; /* Light text */
-  --admin-text-muted: #4b5563; /* Muted text */
-
-  /* Background Colors - Dark Theme */
-  --admin-bg: #111827; /* Cards - Dark */
-  --admin-bg-secondary: #0f172a; /* Main background - Dark slate */
-  --admin-bg-tertiary: #1e293b; /* Very dark gray */
-
-  /* Border and Surface - Dark Theme */
-  --admin-border: #1f2937; /* Professional border */
-  --admin-border-light: #374151; /* Light border */
-  --admin-glass-bg: rgba(17, 24, 39, 0.95);
-  --admin-glass-border: rgba(255, 255, 255, 0.1);
-  --admin-glass-overlay: rgba(15, 23, 42, 0.8);
-
-  /* Shadows - Dark Theme */
-  --admin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --admin-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --admin-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
-  --admin-shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.6);
-}
-
-/* Override shared variables ONLY within admin dashboard to prevent color mixing */
 .admin-dashboard {
-  /* Button System Variables - Override shared variables to use theme colors */
-  --primary-green: var(--admin-accent, #449031); /* Use theme accent instead of shared green */
-  --primary-orange: var(
-    --admin-secondary,
-    #c45c2d
-  ); /* Use theme secondary instead of shared orange */
+  --primary-green: var(--admin-accent, #449031);
+  --primary-orange: var(--admin-secondary, #c45c2d);
   --text-white: #ffffff;
   --text-primary: #1a202c;
   --gray-lighter: #f3f4f6;
@@ -128,8 +30,6 @@
   --error-red-hover: #dc2626;
   --whatsapp-green: #25d366;
   --whatsapp-green-hover: #20ba5a;
-
-  /* Shadow variables - Use theme colors */
   --shadow-green-light: var(--admin-accent-light, rgba(68, 144, 49, 0.15));
   --shadow-green-medium: var(--admin-accent-light, rgba(68, 144, 49, 0.3));
   --shadow-green: var(--admin-accent-light, rgba(68, 144, 49, 0.2));

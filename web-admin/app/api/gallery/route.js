@@ -1,12 +1,9 @@
-/**
- * Next.js API Route: Gallery
- * Migrated from Express backend
- */
+
 import connectDB from '../../../lib/db.js';
 import Gallery from '../../../lib/models/Gallery.js';
 import { isAdmin, createErrorResponse } from '../../../lib/middleware/auth.js';
 
-// GET /api/gallery - public
+
 export async function GET() {
   try {
     await connectDB();
@@ -16,7 +13,7 @@ export async function GET() {
 
     return Response.json({ success: true, data: galleryItems });
   } catch (error) {
-    // Handle authentication/authorization errors (shouldn't happen for GET, but just in case)
+    
     if (error.status === 401 || error.status === 403) {
       return createErrorResponse(error.status, error.message || 'Authentication failed');
     }
@@ -31,7 +28,7 @@ export async function GET() {
   }
 }
 
-// POST /api/gallery - admin only
+
 export async function POST(request) {
   try {
     await connectDB();
@@ -65,7 +62,7 @@ export async function POST(request) {
       data: galleryItem,
     });
   } catch (error) {
-    // Handle validation errors
+    
     if (error.name === 'ValidationError') {
       return Response.json(
         { 
@@ -76,7 +73,7 @@ export async function POST(request) {
         { status: 400 }
       );
     }
-    // Handle duplicate key errors
+    
     if (error.code === 11000 || error.message?.includes('duplicate')) {
       return Response.json(
         { 
@@ -86,7 +83,7 @@ export async function POST(request) {
         { status: 409 }
       );
     }
-    // Handle authentication/authorization errors
+    
     if (error.status === 401 || error.status === 403) {
       return createErrorResponse(error.status, error.message || 'Authentication failed');
     }

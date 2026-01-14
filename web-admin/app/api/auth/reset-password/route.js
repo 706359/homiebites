@@ -1,10 +1,6 @@
-/**
- * Next.js API Route: Reset Password (Legacy - kept for backward compatibility)
- * The new flow uses /api/auth/reset-password/[token]/route.js
- * This route can be removed once frontend is updated
- */
 
-// This route is deprecated - use /api/auth/reset-password/[token] instead
+
+
 export async function POST(request) {
   return Response.json(
     { 

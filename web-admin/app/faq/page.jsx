@@ -11,7 +11,7 @@ export default function FAQPage() {
   const [openIndex, setOpenIndex] = useState(null);
 
   const openOrderModal = () => {
-    // Order modal functionality can be added here if needed
+    
   };
 
   const faqs = [

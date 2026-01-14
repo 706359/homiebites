@@ -1,7 +1,4 @@
-/**
- * Next.js API Route: Health Check
- * Diagnostic endpoint to check database connectivity and configuration
- */
+
 import connectDB from '../../../lib/db.js';
 
 export async function GET() {

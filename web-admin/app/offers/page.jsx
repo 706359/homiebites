@@ -18,19 +18,19 @@ export default function OffersPage() {
     const loadOffers = async () => {
       try {
         const data = await getOffersData();
-        // Filter out invalid/test offers - only show offers with proper title and content
+        
         const validOffers = data.filter((offer) => {
-          // Must have a title (not empty, not "test", not "Saved via test")
+          
           const hasValidTitle =
             offer.title &&
             offer.title.trim() !== '' &&
             !offer.title.toLowerCase().includes('test') &&
             !offer.title.toLowerCase().includes('saved via');
 
-          // Must be active
+          
           const isActive = offer.isActive !== false;
 
-          // Must not be expired (if endDate exists)
+          
           const notExpired = !offer.endDate || new Date(offer.endDate) >= new Date();
 
           return hasValidTitle && isActive && notExpired;
@@ -44,7 +44,7 @@ export default function OffersPage() {
       }
     };
 
-    // Wrap in try-catch to prevent unhandled errors
+    
     try {
       loadOffers().catch((err) => {
         console.error('loadOffers promise rejected:', err);
@@ -59,7 +59,7 @@ export default function OffersPage() {
   }, []);
 
   const openOrderModal = () => {
-    // Order modal functionality can be added here if needed
+    
   };
 
   const handleGetDeal = (offer) => {
@@ -114,55 +114,16 @@ export default function OffersPage() {
         <div className='offers-page'>
           <div className='offers-container'>
             <h1 className='offers-title'>{t('offers.title') || 'Special Offers & Discounts'}</h1>
-            <div
-              className='no-offers-message'
-              style={{
-                padding: '4rem 2rem',
-                textAlign: 'center',
-                background: 'var(--light-gray, #f5f5f5)',
-                borderRadius: '12px',
-                marginTop: '2rem',
-                border: '2px dashed var(--gray-light, #ddd)',
-              }}
-            >
-              <i
-                className='fa-solid fa-tag'
-                style={{
-                  fontSize: '4rem',
-                  color: 'var(--gray, #999)',
-                  marginBottom: '1.5rem',
-                  display: 'block',
-                }}
-              ></i>
-              <h2
-                style={{
-                  fontSize: '1.5rem',
-                  color: 'var(--text-primary, #333)',
-                  marginBottom: '1rem',
-                  fontWeight: '600',
-                }}
-              >
+            <div className='no-offers-container'>
+              <i className='fa-solid fa-tag no-offers-icon'></i>
+              <h2 className='no-offers-title'>
                 {t('offers.noOffersTitle') || 'No Active Offers'}
               </h2>
-              <p
-                style={{
-                  fontSize: '1.1rem',
-                  color: 'var(--text-secondary, #666)',
-                  marginBottom: '2rem',
-                  lineHeight: '1.6',
-                }}
-              >
+              <p className='no-offers-text'>
                 {t('offers.noOffers') ||
                   "We currently don't have any active offers. Check back soon for exciting deals and special discounts!"}
               </p>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '1rem',
-                  justifyContent: 'center',
-                  flexWrap: 'wrap',
-                }}
-              >
+              <div className='no-offers-actions'>
                 <Link href='/menu' className='btn btn-primary'>
                   <i className='fa-solid fa-utensils'></i> View Menu
                 </Link>

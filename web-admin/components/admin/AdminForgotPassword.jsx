@@ -13,13 +13,13 @@ const AdminForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const { error: showError, success: showSuccess } = useNotification();
 
-  // Enable keyboard avoidance for mobile
+  
   useAutoKeyboardAvoidance({
     containerSelector: '.login-form',
     inputSelector: 'input, textarea, select',
   });
 
-  // Apply theme settings from localStorage
+  
   useEffect(() => {
     const applyThemeSettings = () => {
       try {
@@ -60,7 +60,7 @@ const AdminForgotPassword = () => {
           }
         }
 
-        // Apply font family - Use global font variable
+        
         if (fontFamily) {
           const fontFamilyValue = `'${fontFamily}', sans-serif`;
           root.style.setProperty('--font-primary', fontFamilyValue);
@@ -106,7 +106,7 @@ const AdminForgotPassword = () => {
           }
         }
       } catch (error) {
-        // Silently fail if theme application has issues
+        
       }
     };
 
@@ -172,7 +172,7 @@ const AdminForgotPassword = () => {
             </div>
           </div>
           <img
-            src="https://images.pexels.com/photos/2474661/pexels-photo-2474661.jpeg"
+            src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
             alt="Admin password recovery"
             className="login-image"
           />

@@ -3,19 +3,14 @@
 .btn-primary,
 button.btn-primary,
 a.btn-primary {
-  border: 2px solid var(--text-white) !important;
+  border: 2px solid var(--text-white);
 }
-.btn-primary:hover,
-button.btn-primary:hover,
-a.btn-primary:hover {
-  border: 2px solid var(--text-white) !important;
-}
-/* Kicker (Section/Page Label) */
+
 .kicker {
   display: inline-block;
   padding: 0.85rem 2.5rem;
   border-radius: 2.5rem;
-  border: 1.5px solid var(--primary-orange);
+  border: 1px solid var(--primary-orange);
   background: var(--bg-white);
   color: var(--text-primary);
   font-size: 1.35rem;
@@ -27,12 +22,10 @@ a.btn-primary:hover {
   margin: 0 auto 2.5rem auto;
   transition: box-shadow 0.2s;
 }
-.kicker:focus,
-.kicker:hover {
-  box-shadow: 0 6px 36px 0 var(--shadow-orange-light);
+
+.kicker:focus {
+  outline: none;
 }
-/* Brew Tea Company Style - Complete Redesign */
-/* Shared styles are imported in layout.jsx */
 
 html {
   scroll-behavior: smooth;
@@ -108,11 +101,6 @@ Link {
   cursor: pointer;
 }
 
-a[href]:hover,
-Link:hover {
-  opacity: 0.8;
-}
-
 button {
   font-family: inherit;
   cursor: pointer;
@@ -123,7 +111,6 @@ button {
   margin: 0;
 }
 
-/* Header - Premium Glass Design */
 header {
   position: fixed;
   top: 0;
@@ -131,7 +118,7 @@ header {
   right: 0;
   width: 100%;
   z-index: 1000;
-  background: #fff8f0;
+  background: var(--bg-orange, #fff5f0);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -142,7 +129,6 @@ header .nav {
   z-index: 1001;
 }
 
-/* Top Announcement Bar */
 .header-top-bar {
   background: var(--bg-dark);
   color: var(--white);
@@ -184,15 +170,9 @@ header .nav {
   font-weight: 500;
 }
 
-.whatsapp-order-link:hover {
-  background: rgba(37, 211, 102, 0.25);
-  border-color: rgba(37, 211, 102, 0.5);
-  transform: translateY(-1px);
-}
-
 .whatsapp-order-link i {
   font-size: 1rem;
-  color: #25d366;
+  color: var(--whatsapp-green, #25d366);
 }
 
 .whatsapp-order-link span {
@@ -208,7 +188,6 @@ header .nav {
   }
 }
 
-/* Language Switcher */
 .language-switcher {
   position: relative;
   z-index: 100;
@@ -230,12 +209,6 @@ header .nav {
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: var(--font-primary);
-}
-
-.language-switcher-button:hover {
-  background: rgba(54, 54, 54, 0.8);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
 }
 
 .language-switcher-button:active {
@@ -304,17 +277,9 @@ header .nav {
   position: relative;
 }
 
-.language-option:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
 .language-option.active {
   background: rgba(68, 144, 49, 0.2);
   color: var(--white);
-}
-
-.language-option.active:hover {
-  background: rgba(68, 144, 49, 0.3);
 }
 
 .language-option .language-flag {
@@ -334,7 +299,6 @@ header .nav {
   flex-shrink: 0;
 }
 
-/* Main Navigation */
 .nav {
   max-width: 1400px;
   margin: 0 auto;
@@ -368,21 +332,12 @@ header .nav {
   transition: opacity 0.2s;
 }
 
-.nav a:hover,
-.nav Link:hover {
-  opacity: 0.7;
-}
-
 .brand-logo {
   display: flex;
   align-items: center;
   justify-content: center;
   text-decoration: none;
   transition: opacity 0.2s ease;
-}
-
-.brand-logo:hover {
-  opacity: 0.8;
 }
 
 .logo-img {
@@ -400,10 +355,6 @@ header .nav {
   text-transform: uppercase;
   color: var(--black);
 }
-
-/* DEPRECATED: legacy subscribe styles removed. Use the shared button system: .btn .btn-primary .btn-small */
-
-/* DEPRECATED: legacy search-button styles removed. Use the shared button system: .btn .btn-primary .btn-icon */
 
 .nav-icon i {
   font-size: 0.9rem;
@@ -425,11 +376,6 @@ header .nav {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   transition: all 0.2s ease;
-}
-
-.menu-btn:hover {
-  background: rgba(255, 255, 255, 1);
-  transform: scale(1.05);
 }
 
 .menu-btn:active {
@@ -454,7 +400,6 @@ header .nav {
   display: block;
 }
 
-/* Mobile Menu Backdrop */
 .mobile-menu-backdrop {
   display: none;
   position: fixed;
@@ -477,7 +422,6 @@ header .nav {
   touch-action: none;
 }
 
-/* Mobile Menu */
 .mobile-menu {
   display: none;
   position: fixed;
@@ -526,11 +470,6 @@ header .nav {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
 }
 
-.mobile-menu-close-btn:hover {
-  background: rgba(0, 0, 0, 0.1);
-  transform: scale(1.05);
-}
-
 .mobile-menu-close-btn:active {
   transform: scale(0.95);
 }
@@ -548,11 +487,6 @@ header .nav {
   padding: 0.75rem 1rem;
   border-radius: 8px;
   transition: background-color 0.2s ease;
-}
-
-.mobile-menu a:hover,
-.mobile-menu Link:hover {
-  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .mobile-menu .btn {
@@ -599,16 +533,6 @@ header .nav {
   margin-bottom: 1.5rem;
 }
 
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Animations */
 .reveal {
   opacity: 1;
   transform: translateY(0);
@@ -639,132 +563,6 @@ header .nav {
   }
 }
 
-/* Mobile Styles - Below 500px */
-@media (max-width: 500px) {
-  html {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  body {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    position: relative;
-  }
-
-  .header-top-bar {
-    font-size: 0.75rem;
-    padding: 0.3rem 0;
-  }
-
-  .top-bar-content {
-    padding: 0 1rem;
-    flex-direction: column;
-    gap: 0.5rem;
-    text-align: center;
-  }
-
-  .top-bar-right {
-    flex-direction: row;
-    gap: 0.75rem;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .whatsapp-order-link {
-    padding: 0.25rem 0.6rem;
-    font-size: 0.75rem;
-    gap: 0.4rem;
-  }
-
-  .whatsapp-order-link i {
-    font-size: 0.9rem;
-  }
-
-  .whatsapp-order-link span {
-    white-space: nowrap;
-  }
-
-  .nav {
-    padding: 0.75rem 1rem;
-    grid-template-columns: auto 1fr;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .nav-left {
-    display: flex;
-    justify-self: start;
-  }
-
-  .logo-img {
-    height: 50px;
-    max-width: 180px;
-  }
-
-  .nav-right {
-    display: flex;
-    justify-self: end;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .nav-right a {
-    display: none;
-  }
-
-  .nav-right .nav-icon {
-    display: none;
-  }
-
-  .menu-btn {
-    display: flex;
-    width: 44px;
-    height: 44px;
-    z-index: 1002;
-  }
-
-  .mobile-menu-close-btn {
-    top: 16px;
-    right: 16px;
-    width: 40px;
-    height: 40px;
-    font-size: 18px;
-  }
-
-  .mobile-menu-close-btn i {
-    font-size: 18px;
-  }
-
-  .mobile-menu {
-    padding-top: 70px;
-  }
-
-  /* Ensure main content is scrollable */
-  main,
-  #__next,
-  [role='main'] {
-    overflow-y: visible;
-    -webkit-overflow-scrolling: touch;
-    min-height: 100vh;
-    position: relative;
-  }
-
-  /* Ensure page content can scroll */
-  body > * {
-    position: relative;
-  }
-}
-
-.section-heading {
-  font-size: 2rem;
-  margin-bottom: 2rem;
-}
-
-.section-subtitle {
-  font-size: 1rem;
-  margin-bottom: 2rem;
-}
 
 .view-menu-btn {
   display: inline-block;
@@ -779,22 +577,11 @@ header .nav {
   width: fit-content;
 }
 
-.view-menu-btn:hover {
-  background: var(--primary-green);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--shadow-green);
-  opacity: 0.95;
-}
-
-/* Button Styles - Now using shared button system */
-/* All buttons should use classes from shared.css */
-
-/* Menu Page - Compact Side-by-Side Design */
 .menu-page {
   min-height: 100vh;
   background: var(--white);
   padding: 1.5rem;
-  padding-top: 140px; /* Account for fixed header */
+  padding-top: 140px;
 }
 
 .menu-header {
@@ -806,8 +593,6 @@ header .nav {
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-color);
 }
-
-/* Legacy back button removed; use .btn .btn-ghost */
 
 .menu-header h1 {
   font-size: clamp(1.75rem, 3vw, 2.5rem);
@@ -836,7 +621,6 @@ header .nav {
   padding-right: 0.5rem;
 }
 
-/* Custom scrollbar for menu */
 .menu-categories::-webkit-scrollbar {
   width: 6px;
 }
@@ -849,10 +633,6 @@ header .nav {
 .menu-categories::-webkit-scrollbar-thumb {
   background: var(--gray-lighter);
   border-radius: 3px;
-}
-
-.menu-categories::-webkit-scrollbar-thumb:hover {
-  background: var(--gray);
 }
 
 .menu-category {
@@ -894,16 +674,6 @@ header .nav {
   transition: all 0.2s ease;
 }
 
-.menu-item:hover {
-  border-color: var(--primary-green);
-  box-shadow: 0 2px 8px rgba(68, 144, 49, 0.15);
-}
-
-.menu-item:nth-child(even):hover {
-  border-color: var(--primary-orange);
-  box-shadow: 0 2px 8px rgba(196, 92, 45, 0.15);
-}
-
 .item-info {
   flex: 1;
   margin-bottom: 0.75rem;
@@ -932,8 +702,6 @@ header .nav {
   justify-content: space-between;
   margin-top: auto;
 }
-
-/* DEPRECATED: legacy add-btn styles removed. Use the shared button system: .btn .btn-primary .btn-small */
 
 .cart-controls {
   display: flex;
@@ -983,10 +751,6 @@ header .nav {
   border-radius: 3px;
 }
 
-.cart-sidebar-content::-webkit-scrollbar-thumb:hover {
-  background: var(--gray);
-}
-
 .cart-sidebar-footer {
   flex-shrink: 0;
   margin-top: auto;
@@ -1018,10 +782,6 @@ header .nav {
   transition: all 0.2s ease;
 }
 
-.clear-cart:hover {
-  color: var(--error-red);
-}
-
 .cart-items {
   display: flex;
   flex-direction: column;
@@ -1038,14 +798,6 @@ header .nav {
   border-radius: 6px;
   border: 1px solid var(--border-color);
   transition: all 0.2s ease;
-}
-
-.cart-item:hover {
-  border-color: var(--primary-green);
-}
-
-.cart-item:nth-child(even):hover {
-  border-color: var(--primary-orange);
 }
 
 .cart-item-info {
@@ -1077,11 +829,6 @@ header .nav {
   border-radius: 4px;
   transition: all 0.2s;
   cursor: pointer;
-}
-
-.remove-item:hover {
-  background: rgba(68, 144, 49, 0.1);
-  color: var(--primary-green);
 }
 
 .cart-total {
@@ -1170,13 +917,10 @@ header .nav {
   min-height: 80px;
 }
 
-/* DEPRECATED: legacy order-btn styles removed. Use the shared button system: .btn .btn-secondary .btn-full */
-
-/* Search Page */
 .search-page {
   min-height: 100vh;
   background: var(--white);
-  padding-top: 120px; /* Account for fixed header */
+  padding-top: 120px;
   padding: 2rem;
 }
 
@@ -1220,8 +964,6 @@ header .nav {
   border-color: var(--primary-green);
 }
 
-/* DEPRECATED: legacy search-form button / search-button styles removed. Use .btn .btn-primary .btn-icon */
-
 .results-title {
   font-size: 1.5rem;
   font-weight: 600;
@@ -1242,23 +984,11 @@ header .nav {
   transition: all 0.2s;
 }
 
-.result-card:hover {
-  border-color: var(--primary-green);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.result-card:nth-child(even):hover {
-  border-color: var(--primary-orange);
-  box-shadow: 0 4px 8px rgba(196, 92, 45, 0.15);
-}
-
 .result-name {
   font-size: 1.1rem;
   font-weight: 600;
   margin: 0.5rem 0;
 }
-
-/* DEPRECATED: legacy result-add-btn styles removed. Use the shared button system: .btn .btn-primary .btn-small .btn-full */
 
 .search-placeholder {
   text-align: center;
@@ -1348,12 +1078,6 @@ header .nav {
   transition: all 0.2s ease;
 }
 
-.view-item-btn:hover {
-  background: var(--primary-orange);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--shadow-orange);
-}
-
 .no-results {
   text-align: center;
   padding: 4rem 2rem;
@@ -1396,10 +1120,6 @@ header .nav {
   transition: color 0.2s;
 }
 
-.no-results a:hover {
-  color: var(--primary-green);
-}
-
 .search-suggestions {
   margin-top: 3rem;
 }
@@ -1429,17 +1149,11 @@ header .nav {
   display: inline-block;
 }
 
-.suggestion-tag:hover {
-  background: var(--primary-green);
-  color: var(--white);
-}
-
-/* Support Page */
 .support-page {
   min-height: 100vh;
   background: var(--white);
   padding: 2rem;
-  padding-top: 140px; /* Account for fixed header */
+  padding-top: 140px;
 }
 
 .support-header {
@@ -1505,11 +1219,6 @@ header .nav {
   box-shadow: 0 2px 8px var(--shadow-color);
 }
 
-.support-category:hover {
-  box-shadow: 0 4px 16px var(--shadow-dark);
-  transform: translateY(-2px);
-}
-
 .support-category.active {
   border-color: var(--primary-green);
   box-shadow: 0 4px 20px var(--shadow-orange);
@@ -1526,10 +1235,6 @@ header .nav {
   transition: all 0.3s ease;
 }
 
-.category-header:hover {
-  background: linear-gradient(135deg, var(--bg-orange) 0%, var(--white) 100%);
-}
-
 .category-header-left {
   display: flex;
   align-items: flex-start;
@@ -1542,10 +1247,6 @@ header .nav {
   color: var(--primary-green);
   margin-top: 0.25rem;
   transition: transform 0.3s ease;
-}
-
-.support-category:hover .category-header-left i {
-  transform: scale(1.1);
 }
 
 .category-header-left h3 {
@@ -1603,11 +1304,6 @@ header .nav {
   margin-bottom: 0;
 }
 
-.category-item:hover {
-  border-color: var(--primary-green);
-  box-shadow: 0 2px 8px var(--shadow-color);
-}
-
 .category-item-question {
   display: flex;
   align-items: flex-start;
@@ -1657,10 +1353,6 @@ header .nav {
   cursor: pointer;
 }
 
-.support-category-card:hover {
-  border-color: var(--black);
-}
-
 .support-category-card h3 {
   font-size: 1.2rem;
   font-weight: 600;
@@ -1696,10 +1388,6 @@ header .nav {
   cursor: pointer;
 }
 
-.contact-card:hover {
-  border-color: var(--black);
-}
-
 .contact-icon {
   font-size: 2.5rem;
   margin-bottom: 1rem;
@@ -1725,9 +1413,9 @@ header .nav {
 }
 
 .phone-number {
-  color: var(--primary-green) !important;
-  font-size: 1.1rem !important;
-  font-weight: 700 !important;
+  color: var(--primary-green);
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
 .contact-arrow {
@@ -1738,20 +1426,18 @@ header .nav {
   color: var(--gray);
 }
 
-/* FAQ Page */
 .faq-page {
   min-height: 100vh;
   background: var(--white);
   padding: 2rem;
-  padding-top: 140px; /* Account for fixed header */
+  padding-top: 140px;
 }
 
-/* Legal Pages (Privacy, Terms, Disclaimer) */
 .legal-page {
   min-height: 100vh;
   background: var(--white);
   padding: 2rem;
-  padding-top: 140px; /* Account for fixed header */
+  padding-top: 140px;
 }
 
 .legal-container {
@@ -1774,7 +1460,6 @@ header .nav {
   font-style: italic;
 }
 
-/* Table of Contents */
 .legal-toc {
   background: linear-gradient(135deg, rgba(68, 144, 49, 0.05) 0%, rgba(196, 92, 45, 0.05) 100%);
   border: 2px solid var(--border-color);
@@ -1816,19 +1501,11 @@ header .nav {
   border-left: 3px solid transparent;
 }
 
-.legal-toc a:hover {
-  background: rgba(68, 144, 49, 0.1);
-  border-left-color: var(--primary-green);
-  color: var(--primary-green);
-  transform: translateX(4px);
-}
-
 .legal-content {
   line-height: 1.8;
   color: var(--text-primary);
 }
 
-/* Back to Top Button */
 .legal-back-to-top {
   position: fixed;
   bottom: 2rem;
@@ -1847,11 +1524,6 @@ header .nav {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
   z-index: 999;
-}
-
-.legal-back-to-top:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 .legal-back-to-top:active {
@@ -1901,10 +1573,6 @@ header .nav {
   color: var(--primary-green);
   text-decoration: underline;
   transition: color 0.2s ease;
-}
-
-.legal-section a:hover {
-  color: var(--secondary-orange);
 }
 
 .legal-section strong {
@@ -1969,8 +1637,6 @@ header .nav {
    After v1.2.0, these can be safely removed.
    ========================================================= */
 
-/* DEPRECATED: legacy faq-whatsapp-btn styles removed. Use .btn .btn-special.whatsapp */
-
 .faq-list {
   display: flex;
   flex-direction: column;
@@ -1982,10 +1648,6 @@ header .nav {
   border-radius: 8px;
   overflow: hidden;
   transition: all 0.2s;
-}
-
-.faq-item:hover {
-  border-color: var(--black);
 }
 
 .faq-item.active {
@@ -2042,7 +1704,6 @@ header .nav {
   text-decoration: underline;
 }
 
-/* Admin Login Page - Brew Tea Style */
 .admin-login-page {
   min-height: 100vh;
   background: var(--white);
@@ -2097,7 +1758,6 @@ header .nav {
   line-height: 1.6;
 }
 
-/* Cart Empty State */
 .cart-empty-state {
   padding: 5rem 2rem;
   text-align: center;
@@ -2178,12 +1838,14 @@ header .nav {
   z-index: 1;
 }
 
-/* Address Selection */
 .address-selection {
   flex-shrink: 0;
 }
 
 .addresses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
   max-height: 250px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -2201,10 +1863,6 @@ header .nav {
 .addresses-list::-webkit-scrollbar-thumb {
   background: var(--gray-lighter);
   border-radius: 3px;
-}
-
-.addresses-list::-webkit-scrollbar-thumb:hover {
-  background: var(--gray);
 }
 
 .address-selection-header {
@@ -2233,18 +1891,6 @@ header .nav {
   width: fit-content;
 }
 
-.guest-checkout-btn:hover,
-.use-saved-address-btn:hover {
-  background: var(--primary-green);
-  color: var(--white);
-}
-
-.addresses-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
 .address-option {
   border: 2px solid var(--border-color);
   border-radius: 8px;
@@ -2252,10 +1898,6 @@ header .nav {
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
-}
-
-.address-option:hover {
-  border-color: var(--orange);
 }
 
 .address-option.selected {
@@ -2333,7 +1975,6 @@ header .nav {
   border-color: var(--orange);
 }
 
-/* Account Page */
 .account-page {
   min-height: 100vh;
   background: var(--white);
@@ -2422,11 +2063,6 @@ header .nav {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.profile-picture-upload:hover {
-  background: var(--green-hover);
-  transform: scale(1.1);
-}
-
 .profile-picture-upload i {
   color: var(--white);
   font-size: 0.85rem;
@@ -2487,27 +2123,12 @@ header .nav {
   font-size: 0.95rem;
 }
 
-.account-tab:hover {
-  background: rgba(68, 144, 49, 0.15);
-  color: var(--primary-green);
-}
-
 .account-tab.active {
   background: var(--primary-green);
   color: var(--white);
 }
 
-.account-tab.active:hover {
-  background: var(--green-hover);
-  color: var(--white);
-}
-
 .account-tab.logout-btn {
-  color: var(--error-red);
-}
-
-.account-tab.logout-btn:hover {
-  background: rgba(204, 51, 51, 0.15);
   color: var(--error-red);
 }
 
@@ -2562,18 +2183,10 @@ header .nav {
   border-color: var(--orange);
 }
 
-/* Button classes are defined in shared/styles/shared.css */
-
 .saved-addresses h3 {
   font-size: 1.3rem;
   font-weight: 600;
   margin-bottom: 1.5rem;
-}
-
-.addresses-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
 }
 
 .address-card {
@@ -2599,10 +2212,6 @@ header .nav {
   gap: 0.75rem;
 }
 
-/* Button classes are defined in shared/styles/shared.css */
-
-/* Migrated — use .btn.btn-special.danger or .btn-special.danger + size */
-
 .no-data {
   text-align: center;
   padding: 3rem;
@@ -2614,7 +2223,6 @@ header .nav {
   text-decoration: underline;
 }
 
-/* Orders List */
 .orders-list {
   display: flex;
   flex-direction: column;
@@ -2697,9 +2305,6 @@ header .nav {
   margin: 0.25rem 0;
 }
 
-/* Responsive Account Page */
-
-/* Testimonials Header */
 .testimonials-header {
   display: flex;
   justify-content: space-between;
@@ -2715,7 +2320,7 @@ header .nav {
     transform: scale(1);
   }
   50% {
-    transform: scale(1.05);
+    transform: scale(1.01);
   }
 }
 
@@ -2725,11 +2330,11 @@ header .nav {
     opacity: 0.3;
   }
   50% {
-    transform: scale(1.2);
+    transform: scale(1.01);
     opacity: 0.1;
   }
   100% {
-    transform: scale(1.4);
+    transform: scale(1.01);
     opacity: 0;
   }
 }
@@ -2740,23 +2345,13 @@ header .nav {
     transform: rotate(0deg) scale(1);
   }
   25% {
-    transform: rotate(-10deg) scale(1.1);
+    transform: rotate(-10deg) scale(1.01);
   }
   75% {
-    transform: rotate(10deg) scale(1.1);
+    transform: rotate(10deg) scale(1.01);
   }
 }
 
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Confirm Modal - Premium Design */
 /* ============================================
    MODAL WRAPPER (Reusable)
    ============================================ */
@@ -2857,14 +2452,6 @@ textarea::placeholder {
   color: rgba(0, 0, 0, 0.5);
 }
 
-input:hover:not(:focus):not(:disabled),
-textarea:hover:not(:focus):not(:disabled),
-select:hover:not(:focus):not(:disabled) {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.25);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.08);
-}
-
 input:focus,
 textarea:focus,
 select:focus {
@@ -2875,22 +2462,6 @@ select:focus {
     0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Keyboard avoidance for mobile devices */
-@media (max-width: 768px) {
-  input:focus,
-  textarea:focus,
-  select:focus {
-    scroll-margin: 20px;
-  }
-
-  form,
-  .form-container,
-  .modal-container,
-  .modal-body {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-}
 
 input:disabled,
 textarea:disabled,
@@ -2910,7 +2481,7 @@ select:disabled {
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  padding-top: 140px; /* Account for fixed header */
+  padding-top: 140px;
   background: linear-gradient(135deg, rgba(68, 144, 49, 0.02) 0%, rgba(196, 92, 45, 0.02) 100%);
   position: relative;
   overflow: hidden;
@@ -3014,12 +2585,6 @@ select:disabled {
   box-shadow: 0 4px 16px rgba(68, 144, 49, 0.2);
 }
 
-.error-actions .btn:hover,
-.not-found-actions .btn:hover {
-  box-shadow: 0 6px 24px rgba(196, 92, 45, 0.3);
-  transform: translateY(-2px);
-}
-
 .error-details {
   margin-top: 2rem;
   text-align: left;
@@ -3077,12 +2642,6 @@ select:disabled {
   flex-shrink: 0;
 }
 
-.modal-close-btn:hover {
-  background: var(--gray-lighter);
-  color: var(--black);
-  transform: rotate(90deg);
-}
-
 .modal-content {
   padding: 2rem;
   overflow-y: auto;
@@ -3090,7 +2649,6 @@ select:disabled {
   min-height: 0;
 }
 
-/* Custom scrollbar for modal content */
 .modal-content::-webkit-scrollbar {
   width: 6px;
 }
@@ -3105,11 +2663,6 @@ select:disabled {
   border-radius: 3px;
 }
 
-.modal-content::-webkit-scrollbar-thumb:hover {
-  background: var(--gray);
-}
-
-/* Modal without header */
 .modal-wrapper:has(.modal-content:first-child) {
   padding: 0;
 }
@@ -3117,8 +2670,6 @@ select:disabled {
 .modal-wrapper:has(.modal-content:first-child) .modal-content {
   padding: 2.5rem;
 }
-
-/* Mobile Responsive */
 
 /* ============================================
    Premium Loader Component
@@ -3145,7 +2696,6 @@ select:disabled {
   height: fit-content;
 }
 
-/* Logo container - centered */
 .premium-loader-logo-container {
   position: relative;
   display: flex;
@@ -3188,7 +2738,6 @@ select:disabled {
   border-radius: 0;
 }
 
-/* Loading text */
 .premium-loader-text {
   color: var(--text-secondary, #666666);
   font-weight: 500;
@@ -3197,7 +2746,6 @@ select:disabled {
   margin-top: 8px;
 }
 
-/* Animations */
 @keyframes premium-loader-glow {
   0%,
   100% {
@@ -3209,9 +2757,7 @@ select:disabled {
   50% {
     filter: blur(1.5px) brightness(1.4);
     opacity: 0.95;
-    transform: scale(1.05);
+    transform: scale(1.01);
     text-shadow: 0 0 25px rgba(68, 144, 49, 0.8), 0 0 40px rgba(68, 144, 49, 0.4);
   }
 }
-
-/* Responsive adjustments */

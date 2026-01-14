@@ -1,59 +1,24 @@
-/* =========================================================
-   SHARED CORE STYLES – HOMIEBITES DESIGN SYSTEM
-   Web Only (Fonts handled separately for App)
-   ========================================================= */
-
-/* Web font (DO NOT use in React Native) */
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap');
 
 @import './variables.css';
 @import './_glass.css';
 
 @import './_buttons.css';
+@import './hover-effects.css';
 
-/* Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* Note: * and body styles are defined in globals.css to avoid duplication */
 
-/* Typography */
-body {
-  font-family: var(--font-primary);
-  color: var(--text-primary);
-  /* Background is set in globals.css for web-specific design */
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* =========================================================
-   BUTTON SYSTEM – SINGLE SOURCE OF TRUTH
-   ========================================================= */
-
-/* buttons are imported above via _buttons.css */
-
-/* =========================================================
-   LAYOUT HELPERS
-   ========================================================= */
-
-.section-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
+/* Note: .section-container is defined in globals.css to avoid duplication */
 
 .section-with-kicker {
   position: relative;
-  /* ensure children flow normally; kicker will be absolutely positioned */
 }
 
 .section-with-kicker .kicker {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  top: -22px; /* lift the pill above the section; adjust as needed */
+  top: -22px;
   z-index: 5;
   display: inline-block;
   background: var(--bg-white);
@@ -65,34 +30,7 @@ body {
   letter-spacing: 0.12em;
 }
 
-@media (max-width: 768px) {
-  .section-with-kicker .kicker {
-    top: -16px;
-    padding: 0.4rem 0.9rem;
-    font-size: 0.9rem;
-  }
-}
-
-.section-heading {
-  font-size: clamp(2.4rem, 5vw, 4.5rem);
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 3.5rem;
-  text-align: center;
-  letter-spacing: -0.02em;
-  font-family: var(--font-display);
-}
-
-.section-subtitle {
-  font-size: 1.05rem;
-  color: var(--gray);
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-/* =========================================================
-   LOADER
-   ========================================================= */
+/* Note: .section-heading and .section-subtitle are defined in globals.css to avoid duplication */
 
 .loader-container {
   display: flex;
@@ -177,17 +115,5 @@ body {
   50% {
     opacity: 0.8;
     transform: scale(0.95);
-  }
-}
-
-@media (max-width: 768px) {
-  .loader-medium {
-    width: 80px;
-    height: 80px;
-  }
-
-  .loader-large {
-    width: 120px;
-    height: 120px;
   }
 }

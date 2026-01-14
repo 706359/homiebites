@@ -1,12 +1,9 @@
-/**
- * Next.js API Route: Verify Identity
- * Verifies Admin ID and PAN card, returns reset token
- */
+
 import connectDB from '../../../../lib/db.js';
 import User from '../../../../lib/models/User.js';
 import jwt from 'jsonwebtoken';
 
-// Helper function to get admin credentials
+
 function getAdminCredentials() {
   return {
     JWT_SECRET: process.env.JWT_SECRET || 'homiebites_secret',
@@ -55,7 +52,7 @@ export async function POST(request) {
     const normalizedPanCard = panCard.trim().toUpperCase();
     const normalizedAdminId = adminId.trim();
 
-    // Validate PAN card format
+    
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     if (!panRegex.test(normalizedPanCard)) {
       return Response.json(
@@ -64,7 +61,7 @@ export async function POST(request) {
       );
     }
 
-    // Find user
+    
     const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
@@ -74,7 +71,7 @@ export async function POST(request) {
       );
     }
 
-    // Verify verification token
+    
     if (!user.verificationToken || !user.verificationTokenExpiresAt) {
       return Response.json(
         { success: false, error: 'Verification token not found or expired. Please start the process again.' },
@@ -83,7 +80,7 @@ export async function POST(request) {
     }
 
     if (new Date() > user.verificationTokenExpiresAt) {
-      // Clear expired token
+      
       user.verificationToken = null;
       user.verificationTokenExpiresAt = null;
       await user.save();
@@ -101,13 +98,13 @@ export async function POST(request) {
       );
     }
 
-    // Verify identity (Admin ID and PAN card)
+    
     const adminCreds = getAdminCredentials();
     const isAdminEmail = normalizedEmail === adminCreds.ADMIN_EMAIL.toLowerCase();
 
-    // For admin, check against environment variables or stored values
+    
     if (isAdminEmail) {
-      // Check if adminId and panCard match environment variables or stored values
+      
       const expectedAdminId = adminCreds.ADMIN_ID || user.adminId;
       const expectedPanCard = adminCreds.ADMIN_PAN_CARD || user.panCard;
 
@@ -125,7 +122,7 @@ export async function POST(request) {
         );
       }
 
-      // Store adminId and panCard if not already stored
+      
       if (!user.adminId && normalizedAdminId) {
         user.adminId = normalizedAdminId;
       }
@@ -133,7 +130,7 @@ export async function POST(request) {
         user.panCard = normalizedPanCard;
       }
     } else {
-      // For regular users, check against stored values
+      
       if (user.adminId && user.adminId !== normalizedAdminId) {
         return Response.json(
           { success: false, error: 'Invalid Admin ID' },
@@ -148,7 +145,7 @@ export async function POST(request) {
         );
       }
 
-      // If not stored, store them now (first time setup)
+      
       if (!user.adminId && normalizedAdminId) {
         user.adminId = normalizedAdminId;
       }
@@ -157,7 +154,7 @@ export async function POST(request) {
       }
     }
 
-    // Identity verified, generate reset token
+    
     const resetToken = jwt.sign(
       {
         email: user.email,
@@ -165,13 +162,13 @@ export async function POST(request) {
         purpose: 'password-reset',
       },
       adminCreds.JWT_SECRET,
-      { expiresIn: '1h' } // 1 hour
+      { expiresIn: '1h' } 
     );
 
-    // Store reset token
+    
     user.resetToken = resetToken;
-    user.resetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-    // Clear verification token after successful verification
+    user.resetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000); 
+    
     user.verificationToken = null;
     user.verificationTokenExpiresAt = null;
     await user.save();

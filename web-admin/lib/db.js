@@ -1,10 +1,10 @@
-// Database connection utility for Next.js API routes
+
 import mongoose from 'mongoose';
 
 const MONGOURI = process.env.MONGOURI;
 
 if (!MONGOURI && typeof window === 'undefined') {
-  // Only throw error at runtime, not during build
+  
   if (
     process.env.NODE_ENV !== 'production' ||
     process.env.NEXT_PHASE !== 'phase-production-build'
@@ -15,11 +15,7 @@ if (!MONGOURI && typeof window === 'undefined') {
   }
 }
 
-/**
- * Global is used here to maintain a cached connection across hot reloads
- * in development. This prevents connections growing exponentially
- * during API Route usage.
- */
+
 let cached = global.mongoose;
 
 if (!cached) {
@@ -35,11 +31,11 @@ async function connectDB() {
   }
 
   if (cached.conn) {
-    // Check if connection is still alive
+    
     if (mongoose.connection.readyState === 1) {
       return cached.conn;
     } else {
-      // Connection is dead, reset cache
+      
       cached.conn = null;
       cached.promise = null;
     }
@@ -48,9 +44,9 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 10000, // 10 seconds timeout
-      socketTimeoutMS: 45000, // 45 seconds socket timeout
-      connectTimeoutMS: 10000, // 10 seconds connection timeout
+      serverSelectionTimeoutMS: 10000, 
+      socketTimeoutMS: 45000, 
+      connectTimeoutMS: 10000, 
     };
 
     cached.promise = mongoose
@@ -71,7 +67,7 @@ async function connectDB() {
     cached.conn = await cached.promise;
   } catch (e) {
     cached.promise = null;
-    // Provide more detailed error information
+    
     if (e.message.includes('ECONNREFUSED') || e.message.includes('connection refused')) {
       throw new Error(
         'Cannot connect to MongoDB server. Please check if the MongoDB server is running and the connection string is correct.'

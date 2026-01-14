@@ -1,12 +1,6 @@
 import React from 'react';
 
-/**
- * Enterprise Loader Component
- * Features:
- * - Animated logo with blur/glow effect
- * - Clean, professional design
- * - Responsive design
- */
+
 const PremiumLoader = ({ message = 'Loading...', size = 'large', showText = false }) => {
   const sizeClasses = {
     small: { container: '64px', logo: '120px', text: '0.85rem' },
@@ -19,7 +13,7 @@ const PremiumLoader = ({ message = 'Loading...', size = 'large', showText = fals
   return (
     <div className='premium-loader-container'>
       <div className='premium-loader-wrapper'>
-        {/* Animated logo/text in center with blur/glow effect */}
+        {}
         <div className='premium-loader-logo-container'>
           <img
             src='/logo.png'
@@ -54,7 +48,7 @@ const PremiumLoader = ({ message = 'Loading...', size = 'large', showText = fals
         </div>
       </div>
 
-      {/* Loading text */}
+      {}
       {showText && (
         <div className='premium-loader-text' style={{ fontSize: dimensions.text }}>
           {message}

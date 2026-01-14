@@ -47,9 +47,6 @@ footer {
   transition: opacity 0.2s ease;
 }
 
-.footer-logo-link:hover {
-  opacity: 0.8;
-}
 
 .footer-logo-img {
   height: 70px;
@@ -110,9 +107,6 @@ footer {
   transition: color 0.2s ease;
 }
 
-.footer-column a:hover {
-  color: var(--text-white);
-}
 
 .footer-newsletter {
   max-width: 300px;
@@ -170,9 +164,6 @@ footer {
   text-decoration: none;
 }
 
-.admin-link:hover {
-  color: var(--text-white);
-}
 
 .footer-bottom {
   margin-top: var(--space-8);
@@ -204,76 +195,9 @@ footer {
   transition: color 0.2s ease;
 }
 
-.footer-legal-links a:hover {
-  color: var(--text-white);
-}
 
 .footer-separator {
   color: rgba(255, 255, 255, 0.4);
   font-size: var(--font-size-sm);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  footer {
-    padding: var(--space-8) var(--space-4) var(--space-4);
-  }
-
-  .footer-inner {
-    flex-direction: column;
-    text-align: center;
-    gap: var(--space-4);
-    padding-bottom: var(--space-6);
-  }
-
-  .footer-actions {
-    justify-content: center;
-    width: 100%;
-  }
-
-  .footer-logo-img {
-    height: 50px;
-    max-width: 140px;
-  }
-
-  .footer-logo-text {
-    font-size: 1.4rem;
-  }
-
-  .footer-links {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-6);
-  }
-
-  .footer-column {
-    text-align: center;
-  }
-
-  .footer-column h4 {
-    text-align: center;
-  }
-
-  .footer-column ul {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .footer-column li {
-    text-align: center;
-  }
-
-  .footer-newsletter {
-    max-width: 100%;
-    grid-column: 1 / -1;
-  }
-
-  .footer-newsletter-form {
-    flex-direction: row;
-  }
-
-  .footer-newsletter-form input {
-    flex: 1;
-  }
 }
 

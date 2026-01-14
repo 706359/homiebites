@@ -1,4 +1,4 @@
-// Menu data management with API integration and localStorage fallback
+
 
 import api from './api.js';
 
@@ -68,13 +68,13 @@ const defaultMenuData = [
 ];
 
 export const getMenuData = async () => {
-  // Check if we're in browser environment
+  
   if (typeof window === 'undefined') {
     return [];
   }
 
   try {
-    // Try to fetch from API first
+    
     try {
       const response = await api.getMenu();
       if (
@@ -83,16 +83,16 @@ export const getMenuData = async () => {
         Array.isArray(response.data) &&
         response.data.length > 0
       ) {
-        // Don't cache to localStorage - always fetch from backend
+        
         return response.data;
       }
     } catch (apiError) {
       console.error('API fetch failed:', apiError.message);
-      // Don't use localStorage fallback - return empty array
-      // Menu data must come from backend only
+      
+      
     }
 
-    // Return empty array if no menu data exists (admin must add items first)
+    
     return [];
   } catch (error) {
     console.error('Error accessing menu data:', error);
@@ -100,21 +100,21 @@ export const getMenuData = async () => {
   }
 };
 
-// Synchronous version for backward compatibility
-// Note: This no longer uses localStorage - returns empty array
-// Use getMenuData() async version to fetch from backend
+
+
+
 export const getMenuDataSync = () => {
-  // Always return empty - data must come from backend via getMenuData()
+  
   return [];
 };
 
 export const saveMenuData = async (data) => {
-  // Save directly to backend only - no localStorage
+  
   try {
     const token = localStorage.getItem('homiebites_token');
     if (token) {
       await api.updateMenu(data);
-      // Clear any old localStorage cache to ensure fresh data
+      
       if (typeof window !== 'undefined') {
         localStorage.removeItem(MENU_DATA_KEY);
         localStorage.removeItem('homiebites_menu_version');
@@ -124,24 +124,24 @@ export const saveMenuData = async (data) => {
     }
   } catch (error) {
     console.error('Failed to save menu to API:', error.message);
-    throw error; // Re-throw so caller can handle the error
+    throw error; 
   }
 };
 
 export const resetMenuData = async () => {
-  // Return default data for editing in admin dashboard
-  // DO NOT save to localStorage - admin must click "Save Changes" to actually save
+  
+  
   return defaultMenuData;
 };
 
-// Trigger data sync (used by admin dashboard)
+
 export const triggerDataSync = () => {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('menuDataUpdated'));
   }
 };
 
-// Menu items data to import into admin dashboard
+
 export const menuItemsToImport = {
   fullTiffin: [
     {
@@ -234,14 +234,14 @@ export const menuItemsToImport = {
   ],
 };
 
-// Convert menuItemsToImport object to category format expected by the system
+
 export const convertMenuItemsToCategories = () => {
   let categoryId = 1;
   let itemIdCounter = 1;
 
   const categories = [];
 
-  // Full Tiffin
+  
   if (menuItemsToImport.fullTiffin && menuItemsToImport.fullTiffin.length > 0) {
     categories.push({
       id: categoryId++,
@@ -260,7 +260,7 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  // Mix & Match Tiffin
+  
   if (menuItemsToImport.mixMatchTiffin && menuItemsToImport.mixMatchTiffin.length > 0) {
     categories.push({
       id: categoryId++,
@@ -276,7 +276,7 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  // Khichdi Tiffin
+  
   if (menuItemsToImport.khichdiTiffin && menuItemsToImport.khichdiTiffin.length > 0) {
     categories.push({
       id: categoryId++,
@@ -293,7 +293,7 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  // Rotis & Parathas
+  
   if (menuItemsToImport.rotisParathas && menuItemsToImport.rotisParathas.length > 0) {
     categories.push({
       id: categoryId++,
@@ -309,7 +309,7 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  // Breakfast Combos
+  
   if (menuItemsToImport.breakfastCombos && menuItemsToImport.breakfastCombos.length > 0) {
     categories.push({
       id: categoryId++,
@@ -325,7 +325,7 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  // Lunch Combos
+  
   if (menuItemsToImport.lunchCombos && menuItemsToImport.lunchCombos.length > 0) {
     categories.push({
       id: categoryId++,
@@ -341,7 +341,7 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  // Dinner Combos
+  
   if (menuItemsToImport.dinnerCombos && menuItemsToImport.dinnerCombos.length > 0) {
     categories.push({
       id: categoryId++,
@@ -357,7 +357,7 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  // Add-ons
+  
   if (menuItemsToImport.addOns && menuItemsToImport.addOns.length > 0) {
     categories.push({
       id: categoryId++,
@@ -373,7 +373,7 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  // Pickup Option
+  
   if (menuItemsToImport.pickupOption && menuItemsToImport.pickupOption.length > 0) {
     categories.push({
       id: categoryId++,

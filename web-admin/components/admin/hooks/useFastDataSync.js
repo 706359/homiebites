@@ -1,22 +1,16 @@
-/**
- * useFastDataSync Hook
- * Combines useAdminData with optimistic updates and sync manager
- * Provides fast, safe data operations with automatic sync
- */
+
 import { useCallback, useEffect } from 'react';
 import api from '../../../lib/api-admin.js';
 import dataSyncManager from '../utils/dataSyncManager.js';
 import { useAdminData } from './useAdminData.js';
 import useOptimisticData from './useOptimisticData.js';
 
-/**
- * Enhanced hook for fast data sync
- */
+
 export const useFastDataSync = () => {
-  // Use existing useAdminData for initial load
+  
   const adminData = useAdminData();
 
-  // Use optimistic data hook for fast updates
+  
   const optimisticData = useOptimisticData({
     loadData: async (filters, signal) => {
       const response = await api.getAllOrders(filters);
@@ -28,10 +22,10 @@ export const useFastDataSync = () => {
     enableOptimistic: true,
   });
 
-  // Sync optimisticData with adminData.orders when orders change
+  
   useEffect(() => {
     if (adminData.orders && Array.isArray(adminData.orders)) {
-      // Always sync optimisticData with adminData.orders to keep them in sync
+      
       const currentOptimistic = optimisticData.data || [];
       const ordersChanged =
         currentOptimistic.length !== adminData.orders.length ||
@@ -48,16 +42,14 @@ export const useFastDataSync = () => {
         optimisticData.setData([...adminData.orders]);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [adminData.orders]);
 
-  /**
-   * Fast delete with optimistic update
-   */
+  
   const fastDelete = useCallback(
     async (orderId, onSuccess, onError) => {
       try {
-        // Ensure optimisticData has the current orders before deleting
+        
         const currentOrders = adminData.orders || [];
         const order = currentOrders.find(
           (o) => o._id === orderId || o.orderId === orderId || o.id === orderId
@@ -67,38 +59,38 @@ export const useFastDataSync = () => {
           throw new Error(`Order with ID ${orderId} not found`);
         }
 
-        // Sync optimisticData with adminData.orders if needed
+        
         const optimisticOrders = optimisticData.data || [];
         const orderInOptimistic = optimisticOrders.find(
           (o) => o._id === orderId || o.orderId === orderId || o.id === orderId
         );
 
         if (!orderInOptimistic) {
-          // Order not in optimistic data, sync it first
+          
           optimisticData.setData([...currentOrders]);
         }
 
-        // Get the API order ID (prefer _id, then id, then orderId, then fallback to orderId param)
+        
         const apiOrderId = order._id || order.id || order.orderId || orderId;
 
-        // Update adminData.orders immediately with optimistic delete
+        
         adminData.setOrders((prevOrders) =>
           prevOrders.filter((o) => o._id !== orderId && o.orderId !== orderId && o.id !== orderId)
         );
 
-        // Delete optimistically and call API
+        
         await optimisticData.deleteOptimistic(
-          orderId, // Use the original orderId for finding in optimistic data
+          orderId, 
           async () => {
-            const response = await api.deleteOrder(apiOrderId); // Use apiOrderId for API call
+            const response = await api.deleteOrder(apiOrderId); 
             return response;
           }
         );
 
-        // Call success immediately - don't wait for sync
+        
         if (onSuccess) onSuccess();
 
-        // Sync in background (non-blocking) with reduced delay
+        
         optimisticData
           .syncDebounced(async () => {
             const response = await api.getAllOrders({});
@@ -109,11 +101,11 @@ export const useFastDataSync = () => {
             return response;
           }, 100)
           .catch((err) => {
-            // Silently handle sync errors - operation already succeeded
+            
             console.warn('Background sync error after delete:', err);
           });
       } catch (error) {
-        // Format error message for user-friendly display
+        
         const errorMessage = error.message || 'Failed to delete order';
         const formattedError = new Error(errorMessage);
         if (onError) {
@@ -126,13 +118,11 @@ export const useFastDataSync = () => {
     [optimisticData, adminData]
   );
 
-  /**
-   * Fast update with optimistic update
-   */
+  
   const fastUpdate = useCallback(
     async (orderId, updates, onSuccess, onError) => {
       try {
-        // Ensure optimisticData has the current orders before updating
+        
         const currentOrders = adminData.orders || [];
         const order = currentOrders.find(
           (o) => o._id === orderId || o.orderId === orderId || o.id === orderId
@@ -142,14 +132,14 @@ export const useFastDataSync = () => {
           throw new Error(`Order with ID ${orderId} not found`);
         }
 
-        // Sync optimisticData with adminData.orders if needed
+        
         const optimisticOrders = optimisticData.data || [];
         const orderInOptimistic = optimisticOrders.find(
           (o) => o._id === orderId || o.orderId === orderId || o.id === orderId
         );
 
         if (!orderInOptimistic) {
-          // Order not in optimistic data, sync it first
+          
           optimisticData.setData([...currentOrders]);
         }
 
@@ -162,7 +152,7 @@ export const useFastDataSync = () => {
           }
         });
         
-        // Ensure paymentStatus is synced when status is updated (production data integrity)
+        
         if (updatePayload.status && !updatePayload.paymentStatus) {
           const statusLower = String(updatePayload.status).toLowerCase().trim();
           if (statusLower === 'paid' || statusLower === 'delivered') {
@@ -172,17 +162,17 @@ export const useFastDataSync = () => {
           }
         }
 
-        // Perform optimistic update with clean payload
+        
         await optimisticData.updateOptimistic(orderId, updates, async () => {
           const response = await api.updateOrder(apiOrderId, updatePayload);
-          // Verify response contains updated order
+          
           if (!response.success) {
             throw new Error(response.error || response.message || 'Update failed');
           }
           return response;
         });
 
-        // Update adminData.orders immediately with optimistic update
+        
         adminData.setOrders((prevOrders) =>
           prevOrders.map((o) =>
             o._id === orderId || o.orderId === orderId || o.id === orderId
@@ -191,8 +181,8 @@ export const useFastDataSync = () => {
           )
         );
 
-        // Sync in background (debounced) to ensure UI reflects actual database state
-        // This is critical for production data integrity
+        
+        
         optimisticData
           .syncDebounced(async () => {
             const response = await api.getAllOrders({});
@@ -203,15 +193,15 @@ export const useFastDataSync = () => {
             return response;
           }, 500)
           .catch((err) => {
-            // Log error but don't block - optimistic update already applied
+            
             console.warn('[useFastDataSync] Background sync error after update:', err);
           });
 
-        // Call success callback immediately after optimistic update
-        // Background sync will ensure data consistency
+        
+        
         if (onSuccess) onSuccess();
       } catch (error) {
-        // Format error message for user-friendly display
+        
         const errorMessage = error.message || 'Failed to update order';
         const formattedError = new Error(errorMessage);
         if (onError) {
@@ -224,31 +214,29 @@ export const useFastDataSync = () => {
     [optimisticData, adminData]
   );
 
-  /**
-   * Fast create with optimistic update
-   */
+  
   const fastCreate = useCallback(
     async (orderData, onSuccess, onError) => {
       try {
-        // Create optimistically and call API
+        
         const response = await optimisticData.createOptimistic(orderData, async () => {
           const response = await api.createManualOrder(orderData);
           return response;
         });
 
-        // If API returned the created order, add it immediately
+        
         if (response && response.data && response.data.order) {
           const newOrder = response.data.order;
           adminData.setOrders((prevOrders) => [...prevOrders, newOrder]);
         } else if (response && response.data && Array.isArray(response.data)) {
-          // If response is an array, use it
+          
           adminData.setOrders((prevOrders) => [...prevOrders, ...response.data]);
         }
 
-        // Call success immediately - don't wait for sync
+        
         if (onSuccess) onSuccess();
 
-        // Sync in background (non-blocking) with reduced delay
+        
         optimisticData
           .syncDebounced(async () => {
             const response = await api.getAllOrders({});
@@ -259,11 +247,11 @@ export const useFastDataSync = () => {
             return response;
           }, 100)
           .catch((err) => {
-            // Silently handle sync errors - operation already succeeded
+            
             console.warn('Background sync error after create:', err);
           });
       } catch (error) {
-        // Format error message for user-friendly display
+        
         const errorMessage = error.message || 'Failed to create order';
         const formattedError = new Error(errorMessage);
         if (onError) {
@@ -276,9 +264,7 @@ export const useFastDataSync = () => {
     [optimisticData, adminData]
   );
 
-  /**
-   * Debounced sync - batches multiple sync calls
-   */
+  
   const syncDebounced = useCallback(
     async (delay = 300) => {
       return await optimisticData.syncDebounced(async () => {
@@ -292,26 +278,24 @@ export const useFastDataSync = () => {
     [optimisticData, adminData]
   );
 
-  /**
-   * Cancel all pending operations
-   */
+  
   const cancelAll = useCallback(() => {
     dataSyncManager.cancelAllRequests();
     optimisticData.cancel();
   }, [optimisticData]);
 
   return {
-    // Original adminData
+    
     ...adminData,
 
-    // Fast operations
+    
     fastDelete,
     fastUpdate,
     fastCreate,
     syncDebounced,
     cancelAll,
 
-    // Optimistic data state
+    
     syncing: optimisticData.syncing,
     hasPendingOps: dataSyncManager.hasPendingOperations(),
   };

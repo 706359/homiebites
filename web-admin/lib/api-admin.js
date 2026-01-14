@@ -1,14 +1,14 @@
-// Centralized API configuration and utilities
 
-// Determine API base URL
-// All APIs are now in Next.js - use relative URLs for both development and production
-// Next.js API routes run on the same server as the frontend
-// Endpoints already include '/api/' prefix, so base URL should be empty
+
+
+
+
+
 let resolvedApiUrl = '';
 
-// API URL configuration
+
 if (typeof window !== 'undefined') {
-  // Backend URL configured - no debug logging
+  
 }
 
 export const api = {
@@ -18,33 +18,33 @@ export const api = {
     const url = `${resolvedApiUrl}${endpoint}`;
     const token = typeof window !== 'undefined' ? localStorage.getItem('homiebites_token') : null;
 
-    // Don't set Content-Type for FormData - browser will set it with boundary
+    
     const isFormData = options.body instanceof FormData;
     const defaultHeaders = isFormData ? {} : { 'Content-Type': 'application/json' };
 
-    // Support AbortController for request cancellation
+    
     const signal = options.signal || options.abortController?.signal;
 
     const config = {
       ...options,
-      signal, // Add abort signal
+      signal, 
       headers: {
         ...defaultHeaders,
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
-      // Force cache bypass for hard refresh
+      
       cache: options.hardRefresh ? 'no-store' : options.cache || 'default',
-      // No credentials needed - we use JWT tokens in Authorization header, not cookies
+      
     };
 
-    // Remove signal from options to avoid passing it twice
+    
     delete config.abortController;
 
     try {
       const response = await fetch(url, config);
 
-      // Handle non-JSON responses
+      
       let data;
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
@@ -55,7 +55,7 @@ export const api = {
         }
       } else {
         const text = await response.text();
-        // If we get HTML, it means we're hitting the wrong server (frontend instead of backend)
+        
         if (text.trim().startsWith('<!doctype') || text.trim().startsWith('<!DOCTYPE')) {
           console.error(
             `[API] Got HTML instead of JSON from ${url}. Backend server may not be running or API URL is incorrect.`
@@ -68,43 +68,43 @@ export const api = {
       }
 
       if (!response.ok) {
-        // Handle 404 for optional endpoints gracefully
+        
         if (response.status === 404) {
           const isOptionalEndpoint = endpoint.includes('/auth/users');
           if (isOptionalEndpoint) {
-            // Return a response object that indicates the endpoint doesn't exist
-            // This prevents throwing an error and allows graceful fallback
+            
+            
             return {
               success: false,
               error: 'Route not found',
               data: null,
-              _isOptional: true, // Flag to indicate this is an optional endpoint
+              _isOptional: true, 
             };
           }
         }
 
-        // Handle authentication errors
+        
         if (response.status === 401 || response.status === 403) {
-          // Don't redirect if this is a login request (login endpoint can return 401 for wrong credentials)
+          
           const isLoginRequest = endpoint.includes('/auth/login');
 
-          // Clear invalid token and admin state (except for login requests)
+          
           if (typeof window !== 'undefined' && !isLoginRequest) {
             localStorage.removeItem('homiebites_token');
             localStorage.removeItem('homiebites_admin');
             localStorage.removeItem('homiebites_user');
 
-            // Redirect to admin login page if on admin route
+            
             if (window.location.pathname.startsWith('/admin')) {
               console.warn('[API] Authentication failed. Redirecting to admin login...');
               window.location.href = '/admin';
             } else if (window.location.pathname === '/') {
-              // Don't redirect if already on home page
+              
               console.warn('[API] Authentication failed but already on home page');
             }
           }
 
-          // For login requests, return the error message from the API
+          
           if (isLoginRequest && data && data.error) {
             throw new Error(data.error);
           }
@@ -120,20 +120,20 @@ export const api = {
 
       return data;
     } catch (error) {
-      // Don't log errors for optional endpoints that return 404
+      
       const isOptionalEndpoint = endpoint.includes('/auth/users');
       if (!isOptionalEndpoint) {
         console.error(`[API] Request failed for ${url}:`, error.message);
       }
-      // Re-throw with more context
+      
       if (error instanceof TypeError && error.message.includes('fetch')) {
         throw new Error(
           `Network error: Unable to connect to the server. Please check your internet connection and try again.`
         );
       }
-      // Provide user-friendly error messages
+      
       if (error instanceof Error) {
-        // Preserve original error but ensure message is user-friendly
+        
         const userMessage = error.message || 'An error occurred';
         throw new Error(userMessage);
       }
@@ -141,9 +141,9 @@ export const api = {
     }
   },
 
-  // Auth endpoints
+  
   async login(email, password) {
-    // Following ADMIN_PASSWORD.md - use email for login
+    
     const loginData = {
       email: email?.trim() || email,
       password: password?.trim() || password,
@@ -161,15 +161,15 @@ export const api = {
     });
   },
 
-  // Menu endpoints
+  
   async getMenu() {
     const result = await this.request('/api/menu');
     return result;
   },
 
   async updateMenu(menuData) {
-    // Backend accepts either array directly or { categories: [...] }
-    // Send array directly to match backend expectation
+    
+    
     return this.request('/api/menu', {
       method: 'PUT',
       body: JSON.stringify(menuData),
@@ -182,7 +182,7 @@ export const api = {
     });
   },
 
-  // Order endpoints
+  
   async createOrder(orderData) {
     return this.request('/api/orders', {
       method: 'POST',
@@ -190,7 +190,7 @@ export const api = {
     });
   },
 
-  // Manual order creation (uses new OrderID format: HB-Jan'25-15-000079)
+  
   async createManualOrder(orderData) {
     return this.request('/api/orders/manual', {
       method: 'POST',
@@ -198,14 +198,14 @@ export const api = {
     });
   },
 
-  // Admin order endpoints
+  
   async getAllOrders(filters = {}, options = {}) {
     const params = new URLSearchParams();
     if (filters.status) params.append('status', filters.status);
     if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
     if (filters.dateTo) params.append('dateTo', filters.dateTo);
     if (filters.search) params.append('search', filters.search);
-    // Add cache-busting timestamp for hard refresh
+    
     if (options.hardRefresh) {
       params.append('_t', Date.now().toString());
     }
@@ -230,7 +230,7 @@ export const api = {
   },
 
   async bulkImportOrders(orders) {
-    // Backend expects the request body to be directly an array, not wrapped in an object
+    
     if (!Array.isArray(orders)) {
       throw new Error('Orders must be an array');
     }
@@ -249,7 +249,7 @@ export const api = {
     });
   },
 
-  // Upload Excel/CSV file
+  
   async uploadExcelFile(file) {
     const formData = new FormData();
     formData.append('file', file);
@@ -259,14 +259,14 @@ export const api = {
     });
   },
 
-  // Clear all orders
+  
   async clearAllOrders() {
     return this.request('/api/orders/clear-all', {
       method: 'DELETE',
     });
   },
 
-  // Review endpoints
+  
   async createReview(reviewData) {
     return this.request('/api/reviews', {
       method: 'POST',
@@ -281,7 +281,7 @@ export const api = {
     return this.request(`/api/reviews?${params.toString()}`);
   },
 
-  // Offers endpoints
+  
   async getOffers() {
     return this.request('/api/offers');
   },
@@ -293,7 +293,7 @@ export const api = {
     });
   },
 
-  // Password recovery endpoints
+  
   async forgotPassword(email) {
     return this.request('/api/auth/forgot-password', {
       method: 'POST',
@@ -322,12 +322,12 @@ export const api = {
     });
   },
 
-  // Admin user endpoints
+  
   async getAllUsers() {
     return this.request('/api/auth/users');
   },
 
-  // Gallery endpoints
+  
   async getGallery() {
     return this.request('/api/gallery');
   },
@@ -352,7 +352,7 @@ export const api = {
     });
   },
 
-  // Settings endpoints
+  
   async getSettings() {
     return this.request('/api/settings');
   },

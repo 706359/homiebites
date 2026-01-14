@@ -24,21 +24,21 @@ export default function ChangePasswordForm({ isTemporary }) {
     hasSpecialChar: false,
   });
 
-  // Enable keyboard avoidance for mobile
+  
   useAutoKeyboardAvoidance({
     containerSelector: '.change-password-form',
     inputSelector: 'input, textarea, select',
   });
 
   useEffect(() => {
-    // Check if user is authenticated
+    
     const token = localStorage.getItem('homiebites_token');
     if (!token) {
       router.push('/admin');
       return;
     }
 
-    // Verify token
+    
     const verifyToken = async () => {
       try {
         const response = await fetch('/api/auth/verify', {
@@ -83,7 +83,7 @@ export default function ChangePasswordForm({ isTemporary }) {
     e.preventDefault();
     setLoading(true);
 
-    // Validation
+    
     if (formData.newPassword !== formData.confirmPassword) {
       showError('New passwords do not match');
       setLoading(false);
@@ -187,7 +187,7 @@ export default function ChangePasswordForm({ isTemporary }) {
             />
           </div>
 
-          {/* Password Strength Indicator */}
+          {}
           <div className='password-requirements'>
             <p className='requirements-title'>Password Requirements:</p>
             <div className='requirements-list'>

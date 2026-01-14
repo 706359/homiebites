@@ -1,17 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-/**
- * Custom hook for keyboard avoidance on mobile devices
- * Automatically scrolls input fields into view when keyboard appears
- * 
- * @param {Object} options - Configuration options
- * @param {boolean} options.enabled - Enable/disable keyboard avoidance (default: true)
- * @param {number} options.mobileBreakpoint - Screen width breakpoint for mobile (default: 768)
- * @param {string} options.scrollBehavior - Scroll behavior: 'smooth' or 'auto' (default: 'smooth')
- * @param {string} options.block - Vertical alignment: 'start', 'center', 'end', 'nearest' (default: 'center')
- * @param {number} options.delay - Delay in ms before scrolling (default: 100 for visualViewport, 300 for fallback)
- * @returns {Object} - Object with refs and utilities
- */
+
 export const useKeyboardAvoidance = (options = {}) => {
   const {
     enabled = true,
@@ -32,13 +21,13 @@ export const useKeyboardAvoidance = (options = {}) => {
       if (!isMobile() || !input) return;
 
       const scrollInputIntoView = () => {
-        // Use visualViewport if available for better keyboard detection
+        
         if (window.visualViewport) {
           const viewport = window.visualViewport;
           const inputRect = input.getBoundingClientRect();
           const viewportHeight = viewport.height;
           
-          // Check if input is covered by keyboard
+          
           if (inputRect.bottom > viewportHeight) {
             const scrollDelay = delay !== null ? delay : 100;
             setTimeout(() => {
@@ -50,7 +39,7 @@ export const useKeyboardAvoidance = (options = {}) => {
             }, scrollDelay);
           }
         } else {
-          // Fallback for browsers without visualViewport
+          
           const scrollDelay = delay !== null ? delay : 300;
           setTimeout(() => {
             input.scrollIntoView({
@@ -65,7 +54,7 @@ export const useKeyboardAvoidance = (options = {}) => {
       scrollInputIntoView();
     };
 
-    // Add focus listeners to all registered inputs
+    
     const inputs = inputRefs.current.filter(Boolean);
     const focusHandlers = inputs.map((input) => {
       const handler = () => handleInputFocus(input);
@@ -74,35 +63,26 @@ export const useKeyboardAvoidance = (options = {}) => {
     });
 
     return () => {
-      // Cleanup: remove all event listeners
+      
       focusHandlers.forEach(({ input, handler }) => {
         input.removeEventListener('focus', handler);
       });
     };
   }, [enabled, mobileBreakpoint, scrollBehavior, block, delay]);
 
-  /**
-   * Register an input element for keyboard avoidance
-   * @param {HTMLElement} input - Input element to register
-   */
+  
   const registerInput = (input) => {
     if (input && !inputRefs.current.includes(input)) {
       inputRefs.current.push(input);
     }
   };
 
-  /**
-   * Unregister an input element
-   * @param {HTMLElement} input - Input element to unregister
-   */
+  
   const unregisterInput = (input) => {
     inputRefs.current = inputRefs.current.filter((ref) => ref !== input);
   };
 
-  /**
-   * Create a ref callback that automatically registers the input
-   * @returns {Function} - Ref callback function
-   */
+  
   const createInputRef = () => {
     return (input) => {
       if (input) {
@@ -119,12 +99,7 @@ export const useKeyboardAvoidance = (options = {}) => {
   };
 };
 
-/**
- * Simplified hook that automatically finds and registers all inputs in a container
- * @param {Object} options - Same options as useKeyboardAvoidance
- * @param {string} options.containerSelector - CSS selector for container (default: 'form')
- * @param {string} options.inputSelector - CSS selector for inputs (default: 'input, textarea, select')
- */
+
 export const useAutoKeyboardAvoidance = (options = {}) => {
   const {
     containerSelector = 'form',
@@ -171,7 +146,7 @@ export const useAutoKeyboardAvoidance = (options = {}) => {
       scrollInputIntoView();
     };
 
-    // Find all containers and their inputs
+    
     const containers = document.querySelectorAll(containerSelector);
     const allHandlers = [];
 

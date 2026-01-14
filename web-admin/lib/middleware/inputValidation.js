@@ -1,6 +1,4 @@
-/**
- * Validate email format
- */
+
 export function validateEmail(email) {
   if (!email || typeof email !== 'string') {
     return false;
@@ -9,9 +7,7 @@ export function validateEmail(email) {
   return emailRegex.test(email);
 }
 
-/**
- * Validate phone number
- */
+
 export function validatePhone(phone) {
   if (!phone || typeof phone !== 'string') {
     return false;
@@ -20,9 +16,7 @@ export function validatePhone(phone) {
   return phoneRegex.test(phone.replace(/\s/g, ''));
 }
 
-/**
- * Validate MongoDB ObjectId
- */
+
 export function validateObjectId(id) {
   if (!id || typeof id !== 'string') {
     return false;
@@ -31,9 +25,7 @@ export function validateObjectId(id) {
   return objectIdRegex.test(id);
 }
 
-/**
- * Sanitize string input
- */
+
 export function sanitizeString(str, maxLength = 1000) {
   if (typeof str !== 'string') {
     return '';
@@ -47,9 +39,7 @@ export function sanitizeString(str, maxLength = 1000) {
     .replace(/on\w+\s*=/gi, '');
 }
 
-/**
- * Validate date string
- */
+
 export function validateDate(dateString) {
   if (!dateString) {
     return false;
@@ -59,9 +49,7 @@ export function validateDate(dateString) {
   return !isNaN(date.getTime()) && date instanceof Date;
 }
 
-/**
- * Validate numeric input
- */
+
 export function validateNumber(value, min = null, max = null) {
   const num = Number(value);
 
@@ -80,9 +68,7 @@ export function validateNumber(value, min = null, max = null) {
   return true;
 }
 
-/**
- * Validate order data
- */
+
 export function validateOrderData(data) {
   const errors = [];
 
@@ -116,9 +102,7 @@ export function validateOrderData(data) {
   };
 }
 
-/**
- * Validate user data
- */
+
 export function validateUserData(data) {
   const errors = [];
 

@@ -11,17 +11,17 @@ const AllAddressesTab = ({
   showNotification,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'active', 'inactive'
-  const [filterSegment, setFilterSegment] = useState('all'); // 'all', 'Super VIP', 'VIP', 'Regular', 'New'
-  const [sortBy, setSortBy] = useState('totalSpent'); // 'totalSpent', 'totalOrders', 'lastOrder'
-  const [sortOrder, setSortOrder] = useState('desc'); // 'asc', 'desc'
-  const [viewMode, setViewMode] = useState('table'); // 'table', 'cards'
+  const [filterStatus, setFilterStatus] = useState('all'); 
+  const [filterSegment, setFilterSegment] = useState('all'); 
+  const [sortBy, setSortBy] = useState('totalSpent'); 
+  const [sortOrder, setSortOrder] = useState('desc'); 
+  const [viewMode, setViewMode] = useState('table'); 
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
 
-  // Calculate customer stats
+  
   const customerStats = useMemo(() => {
     if (!orders || orders.length === 0) {
       return [];
@@ -36,7 +36,7 @@ const AllAddressesTab = ({
     let ordersWithoutAddresses = 0;
 
     orders.forEach((order, idx) => {
-      // Try multiple possible field names for address
+      
       const address =
         order.deliveryAddress ||
         order.customerAddress ||
@@ -83,7 +83,7 @@ const AllAddressesTab = ({
       
       customerMap[address].totalSpent += isNaN(orderTotal) ? 0 : orderTotal;
 
-      // Parse order date with better error handling
+      
       const orderDate = parseOrderDate(order.date || order.order_date || null);
 
       if (orderDate) {
@@ -98,23 +98,23 @@ const AllAddressesTab = ({
         }
       }
 
-      // Preferred mode
+      
       const mode = order.mode || 'Not Set';
       customerMap[address].preferredMode[mode] =
         (customerMap[address].preferredMode[mode] || 0) + 1;
 
-      // Payment mode
+      
       const paymentMode = order.paymentMode || 'Not Set';
       customerMap[address].paymentModes[paymentMode] =
         (customerMap[address].paymentModes[paymentMode] || 0) + 1;
     });
 
-    // Convert to array and calculate additional stats
+    
     const customers = Object.values(customerMap).map((customer) => {
       const avgOrderValue =
         customer.totalOrders > 0 ? customer.totalSpent / customer.totalOrders : 0;
 
-      // Get preferred mode
+      
       const preferredMode =
         Object.entries(customer.preferredMode).sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A';
       const preferredModePercent =
@@ -122,7 +122,7 @@ const AllAddressesTab = ({
           ? (customer.preferredMode[preferredMode] / customer.totalOrders) * 100
           : 0;
 
-      // Get preferred payment mode
+      
       const preferredPayment =
         Object.entries(customer.paymentModes).sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A';
       const preferredPaymentPercent =
@@ -130,11 +130,11 @@ const AllAddressesTab = ({
           ? (customer.paymentModes[preferredPayment] / customer.totalOrders) * 100
           : 0;
 
-      // Determine customer segment based on spending
-      // New: < ₹2,000
-      // Regular: ₹2,000 - ₹7,999
-      // VIP: ₹8,000 - ₹14,999
-      // Super VIP: ≥ ₹15,000
+      
+      
+      
+      
+      
       let segment = 'New';
       if (customer.totalSpent >= 15000) {
         segment = 'Super VIP';
@@ -144,7 +144,7 @@ const AllAddressesTab = ({
         segment = 'Regular';
       }
 
-      // Determine if inactive (no order in 30+ days)
+      
       const isInactive = customer.lastOrderDate && customer.lastOrderDate < thirtyDaysAgo;
 
       return {
@@ -162,29 +162,29 @@ const AllAddressesTab = ({
     return customers;
   }, [orders]);
 
-  // Filter and sort customers
+  
   const filteredCustomers = useMemo(() => {
     let filtered = [...customerStats];
 
-    // Search filter
+    
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((c) => c.address.toLowerCase().includes(query));
     }
 
-    // Status filter
+    
     if (filterStatus === 'active') {
       filtered = filtered.filter((c) => !c.isInactive);
     } else if (filterStatus === 'inactive') {
       filtered = filtered.filter((c) => c.isInactive);
     }
 
-    // Segment filter
+    
     if (filterSegment !== 'all') {
       filtered = filtered.filter((c) => c.segment === filterSegment);
     }
 
-    // Sort
+    
     filtered.sort((a, b) => {
       let comparison = 0;
       switch (sortBy) {
@@ -215,7 +215,7 @@ const AllAddressesTab = ({
     return filtered;
   }, [customerStats, searchQuery, filterStatus, filterSegment, sortBy, sortOrder]);
 
-  // Pagination
+  
   const paginatedCustomers = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
@@ -224,7 +224,7 @@ const AllAddressesTab = ({
 
   const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
 
-  // Handle sort
+  
   const handleSort = (column) => {
     if (sortBy === column) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -234,7 +234,7 @@ const AllAddressesTab = ({
     }
   };
 
-  // Customer segments and totals
+  
   const segments = useMemo(() => {
     return {
       superVip: customerStats.filter((c) => c.segment === 'Super VIP').length,
@@ -246,12 +246,12 @@ const AllAddressesTab = ({
     };
   }, [customerStats]);
 
-  // Inactive customers
+  
   const inactiveCustomers = useMemo(() => {
     return customerStats.filter((c) => c.isInactive);
   }, [customerStats]);
 
-  // Format date difference
+  
   const formatDateDiff = (date) => {
     if (!date) return 'Never';
     try {
@@ -276,7 +276,7 @@ const AllAddressesTab = ({
     setShowCustomerModal(true);
   };
 
-  // Export customer list
+  
   const handleExport = () => {
     const csvContent =
       'Address,Total Orders,Total Spent,Avg Order Value,Last Order,Segment\n' +
@@ -304,15 +304,15 @@ const AllAddressesTab = ({
     );
   }
 
-  // Show message if no orders
+  
   if (!orders || orders.length === 0) {
     return (
       <div className='admin-content'>
-        <div className='dashboard-card' style={{ textAlign: 'center', padding: '48px' }}>
+        <div className='dashboard-card empty-state-center'>
           <div className='empty-state'>
             <i className='fa-solid fa-users empty-state-icon'></i>
             <p>No orders found</p>
-            <p style={{ color: 'var(--admin-text-light)', fontSize: '0.9rem' }}>
+            <p className='empty-state-text'>
               Add some orders to see customer data here
             </p>
           </div>
@@ -323,16 +323,16 @@ const AllAddressesTab = ({
 
   return (
     <div className='admin-content'>
-      {/* ENHANCED STATS SUMMARY */}
+      {}
       <div className='admin-stats customer-stats-row'>
-        {/* Total Customers - Accent/Green Theme */}
+        {}
         <div className='stat-card stat-card-gradient-accent customer-stat-card'>
           <div className='customer-stat-content'>
             <h3 className='customer-stat-number'>{segments.total}</h3>
             <p className='customer-stat-label'>Total Customers</p>
           </div>
         </div>
-        {/* Super VIP Customers - Premium/Gold Theme */}
+        {}
         <div className='stat-card stat-card-gradient-warning customer-stat-card'>
           <i className='fa-solid fa-crown customer-stat-icon customer-stat-icon-green'></i>
           <div className='customer-stat-content'>
@@ -340,7 +340,7 @@ const AllAddressesTab = ({
             <p className='customer-stat-label'>Super VIP (≥₹15k)</p>
           </div>
         </div>
-        {/* VIP Customers - Warning/Orange Theme */}
+        {}
         <div className='stat-card stat-card-gradient-warning customer-stat-card'>
           <i className='fa-solid fa-star customer-stat-icon customer-stat-icon-green'></i>
           <div className='customer-stat-content'>
@@ -348,7 +348,7 @@ const AllAddressesTab = ({
             <p className='customer-stat-label'>VIP (₹8k-₹15k)</p>
           </div>
         </div>
-        {/* Regular Customers - Secondary/Brown-Rust Theme */}
+        {}
         <div className='stat-card stat-card-gradient-secondary customer-stat-card'>
           <i className='fa-solid fa-user customer-stat-icon customer-stat-icon-light'></i>
           <div className='customer-stat-content'>
@@ -356,7 +356,7 @@ const AllAddressesTab = ({
             <p className='customer-stat-label'>Regular Customers</p>
           </div>
         </div>
-        {/* Total Revenue - Success/Green Theme */}
+        {}
         <div className='stat-card stat-card-gradient-success customer-stat-card'>
           <div className='customer-stat-content'>
             <h3 className='customer-stat-number'>₹{formatCurrency(segments.totalRevenue)}</h3>
@@ -365,13 +365,12 @@ const AllAddressesTab = ({
         </div>
       </div>
 
-      {/* COMPACT FILTER & SEARCH BAR */}
+      {}
       <div className='dashboard-card filter-bar-card filter-bar-compact'>
         <div className='filter-bar-container-compact'>
-          {/* Search */}
+          {}
           <div
-            className='search-input-wrapper search-input-compact'
-            style={{ flex: 1, minWidth: '180px' }}
+            className='search-input-wrapper search-input-compact search-input-flex'
           >
             <i className='fa-solid fa-search search-input-icon'></i>
             <input
@@ -383,7 +382,7 @@ const AllAddressesTab = ({
             />
           </div>
 
-          {/* Status Filter */}
+          {}
           <select
             className='input-field filter-select-compact'
             value={filterStatus}
@@ -394,7 +393,7 @@ const AllAddressesTab = ({
             <option value='inactive'>Inactive</option>
           </select>
 
-          {/* Segment Filter */}
+          {}
           <select
             className='input-field filter-select-compact'
             value={filterSegment}
@@ -406,7 +405,7 @@ const AllAddressesTab = ({
             <option value='New'>New</option>
           </select>
 
-          {/* View Toggle */}
+          {}
           <div className='view-toggle-compact'>
             <button
               className={`btn btn-ghost btn-icon btn-icon-compact ${viewMode === 'table' ? 'active' : ''}`}
@@ -424,7 +423,7 @@ const AllAddressesTab = ({
             </button>
           </div>
 
-          {/* Export Button */}
+          {}
           <button
             className='btn btn-secondary btn-small btn-compact'
             onClick={handleExport}
@@ -433,7 +432,7 @@ const AllAddressesTab = ({
             <i className='fa-solid fa-download'></i> Export
           </button>
 
-          {/* Clear Filters */}
+          {}
           {(searchQuery || filterStatus !== 'all' || filterSegment !== 'all') && (
             <button
               className='btn btn-ghost btn-small btn-compact'
@@ -450,7 +449,7 @@ const AllAddressesTab = ({
         </div>
       </div>
 
-      {/* INACTIVE CUSTOMERS ALERT */}
+      {}
       {inactiveCustomers.length > 0 && (
         <div
           className='dashboard-card margin-bottom-24'
@@ -459,12 +458,12 @@ const AllAddressesTab = ({
             border: '2px solid var(--admin-warning)',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className='flex justify-between items-center'>
             <div>
-              <h3 style={{ color: 'var(--admin-warning)', marginBottom: '8px' }}>
+              <h3 className='text-warning mb-8'>
                 ⚠️ {inactiveCustomers.length} customers haven&apos;t ordered in 30+ days
               </h3>
-              <p style={{ color: 'var(--admin-text)', fontSize: '0.9rem' }}>
+              <p className='text-base'>
                 Consider reaching out to re-engage these customers
               </p>
             </div>
@@ -482,16 +481,16 @@ const AllAddressesTab = ({
         </div>
       )}
 
-      {/* TABLE VIEW */}
+      {}
       {viewMode === 'table' ? (
-        <div className='dashboard-card table-container-card' style={{ padding: 0 }}>
-          <div className='orders-table-container table-wrapper' style={{ minHeight: '400px' }}>
+        <div className='dashboard-card table-container-card table-container-no-padding'>
+          <div className='orders-table-container table-wrapper table-wrapper-min-height'>
             {filteredCustomers.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '48px' }}>
+              <div className='empty-state-center'>
                 <div className='empty-state'>
                   <i className='fa-solid fa-users empty-state-icon'></i>
                   <p>No customers found</p>
-                  <p style={{ color: 'var(--admin-text-light)', fontSize: '0.9rem' }}>
+                  <p className='empty-state-text'>
                     {orders.length > 0 && customerStats.length === 0
                       ? `Found ${orders.length} orders, but none have valid delivery addresses.`
                       : searchQuery || filterStatus !== 'all' || filterSegment !== 'all'
@@ -502,73 +501,68 @@ const AllAddressesTab = ({
               </div>
             ) : (
               <>
-                <table className='orders-table' style={{ width: '100%', display: 'table' }}>
+                <table className='orders-table table-full-width'>
                   <thead>
                     <tr>
                       <th
                         onClick={() => handleSort('address')}
-                        style={{ cursor: 'pointer', userSelect: 'none' }}
+                        className='cursor-pointer select-none'
                       >
                         Address
                         {sortBy === 'address' && (
                           <i
-                            className={`fa-solid fa-arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
-                            style={{ marginLeft: '6px', fontSize: '10px' }}
+                            className={`fa-solid fa-arrow-${sortOrder === 'asc' ? 'up' : 'down'} ml-6 text-xs`}
                           ></i>
                         )}
                       </th>
                       <th
                         onClick={() => handleSort('totalOrders')}
-                        style={{ cursor: 'pointer', userSelect: 'none' }}
+                        className='cursor-pointer select-none'
                       >
                         Orders
                         {sortBy === 'totalOrders' && (
                           <i
-                            className={`fa-solid fa-arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
-                            style={{ marginLeft: '6px', fontSize: '10px' }}
+                            className={`fa-solid fa-arrow-${sortOrder === 'asc' ? 'up' : 'down'} ml-6 text-xs`}
                           ></i>
                         )}
                       </th>
                       <th
                         onClick={() => handleSort('totalSpent')}
-                        style={{ cursor: 'pointer', userSelect: 'none' }}
+                        className='cursor-pointer select-none'
                       >
                         Total Spent
                         {sortBy === 'totalSpent' && (
                           <i
-                            className={`fa-solid fa-arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
-                            style={{ marginLeft: '6px', fontSize: '10px' }}
+                            className={`fa-solid fa-arrow-${sortOrder === 'asc' ? 'up' : 'down'} ml-6 text-xs`}
                           ></i>
                         )}
                       </th>
                       <th
                         onClick={() => handleSort('avgOrderValue')}
-                        style={{ cursor: 'pointer', userSelect: 'none' }}
+                        className='cursor-pointer select-none'
                       >
                         Avg Order
                         {sortBy === 'avgOrderValue' && (
                           <i
-                            className={`fa-solid fa-arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
-                            style={{ marginLeft: '6px', fontSize: '10px' }}
+                            className={`fa-solid fa-arrow-${sortOrder === 'asc' ? 'up' : 'down'} ml-6 text-xs`}
                           ></i>
                         )}
                       </th>
                       <th
                         onClick={() => handleSort('lastOrder')}
-                        style={{ cursor: 'pointer', userSelect: 'none' }}
+                        className='cursor-pointer select-none'
                       >
                         Last Order
                         {sortBy === 'lastOrder' && (
                           <i
-                            className={`fa-solid fa-arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
-                            style={{ marginLeft: '6px', fontSize: '10px' }}
+                            className={`fa-solid fa-arrow-${sortOrder === 'asc' ? 'up' : 'down'} ml-6 text-xs`}
                           ></i>
                         )}
                       </th>
                       <th>Segment</th>
                       <th>Preferred Mode</th>
                       <th>Status</th>
-                      <th style={{ textAlign: 'center' }}>Actions</th>
+                      <th className='text-center'>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -585,48 +579,38 @@ const AllAddressesTab = ({
                         <tr
                           key={idx}
                           onClick={() => handleViewCustomer(customer)}
-                          style={{ cursor: 'pointer' }}
+                          className='cursor-pointer'
                         >
                           <td>
-                            <div style={{ fontWeight: '600', color: 'var(--admin-text-primary)' }}>
+                            <div className='font-semibold text-primary'>
                               {customer.address}
                             </div>
                           </td>
                           <td>
-                            <span style={{ fontWeight: '600' }}>{customer.totalOrders}</span>
+                            <span className='font-semibold'>{customer.totalOrders}</span>
                           </td>
                           <td>
-                            <span
-                              style={{
-                                fontWeight: '700',
-                                color: 'var(--admin-accent)',
-                                fontSize: '14px',
-                              }}
-                            >
+                            <span className='font-bold text-accent text-sm'>
                               ₹{formatCurrency(customer.totalSpent)}
                             </span>
                           </td>
                           <td>
-                            <span style={{ fontWeight: '600' }}>
+                            <span className='font-semibold'>
                               ₹{formatCurrency(customer.avgOrderValue)}
                             </span>
                           </td>
                           <td>
-                            <span
-                              style={{ fontSize: '12px', color: 'var(--admin-text-secondary)' }}
-                            >
+                            <span className='text-xs text-secondary'>
                               {formatDateDiff(customer.lastOrderDate)}
                             </span>
                           </td>
                           <td>
                             <span
-                              className='badge'
+                              className='badge badge-small'
                               style={{
                                 background: segmentColor + '20',
                                 color: segmentColor,
-                                fontSize: '11px',
                                 fontWeight: '600',
-                                padding: '4px 8px',
                               }}
                             >
                               {customer.segment === 'Super VIP'
@@ -640,27 +624,26 @@ const AllAddressesTab = ({
                             </span>
                           </td>
                           <td>
-                            <span style={{ fontSize: '12px' }}>{customer.preferredMode}</span>
+                            <span className='text-xs'>{customer.preferredMode}</span>
                           </td>
                           <td>
                             {customer.isInactive ? (
-                              <span className='badge badge-warning' style={{ fontSize: '11px' }}>
+                              <span className='badge badge-warning badge-small'>
                                 Inactive
                               </span>
                             ) : (
-                              <span className='badge badge-success' style={{ fontSize: '11px' }}>
+                              <span className='badge badge-success badge-small'>
                                 Active
                               </span>
                             )}
                           </td>
-                          <td style={{ textAlign: 'center' }}>
+                          <td className='text-center'>
                             <button
-                              className='btn btn-primary btn-small'
+                              className='btn btn-primary btn-small badge-small'
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (onViewOrders) onViewOrders(customer.address);
                               }}
-                              style={{ fontSize: '11px', padding: '4px 8px' }}
                             >
                               <i className='fa-solid fa-list'></i>
                             </button>
@@ -671,59 +654,44 @@ const AllAddressesTab = ({
                   </tbody>
                 </table>
 
-                {/* Pagination */}
+                {}
                 {totalPages > 1 && (
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '16px',
-                      borderTop: '1px solid var(--admin-border)',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '13px', color: 'var(--admin-text-secondary)' }}>
-                        Show:
-                      </span>
-                      <select
-                        className='input-field'
-                        value={itemsPerPage}
-                        onChange={(e) => {
-                          setItemsPerPage(Number(e.target.value));
-                          setCurrentPage(1);
-                        }}
-                        style={{ fontSize: '12px', padding: '4px 8px', minWidth: '80px' }}
-                      >
-                        <option value={10}>10</option>
-                        <option value={25}>25</option>
-                        <option value={50}>50</option>
-                        <option value={100}>100</option>
-                      </select>
-                      <span style={{ fontSize: '13px', color: 'var(--admin-text-secondary)' }}>
-                        of {filteredCustomers.length} customers
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div className='pagination-controls'>
+                    <div>
                       <button
                         className='btn btn-ghost btn-small'
                         onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                         disabled={currentPage === 1}
-                        style={{ fontSize: '12px', padding: '4px 8px' }}
                       >
-                        <i className='fa-solid fa-chevron-left'></i>
+                        <i className='fa-solid fa-chevron-left'></i> Previous
                       </button>
-                      <span style={{ fontSize: '13px', color: 'var(--admin-text)' }}>
+                      <span className='pagination-info'>
                         Page {currentPage} of {totalPages}
                       </span>
                       <button
                         className='btn btn-ghost btn-small'
                         onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                         disabled={currentPage === totalPages}
-                        style={{ fontSize: '12px', padding: '4px 8px' }}
                       >
-                        <i className='fa-solid fa-chevron-right'></i>
+                        Next <i className='fa-solid fa-chevron-right'></i>
                       </button>
+                    </div>
+                    <div className='pagination-container'>
+                      <span>Show:</span>
+                      <select
+                        className='input-field pagination-select'
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                          setItemsPerPage(Number(e.target.value));
+                          setCurrentPage(1);
+                        }}
+                      >
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                      <span>per page</span>
                     </div>
                   </div>
                 )}
@@ -732,23 +700,14 @@ const AllAddressesTab = ({
           </div>
         </div>
       ) : (
-        /* CARD VIEW */
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '24px',
-          }}
-        >
+        
+        <div className='customer-cards-grid'>
           {filteredCustomers.length === 0 ? (
-            <div
-              className='dashboard-card'
-              style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '48px' }}
-            >
+            <div className='dashboard-card grid-col-full empty-state-center'>
               <div className='empty-state'>
                 <i className='fa-solid fa-users empty-state-icon'></i>
                 <p>No customers found</p>
-                <p style={{ color: 'var(--admin-text-light)', fontSize: '0.9rem' }}>
+                <p className='empty-state-text'>
                   {orders.length > 0 && customerStats.length === 0
                     ? `Found ${orders.length} orders, but none have valid delivery addresses.`
                     : searchQuery || filterStatus !== 'all' || filterSegment !== 'all'
@@ -758,8 +717,7 @@ const AllAddressesTab = ({
               </div>
             </div>
           ) : (
-            <div className='list list-group'>
-              {paginatedCustomers.map((customer, idx) => {
+            paginatedCustomers.map((customer, idx) => {
               const segmentIcon =
                 customer.segment === 'Super VIP'
                   ? '👑'
@@ -777,94 +735,117 @@ const AllAddressesTab = ({
                       ? 'Regular Customer'
                       : 'New Customer';
 
+              const segmentColors = {
+                'Super VIP': {
+                  bg: 'linear-gradient(135deg, rgba(255, 193, 7, 0.15) 0%, rgba(255, 152, 0, 0.1) 100%)',
+                  border: 'rgba(255, 193, 7, 0.3)',
+                  icon: '👑',
+                  color: '#ff9800',
+                },
+                VIP: {
+                  bg: 'linear-gradient(135deg, rgba(68, 144, 49, 0.15) 0%, rgba(68, 144, 49, 0.08) 100%)',
+                  border: 'rgba(68, 144, 49, 0.3)',
+                  icon: '🌟',
+                  color: '#449031',
+                },
+                Regular: {
+                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.08) 100%)',
+                  border: 'rgba(59, 130, 246, 0.3)',
+                  icon: '📈',
+                  color: '#3b82f6',
+                },
+                New: {
+                  bg: 'linear-gradient(135deg, rgba(156, 163, 175, 0.15) 0%, rgba(156, 163, 175, 0.08) 100%)',
+                  border: 'rgba(156, 163, 175, 0.3)',
+                  icon: '👤',
+                  color: '#9ca3af',
+                },
+              };
+
+              const segmentStyle = segmentColors[customer.segment] || segmentColors.New;
+
               return (
                 <div
                   key={idx}
-                  className='dashboard-card list-item'
-                  style={{
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                  }}
+                  className='customer-card-enhanced'
                   onClick={() => handleViewCustomer(customer)}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.12)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '';
+                  style={{
+                    background: segmentStyle.bg,
+                    border: `2px solid ${segmentStyle.border}`,
                   }}
                 >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'start',
-                      marginBottom: '16px',
-                    }}
-                  >
-                    <div>
-                      <h3 style={{ marginBottom: '4px', fontSize: '1.2rem' }}>
-                        {customer.address}
-                      </h3>
-                      <p style={{ color: 'var(--admin-text-secondary)', fontSize: '0.9rem' }}>
-                        {segmentIcon} {segmentLabel}
-                      </p>
+                  <div className='customer-card-enhanced-header'>
+                    <div className='customer-card-enhanced-segment-badge' style={{ color: segmentStyle.color }}>
+                      <span className='customer-card-enhanced-segment-icon'>{segmentIcon}</span>
+                      <span className='customer-card-enhanced-segment-label'>{customer.segment}</span>
                     </div>
-                    {customer.isInactive && (
-                      <span className='badge badge-warning' style={{ fontSize: '0.75rem' }}>
-                        Inactive
+                    {customer.isInactive ? (
+                      <span className='customer-card-enhanced-status-badge inactive'>
+                        <i className='fa-solid fa-clock'></i>
+                        <span>Inactive</span>
+                      </span>
+                    ) : (
+                      <span className='customer-card-enhanced-status-badge active'>
+                        <i className='fa-solid fa-check-circle'></i>
+                        <span>Active</span>
                       </span>
                     )}
                   </div>
 
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '12px',
-                      marginBottom: '16px',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--admin-text-secondary)' }}>Total Orders:</span>
-                      <span style={{ fontWeight: '600', color: 'var(--admin-text)' }}>
-                        {customer.totalOrders}
-                      </span>
+                  <div className='customer-card-enhanced-body'>
+                    <h3 className='customer-card-enhanced-title'>{customer.address}</h3>
+                    
+                    <div className='customer-card-enhanced-stats'>
+                      <div className='customer-card-enhanced-stat-item'>
+                        <div className='customer-card-enhanced-stat-icon'>
+                          <i className='fa-solid fa-shopping-cart'></i>
+                        </div>
+                        <div className='customer-card-enhanced-stat-content'>
+                          <span className='customer-card-enhanced-stat-label'>Total Orders</span>
+                          <span className='customer-card-enhanced-stat-value'>{customer.totalOrders}</span>
+                        </div>
+                      </div>
+
+                      <div className='customer-card-enhanced-stat-item highlight'>
+                        <div className='customer-card-enhanced-stat-icon' style={{ color: segmentStyle.color }}>
+                          <i className='fa-solid fa-rupee-sign'></i>
+                        </div>
+                        <div className='customer-card-enhanced-stat-content'>
+                          <span className='customer-card-enhanced-stat-label'>Total Spent</span>
+                          <span className='customer-card-enhanced-stat-value' style={{ color: segmentStyle.color }}>
+                            ₹{formatCurrency(customer.totalSpent)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className='customer-card-enhanced-stat-item'>
+                        <div className='customer-card-enhanced-stat-icon'>
+                          <i className='fa-solid fa-chart-line'></i>
+                        </div>
+                        <div className='customer-card-enhanced-stat-content'>
+                          <span className='customer-card-enhanced-stat-label'>Avg Order</span>
+                          <span className='customer-card-enhanced-stat-value'>
+                            ₹{formatCurrency(customer.avgOrderValue)}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--admin-text-secondary)' }}>Total Spent:</span>
-                      <span
-                        style={{
-                          fontWeight: '700',
-                          color: 'var(--admin-accent)',
-                          fontSize: '1.1rem',
-                        }}
-                      >
-                        ₹{formatCurrency(customer.totalSpent)}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--admin-text-secondary)' }}>Avg Order:</span>
-                      <span style={{ fontWeight: '600', color: 'var(--admin-text)' }}>
-                        ₹{formatCurrency(customer.avgOrderValue)}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--admin-text-secondary)' }}>Last Order:</span>
-                      <span style={{ fontWeight: '600', color: 'var(--admin-text)' }}>
-                        {formatDateDiff(customer.lastOrderDate)}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--admin-text-secondary)' }}>Preferred:</span>
-                      <span style={{ fontWeight: '600', color: 'var(--admin-text)' }}>
-                        {customer.preferredMode}
-                      </span>
+
+                    <div className='customer-card-enhanced-footer'>
+                      <div className='customer-card-enhanced-meta'>
+                        <div className='customer-card-enhanced-meta-item'>
+                          <i className='fa-solid fa-calendar'></i>
+                          <span>Last: {formatDateDiff(customer.lastOrderDate)}</span>
+                        </div>
+                        <div className='customer-card-enhanced-meta-item'>
+                          <i className='fa-solid fa-clock'></i>
+                          <span>{customer.preferredMode}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className='action-buttons-group' style={{ marginTop: '16px' }}>
+                  <div className='customer-card-enhanced-actions'>
                     <button
                       className='btn btn-primary btn-small btn-full'
                       onClick={(e) => {
@@ -877,132 +858,114 @@ const AllAddressesTab = ({
                   </div>
                 </div>
               );
-              })}
-            </div>
+            })
           )}
         </div>
       )}
 
-      {/* Card View Pagination */}
+      {}
       {viewMode === 'cards' && totalPages > 1 && (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '12px',
-            marginTop: '24px',
-          }}
-        >
-          <button
-            className='btn btn-ghost btn-small'
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-          >
-            <i className='fa-solid fa-chevron-left'></i> Previous
-          </button>
-          <span style={{ fontSize: '14px', color: 'var(--admin-text)' }}>
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            className='btn btn-ghost btn-small'
-            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Next <i className='fa-solid fa-chevron-right'></i>
-          </button>
+        <div className='pagination-controls'>
+          <div>
+            <button
+              className='btn btn-ghost btn-small'
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+            >
+              <i className='fa-solid fa-chevron-left'></i> Previous
+            </button>
+            <span className='pagination-info'>
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              className='btn btn-ghost btn-small'
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next <i className='fa-solid fa-chevron-right'></i>
+            </button>
+          </div>
         </div>
       )}
 
-      {/* CUSTOMER DETAILS MODAL */}
+      {}
       {showCustomerModal && selectedCustomer && (
         <div className='modal-overlay' onClick={() => setShowCustomerModal(false)}>
           <div className='modal-container' onClick={(e) => e.stopPropagation()}>
             <div className='modal-header'>
               <h2>{selectedCustomer.address} Customer Details</h2>
-              <button className='modal-close' onClick={() => setShowCustomerModal(false)}>
+              <button className='btn btn-ghost btn-icon modal-close' onClick={() => setShowCustomerModal(false)}>
                 <i className='fa-solid fa-times'></i>
               </button>
             </div>
             <div className='modal-body'>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {/* Customer Info */}
+              <div className='filter-bar-flex-col'>
+                {}
                 <div>
-                  <h3 style={{ marginBottom: '16px', fontSize: '1.1rem', fontWeight: '700' }}>
+                  <h3 className='section-title-mb'>
                     Customer Information
                   </h3>
-                  <div
-                    style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}
-                  >
+                  <div className='customer-detail-grid'>
                     <div>
-                      <span style={{ color: 'var(--admin-text-secondary)' }}>Status:</span>
-                      <span
-                        className='badge badge-success'
-                        style={{ marginLeft: '8px', fontSize: '0.85rem' }}
-                      >
+                      <span className='customer-detail-label'>Status:</span>
+                      <span className='badge badge-success customer-detail-value-sm'>
                         🟢 Active
                       </span>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--admin-text-secondary)' }}>Customer Since:</span>
-                      <span style={{ marginLeft: '8px', fontWeight: '600' }}>
+                      <span className='customer-detail-label'>Customer Since:</span>
+                      <span className='customer-detail-value'>
                         {selectedCustomer.firstOrderDate
                           ? formatDateShort(selectedCustomer.firstOrderDate)
                           : 'N/A'}
                       </span>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--admin-text-secondary)' }}>Total Orders:</span>
-                      <span style={{ marginLeft: '8px', fontWeight: '600' }}>
+                      <span className='customer-detail-label'>Total Orders:</span>
+                      <span className='customer-detail-value'>
                         {selectedCustomer.totalOrders}
                       </span>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--admin-text-secondary)' }}>Total Spent:</span>
-                      <span
-                        style={{
-                          marginLeft: '8px',
-                          fontWeight: '700',
-                          color: 'var(--admin-accent)',
-                        }}
-                      >
+                      <span className='customer-detail-label'>Total Spent:</span>
+                      <span className='customer-detail-value font-bold text-accent'>
                         ₹{formatCurrency(selectedCustomer.totalSpent)}
                       </span>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--admin-text-secondary)' }}>
+                      <span className='customer-detail-label'>
                         Average Order Value:
                       </span>
-                      <span style={{ marginLeft: '8px', fontWeight: '600' }}>
+                      <span className='customer-detail-value'>
                         ₹{formatCurrency(selectedCustomer.avgOrderValue)}
                       </span>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--admin-text-secondary)' }}>Preferred Mode:</span>
-                      <span style={{ marginLeft: '8px', fontWeight: '600' }}>
+                      <span className='customer-detail-label'>Preferred Mode:</span>
+                      <span className='customer-detail-value'>
                         {selectedCustomer.preferredMode} (
                         {selectedCustomer.preferredModePercent.toFixed(0)}%)
                       </span>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--admin-text-secondary)' }}>Payment Mode:</span>
-                      <span style={{ marginLeft: '8px', fontWeight: '600' }}>
+                      <span className='customer-detail-label'>Payment Mode:</span>
+                      <span className='customer-detail-value'>
                         {selectedCustomer.preferredPayment} (
                         {selectedCustomer.preferredPaymentPercent.toFixed(0)}%)
                       </span>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--admin-text-secondary)' }}>Last Order:</span>
-                      <span style={{ marginLeft: '8px', fontWeight: '600' }}>
+                      <span className='customer-detail-label'>Last Order:</span>
+                      <span className='customer-detail-value'>
                         {formatDateDiff(selectedCustomer.lastOrderDate)}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Order History */}
+                {}
                 <div>
-                  <h3 style={{ marginBottom: '16px', fontSize: '1.1rem', fontWeight: '700' }}>
+                  <h3 className='section-title-mb'>
                     Order History (Last 10)
                   </h3>
                   <div className='orders-table-container'>
@@ -1020,7 +983,7 @@ const AllAddressesTab = ({
                           .slice(0, 10)
                           .map((order, idx) => {
                             const orderDate = parseOrderDate(
-                              // Never use createdAt (today's date) as fallback - only use actual order date
+                              
                               order.date || order.order_date || null
                             );
                             const dateStr = formatDate(orderDate);

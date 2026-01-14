@@ -10,12 +10,12 @@ export default function Error({ error, reset }) {
   const { t } = useLanguage();
 
   useEffect(() => {
-    // Log error to console or error reporting service
+    
     console.error('Application error:', error);
   }, [error]);
 
   const openOrderModal = () => {
-    // Order modal functionality can be added here if needed
+    
   };
 
   return (

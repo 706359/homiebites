@@ -12,15 +12,15 @@ const SettingsTab = ({
   loading = false,
   showConfirmation,
 }) => {
-  const [activeTab, setActiveTab] = useState('general'); // 'general', 'orders', 'notifications', 'data', 'profile', 'theme'
+  const [activeTab, setActiveTab] = useState('general'); 
 
-  // Enable keyboard avoidance for mobile
+  
   useAutoKeyboardAvoidance({
-    containerSelector: '.settings-tab-content',
+    containerSelector: '.settings-tab-content-enhanced',
     inputSelector: 'input, textarea, select',
   });
 
-  // Form states
+  
   const [businessInfo, setBusinessInfo] = useState({
     businessName: settings?.businessName || 'HomieBites',
     contact: settings?.contact || '',
@@ -72,13 +72,13 @@ const SettingsTab = ({
       settings?.primaryColor || localStorage.getItem('homiebites_primary_color') || '#A4672E',
     secondaryColor:
       settings?.secondaryColor || localStorage.getItem('homiebites_secondary_color') || '#B8D84E',
-    fontSize: settings?.fontSize || localStorage.getItem('homiebites_font_size') || 'medium', // Standard default: medium (16px)
+    fontSize: settings?.fontSize || localStorage.getItem('homiebites_font_size') || 'medium', 
     fontFamily: settings?.fontFamily || localStorage.getItem('homiebites_font_family') || 'Baloo 2',
   });
 
-  // showClearDataModal removed - using showConfirmation from parent
+  
 
-  // Helper function to convert hex to RGB
+  
   const hexToRgb = (hex) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
@@ -90,7 +90,7 @@ const SettingsTab = ({
       : null;
   };
 
-  // Apply theme function - SCOPED TO ADMIN DASHBOARD ONLY
+  
   const applyTheme = (theme) => {
     try {
       const adminDashboard = document.querySelector('.admin-dashboard');
@@ -98,16 +98,16 @@ const SettingsTab = ({
         return;
       }
 
-      // Preserve wrapper background colors - DO NOT CHANGE
+      
       const preservedBgSecondary = getComputedStyle(adminDashboard).getPropertyValue('--admin-bg-secondary') || '#f5f5f7';
       const preservedBg = getComputedStyle(adminDashboard).getPropertyValue('--admin-bg') || '#ffffff';
       const preservedBgTertiary = getComputedStyle(adminDashboard).getPropertyValue('--admin-bg-tertiary') || '#fafafa';
 
-      // Apply primary color - scoped to admin-dashboard
+      
       if (theme && theme.primaryColor) {
         adminDashboard.style.setProperty('--admin-accent', theme.primaryColor);
 
-        // Calculate light variant
+        
         const rgb = hexToRgb(theme.primaryColor);
         if (rgb) {
           adminDashboard.style.setProperty(
@@ -117,11 +117,11 @@ const SettingsTab = ({
         }
       }
 
-      // Apply secondary color (for logo theme) - scoped to admin-dashboard
+      
       if (theme && theme.secondaryColor) {
         adminDashboard.style.setProperty('--admin-secondary', theme.secondaryColor);
 
-        // Calculate light variant
+        
         const rgb = hexToRgb(theme.secondaryColor);
         if (rgb) {
           adminDashboard.style.setProperty(
@@ -131,52 +131,67 @@ const SettingsTab = ({
         }
       }
 
-      // Restore wrapper background colors - ensure they remain unchanged
+      
       adminDashboard.style.setProperty('--admin-bg-secondary', preservedBgSecondary);
       adminDashboard.style.setProperty('--admin-bg', preservedBg);
       adminDashboard.style.setProperty('--admin-bg-tertiary', preservedBgTertiary);
 
-      // Apply font size - SCOPED TO ADMIN DASHBOARD ONLY
-      // Default to standard size (16px/medium) if not specified
+      
+      
       const fontSizeMap = {
         small: '14px',
-        medium: '16px', // Standard default size
+        medium: '16px', 
         large: '18px',
         'extra-large': '20px',
       };
-      const selectedFontSize = theme?.fontSize || 'medium'; // Default to medium
-      const fontSize = fontSizeMap[selectedFontSize] || '16px'; // Fallback to 16px
+      const selectedFontSize = theme?.fontSize || 'medium'; 
+      const fontSize = fontSizeMap[selectedFontSize] || '16px'; 
       
-      // Set CSS variable on root and admin-dashboard
+      
+      // Set CSS variables on :root so they cascade to all elements (including sidebar)
       document.documentElement.style.setProperty('--admin-base-font-size', fontSize);
       adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
-      // Apply font size to admin-dashboard
       adminDashboard.style.fontSize = fontSize;
-      // Force reflow to ensure changes apply
+      
+      // Calculate and set all derived font sizes on :root
+      const baseSize = parseFloat(fontSize);
+      if (!isNaN(baseSize)) {
+        document.documentElement.style.setProperty('--admin-font-size-h1', `${baseSize * 1.75}px`);
+        document.documentElement.style.setProperty('--admin-font-size-h2', `${baseSize * 1.375}px`);
+        document.documentElement.style.setProperty('--admin-font-size-h3', `${baseSize * 1.125}px`);
+        document.documentElement.style.setProperty('--admin-font-size-h4', `${baseSize}px`);
+        document.documentElement.style.setProperty('--admin-font-size-body-lg', `${baseSize * 0.9375}px`);
+        document.documentElement.style.setProperty('--admin-font-size-body', `${baseSize * 0.875}px`);
+        document.documentElement.style.setProperty('--admin-font-size-body-sm', `${baseSize * 0.8125}px`);
+        document.documentElement.style.setProperty('--admin-font-size-body-xs', `${baseSize * 0.75}px`);
+        document.documentElement.style.setProperty('--admin-font-size-body-xxs', `${baseSize * 0.6875}px`);
+        document.documentElement.style.setProperty('--admin-font-size-caption', `${baseSize * 0.625}px`);
+      }
+      
       void adminDashboard.offsetHeight;
-      // Trigger a custom event to notify all components
+      
       window.dispatchEvent(new CustomEvent('adminFontSizeChanged', { detail: { fontSize } }));
 
-      // Apply font family - Set global font variable on root for entire platform
+      
       if (theme && theme.fontFamily) {
         const fontFamily = `'${theme.fontFamily}', sans-serif`;
         const root = document.documentElement;
         root.style.setProperty('--font-primary', fontFamily);
         document.body.style.fontFamily = fontFamily;
-        // Also apply to admin dashboard for immediate effect
+        
         if (adminDashboard) {
           adminDashboard.style.fontFamily = fontFamily;
         }
       }
 
-      // Apply theme (light/dark/auto) - SCOPED TO ADMIN DASHBOARD ONLY
+      
       if (theme && theme.theme === 'dark') {
-        // Apply to both root and admin-dashboard for full coverage
+        
         document.documentElement.classList.add('dark-theme');
         document.documentElement.classList.remove('light-theme');
         adminDashboard.classList.add('dark-theme');
         adminDashboard.classList.remove('light-theme');
-        // Force update all child elements
+        
         const allElements = adminDashboard.querySelectorAll('*');
         allElements.forEach((el) => {
           el.classList.add('dark-theme-applied');
@@ -186,13 +201,13 @@ const SettingsTab = ({
         document.documentElement.classList.remove('dark-theme');
         adminDashboard.classList.add('light-theme');
         adminDashboard.classList.remove('dark-theme');
-        // Remove dark theme from all child elements
+        
         const allElements = adminDashboard.querySelectorAll('*');
         allElements.forEach((el) => {
           el.classList.remove('dark-theme-applied');
         });
       } else if (theme && theme.theme === 'auto') {
-        // Auto theme based on system preference
+        
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         if (prefersDark) {
           document.documentElement.classList.add('dark-theme');
@@ -219,22 +234,22 @@ const SettingsTab = ({
     }
   };
 
-  // Apply theme on mount and handle auto theme listener
+  
   useEffect(() => {
-    // Wait for admin-dashboard to be available
+    
     const applyThemeWhenReady = () => {
       const adminDashboard = document.querySelector('.admin-dashboard');
       if (adminDashboard && themeSettings) {
         applyTheme(themeSettings);
       } else if (!adminDashboard) {
-        // Retry after a short delay if element not found
+        
         setTimeout(applyThemeWhenReady, 100);
       }
     };
 
     applyThemeWhenReady();
 
-    // Set up auto theme listener if needed
+    
     if (themeSettings?.theme === 'auto') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleChange = (e) => {
@@ -252,9 +267,9 @@ const SettingsTab = ({
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
-  }, [themeSettings]); // Added themeSettings as dependency
+  }, [themeSettings]); 
 
-  // Handle save functions
+  
   const handleSaveBusinessInfo = () => {
     if (showConfirmation) {
       showConfirmation({
@@ -381,13 +396,13 @@ const SettingsTab = ({
   };
 
   const handleSaveTheme = () => {
-    // Apply font globally when saving theme
+    
     if (themeSettings.fontFamily) {
       const root = document.documentElement;
       const fontFamily = `'${themeSettings.fontFamily}', sans-serif`;
       root.style.setProperty('--font-primary', fontFamily);
       document.body.style.fontFamily = fontFamily;
-      // Also apply to admin dashboard for immediate effect
+      
       const adminDashboard = document.querySelector('.admin-dashboard');
       if (adminDashboard) {
         adminDashboard.style.fontFamily = fontFamily;
@@ -402,10 +417,10 @@ const SettingsTab = ({
         type: 'info',
         confirmText: 'Apply',
         onConfirm: () => {
-          // Apply theme immediately
+          
           applyTheme(themeSettings);
 
-          // Save to localStorage
+          
           localStorage.setItem('homiebites_theme', themeSettings.theme);
           localStorage.setItem('homiebites_primary_color', themeSettings.primaryColor);
           if (themeSettings.secondaryColor) {
@@ -414,46 +429,46 @@ const SettingsTab = ({
           localStorage.setItem('homiebites_font_size', themeSettings.fontSize);
           localStorage.setItem('homiebites_font_family', themeSettings.fontFamily);
 
-          // Auto-fix any theme issues after saving
+          
           setTimeout(() => {
             import('./utils/themeFixer.js').then(({ fixTheme }) => {
               fixTheme({ silent: true });
             });
           }, 100);
 
-          // Save to settings via callback
+          
           if (onUpdateSettings) {
             onUpdateSettings({ themeSettings });
           }
         },
       });
     } else {
-      // Apply theme immediately
+      
       applyTheme(themeSettings);
 
-      // Save to localStorage
+      
       localStorage.setItem('homiebites_theme', themeSettings.theme);
       localStorage.setItem('homiebites_primary_color', themeSettings.primaryColor);
       localStorage.setItem('homiebites_font_size', themeSettings.fontSize);
       localStorage.setItem('homiebites_font_family', themeSettings.fontFamily);
 
-      // Auto-fix any theme issues after saving
+      
       setTimeout(() => {
         import('./utils/themeFixer.js').then(({ fixTheme }) => {
           fixTheme({ silent: true });
         });
       }, 100);
 
-      // Save to settings via callback
+      
       if (onUpdateSettings) {
         onUpdateSettings({ themeSettings });
       }
     }
   };
 
-  // Apply theme when settings change (for preview)
+  
   const handleLogoTheme = () => {
-    // Apply HomieBites theme colors: Brown #A4672E and Lime #B8D84E
+    
     const logoTheme = {
       primaryColor: '#A4672E',
       secondaryColor: '#B8D84E',
@@ -461,7 +476,7 @@ const SettingsTab = ({
     setThemeSettings({ ...themeSettings, ...logoTheme });
     handleThemeChange(logoTheme);
 
-    // Show notification
+    
     if (showNotification) {
       showNotification('HomieBites theme applied! Click "Apply Theme" to save.', 'success');
     }
@@ -470,7 +485,7 @@ const SettingsTab = ({
   const handleThemeChange = (updates) => {
     const newTheme = { ...themeSettings, ...updates };
     setThemeSettings(newTheme);
-    // Apply immediately for preview - with retry mechanism
+    
     const applyWithRetry = () => {
       const adminDashboard = document.querySelector('.admin-dashboard');
       if (adminDashboard) {
@@ -482,7 +497,7 @@ const SettingsTab = ({
     applyWithRetry();
   };
 
-  // Handle backup
+  
   const handleBackup = async () => {
     if (showConfirmation) {
       showConfirmation({
@@ -505,7 +520,7 @@ const SettingsTab = ({
     }
   };
 
-  // Handle restore
+  
   const handleRestore = async () => {
     if (showConfirmation) {
       showConfirmation({
@@ -537,177 +552,217 @@ const SettingsTab = ({
     );
   }
 
+  const settingsTabs = [
+    { id: 'general', label: 'General', icon: 'fa-cog', description: 'Business & Pricing' },
+    { id: 'orders', label: 'Orders', icon: 'fa-shopping-cart', description: 'Order Configuration' },
+    { id: 'notifications', label: 'Notifications', icon: 'fa-bell', description: 'Alerts & Preferences' },
+    { id: 'data', label: 'Data', icon: 'fa-database', description: 'Backup & Restore' },
+    { id: 'profile', label: 'Profile', icon: 'fa-user', description: 'User Account' },
+    { id: 'theme', label: 'Appearance', icon: 'fa-palette', description: 'Theme & Style' },
+  ];
+
   return (
-    <div className='admin-content'>
-      {/* SETTINGS TABS */}
-      <div className='settings-tab-nav'>
-        <button
-          className={`settings-tab-item ${activeTab === 'general' ? 'active' : ''}`}
-          onClick={() => setActiveTab('general')}
-        >
-          General
-        </button>
-        <button
-          className={`settings-tab-item ${activeTab === 'orders' ? 'active' : ''}`}
-          onClick={() => setActiveTab('orders')}
-        >
-          Order Settings
-        </button>
-        <button
-          className={`settings-tab-item ${activeTab === 'notifications' ? 'active' : ''}`}
-          onClick={() => setActiveTab('notifications')}
-        >
-          Notifications
-        </button>
-        <button
-          className={`settings-tab-item ${activeTab === 'data' ? 'active' : ''}`}
-          onClick={() => setActiveTab('data')}
-        >
-          Data Management
-        </button>
-        <button
-          className={`settings-tab-item ${activeTab === 'profile' ? 'active' : ''}`}
-          onClick={() => setActiveTab('profile')}
-        >
-          User Profile
-        </button>
-        <button
-          className={`settings-tab-item ${activeTab === 'theme' ? 'active' : ''}`}
-          onClick={() => setActiveTab('theme')}
-        >
-          Theme Settings
-        </button>
+    <div className='admin-content settings-tab-container'>
+      <div className='settings-tab-nav-enhanced'>
+        {settingsTabs.map((tab) => (
+          <button
+            key={tab.id}
+            className={`settings-tab-item-enhanced ${activeTab === tab.id ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            <div className='settings-tab-item-icon'>
+              <i className={`fa-solid ${tab.icon}`}></i>
+            </div>
+            <div className='settings-tab-item-content'>
+              <span className='settings-tab-item-label'>{tab.label}</span>
+              <span className='settings-tab-item-description'>{tab.description}</span>
+            </div>
+            {activeTab === tab.id && (
+              <div className='settings-tab-item-indicator'>
+                <i className='fa-solid fa-check'></i>
+              </div>
+            )}
+          </button>
+        ))}
       </div>
 
-      {/* TAB CONTENT */}
-      <div className='settings-tab-content'>
+      <div className='settings-tab-content-enhanced'>
         {activeTab === 'general' && (
-          <div className='dashboard-grid-layout settings-general-grid'>
-            {/* Business Information */}
-            <div className='dashboard-grid-item settings-card'>
-              <div className='dashboard-card settings-card-content'>
-                <div className='settings-card-header'>
-                  <div className='settings-card-icon'>
-                    <i className='fa-solid fa-building'></i>
-                  </div>
-                  <h3 className='dashboard-section-title'>Business Information</h3>
+          <div className='settings-content-grid'>
+            <div className='settings-section-card'>
+              <div className='settings-section-header'>
+                <div className='settings-section-icon-wrapper'>
+                  <i className='fa-solid fa-building'></i>
                 </div>
-                <div className='form-grid'>
-                  <div className='form-group'>
-                    <label>Business Name</label>
+                <div className='settings-section-title-wrapper'>
+                  <h3 className='settings-section-title'>Business Information</h3>
+                  <p className='settings-section-subtitle'>Manage your business details and contact information</p>
+                </div>
+              </div>
+              <div className='settings-section-body'>
+                <div className='settings-form-grid'>
+                  <div className='settings-form-group'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-store'></i>
+                      <span>Business Name</span>
+                    </label>
                     <input
                       type='text'
-                      className='input-field'
+                      className='settings-input-field'
                       value={businessInfo.businessName}
                       onChange={(e) =>
                         setBusinessInfo({ ...businessInfo, businessName: e.target.value })
                       }
+                      placeholder='Enter business name'
                     />
                   </div>
-                  <div className='form-group'>
-                    <label>Contact</label>
+                  <div className='settings-form-group'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-phone'></i>
+                      <span>Contact Number</span>
+                    </label>
                     <input
                       type='tel'
-                      className='input-field'
+                      className='settings-input-field'
                       value={businessInfo.contact}
                       onChange={(e) =>
                         setBusinessInfo({ ...businessInfo, contact: e.target.value })
                       }
-                      placeholder='+91'
+                      placeholder='+91 1234567890'
                     />
                   </div>
-                  <div className='form-group'>
-                    <label>Email</label>
+                  <div className='settings-form-group'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-envelope'></i>
+                      <span>Email Address</span>
+                    </label>
                     <input
                       type='email'
-                      className='input-field'
+                      className='settings-input-field'
                       value={businessInfo.email}
                       onChange={(e) => setBusinessInfo({ ...businessInfo, email: e.target.value })}
+                      placeholder='business@example.com'
                     />
                   </div>
-                  <div className='form-group'>
-                    <label>Address</label>
+                  <div className='settings-form-group settings-form-group-full'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-location-dot'></i>
+                      <span>Business Address</span>
+                    </label>
                     <textarea
-                      className='input-field'
+                      className='settings-input-field'
                       value={businessInfo.address}
                       onChange={(e) =>
                         setBusinessInfo({ ...businessInfo, address: e.target.value })
                       }
                       rows={3}
+                      placeholder='Enter complete business address'
                     />
                   </div>
-                  <div className='form-group settings-action-group'>
-                    <button className='btn btn-primary' onClick={handleSaveBusinessInfo}>
-                      <i className='fa-solid fa-save'></i> Save Changes
-                    </button>
-                  </div>
+                </div>
+                <div className='settings-section-actions'>
+                  <button className='btn btn-primary btn-large' onClick={handleSaveBusinessInfo}>
+                    <i className='fa-solid fa-save'></i>
+                    <span>Save Business Information</span>
+                  </button>
                 </div>
               </div>
             </div>
 
-            {/* Pricing Configuration */}
-            <div className='dashboard-grid-item settings-card'>
-              <div className='dashboard-card settings-card-content'>
-                <div className='settings-card-header'>
-                  <div className='settings-card-icon'>
-                    <i className='fa-solid fa-indian-rupee-sign'></i>
-                  </div>
-                  <h3 className='dashboard-section-title'>Pricing Configuration</h3>
+            <div className='settings-section-card'>
+              <div className='settings-section-header'>
+                <div className='settings-section-icon-wrapper'>
+                  <i className='fa-solid fa-indian-rupee-sign'></i>
                 </div>
-                <div className='form-grid'>
-                  <div className='form-group'>
-                    <label>Default Unit Price</label>
-                    <input
-                      type='number'
-                      className='input-field'
-                      value={pricing.defaultUnitPrice}
-                      onChange={(e) =>
-                        setPricing({
-                          ...pricing,
-                          defaultUnitPrice: parseFloat(e.target.value) || 0,
-                        })
-                      }
-                    />
+                <div className='settings-section-title-wrapper'>
+                  <h3 className='settings-section-title'>Pricing Configuration</h3>
+                  <p className='settings-section-subtitle'>Set default prices for your menu items</p>
+                </div>
+              </div>
+              <div className='settings-section-body'>
+                <div className='settings-form-grid'>
+                  <div className='settings-form-group'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-tag'></i>
+                      <span>Default Unit Price</span>
+                    </label>
+                    <div className='settings-input-with-symbol'>
+                      <span className='settings-input-symbol'>₹</span>
+                      <input
+                        type='number'
+                        className='settings-input-field'
+                        value={pricing.defaultUnitPrice}
+                        onChange={(e) =>
+                          setPricing({
+                            ...pricing,
+                            defaultUnitPrice: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        placeholder='100'
+                        min='0'
+                      />
+                    </div>
                   </div>
-                  <div className='form-group'>
-                    <label>Lunch Price</label>
-                    <input
-                      type='number'
-                      className='input-field'
-                      value={pricing.lunchPrice}
-                      onChange={(e) =>
-                        setPricing({ ...pricing, lunchPrice: parseFloat(e.target.value) || 0 })
-                      }
-                    />
+                  <div className='settings-form-group'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-sun'></i>
+                      <span>Lunch Price</span>
+                    </label>
+                    <div className='settings-input-with-symbol'>
+                      <span className='settings-input-symbol'>₹</span>
+                      <input
+                        type='number'
+                        className='settings-input-field'
+                        value={pricing.lunchPrice}
+                        onChange={(e) =>
+                          setPricing({ ...pricing, lunchPrice: parseFloat(e.target.value) || 0 })
+                        }
+                        placeholder='100'
+                        min='0'
+                      />
+                    </div>
                   </div>
-                  <div className='form-group'>
-                    <label>Dinner Price</label>
-                    <input
-                      type='number'
-                      className='input-field'
-                      value={pricing.dinnerPrice}
-                      onChange={(e) =>
-                        setPricing({ ...pricing, dinnerPrice: parseFloat(e.target.value) || 0 })
-                      }
-                    />
+                  <div className='settings-form-group'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-moon'></i>
+                      <span>Dinner Price</span>
+                    </label>
+                    <div className='settings-input-with-symbol'>
+                      <span className='settings-input-symbol'>₹</span>
+                      <input
+                        type='number'
+                        className='settings-input-field'
+                        value={pricing.dinnerPrice}
+                        onChange={(e) =>
+                          setPricing({ ...pricing, dinnerPrice: parseFloat(e.target.value) || 0 })
+                        }
+                        placeholder='100'
+                        min='0'
+                      />
+                    </div>
                   </div>
-                  <div className='form-group'>
-                    <label>Minimum Order Qty</label>
+                  <div className='settings-form-group'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-box'></i>
+                      <span>Minimum Order Quantity</span>
+                    </label>
                     <input
                       type='number'
-                      className='input-field'
+                      className='settings-input-field'
                       value={pricing.minimumOrderQty}
                       onChange={(e) =>
                         setPricing({ ...pricing, minimumOrderQty: parseInt(e.target.value) || 1 })
                       }
+                      placeholder='1'
                       min={1}
                     />
                   </div>
-                  <div className='form-group settings-action-group'>
-                    <button className='btn btn-primary' onClick={handleSavePricing}>
-                      <i className='fa-solid fa-save'></i> Update Pricing
-                    </button>
-                  </div>
+                </div>
+                <div className='settings-section-actions'>
+                  <button className='btn btn-primary btn-large' onClick={handleSavePricing}>
+                    <i className='fa-solid fa-save'></i>
+                    <span>Update Pricing</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -715,86 +770,132 @@ const SettingsTab = ({
         )}
 
         {activeTab === 'orders' && (
-          <div className='dashboard-card'>
-            <h3 className='dashboard-section-title'>Order Configuration</h3>
-            <div className='form-grid'>
-              <div className='form-group'>
-                <label>Order ID Prefix</label>
-                <input
-                  type='text'
-                  className='input-field'
-                  value={orderSettings.orderIdPrefix}
-                  onChange={(e) =>
-                    setOrderSettings({ ...orderSettings, orderIdPrefix: e.target.value })
-                  }
-                />
+          <div className='settings-section-card'>
+            <div className='settings-section-header'>
+              <div className='settings-section-icon-wrapper'>
+                <i className='fa-solid fa-shopping-cart'></i>
               </div>
-              <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-                <label
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                >
+              <div className='settings-section-title-wrapper'>
+                <h3 className='settings-section-title'>Order Configuration</h3>
+                <p className='settings-section-subtitle'>Configure how orders are created and managed</p>
+              </div>
+            </div>
+            <div className='settings-section-body'>
+              <div className='settings-form-grid'>
+                <div className='settings-form-group'>
+                  <label className='settings-form-label'>
+                    <i className='fa-solid fa-hashtag'></i>
+                    <span>Order ID Prefix</span>
+                  </label>
                   <input
-                    type='checkbox'
-                    checked={orderSettings.autoGenerateOrderId}
+                    type='text'
+                    className='settings-input-field'
+                    value={orderSettings.orderIdPrefix}
                     onChange={(e) =>
-                      setOrderSettings({ ...orderSettings, autoGenerateOrderId: e.target.checked })
+                      setOrderSettings({ ...orderSettings, orderIdPrefix: e.target.value })
                     }
+                    placeholder='HB-'
                   />
-                  <span>Auto-generate Order ID</span>
-                </label>
-              </div>
-              <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-                <label
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                >
-                  <input
-                    type='checkbox'
-                    checked={orderSettings.allowDuplicateAddress}
-                    onChange={(e) =>
-                      setOrderSettings({
-                        ...orderSettings,
-                        allowDuplicateAddress: e.target.checked,
-                      })
-                    }
-                  />
-                  <span>Allow Duplicate Address</span>
-                </label>
-              </div>
-              <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-                <label
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                >
-                  <input
-                    type='checkbox'
-                    checked={orderSettings.requirePaymentConfirmation}
-                    onChange={(e) =>
-                      setOrderSettings({
-                        ...orderSettings,
-                        requirePaymentConfirmation: e.target.checked,
-                      })
-                    }
-                  />
-                  <span>Require Payment Confirmation</span>
-                </label>
-              </div>
-              <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-                <label>Status Options</label>
-                <div
-                  style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}
-                >
-                  {orderSettings.statusOptions.map((status, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span>• {status}</span>
+                  <p className='settings-form-hint'>Orders will be numbered as: {orderSettings.orderIdPrefix}001, {orderSettings.orderIdPrefix}002, etc.</p>
+                </div>
+
+                <div className='settings-toggle-group'>
+                  <div className='settings-toggle-item'>
+                    <div className='settings-toggle-content'>
+                      <div className='settings-toggle-label-wrapper'>
+                        <i className='fa-solid fa-magic'></i>
+                        <div>
+                          <span className='settings-toggle-label'>Auto-generate Order ID</span>
+                          <span className='settings-toggle-description'>Automatically create unique order IDs</span>
+                        </div>
+                      </div>
+                      <label className='settings-toggle-switch'>
+                        <input
+                          type='checkbox'
+                          checked={orderSettings.autoGenerateOrderId}
+                          onChange={(e) =>
+                            setOrderSettings({ ...orderSettings, autoGenerateOrderId: e.target.checked })
+                          }
+                        />
+                        <span className='settings-toggle-slider'></span>
+                      </label>
                     </div>
-                  ))}
-                  <button className='btn btn-ghost btn-small' style={{ alignSelf: 'flex-start' }}>
-                    <i className='fa-solid fa-plus'></i> Add Status
-                  </button>
+                  </div>
+
+                  <div className='settings-toggle-item'>
+                    <div className='settings-toggle-content'>
+                      <div className='settings-toggle-label-wrapper'>
+                        <i className='fa-solid fa-copy'></i>
+                        <div>
+                          <span className='settings-toggle-label'>Allow Duplicate Address</span>
+                          <span className='settings-toggle-description'>Allow multiple orders with same address</span>
+                        </div>
+                      </div>
+                      <label className='settings-toggle-switch'>
+                        <input
+                          type='checkbox'
+                          checked={orderSettings.allowDuplicateAddress}
+                          onChange={(e) =>
+                            setOrderSettings({
+                              ...orderSettings,
+                              allowDuplicateAddress: e.target.checked,
+                            })
+                          }
+                        />
+                        <span className='settings-toggle-slider'></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className='settings-toggle-item'>
+                    <div className='settings-toggle-content'>
+                      <div className='settings-toggle-label-wrapper'>
+                        <i className='fa-solid fa-shield-halved'></i>
+                        <div>
+                          <span className='settings-toggle-label'>Require Payment Confirmation</span>
+                          <span className='settings-toggle-description'>Confirm payment before marking as paid</span>
+                        </div>
+                      </div>
+                      <label className='settings-toggle-switch'>
+                        <input
+                          type='checkbox'
+                          checked={orderSettings.requirePaymentConfirmation}
+                          onChange={(e) =>
+                            setOrderSettings({
+                              ...orderSettings,
+                              requirePaymentConfirmation: e.target.checked,
+                            })
+                          }
+                        />
+                        <span className='settings-toggle-slider'></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className='settings-form-group settings-form-group-full'>
+                  <label className='settings-form-label'>
+                    <i className='fa-solid fa-list-check'></i>
+                    <span>Order Status Options</span>
+                  </label>
+                  <div className='settings-status-list'>
+                    {orderSettings.statusOptions.map((status, idx) => (
+                      <div key={idx} className='settings-status-item'>
+                        <i className='fa-solid fa-circle' style={{ fontSize: '8px', color: 'var(--admin-text-light)' }}></i>
+                        <span>{status}</span>
+                      </div>
+                    ))}
+                    <button className='btn btn-ghost btn-small settings-add-status-btn'>
+                      <i className='fa-solid fa-plus'></i>
+                      <span>Add Status</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className='form-group settings-action-group'>
-                <button className='btn btn-primary' onClick={handleSaveOrderSettings}>
-                  <i className='fa-solid fa-save'></i> Save Settings
+              <div className='settings-section-actions'>
+                <button className='btn btn-primary btn-large' onClick={handleSaveOrderSettings}>
+                  <i className='fa-solid fa-save'></i>
+                  <span>Save Order Settings</span>
                 </button>
               </div>
             </div>
@@ -802,116 +903,188 @@ const SettingsTab = ({
         )}
 
         {activeTab === 'notifications' && (
-          <div className='dashboard-card'>
-            <h3 className='dashboard-section-title'>Notification Preferences</h3>
-            <div className='form-grid'>
-              <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-                <label style={{ fontWeight: '600', marginBottom: '12px', display: 'block' }}>
-                  Email Notifications:
-                </label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <label
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                  >
-                    <input
-                      type='checkbox'
-                      checked={notificationPrefs.emailDailySummary}
-                      onChange={(e) =>
-                        setNotificationPrefs({
-                          ...notificationPrefs,
-                          emailDailySummary: e.target.checked,
-                        })
-                      }
-                    />
-                    <span>Daily Summary</span>
-                  </label>
-                  <label
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                  >
-                    <input
-                      type='checkbox'
-                      checked={notificationPrefs.emailNewOrderAlert}
-                      onChange={(e) =>
-                        setNotificationPrefs({
-                          ...notificationPrefs,
-                          emailNewOrderAlert: e.target.checked,
-                        })
-                      }
-                    />
-                    <span>New Order Alert</span>
-                  </label>
-                  <label
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                  >
-                    <input
-                      type='checkbox'
-                      checked={notificationPrefs.emailPaymentReceived}
-                      onChange={(e) =>
-                        setNotificationPrefs({
-                          ...notificationPrefs,
-                          emailPaymentReceived: e.target.checked,
-                        })
-                      }
-                    />
-                    <span>Payment Received</span>
-                  </label>
-                  <label
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                  >
-                    <input
-                      type='checkbox'
-                      checked={notificationPrefs.emailLowOrderDayWarning}
-                      onChange={(e) =>
-                        setNotificationPrefs({
-                          ...notificationPrefs,
-                          emailLowOrderDayWarning: e.target.checked,
-                        })
-                      }
-                    />
-                    <span>Low Order Day Warning</span>
-                  </label>
+          <div className='settings-section-card'>
+            <div className='settings-section-header'>
+              <div className='settings-section-icon-wrapper'>
+                <i className='fa-solid fa-bell'></i>
+              </div>
+              <div className='settings-section-title-wrapper'>
+                <h3 className='settings-section-title'>Notification Preferences</h3>
+                <p className='settings-section-subtitle'>Configure how and when you receive notifications</p>
+              </div>
+            </div>
+            <div className='settings-section-body'>
+              <div className='settings-notification-categories'>
+                <div className='settings-notification-category'>
+                  <div className='settings-notification-category-header'>
+                    <i className='fa-solid fa-envelope'></i>
+                    <h4 className='settings-notification-category-title'>Email Notifications</h4>
+                  </div>
+                  <div className='settings-toggle-group'>
+                    <div className='settings-toggle-item'>
+                      <div className='settings-toggle-content'>
+                        <div className='settings-toggle-label-wrapper'>
+                          <i className='fa-solid fa-calendar-day'></i>
+                          <div>
+                            <span className='settings-toggle-label'>Daily Summary</span>
+                            <span className='settings-toggle-description'>Receive daily order summary via email</span>
+                          </div>
+                        </div>
+                        <label className='settings-toggle-switch'>
+                          <input
+                            type='checkbox'
+                            checked={notificationPrefs.emailDailySummary}
+                            onChange={(e) =>
+                              setNotificationPrefs({
+                                ...notificationPrefs,
+                                emailDailySummary: e.target.checked,
+                              })
+                            }
+                          />
+                          <span className='settings-toggle-slider'></span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className='settings-toggle-item'>
+                      <div className='settings-toggle-content'>
+                        <div className='settings-toggle-label-wrapper'>
+                          <i className='fa-solid fa-bell'></i>
+                          <div>
+                            <span className='settings-toggle-label'>New Order Alert</span>
+                            <span className='settings-toggle-description'>Get notified when a new order is placed</span>
+                          </div>
+                        </div>
+                        <label className='settings-toggle-switch'>
+                          <input
+                            type='checkbox'
+                            checked={notificationPrefs.emailNewOrderAlert}
+                            onChange={(e) =>
+                              setNotificationPrefs({
+                                ...notificationPrefs,
+                                emailNewOrderAlert: e.target.checked,
+                              })
+                            }
+                          />
+                          <span className='settings-toggle-slider'></span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className='settings-toggle-item'>
+                      <div className='settings-toggle-content'>
+                        <div className='settings-toggle-label-wrapper'>
+                          <i className='fa-solid fa-money-bill-wave'></i>
+                          <div>
+                            <span className='settings-toggle-label'>Payment Received</span>
+                            <span className='settings-toggle-description'>Alert when payment is received</span>
+                          </div>
+                        </div>
+                        <label className='settings-toggle-switch'>
+                          <input
+                            type='checkbox'
+                            checked={notificationPrefs.emailPaymentReceived}
+                            onChange={(e) =>
+                              setNotificationPrefs({
+                                ...notificationPrefs,
+                                emailPaymentReceived: e.target.checked,
+                              })
+                            }
+                          />
+                          <span className='settings-toggle-slider'></span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className='settings-toggle-item'>
+                      <div className='settings-toggle-content'>
+                        <div className='settings-toggle-label-wrapper'>
+                          <i className='fa-solid fa-exclamation-triangle'></i>
+                          <div>
+                            <span className='settings-toggle-label'>Low Order Day Warning</span>
+                            <span className='settings-toggle-description'>Alert when daily orders are below average</span>
+                          </div>
+                        </div>
+                        <label className='settings-toggle-switch'>
+                          <input
+                            type='checkbox'
+                            checked={notificationPrefs.emailLowOrderDayWarning}
+                            onChange={(e) =>
+                              setNotificationPrefs({
+                                ...notificationPrefs,
+                                emailLowOrderDayWarning: e.target.checked,
+                              })
+                            }
+                          />
+                          <span className='settings-toggle-slider'></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className='settings-notification-category'>
+                  <div className='settings-notification-category-header'>
+                    <i className='fa-solid fa-message'></i>
+                    <h4 className='settings-notification-category-title'>SMS Notifications</h4>
+                  </div>
+                  <div className='settings-toggle-group'>
+                    <div className='settings-toggle-item'>
+                      <div className='settings-toggle-content'>
+                        <div className='settings-toggle-label-wrapper'>
+                          <i className='fa-solid fa-clock'></i>
+                          <div>
+                            <span className='settings-toggle-label'>Payment Reminders</span>
+                            <span className='settings-toggle-description'>Send SMS reminders for pending payments</span>
+                          </div>
+                        </div>
+                        <label className='settings-toggle-switch'>
+                          <input
+                            type='checkbox'
+                            checked={notificationPrefs.smsPaymentReminders}
+                            onChange={(e) =>
+                              setNotificationPrefs({
+                                ...notificationPrefs,
+                                smsPaymentReminders: e.target.checked,
+                              })
+                            }
+                          />
+                          <span className='settings-toggle-slider'></span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className='settings-toggle-item'>
+                      <div className='settings-toggle-content'>
+                        <div className='settings-toggle-label-wrapper'>
+                          <i className='fa-solid fa-check-circle'></i>
+                          <div>
+                            <span className='settings-toggle-label'>Order Confirmations</span>
+                            <span className='settings-toggle-description'>Send SMS when order is confirmed</span>
+                          </div>
+                        </div>
+                        <label className='settings-toggle-switch'>
+                          <input
+                            type='checkbox'
+                            checked={notificationPrefs.smsOrderConfirmations}
+                            onChange={(e) =>
+                              setNotificationPrefs({
+                                ...notificationPrefs,
+                                smsOrderConfirmations: e.target.checked,
+                              })
+                            }
+                          />
+                          <span className='settings-toggle-slider'></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-                <label style={{ fontWeight: '600', marginBottom: '12px', display: 'block' }}>
-                  SMS Notifications:
-                </label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <label
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                  >
-                    <input
-                      type='checkbox'
-                      checked={notificationPrefs.smsPaymentReminders}
-                      onChange={(e) =>
-                        setNotificationPrefs({
-                          ...notificationPrefs,
-                          smsPaymentReminders: e.target.checked,
-                        })
-                      }
-                    />
-                    <span>Payment Reminders</span>
-                  </label>
-                  <label
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                  >
-                    <input
-                      type='checkbox'
-                      checked={notificationPrefs.smsOrderConfirmations}
-                      onChange={(e) =>
-                        setNotificationPrefs({
-                          ...notificationPrefs,
-                          smsOrderConfirmations: e.target.checked,
-                        })
-                      }
-                    />
-                    <span>Order Confirmations</span>
-                  </label>
-                </div>
-              </div>
-              <div className='form-group settings-action-group'>
-                <button className='btn btn-primary' onClick={handleSaveNotificationPrefs}>
-                  <i className='fa-solid fa-save'></i> Save Preferences
+              <div className='settings-section-actions'>
+                <button className='btn btn-primary btn-large' onClick={handleSaveNotificationPrefs}>
+                  <i className='fa-solid fa-save'></i>
+                  <span>Save Notification Preferences</span>
                 </button>
               </div>
             </div>
@@ -919,505 +1092,575 @@ const SettingsTab = ({
         )}
 
         {activeTab === 'data' && (
-          <div className='dashboard-card'>
-            <h3 className='dashboard-section-title'>Backup & Restore</h3>
-            <div className='form-grid'>
-              <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-                <label>Last Backup</label>
-                <p style={{ color: 'var(--admin-text-secondary)', marginTop: '8px' }}>
-                  {settings?.lastBackup || '15-Jan-2025 09:30 AM'}
-                </p>
-              </div>
-              <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-                <div className='action-buttons-group'>
-                  <button className='btn btn-primary' onClick={handleBackup}>
-                    <i className='fa-solid fa-save'></i> Backup Now
-                  </button>
-                  <button className='btn btn-secondary' onClick={() => {}}>
-                    <i className='fa-solid fa-download'></i> Download Backup
-                  </button>
-                  <button className='btn btn-secondary' onClick={handleRestore}>
-                    <i className='fa-solid fa-rotate'></i> Restore from Backup
-                  </button>
+          <div className='settings-content-grid'>
+            <div className='settings-section-card'>
+              <div className='settings-section-header'>
+                <div className='settings-section-icon-wrapper'>
+                  <i className='fa-solid fa-database'></i>
+                </div>
+                <div className='settings-section-title-wrapper'>
+                  <h3 className='settings-section-title'>Backup & Restore</h3>
+                  <p className='settings-section-subtitle'>Manage your data backups and restore points</p>
                 </div>
               </div>
-              <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-                <label
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                >
-                  <input
-                    type='checkbox'
-                    checked={dataSettings.autoBackup}
-                    onChange={(e) =>
-                      setDataSettings({ ...dataSettings, autoBackup: e.target.checked })
-                    }
-                  />
-                  <span>Enable Auto Backup</span>
-                </label>
+              <div className='settings-section-body'>
+                <div className='settings-backup-info'>
+                  <div className='settings-backup-info-item'>
+                    <i className='fa-solid fa-clock'></i>
+                    <div>
+                      <span className='settings-backup-info-label'>Last Backup</span>
+                      <span className='settings-backup-info-value'>
+                        {settings?.lastBackup || '15-Jan-2025 09:30 AM'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className='settings-backup-actions'>
+                  <button className='btn btn-primary btn-large' onClick={handleBackup}>
+                    <i className='fa-solid fa-save'></i>
+                    <span>Create Backup Now</span>
+                  </button>
+                  <button className='btn btn-secondary btn-large' onClick={() => {}}>
+                    <i className='fa-solid fa-download'></i>
+                    <span>Download Backup</span>
+                  </button>
+                  <button className='btn btn-secondary btn-large' onClick={handleRestore}>
+                    <i className='fa-solid fa-rotate'></i>
+                    <span>Restore from Backup</span>
+                  </button>
+                </div>
+
+                <div className='settings-form-group settings-form-group-full' style={{ marginTop: '32px' }}>
+                  <div className='settings-toggle-item'>
+                    <div className='settings-toggle-content'>
+                      <div className='settings-toggle-label-wrapper'>
+                        <i className='fa-solid fa-clock-rotate-left'></i>
+                        <div>
+                          <span className='settings-toggle-label'>Enable Auto Backup</span>
+                          <span className='settings-toggle-description'>Automatically backup data daily</span>
+                        </div>
+                      </div>
+                      <label className='settings-toggle-switch'>
+                        <input
+                          type='checkbox'
+                          checked={dataSettings.autoBackup}
+                          onChange={(e) =>
+                            setDataSettings({ ...dataSettings, autoBackup: e.target.checked })
+                          }
+                        />
+                        <span className='settings-toggle-slider'></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {dataSettings.autoBackup && (
+                  <div className='settings-form-group'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-clock'></i>
+                      <span>Auto Backup Time</span>
+                    </label>
+                    <input
+                      type='time'
+                      className='settings-input-field'
+                      value={dataSettings.autoBackupTime}
+                      onChange={(e) =>
+                        setDataSettings({ ...dataSettings, autoBackupTime: e.target.value })
+                      }
+                    />
+                    <p className='settings-form-hint'>Daily backup will run automatically at this time</p>
+                  </div>
+                )}
+
+                {dataSettings.autoBackup && (
+                  <div className='settings-section-actions'>
+                    <button className='btn btn-primary btn-large' onClick={handleSaveDataSettings}>
+                      <i className='fa-solid fa-save'></i>
+                      <span>Save Backup Settings</span>
+                    </button>
+                  </div>
+                )}
               </div>
-              {dataSettings.autoBackup && (
-                <div className='form-group'>
-                  <label>Auto Backup Time</label>
-                  <input
-                    type='time'
-                    className='input-field'
-                    value={dataSettings.autoBackupTime}
-                    onChange={(e) =>
-                      setDataSettings({ ...dataSettings, autoBackupTime: e.target.value })
-                    }
-                  />
-                  <p
-                    style={{
-                      color: 'var(--admin-text-secondary)',
-                      fontSize: '0.85rem',
-                      marginTop: '4px',
+            </div>
+
+            <div className='settings-section-card settings-danger-zone'>
+              <div className='settings-section-header'>
+                <div className='settings-section-icon-wrapper' style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
+                  <i className='fa-solid fa-triangle-exclamation'></i>
+                </div>
+                <div className='settings-section-title-wrapper'>
+                  <h3 className='settings-section-title' style={{ color: '#ef4444' }}>Danger Zone</h3>
+                  <p className='settings-section-subtitle'>Irreversible and destructive actions</p>
+                </div>
+              </div>
+              <div className='settings-section-body'>
+                <div className='settings-danger-action'>
+                  <div className='settings-danger-action-info'>
+                    <i className='fa-solid fa-trash'></i>
+                    <div>
+                      <span className='settings-danger-action-label'>Clear All Data</span>
+                      <span className='settings-danger-action-description'>
+                        Permanently delete all orders, customers, and settings. This action cannot be undone.
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    className='btn btn-special danger btn-large'
+                    onClick={() => {
+                      if (showConfirmation && onClearAllData) {
+                        showConfirmation({
+                          title: 'Clear All Data',
+                          message:
+                            'Are you sure you want to clear ALL data? This action cannot be undone and will permanently delete all orders and settings.',
+                          type: 'danger',
+                          confirmText: 'Clear All Data',
+                          onConfirm: async () => {
+                            await onClearAllData(true);
+                          },
+                        });
+                      } else if (onClearAllData) {
+                        onClearAllData(true);
+                      }
                     }}
                   >
-                    Daily backup will run at this time
-                  </p>
-                </div>
-              )}
-              {dataSettings.autoBackup && (
-                <div className='form-group settings-action-group'>
-                  <button className='btn btn-primary' onClick={handleSaveDataSettings}>
-                    <i className='fa-solid fa-save'></i> Save Data Settings
+                    <i className='fa-solid fa-trash'></i>
+                    <span>Clear All Data</span>
                   </button>
                 </div>
-              )}
-              <div className='form-group' style={{ gridColumn: '1 / -1', marginTop: '32px' }}>
-                <h4 style={{ color: 'var(--admin-danger)', marginBottom: '16px' }}>
-                  ⚠️ Danger Zone
-                </h4>
-                <button
-                  className='btn btn-special danger'
-                  onClick={() => {
-                    if (showConfirmation && onClearAllData) {
-                      showConfirmation({
-                        title: 'Clear All Data',
-                        message:
-                          'Are you sure you want to clear ALL data? This action cannot be undone and will permanently delete all orders and settings.',
-                        type: 'danger',
-                        confirmText: 'Clear All Data',
-                        onConfirm: async () => {
-                          await onClearAllData();
-                          if (showNotification) showNotification('All data cleared', 'success');
-                        },
-                      });
-                    } else if (onClearAllData) {
-                      onClearAllData();
-                    }
-                  }}
-                >
-                  <i className='fa-solid fa-trash'></i> Clear All Data
-                </button>
-                <p
-                  style={{
-                    color: 'var(--admin-text-light)',
-                    fontSize: '0.85rem',
-                    marginTop: '8px',
-                  }}
-                >
-                  This action cannot be undone
-                </p>
               </div>
             </div>
           </div>
         )}
 
         {activeTab === 'profile' && (
-          <div className='dashboard-card'>
-            <h3 className='dashboard-section-title'>Your Profile</h3>
-            <div className='form-grid'>
-              <div className='form-group'>
-                <label>Name</label>
-                <input
-                  type='text'
-                  className='input-field'
-                  value={userProfile.name}
-                  onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value })}
-                />
+          <div className='settings-content-grid'>
+            <div className='settings-section-card'>
+              <div className='settings-section-header'>
+                <div className='settings-section-icon-wrapper'>
+                  <i className='fa-solid fa-user'></i>
+                </div>
+                <div className='settings-section-title-wrapper'>
+                  <h3 className='settings-section-title'>Profile Information</h3>
+                  <p className='settings-section-subtitle'>Update your personal account details</p>
+                </div>
               </div>
-              <div className='form-group'>
-                <label>Email</label>
-                <input
-                  type='email'
-                  className='input-field'
-                  value={userProfile.email}
-                  onChange={(e) => setUserProfile({ ...userProfile, email: e.target.value })}
-                />
+              <div className='settings-section-body'>
+                <div className='settings-form-grid'>
+                  <div className='settings-form-group'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-user'></i>
+                      <span>Full Name</span>
+                    </label>
+                    <input
+                      type='text'
+                      className='settings-input-field'
+                      value={userProfile.name}
+                      onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value })}
+                      placeholder='Enter your full name'
+                    />
+                  </div>
+                  <div className='settings-form-group'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-envelope'></i>
+                      <span>Email Address</span>
+                    </label>
+                    <input
+                      type='email'
+                      className='settings-input-field'
+                      value={userProfile.email}
+                      onChange={(e) => setUserProfile({ ...userProfile, email: e.target.value })}
+                      placeholder='your.email@example.com'
+                    />
+                  </div>
+                  <div className='settings-form-group'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-phone'></i>
+                      <span>Phone Number</span>
+                    </label>
+                    <input
+                      type='tel'
+                      className='settings-input-field'
+                      value={userProfile.phone}
+                      onChange={(e) => setUserProfile({ ...userProfile, phone: e.target.value })}
+                      placeholder='+91 1234567890'
+                    />
+                  </div>
+                </div>
+                <div className='settings-section-actions'>
+                  <button className='btn btn-primary btn-large' onClick={handleSaveUserProfile}>
+                    <i className='fa-solid fa-save'></i>
+                    <span>Update Profile</span>
+                  </button>
+                </div>
               </div>
-              <div className='form-group'>
-                <label>Phone</label>
-                <input
-                  type='tel'
-                  className='input-field'
-                  value={userProfile.phone}
-                  onChange={(e) => setUserProfile({ ...userProfile, phone: e.target.value })}
-                  placeholder='+91'
-                />
+            </div>
+
+            <div className='settings-section-card'>
+              <div className='settings-section-header'>
+                <div className='settings-section-icon-wrapper'>
+                  <i className='fa-solid fa-lock'></i>
+                </div>
+                <div className='settings-section-title-wrapper'>
+                  <h3 className='settings-section-title'>Change Password</h3>
+                  <p className='settings-section-subtitle'>Update your account password for better security</p>
+                </div>
               </div>
-              <div className='form-group' style={{ gridColumn: '1 / -1', marginTop: '24px' }}>
-                <h4 style={{ marginBottom: '16px' }}>Change Password</h4>
-              </div>
-              <div className='form-group'>
-                <label>Current Password</label>
-                <input
-                  type='password'
-                  className='input-field'
-                  value={userProfile.currentPassword}
-                  onChange={(e) =>
-                    setUserProfile({ ...userProfile, currentPassword: e.target.value })
-                  }
-                  placeholder='********'
-                />
-              </div>
-              <div className='form-group'>
-                <label>New Password</label>
-                <input
-                  type='password'
-                  className='input-field'
-                  value={userProfile.newPassword}
-                  onChange={(e) => setUserProfile({ ...userProfile, newPassword: e.target.value })}
-                  placeholder='********'
-                />
-              </div>
-              <div className='form-group'>
-                <label>Confirm Password</label>
-                <input
-                  type='password'
-                  className='input-field'
-                  value={userProfile.confirmPassword}
-                  onChange={(e) =>
-                    setUserProfile({ ...userProfile, confirmPassword: e.target.value })
-                  }
-                  placeholder='********'
-                />
-              </div>
-              <div className='form-group settings-action-group'>
-                <button className='btn btn-primary' onClick={handleSaveUserProfile}>
-                  <i className='fa-solid fa-save'></i> Update Profile
-                </button>
+              <div className='settings-section-body'>
+                <div className='settings-form-grid'>
+                  <div className='settings-form-group'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-key'></i>
+                      <span>Current Password</span>
+                    </label>
+                    <input
+                      type='password'
+                      className='settings-input-field'
+                      value={userProfile.currentPassword}
+                      onChange={(e) =>
+                        setUserProfile({ ...userProfile, currentPassword: e.target.value })
+                      }
+                      placeholder='Enter current password'
+                    />
+                  </div>
+                  <div className='settings-form-group'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-lock'></i>
+                      <span>New Password</span>
+                    </label>
+                    <input
+                      type='password'
+                      className='settings-input-field'
+                      value={userProfile.newPassword}
+                      onChange={(e) => setUserProfile({ ...userProfile, newPassword: e.target.value })}
+                      placeholder='Enter new password'
+                    />
+                  </div>
+                  <div className='settings-form-group'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-lock'></i>
+                      <span>Confirm New Password</span>
+                    </label>
+                    <input
+                      type='password'
+                      className='settings-input-field'
+                      value={userProfile.confirmPassword}
+                      onChange={(e) =>
+                        setUserProfile({ ...userProfile, confirmPassword: e.target.value })
+                      }
+                      placeholder='Confirm new password'
+                    />
+                  </div>
+                </div>
+                <div className='settings-section-actions'>
+                  <button className='btn btn-primary btn-large' onClick={handleSaveUserProfile}>
+                    <i className='fa-solid fa-save'></i>
+                    <span>Update Password</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         )}
 
         {activeTab === 'theme' && (
-          <div className='dashboard-card settings-theme-card'>
-            <div className='settings-card-header'>
-              <div className='settings-card-icon'>
-                <i className='fa-solid fa-palette'></i>
-              </div>
-              <h3 className='dashboard-section-title'>Appearance</h3>
-            </div>
-            <div className='form-grid settings-theme-grid'>
-              <div className='form-group'>
-                <label>Theme (Light / Dark / Auto)</label>
-                <div className='theme-options-group'>
-                  <label
-                    className={`theme-option ${themeSettings.theme === 'light' ? 'active' : ''}`}
-                  >
-                    <input
-                      type='radio'
-                      name='theme'
-                      value='light'
-                      checked={themeSettings.theme === 'light'}
-                      onChange={(e) => handleThemeChange({ theme: e.target.value })}
-                    />
-                    <i className='fa-solid fa-sun'></i>
-                    <span>Light</span>
-                  </label>
-                  <label
-                    className={`theme-option ${themeSettings.theme === 'dark' ? 'active' : ''}`}
-                  >
-                    <input
-                      type='radio'
-                      name='theme'
-                      value='dark'
-                      checked={themeSettings.theme === 'dark'}
-                      onChange={(e) => handleThemeChange({ theme: e.target.value })}
-                    />
-                    <i className='fa-solid fa-moon'></i>
-                    <span>Dark</span>
-                  </label>
-                  <label
-                    className={`theme-option ${themeSettings.theme === 'auto' ? 'active' : ''}`}
-                  >
-                    <input
-                      type='radio'
-                      name='theme'
-                      value='auto'
-                      checked={themeSettings.theme === 'auto'}
-                      onChange={(e) => handleThemeChange({ theme: e.target.value })}
-                    />
-                    <i className='fa-solid fa-circle-half-stroke'></i>
-                    <span>Auto</span>
-                  </label>
+          <div className='settings-content-grid'>
+            <div className='settings-section-card'>
+              <div className='settings-section-header'>
+                <div className='settings-section-icon-wrapper'>
+                  <i className='fa-solid fa-palette'></i>
+                </div>
+                <div className='settings-section-title-wrapper'>
+                  <h3 className='settings-section-title'>Appearance Settings</h3>
+                  <p className='settings-section-subtitle'>Customize the look and feel of your dashboard</p>
                 </div>
               </div>
-              <div className='form-group'>
-                <label>Color Theme</label>
-                <div style={{ marginBottom: '12px' }}>
+              <div className='settings-section-body'>
+                <div className='settings-theme-section'>
+                  <label className='settings-form-label'>
+                    <i className='fa-solid fa-circle-half-stroke'></i>
+                    <span>Color Mode</span>
+                  </label>
+                  <div className='settings-theme-options'>
+                    <label
+                      className={`settings-theme-option-enhanced ${themeSettings.theme === 'light' ? 'active' : ''}`}
+                    >
+                      <input
+                        type='radio'
+                        name='theme'
+                        value='light'
+                        checked={themeSettings.theme === 'light'}
+                        onChange={(e) => handleThemeChange({ theme: e.target.value })}
+                      />
+                      <div className='settings-theme-option-preview' style={{ background: '#ffffff', border: '2px solid #e2e8f0' }}>
+                        <i className='fa-solid fa-sun'></i>
+                      </div>
+                      <span className='settings-theme-option-label'>Light</span>
+                    </label>
+                    <label
+                      className={`settings-theme-option-enhanced ${themeSettings.theme === 'dark' ? 'active' : ''}`}
+                    >
+                      <input
+                        type='radio'
+                        name='theme'
+                        value='dark'
+                        checked={themeSettings.theme === 'dark'}
+                        onChange={(e) => handleThemeChange({ theme: e.target.value })}
+                      />
+                      <div className='settings-theme-option-preview' style={{ background: '#1e293b', border: '2px solid #334155' }}>
+                        <i className='fa-solid fa-moon'></i>
+                      </div>
+                      <span className='settings-theme-option-label'>Dark</span>
+                    </label>
+                    <label
+                      className={`settings-theme-option-enhanced ${themeSettings.theme === 'auto' ? 'active' : ''}`}
+                    >
+                      <input
+                        type='radio'
+                        name='theme'
+                        value='auto'
+                        checked={themeSettings.theme === 'auto'}
+                        onChange={(e) => handleThemeChange({ theme: e.target.value })}
+                      />
+                      <div className='settings-theme-option-preview' style={{ background: 'linear-gradient(135deg, #ffffff 0%, #1e293b 100%)', border: '2px solid #64748b' }}>
+                        <i className='fa-solid fa-circle-half-stroke'></i>
+                      </div>
+                      <span className='settings-theme-option-label'>Auto</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className='settings-theme-section'>
+                  <label className='settings-form-label'>
+                    <i className='fa-solid fa-paintbrush'></i>
+                    <span>Color Theme</span>
+                  </label>
                   <button
-                    className={`btn btn-secondary`}
+                    className='settings-logo-theme-btn'
                     onClick={handleLogoTheme}
                     style={{
-                      width: '100%',
                       background:
-                        'linear-gradient(135deg, #449031 0%, #449031 50%, #c45c2d 50%, #c45c2d 100%)',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '10px 16px',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      boxShadow:
                         themeSettings.primaryColor === '#449031' &&
                         themeSettings.secondaryColor === '#c45c2d'
-                          ? '0 0 0 3px rgba(68, 144, 49, 0.3)'
-                          : 'none',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'scale(1.02)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(68, 144, 49, 0.3)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
-                      e.currentTarget.style.boxShadow =
+                          ? 'linear-gradient(135deg, #449031 0%, #449031 50%, #c45c2d 50%, #c45c2d 100%)'
+                          : 'linear-gradient(135deg, rgba(68, 144, 49, 0.1) 0%, rgba(196, 92, 45, 0.1) 100%)',
+                      border:
                         themeSettings.primaryColor === '#449031' &&
                         themeSettings.secondaryColor === '#c45c2d'
-                          ? '0 0 0 3px rgba(68, 144, 49, 0.3)'
-                          : 'none';
+                          ? '3px solid rgba(68, 144, 49, 0.5)'
+                          : '2px solid var(--admin-border)',
                     }}
                   >
                     <i className='fa-solid fa-image'></i>
                     <span>Apply Logo Theme</span>
                     {themeSettings.primaryColor === '#449031' &&
                       themeSettings.secondaryColor === '#c45c2d' && (
-                        <i className='fa-solid fa-check' style={{ marginLeft: '4px' }}></i>
+                        <i className='fa-solid fa-check'></i>
                       )}
                   </button>
-                  <p
-                    style={{
-                      fontSize: '12px',
-                      color: 'var(--admin-text-secondary, #6b7280)',
-                      marginTop: '8px',
-                      textAlign: 'center',
-                    }}
-                  >
-                    Uses exact logo colors: Green (#449031) & Orange (#c45c2d)
-                  </p>
+                  <p className='settings-form-hint'>Uses exact logo colors: Green (#449031) & Orange (#c45c2d)</p>
                 </div>
-                <label style={{ marginTop: '16px', display: 'block' }}>Primary Color</label>
-                <div className='color-picker-group'>
-                  <input
-                    type='color'
-                    value={themeSettings.primaryColor}
-                    onChange={(e) => handleThemeChange({ primaryColor: e.target.value })}
-                    className='color-picker-input'
-                  />
-                  <input
-                    type='text'
-                    className='input-field color-input'
-                    value={themeSettings.primaryColor}
-                    onChange={(e) => {
-                      const color = e.target.value;
-                      if (/^#[0-9A-F]{6}$/i.test(color)) {
-                        handleThemeChange({ primaryColor: color });
-                      } else {
-                        setThemeSettings({ ...themeSettings, primaryColor: color });
-                      }
-                    }}
-                    placeholder='#449031'
-                  />
-                </div>
-                <div style={{ marginBottom: '12px' }}>
-                  <button
-                    className={`btn btn-secondary`}
-                    onClick={handleLogoTheme}
-                    style={{
-                      width: '100%',
-                      background:
-                        'linear-gradient(135deg, #449031 0%, #449031 50%, #c45c2d 50%, #c45c2d 100%)',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '10px 16px',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'scale(1.02)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(68, 144, 49, 0.3)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  >
-                    <i className='fa-solid fa-image'></i>
-                    <span>Apply Logo Theme</span>
-                  </button>
-                </div>
-                <div className='color-presets'>
-                  {['#449031', '#c45c2d', '#3b82f6', '#8b5cf6', '#ef4444', '#10b981'].map(
-                    (color) => (
-                      <button
-                        key={color}
-                        className={`color-preset ${
-                          themeSettings.primaryColor === color ? 'active' : ''
-                        }`}
-                        onClick={() => handleThemeChange({ primaryColor: color })}
-                        style={{ background: color }}
-                        title={color}
-                      />
-                    )
-                  )}
-                </div>
-              </div>
-              <div className='form-group'>
-                <label>Font Size</label>
-                <select
-                  className='input-field'
-                  value={themeSettings.fontSize}
-                  onChange={(e) => {
-                    const newFontSize = e.target.value;
-                    handleThemeChange({ fontSize: newFontSize });
-                    // Apply font size immediately - SCOPED TO ADMIN DASHBOARD
-                    const applyFontSize = () => {
-                      const adminDashboard = document.querySelector('.admin-dashboard');
-                      if (adminDashboard) {
-                        const fontSizeMap = {
-                          small: '14px',
-                          medium: '16px', // Standard default size
-                          large: '18px',
-                          'extra-large': '20px',
-                        };
-                        // Default to medium (16px) if invalid selection
-                        const fontSize = fontSizeMap[newFontSize] || '16px';
-                        // Set CSS variable on root and admin-dashboard
-                        document.documentElement.style.setProperty('--admin-base-font-size', fontSize);
-                        adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
-                        adminDashboard.style.fontSize = fontSize;
-                        // Force reflow to ensure changes apply
-                        void adminDashboard.offsetHeight;
-                        // Trigger a custom event to notify all components
-                        window.dispatchEvent(new CustomEvent('adminFontSizeChanged', { detail: { fontSize } }));
-                      } else {
-                        setTimeout(applyFontSize, 50);
-                      }
-                    };
-                    applyFontSize();
-                  }}
-                >
-                  <option value='small'>Small (14px)</option>
-                  <option value='medium'>Medium (16px)</option>
-                  <option value='large'>Large (18px)</option>
-                  <option value='extra-large'>Extra Large (20px)</option>
-                </select>
-                <div className='preview-box'>
-                  <p
-                    style={{
-                      fontSize:
-                        themeSettings.fontSize === 'small'
-                          ? '14px'
-                          : themeSettings.fontSize === 'large'
-                          ? '18px'
-                          : themeSettings.fontSize === 'extra-large'
-                          ? '20px'
-                          : '16px',
-                      margin: 0,
-                    }}
-                  >
-                    Preview: This is how text will look with {themeSettings.fontSize} font size.
-                  </p>
-                </div>
-              </div>
-              <div className='form-group'>
-                <label>Font Family</label>
-                <select
-                  className='input-field'
-                  value={themeSettings.fontFamily}
-                  onChange={(e) => {
-                    const newFontFamily = e.target.value;
-                    handleThemeChange({ fontFamily: newFontFamily });
 
-                    // Load Google Font
-                    const fontName = newFontFamily.replace(/\s+/g, '+');
-                    const existingLink = document.querySelector(
-                      `link[href*="fonts.googleapis.com"][href*="${fontName}"]`
-                    );
-                    if (!existingLink) {
-                      // Remove old font links
-                      const oldLinks = document.querySelectorAll(
-                        'link[href*="fonts.googleapis.com"]'
-                      );
-                      oldLinks.forEach((link) => {
-                        if (!link.href.includes('font-awesome')) {
-                          link.remove();
+                <div className='settings-theme-section'>
+                  <label className='settings-form-label'>
+                    <i className='fa-solid fa-fill-drip'></i>
+                    <span>Primary Color</span>
+                  </label>
+                  <div className='settings-color-picker-group'>
+                    <input
+                      type='color'
+                      value={themeSettings.primaryColor}
+                      onChange={(e) => handleThemeChange({ primaryColor: e.target.value })}
+                      className='settings-color-picker'
+                    />
+                    <input
+                      type='text'
+                      className='settings-input-field'
+                      value={themeSettings.primaryColor}
+                      onChange={(e) => {
+                        const color = e.target.value;
+                        if (/^#[0-9A-F]{6}$/i.test(color)) {
+                          handleThemeChange({ primaryColor: color });
+                        } else {
+                          setThemeSettings({ ...themeSettings, primaryColor: color });
                         }
-                      });
-                      // Add new font link
-                      const link = document.createElement('link');
-                      link.rel = 'stylesheet';
-                      link.href = `https://fonts.googleapis.com/css2?family=${fontName}:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap`;
-                      document.head.appendChild(link);
-                    }
+                      }}
+                      placeholder='#449031'
+                    />
+                  </div>
+                  <div className='settings-color-presets'>
+                    {['#449031', '#c45c2d', '#3b82f6', '#8b5cf6', '#ef4444', '#10b981'].map(
+                      (color) => (
+                        <button
+                          key={color}
+                          className={`settings-color-preset ${
+                            themeSettings.primaryColor === color ? 'active' : ''
+                          }`}
+                          onClick={() => handleThemeChange({ primaryColor: color })}
+                          style={{ background: color }}
+                          title={color}
+                        >
+                          {themeSettings.primaryColor === color && (
+                            <i className='fa-solid fa-check'></i>
+                          )}
+                        </button>
+                      )
+                    )}
+                  </div>
+                </div>
 
-                    // Apply font family immediately - Set global font for entire platform
-                    const applyFontFamily = () => {
-                      const root = document.documentElement;
-                      const fontFamily = `'${newFontFamily}', sans-serif`;
-                      // Set global font variable on root for entire platform
-                      root.style.setProperty('--font-primary', fontFamily);
-                      document.body.style.fontFamily = fontFamily;
-                      // Also apply to admin dashboard for immediate effect
-                      const adminDashboard = document.querySelector('.admin-dashboard');
-                      if (adminDashboard) {
-                        adminDashboard.style.fontFamily = fontFamily;
-                      }
-                    };
-                    applyFontFamily();
-                  }}
-                >
-                  <option value='Baloo 2'>Baloo 2 (Default)</option>
-                  <option value='Inter'>Inter</option>
-                  <option value='Poppins'>Poppins</option>
-                  <option value='Roboto'>Roboto</option>
-                  <option value='Open Sans'>Open Sans</option>
-                  <option value='Lato'>Lato</option>
-                  <option value='Montserrat'>Montserrat</option>
-                  <option value='Nunito'>Nunito</option>
-                  <option value='Raleway'>Raleway</option>
-                  <option value='Ubuntu'>Ubuntu</option>
-                  <option value='Al Bayan'>Al Bayan</option>
-                  <option value='Chalkboard'>Chalkboard</option>
-                  <option value='Cavolini'>Cavolini</option>
-                </select>
-                <div className='preview-box'>
-                  <p
-                    style={{
-                      fontFamily: `'${themeSettings.fontFamily}', sans-serif`,
-                      margin: 0,
+                <div className='settings-theme-section'>
+                  <label className='settings-form-label'>
+                    <i className='fa-solid fa-text-height'></i>
+                    <span>Font Size</span>
+                  </label>
+                  <select
+                    className='settings-input-field'
+                    value={themeSettings.fontSize}
+                    onChange={(e) => {
+                      const newFontSize = e.target.value;
+                      handleThemeChange({ fontSize: newFontSize });
+                      
+                      const applyFontSize = () => {
+                        const adminDashboard = document.querySelector('.admin-dashboard');
+                        const adminSidebar = document.querySelector('.admin-sidebar');
+                        if (adminDashboard) {
+                          const fontSizeMap = {
+                            small: '14px',
+                            medium: '16px', 
+                            large: '18px',
+                            'extra-large': '20px',
+                          };
+                          
+                          const fontSize = fontSizeMap[newFontSize] || '16px';
+                          
+                          // Set CSS variables on :root so they cascade to all elements (including sidebar)
+                          document.documentElement.style.setProperty('--admin-base-font-size', fontSize);
+                          adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
+                          adminDashboard.style.fontSize = fontSize;
+                          
+                          // Calculate and set all derived font sizes on :root
+                          const baseSize = parseFloat(fontSize);
+                          if (!isNaN(baseSize)) {
+                            document.documentElement.style.setProperty('--admin-font-size-h1', `${baseSize * 1.75}px`);
+                            document.documentElement.style.setProperty('--admin-font-size-h2', `${baseSize * 1.375}px`);
+                            document.documentElement.style.setProperty('--admin-font-size-h3', `${baseSize * 1.125}px`);
+                            document.documentElement.style.setProperty('--admin-font-size-h4', `${baseSize}px`);
+                            document.documentElement.style.setProperty('--admin-font-size-body-lg', `${baseSize * 0.9375}px`);
+                            document.documentElement.style.setProperty('--admin-font-size-body', `${baseSize * 0.875}px`);
+                            document.documentElement.style.setProperty('--admin-font-size-body-sm', `${baseSize * 0.8125}px`);
+                            document.documentElement.style.setProperty('--admin-font-size-body-xs', `${baseSize * 0.75}px`);
+                            document.documentElement.style.setProperty('--admin-font-size-body-xxs', `${baseSize * 0.6875}px`);
+                            document.documentElement.style.setProperty('--admin-font-size-caption', `${baseSize * 0.625}px`);
+                          }
+                          
+                          void adminDashboard.offsetHeight;
+                          if (adminSidebar) void adminSidebar.offsetHeight;
+                          
+                          window.dispatchEvent(new CustomEvent('adminFontSizeChanged', { detail: { fontSize } }));
+                        } else {
+                          setTimeout(applyFontSize, 50);
+                        }
+                      };
+                      applyFontSize();
                     }}
                   >
-                    Preview: This is how text will look with {themeSettings.fontFamily} font.
-                  </p>
+                    <option value='small'>Small (14px)</option>
+                    <option value='medium'>Medium (16px)</option>
+                    <option value='large'>Large (18px)</option>
+                    <option value='extra-large'>Extra Large (20px)</option>
+                  </select>
+                  <div className='settings-font-preview'>
+                    <p
+                      style={{
+                        fontSize:
+                          themeSettings.fontSize === 'small'
+                            ? '14px'
+                            : themeSettings.fontSize === 'large'
+                            ? '18px'
+                            : themeSettings.fontSize === 'extra-large'
+                            ? '20px'
+                            : '16px',
+                      }}
+                    >
+                      Preview: This is how text will look with {themeSettings.fontSize} font size.
+                    </p>
+                  </div>
+                </div>
+
+                <div className='settings-theme-section'>
+                  <label className='settings-form-label'>
+                    <i className='fa-solid fa-font'></i>
+                    <span>Font Family</span>
+                  </label>
+                  <select
+                    className='settings-input-field'
+                    value={themeSettings.fontFamily}
+                    onChange={(e) => {
+                      const newFontFamily = e.target.value;
+                      handleThemeChange({ fontFamily: newFontFamily });
+
+                      const fontName = newFontFamily.replace(/\s+/g, '+');
+                      const existingLink = document.querySelector(
+                        `link[href*="fonts.googleapis.com"][href*="${fontName}"]`
+                      );
+                      if (!existingLink) {
+                        const oldLinks = document.querySelectorAll(
+                          'link[href*="fonts.googleapis.com"]'
+                        );
+                        oldLinks.forEach((link) => {
+                          if (!link.href.includes('font-awesome')) {
+                            link.remove();
+                          }
+                        });
+                        
+                        const link = document.createElement('link');
+                        link.rel = 'stylesheet';
+                        link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(newFontFamily)}:wght@400;500;600;700&display=swap`;
+                        document.head.appendChild(link);
+                      }
+
+                      const applyFontFamily = () => {
+                        const root = document.documentElement;
+                        const fontFamily = `'${newFontFamily}', sans-serif`;
+                        
+                        root.style.setProperty('--font-primary', fontFamily);
+                        document.body.style.fontFamily = fontFamily;
+                        
+                        const adminDashboard = document.querySelector('.admin-dashboard');
+                        if (adminDashboard) {
+                          adminDashboard.style.fontFamily = fontFamily;
+                        }
+                      };
+                      applyFontFamily();
+                    }}
+                  >
+                    <option value='Baloo 2'>Baloo 2 (Default)</option>
+                    <option value='Inter'>Inter</option>
+                    <option value='Poppins'>Poppins</option>
+                    <option value='Roboto'>Roboto</option>
+                    <option value='Open Sans'>Open Sans</option>
+                    <option value='Lato'>Lato</option>
+                    <option value='Montserrat'>Montserrat</option>
+                    <option value='Nunito'>Nunito</option>
+                    <option value='Raleway'>Raleway</option>
+                    <option value='Ubuntu'>Ubuntu</option>
+                  </select>
+                  <div className='settings-font-preview'>
+                    <p
+                      style={{
+                        fontFamily: `'${themeSettings.fontFamily}', sans-serif`,
+                      }}
+                    >
+                      Preview: This is how text will look with {themeSettings.fontFamily} font.
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div className='form-group settings-action-group'>
-                <button className='btn btn-primary' onClick={handleSaveTheme}>
-                  <i className='fa-solid fa-save'></i> Apply Theme
+              <div className='settings-section-actions'>
+                <button className='btn btn-primary btn-large' onClick={handleSaveTheme}>
+                  <i className='fa-solid fa-save'></i>
+                  <span>Apply Theme Settings</span>
                 </button>
               </div>
             </div>
@@ -1425,7 +1668,7 @@ const SettingsTab = ({
         )}
       </div>
 
-      {/* CLEAR DATA MODAL */}
+      {}
     </div>
   );
 };

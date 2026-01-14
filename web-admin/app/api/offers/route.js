@@ -1,12 +1,9 @@
-/**
- * Next.js API Route: Offers
- * Migrated from Express backend
- */
+
 import connectDB from '../../../lib/db.js';
 import { createErrorResponse, isAdmin } from '../../../lib/middleware/auth.js';
 import Offer from '../../../lib/models/Offers.js';
 
-// Format date to DD-MMM-YYYY
+
 const fmt = (d) => {
   if (!d) return null;
   const date = new Date(d);
@@ -31,7 +28,7 @@ const fmt = (d) => {
   return `${dd}-${m}-${yyyy}`;
 };
 
-// GET /api/offers - public
+
 export async function GET() {
   try {
     await connectDB();
@@ -46,7 +43,7 @@ export async function GET() {
 
     return Response.json({ success: true, data: formatted });
   } catch (error) {
-    // Handle database connection errors
+    
     if (error.message && (error.message.includes('connect') || error.message.includes('ECONNREFUSED'))) {
       return Response.json(
         { 
@@ -67,7 +64,7 @@ export async function GET() {
   }
 }
 
-// PUT /api/offers - admin only
+
 export async function PUT(request) {
   try {
     await connectDB();
@@ -89,7 +86,7 @@ export async function PUT(request) {
 
     return Response.json({ success: true, data: created });
   } catch (error) {
-    // Handle validation errors
+    
     if (error.name === 'ValidationError') {
       return Response.json(
         { 
@@ -100,11 +97,11 @@ export async function PUT(request) {
         { status: 400 }
       );
     }
-    // Handle authentication/authorization errors
+    
     if (error.status === 401 || error.status === 403) {
       return createErrorResponse(error.status, error.message || 'Authentication failed');
     }
-    // Handle database connection errors
+    
     if (error.message && (error.message.includes('connect') || error.message.includes('ECONNREFUSED'))) {
       return Response.json(
         { 

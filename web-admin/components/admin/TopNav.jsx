@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 const TopNav = ({
   sidebarOpen,
   setSidebarOpen,
+  sidebarCollapsed,
+  setSidebarCollapsed,
   unreadNotifications,
   currentUser,
   onLogout,
@@ -22,7 +24,7 @@ const TopNav = ({
   const [refreshing, setRefreshing] = useState(false);
   const profileDropdownRef = useRef(null);
 
-  // Global keyboard shortcuts
+  
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -30,7 +32,7 @@ const TopNav = ({
         setShowSearchModal(true);
       }
 
-      // New Order shortcut (Ctrl+N / Cmd+N)
+      
       if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
         e.preventDefault();
         if (onNewOrder) {
@@ -38,7 +40,7 @@ const TopNav = ({
         }
       }
 
-      // Close search modal with Escape
+      
       if (e.key === 'Escape' && showSearchModal) {
         setShowSearchModal(false);
       }
@@ -48,7 +50,7 @@ const TopNav = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [showSearchModal, onNewOrder]);
 
-  // Close profile dropdown when clicking outside
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
@@ -64,7 +66,7 @@ const TopNav = ({
     }
   }, [showProfileDropdown]);
 
-  // Load recent searches from localStorage
+  
   useEffect(() => {
     const stored = localStorage.getItem('homiebites_recent_searches');
     if (stored) {
@@ -79,12 +81,12 @@ const TopNav = ({
   const handleSearch = (query) => {
     if (!query.trim()) return;
 
-    // Add to recent searches
+    
     const updated = [query, ...recentSearches.filter((s) => s !== query)].slice(0, 5);
     setRecentSearches(updated);
     localStorage.setItem('homiebites_recent_searches', JSON.stringify(updated));
 
-    // Navigate based on search
+    
     if (query.toLowerCase().includes('order')) {
       setActiveTab('allOrdersData');
     } else if (query.toLowerCase().includes('customer')) {
@@ -104,18 +106,18 @@ const TopNav = ({
   const handleRefresh = () => {
     if (!onRefresh || refreshing) return;
 
-    // Set refreshing state immediately for visual feedback
+    
     setRefreshing(true);
     const startTime = Date.now();
 
-    // Run refresh silently in background without blocking
+    
     (async () => {
       try {
-        // Call the refresh function (non-blocking)
+        
         if (typeof onRefresh === 'function') {
-          // Don't await - let it run in background
+          
           const refreshResult = onRefresh();
-          // Only call .catch() if it returns a Promise
+          
           if (refreshResult && typeof refreshResult.catch === 'function') {
             refreshResult.catch((err) => {
               console.error('Error refreshing data:', err);
@@ -123,7 +125,7 @@ const TopNav = ({
           }
         }
 
-        // Ensure loader shows for at least 2 seconds
+        
         const elapsed = Date.now() - startTime;
         const remainingTime = Math.max(0, 2000 - elapsed);
         if (remainingTime > 0) {
@@ -243,10 +245,80 @@ const TopNav = ({
               Notifications{unreadNotifications > 0 ? ` (${unreadNotifications} unread)` : ''}
             </span>
           </button>
+
+          {}
+          <div className='top-nav-profile-section' ref={profileDropdownRef}>
+            <button
+              className='top-nav-profile-btn tooltip-wrapper'
+              onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+              title='Profile'
+              aria-label='Profile'
+            >
+              <div className='top-nav-profile-avatar'>
+                {currentUser?.name ? (
+                  <span>
+                    {currentUser.name
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </span>
+                ) : (
+                  <i className='fa-solid fa-user'></i>
+                )}
+              </div>
+              {currentUser?.name && (
+                <span className='top-nav-profile-name'>{currentUser.name}</span>
+              )}
+              <i
+                className={`fa-solid fa-chevron-${showProfileDropdown ? 'up' : 'down'}`}
+                style={{ fontSize: '12px', marginLeft: '8px', opacity: 0.6 }}
+              ></i>
+              <span className='tooltip'>Profile</span>
+            </button>
+
+            {}
+            {showProfileDropdown && (
+              <div className='top-nav-profile-dropdown'>
+                <button
+                  className='top-nav-profile-dropdown-item'
+                  onClick={() => {
+                    setActiveTab('settings');
+                    setShowProfileDropdown(false);
+                  }}
+                >
+                  <i className='fa-solid fa-user-gear'></i>
+                  <span>Profile Settings</span>
+                </button>
+                <button
+                  className='top-nav-profile-dropdown-item'
+                  onClick={() => {
+                    setActiveTab('settings');
+                    setShowProfileDropdown(false);
+                  }}
+                >
+                  <i className='fa-solid fa-cog'></i>
+                  <span>Settings</span>
+                </button>
+                <div className='top-nav-profile-divider'></div>
+                <button
+                  className='top-nav-profile-dropdown-item top-nav-profile-dropdown-item-danger'
+                  onClick={() => {
+                    setShowProfileDropdown(false);
+                    onLogout();
+                  }}
+                >
+                  <i className='fa-solid fa-sign-out-alt'></i>
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Global Search Modal */}
+      {}
       {showSearchModal && (
         <div className='modal-overlay' onClick={() => setShowSearchModal(false)}>
           <div className='modal-container global-search-modal' onClick={(e) => e.stopPropagation()}>
@@ -268,7 +340,7 @@ const TopNav = ({
                 />
               </div>
               <button
-                className='modal-close global-search-close'
+                className='btn btn-ghost btn-icon modal-close global-search-close'
                 onClick={() => setShowSearchModal(false)}
                 aria-label='Close search'
               >

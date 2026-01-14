@@ -1,7 +1,4 @@
-/**
- * Next.js API Route: Reset Password (Using token from email)
- * Following ADMIN_PASSWORD.md - POST /api/auth/reset-password/:token
- */
+
 import connectDB from '../../../../../lib/db.js';
 import User from '../../../../../lib/models/User.js';
 import { hashPassword } from '../../../../../lib/utils/password.js';
@@ -11,7 +8,7 @@ export async function POST(request, { params }) {
   try {
     await connectDB();
     
-    // Resolve params (Next.js 15+ compatibility)
+    
     const resolvedParams = params && typeof params.then === 'function' ? await params : params;
     const { token } = resolvedParams || {};
 
@@ -25,7 +22,7 @@ export async function POST(request, { params }) {
     const body = await request.json();
     const { newPassword } = body;
 
-    // Validation
+    
     if (!newPassword || newPassword.length < 8) {
       return Response.json(
         {
@@ -36,7 +33,7 @@ export async function POST(request, { params }) {
       );
     }
 
-    // Password strength check
+    
     const hasUpperCase = /[A-Z]/.test(newPassword);
     const hasLowerCase = /[a-z]/.test(newPassword);
     const hasNumbers = /\d/.test(newPassword);
@@ -52,10 +49,10 @@ export async function POST(request, { params }) {
       );
     }
 
-    // Hash token to compare with stored hash
+    
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-    // Find user with valid token and not expired
+    
     const user = await User.findOne({
       passwordResetToken: hashedToken,
       passwordResetExpires: { $gt: new Date() }
@@ -71,16 +68,16 @@ export async function POST(request, { params }) {
       );
     }
 
-    // Hash new password using bcrypt (10 rounds as per ADMIN_PASSWORD.md)
+    
     const hashedPassword = await hashPassword(newPassword);
 
-    // Update user - store password in database (following ADMIN_PASSWORD.md)
+    
     user.password = hashedPassword;
     user.isTemporaryPassword = false;
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     user.lastPasswordChange = new Date();
-    // Also clear login attempts and lock on successful reset
+    
     user.loginAttempts = 0;
     user.lockUntil = null;
     await user.save();

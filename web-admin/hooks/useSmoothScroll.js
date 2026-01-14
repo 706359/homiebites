@@ -5,12 +5,12 @@ export const useSmoothScroll = () => {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Handle hash in URL when page loads or route changes
+    
     const handleHashScroll = () => {
       if (pathname === "/") {
         const hash = window.location.hash;
         if (hash && hash !== "#") {
-          // Small delay to ensure DOM is ready
+          
           setTimeout(() => {
             const targetElement = document.querySelector(hash);
             if (targetElement) {
@@ -29,18 +29,18 @@ export const useSmoothScroll = () => {
       }
     };
 
-    // Handle initial load and route changes
+    
     handleHashScroll();
 
-    // Also listen for hashchange events
+    
     const handleHashChange = () => {
       handleHashScroll();
     };
     window.addEventListener("hashchange", handleHashChange);
 
-    // Handle click on anchor links
+    
     const handleClick = (e) => {
-      // Don't interfere with buttons, inputs, or interactive elements
+      
       if (
         e.target.tagName === "BUTTON" ||
         e.target.tagName === "INPUT" ||
@@ -52,15 +52,15 @@ export const useSmoothScroll = () => {
         return;
       }
 
-      // Handle Next.js Link components with hash
+      
       const link = e.target.closest('a[href*="#"]');
       if (link) {
         const href = link.getAttribute("href");
         if (href && href.startsWith("/#")) {
-          // Let React Router handle navigation, then scroll after navigation
+          
           const hash = href.split("#")[1];
           if (hash) {
-            // Wait for navigation to complete
+            
             setTimeout(() => {
               const targetElement = document.querySelector(`#${hash}`);
               if (targetElement) {
@@ -81,14 +81,14 @@ export const useSmoothScroll = () => {
         }
       }
 
-      // Handle regular anchor tags with hash (for same-page scrolling)
+      
       const anchor = e.target.closest('a[href^="#"]');
       if (!anchor) return;
 
       const targetId = anchor.getAttribute("href");
       if (targetId === "#") return;
 
-      // Only prevent default if we're on the same page
+      
       if (pathname === "/") {
         const targetElement = document.querySelector(targetId);
         if (targetElement) {

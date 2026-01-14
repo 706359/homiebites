@@ -1,12 +1,9 @@
-/**
- * Next.js API Route: Verify OTP
- * Verifies the OTP and returns a verification token for identity verification
- */
+
 import connectDB from '../../../../lib/db.js';
 import User from '../../../../lib/models/User.js';
 import jwt from 'jsonwebtoken';
 
-// Helper function to get admin credentials
+
 function getAdminCredentials() {
   return {
     JWT_SECRET: process.env.JWT_SECRET || 'homiebites_secret',
@@ -37,7 +34,7 @@ export async function POST(request) {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedOTP = otp.trim();
 
-    // Find user
+    
     const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
@@ -47,7 +44,7 @@ export async function POST(request) {
       );
     }
 
-    // Check if OTP exists and hasn't expired
+    
     if (!user.otp || !user.otpExpiresAt) {
       return Response.json(
         { success: false, error: 'OTP not found or expired. Please request a new OTP.' },
@@ -56,7 +53,7 @@ export async function POST(request) {
     }
 
     if (new Date() > user.otpExpiresAt) {
-      // Clear expired OTP
+      
       user.otp = null;
       user.otpExpiresAt = null;
       await user.save();
@@ -67,7 +64,7 @@ export async function POST(request) {
       );
     }
 
-    // Verify OTP
+    
     if (user.otp !== normalizedOTP) {
       return Response.json(
         { success: false, error: 'Invalid OTP' },
@@ -75,7 +72,7 @@ export async function POST(request) {
       );
     }
 
-    // OTP is valid, generate verification token
+    
     const adminCreds = getAdminCredentials();
     const verificationToken = jwt.sign(
       {
@@ -84,13 +81,13 @@ export async function POST(request) {
         purpose: 'password-reset-verification',
       },
       adminCreds.JWT_SECRET,
-      { expiresIn: '30m' } // 30 minutes
+      { expiresIn: '30m' } 
     );
 
-    // Store verification token
+    
     user.verificationToken = verificationToken;
-    user.verificationTokenExpiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
-    // Clear OTP after successful verification
+    user.verificationTokenExpiresAt = new Date(Date.now() + 30 * 60 * 1000); 
+    
     user.otp = null;
     user.otpExpiresAt = null;
     await user.save();

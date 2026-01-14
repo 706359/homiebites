@@ -1,12 +1,9 @@
-/**
- * Next.js API Route: Get User's Orders
- * Migrated from Express backend
- */
+
 import connectDB from '../../../../lib/db.js';
 import Order from '../../../../lib/models/Order.js';
 import { authenticate, createErrorResponse } from '../../../../lib/middleware/auth.js';
 
-// GET /api/orders/my-orders - Get orders for authenticated user
+
 export async function GET(request) {
   try {
     await connectDB();
@@ -19,7 +16,7 @@ export async function GET(request) {
       );
     }
 
-    const userId = user.id === 'admin' ? null : user.id; // Admin doesn't have user orders
+    const userId = user.id === 'admin' ? null : user.id; 
     const orders = await Order.find(userId ? { user: userId } : {});
 
     return Response.json({ success: true, data: orders });

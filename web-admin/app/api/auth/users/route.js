@@ -1,12 +1,9 @@
-/**
- * Next.js API Route: Get All Users (Admin)
- * Migrated from Express backend (stub - not fully implemented)
- */
+
 import connectDB from '../../../../lib/db.js';
 import { createErrorResponse, isAdmin } from '../../../../lib/middleware/auth.js';
 import User from '../../../../lib/models/User.js';
 
-// GET /api/auth/users - admin only
+
 export async function GET(request) {
   try {
     await connectDB();

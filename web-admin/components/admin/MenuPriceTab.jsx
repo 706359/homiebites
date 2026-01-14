@@ -8,7 +8,7 @@ import { formatCurrency } from './utils/orderUtils.js';
 
 const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = false }) => {
   const [menuItems, setMenuItems] = useState([]);
-  const [originalCategories, setOriginalCategories] = useState([]); // Store original category structure
+  const [originalCategories, setOriginalCategories] = useState([]); 
   const [categories, setCategories] = useState(['Breakfast', 'Lunch', 'Dinner']);
   const [loadingMenu, setLoadingMenu] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -17,16 +17,16 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
-  const [sortBy, setSortBy] = useState('name'); // 'name', 'price', 'category'
-  const [sortOrder, setSortOrder] = useState('asc'); // 'asc', 'desc'
+  const [sortBy, setSortBy] = useState('name'); 
+  const [sortOrder, setSortOrder] = useState('asc'); 
 
-  // Enable keyboard avoidance for mobile
+  
   useAutoKeyboardAvoidance({
     containerSelector: '.modal-container, .menu-price-tab',
     inputSelector: 'input, textarea, select',
   });
 
-  // Form state
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -36,12 +36,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     category: '',
   });
 
-  // Load menu items
+  
   useEffect(() => {
     loadMenuItems();
   }, []);
 
-  // Ensure default categories are always available
+  
   useEffect(() => {
     const defaultCategories = ['Breakfast', 'Lunch', 'Dinner'];
     if (
@@ -58,7 +58,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
   const loadMenuItems = async () => {
     setLoadingMenu(true);
     try {
-      // Load menu categories from backend
+      
       const response = await api.getMenu();
 
       console.log('[Menu Load] Backend response:', {
@@ -80,10 +80,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           })),
         });
 
-        // Store original categories structure for preserving metadata
+        
         setOriginalCategories(response.data);
 
-        // Flatten categories into individual items with category info
+        
         const flattenedItems = [];
         response.data.forEach((category) => {
           if (category.items && Array.isArray(category.items)) {
@@ -109,7 +109,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
         const defaultCategories = ['Breakfast', 'Lunch', 'Dinner'];
 
-        // Extract unique categories from loaded items
+        
         const uniqueCategories = [...new Set(flattenedItems.map((item) => item.category))];
 
         console.log('[Menu Load] Category processing:', {
@@ -117,36 +117,36 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           uniqueCategoriesFromItems: uniqueCategories,
         });
 
-        // Merge default categories with categories found in database
+        
         const allCategories = [...new Set([...defaultCategories, ...uniqueCategories])];
 
         console.log('[Menu Load] Final categories to set:', allCategories);
 
-        // Always set to merged categories (defaults + found in DB)
+        
         console.log('[Menu Load] Setting categories to:', allCategories);
         setCategories(allCategories);
       } else {
         console.warn('[Menu Load] Invalid response structure:', response);
         setMenuItems([]);
         setOriginalCategories([]);
-        // Even on error, keep default categories
+        
         setCategories(['Breakfast', 'Lunch', 'Dinner']);
       }
     } catch (error) {
       console.error('[Menu Load] Error loading menu items:', error);
       setMenuItems([]);
-      // Even on error, keep default categories
+      
       setCategories(['Breakfast', 'Lunch', 'Dinner']);
     } finally {
       setLoadingMenu(false);
     }
   };
 
-  // Convert flat items array back to categories structure for saving
+  
   const convertItemsToCategories = (items) => {
     const categoriesMap = {};
 
-    // First, preserve original category structure
+    
     if (originalCategories && originalCategories.length > 0) {
       originalCategories.forEach((originalCategory) => {
         const categoryName = originalCategory.category;
@@ -163,12 +163,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       });
     }
 
-    // Then, add items to their categories (use first available category or default "Lunch" if no category)
+    
     items.forEach((item) => {
-      // If item has no category, assign to first available category from existing categories or default to 'Lunch'
+      
       let categoryName = item.category;
       if (!categoryName || categoryName.trim() === '') {
-        // Try to get first category from existing categories map, or from state, or default
+        
         const existingCategoryNames = Object.keys(categoriesMap);
         if (existingCategoryNames.length > 0) {
           categoryName = existingCategoryNames[0];
@@ -184,8 +184,8 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       }
 
       if (!categoriesMap[categoryName]) {
-        // Create new category if it doesn't exist
-        // Try to find category info from existing items in the same category
+        
+        
         const existingItemInCategory = items.find(
           (i) => i.category === categoryName && i.categoryId
         );
@@ -201,7 +201,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         };
       }
 
-      // Remove category metadata before adding to items array
+      
       const { category, categoryId, categoryIcon, categoryTag, categoryDescription, ...itemData } =
         item;
       categoriesMap[categoryName].items.push(itemData);
@@ -219,7 +219,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       })),
     });
 
-    // Filter out empty categories before returning
+    
     const categoriesWithItems = result.filter((cat) => cat.items && cat.items.length > 0);
 
     if (categoriesWithItems.length === 0) {
@@ -230,7 +230,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     return categoriesWithItems;
   };
 
-  // Available images in public folder - same as Gallery component
+  
   const publicImages = [
     'Amritsarichhole.png',
     'Curd.jpg',
@@ -250,7 +250,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     'VegThali.png',
   ];
 
-  // Convert item name to image filename format
+  
   const normalizeName = (name) => {
     return name
       .toLowerCase()
@@ -259,13 +259,13 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       .trim();
   };
 
-  // Find matching image from public folder based on item name
+  
   const findImageByName = (itemName) => {
     if (!itemName) return '/food.jpeg';
 
     const normalizedName = normalizeName(itemName);
 
-    // Check for common food name variations first (more specific)
+    
     const commonMatches = {
       chhole: 'Amritsarichhole.png',
       chole: 'Amritsarichhole.png',
@@ -295,7 +295,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       }
     }
 
-    // Try to find exact or partial match
+    
     for (const image of publicImages) {
       const imageName = normalizeName(image.replace(/\.(jpg|jpeg|png)$/i, ''));
       if (imageName.includes(normalizedName) || normalizedName.includes(imageName)) {
@@ -303,12 +303,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       }
     }
 
-    return '/food.jpeg'; // Default fallback
+    return '/food.jpeg'; 
   };
 
-  // Get image URL for an item - auto-generates if not provided
+  
   const getItemImageUrl = (item) => {
-    // If imageUrl is explicitly provided, use it
+    
     if (item.imageUrl && item.imageUrl.trim() !== '') {
       const imageUrl = item.imageUrl.trim();
       if (imageUrl.startsWith('/')) {
@@ -320,19 +320,19 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       }
     }
 
-    // Auto-generate from item name
+    
     return findImageByName(item.name);
   };
 
-  // Sync menu items with images to gallery
-  // This automatically syncs menu items to the website gallery
-  // Only items with both imageUrl and price are synced
-  // Items appear on the website gallery immediately after sync
+  
+  
+  
+  
   const syncMenuItemsToGallery = async (items, showNotification = null) => {
     try {
       console.log('[Gallery Sync] Starting sync for', items.length, 'menu items');
 
-      // Get current gallery items
+      
       let galleryResponse;
       try {
         galleryResponse = await api.getGallery();
@@ -349,13 +349,13 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       const existingGalleryItems =
         galleryResponse.success && galleryResponse.data ? galleryResponse.data : [];
 
-      // Use provided imageUrl if available, otherwise auto-generate from item name
+      
       const itemsToSync = items
         .map((item) => {
-          // If user provided imageUrl, use it (normalize it first)
+          
           let finalImageUrl = item.imageUrl;
           if (finalImageUrl && finalImageUrl.trim() !== '') {
-            // User provided an image URL - normalize it
+            
             finalImageUrl = finalImageUrl.trim();
             if (
               !finalImageUrl.startsWith('/') &&
@@ -365,7 +365,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
               finalImageUrl = '/' + finalImageUrl;
             }
           } else {
-            // No imageUrl provided - auto-generate from item name
+            
             finalImageUrl = getItemImageUrl(item);
           }
 
@@ -386,7 +386,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         itemsWithImageAndPrice: itemsToSync.length,
         itemsToSync: itemsToSync.map((i) => ({
           name: i.name,
-          imageUrl: i.imageUrl, // User provided or auto-generated from name
+          imageUrl: i.imageUrl, 
           price: i.price,
         })),
       });
@@ -397,12 +397,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         );
       }
 
-      // Create/update gallery items for each menu item
+      
       let created = 0;
       let updated = 0;
 
       for (const item of itemsToSync) {
-        // ImageUrl is already normalized in the map step above
+        
         const finalImageUrl = item.imageUrl;
 
         console.log('[Gallery Sync] Syncing item:', {
@@ -417,7 +417,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
         const galleryItemData = {
           name: item.name,
-          imageUrl: finalImageUrl, // Use the normalized imageUrl (user provided or auto-generated)
+          imageUrl: finalImageUrl, 
           alt: item.name,
           caption: item.price ? `${item.name} - ₹${item.price}` : item.name,
           price: item.price,
@@ -430,11 +430,11 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           isActive: item.isAvailable !== false,
         };
 
-        // Check if gallery item already exists (by name)
+        
         const existingItem = existingGalleryItems.find((gi) => gi.name === item.name);
 
         if (existingItem) {
-          // Update existing gallery item
+          
           try {
             const updateResponse = await api.updateGalleryItem(
               existingItem._id || existingItem.id,
@@ -447,7 +447,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
             throw error;
           }
         } else {
-          // Create new gallery item
+          
           try {
             const createResponse = await api.createGalleryItem(galleryItemData);
             created++;
@@ -463,7 +463,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         }
       }
 
-      // Deactivate gallery items that are no longer in menu or don't have images/prices
+      
       const menuItemNames = new Set(itemsToSync.map((item) => item.name));
 
       let deactivated = 0;
@@ -481,13 +481,13 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         totalActive: created + updated,
       });
 
-      // Trigger immediate refresh on gallery page (if open)
+      
       try {
-        // Dispatch custom event for gallery to refresh immediately
+        
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('gallery-updated'));
 
-          // Also update localStorage timestamp for cross-tab communication
+          
           localStorage.setItem('gallery-last-update', Date.now().toString());
 
           console.log('[Gallery Sync] Triggered gallery refresh event');
@@ -496,7 +496,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         console.warn('[Gallery Sync] Could not trigger refresh event:', e);
       }
 
-      // Show notification if explicitly requested (for manual sync)
+      
       if (showNotification && (created > 0 || updated > 0)) {
         showNotification(
           `Gallery sync complete: ${created} created, ${updated} updated. Items should now appear on website.`,
@@ -504,8 +504,8 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         );
       }
 
-      // Sync complete - don't show notification here by default, it will be shown in saveMenuItemsToBackend
-      // Gallery sync happens automatically and silently
+      
+      
     } catch (error) {
       console.error('[Gallery Sync] Error syncing menu items to gallery:', error);
       if (showNotification) {
@@ -514,7 +514,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           'error'
         );
       }
-      // Don't throw error - gallery sync is optional, but log it
+      
     }
   };
 
@@ -534,7 +534,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
       const categories = convertItemsToCategories(items);
 
-      // Validate that we have items to save
+      
       const totalItemsInCategories = categories.reduce(
         (sum, cat) => sum + (cat.items?.length || 0),
         0
@@ -544,7 +544,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         throw new Error('No menu items to save. Please add at least one menu item.');
       }
 
-      // Log full structure for debugging
+      
       console.log('[Menu Save] Full categories structure:', JSON.stringify(categories, null, 2));
       console.log('[Menu Save] Sending categories to backend:', {
         categoriesCount: categories.length,
@@ -578,32 +578,32 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
       if (!response.data || !Array.isArray(response.data)) {
         console.warn('[Menu Save] Backend response missing valid data:', response);
-        // Don't throw error here, but log it - the save might still have succeeded
+        
       } else {
         console.log('[Menu Save] Successfully saved menu with', response.data.length, 'categories');
       }
 
-      // Automatically sync menu items to gallery (items with images will appear on website)
+      
       console.log('[Menu Save] Starting gallery sync for', items.length, 'items...');
       try {
-        await syncMenuItemsToGallery(items, null); // Don't show notification here, will show in main success message
+        await syncMenuItemsToGallery(items, null); 
         console.log('[Menu Save] Gallery sync completed - items should now be visible on website');
       } catch (syncError) {
         console.error('[Menu Save] Gallery sync failed:', syncError);
-        // Don't fail the entire save if gallery sync fails
+        
         showNotification(
           'Menu saved, but gallery sync failed: ' + (syncError.message || 'Unknown error'),
           'warning'
         );
       }
 
-      // Reload menu items from backend to ensure UI is in sync
+      
       console.log('[Menu Save] Reloading menu items after save...');
       try {
         await loadMenuItems();
         console.log('[Menu Save] Menu items reloaded successfully');
 
-        // Verify items were loaded
+        
         const reloadedResponse = await api.getMenu();
         if (reloadedResponse.success && reloadedResponse.data) {
           const totalLoadedItems = reloadedResponse.data.reduce(
@@ -624,10 +624,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         }
       } catch (reloadError) {
         console.error('[Menu Save] Error reloading menu items:', reloadError);
-        // Don't throw - save might have succeeded even if reload failed
+        
       }
 
-      // Show single notification for save operation
+      
       if (showNotification) {
         showNotification('Menu saved successfully', 'success');
       }
@@ -647,11 +647,11 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     }
   };
 
-  // Filtered and sorted menu items
+  
   const filteredMenuItems = useMemo(() => {
     let filtered = [...menuItems];
 
-    // Search filter
+    
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -662,12 +662,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       );
     }
 
-    // Category filter
+    
     if (filterCategory) {
       filtered = filtered.filter((item) => item.category === filterCategory);
     }
 
-    // Sorting
+    
     filtered.sort((a, b) => {
       let aVal, bVal;
 
@@ -680,7 +680,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           aVal = (a.category || '').toLowerCase();
           bVal = (b.category || '').toLowerCase();
           break;
-        default: // 'name'
+        default: 
           aVal = (a.name || '').toLowerCase();
           bVal = (b.name || '').toLowerCase();
       }
@@ -695,7 +695,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     return filtered;
   }, [menuItems, searchQuery, filterCategory, sortBy, sortOrder]);
 
-  // Handle add item
+  
   const handleAddItem = async () => {
     if (!formData.name.trim() || !formData.price || formData.price <= 0) {
       if (showNotification) {
@@ -706,12 +706,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
     const performAdd = async () => {
       try {
-        // Determine category - use first available category or default to 'Lunch' (most common)
+        
         let itemCategory = 'Breakfast';
         if (categories.length > 0) {
           itemCategory = categories[0];
         } else if (menuItems.length > 0 && menuItems[0].category) {
-          // Use category from existing items
+          
           itemCategory = menuItems[0].category;
         }
 
@@ -722,7 +722,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           price: parseFloat(formData.price),
           imageUrl: formData.imageUrl || '',
           isAvailable: formData.isAvailable !== false,
-          category: formData.category || itemCategory, // Use form category if provided, otherwise use default
+          category: formData.category || itemCategory, 
         };
 
         console.log('[Add Item] New item created:', {
@@ -733,7 +733,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
         const updatedItems = [...menuItems, newItem];
 
-        // Save to backend FIRST (before updating local state) to ensure consistency
+        
         console.log('[Add Item] Saving new item to backend:', {
           itemName: newItem.name,
           category: newItem.category,
@@ -748,12 +748,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           await saveMenuItemsToBackend(updatedItems);
           console.log('[Add Item] Successfully saved to backend, now reloading from backend...');
 
-          // Reload from backend to ensure we have the latest data and sync with database
+          
           await loadMenuItems();
           console.log('[Add Item] Reloaded menu items from backend - should now be in sync');
         } catch (error) {
           console.error('[Add Item] Failed to save to backend:', error);
-          // Reload anyway to sync with backend (might have partial save)
+          
           try {
             await loadMenuItems();
           } catch (reloadError) {
@@ -772,7 +772,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           category: '',
         });
 
-        // Notification is already shown in saveMenuItemsToBackend, no need to show again
+        
       } catch (error) {
         console.error('Error adding menu item:', error);
         if (showNotification) {
@@ -794,7 +794,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     }
   };
 
-  // Handle import menu items
+  
   const handleImportMenuItems = async () => {
     if (showConfirmation) {
       showConfirmation({
@@ -807,18 +807,18 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           try {
             setLoadingMenu(true);
 
-            // Convert menu items to categories format
+            
             const newCategories = convertMenuItemsToCategories();
 
-            // Load current menu from backend first (don't use local state)
+            
             const currentMenuResponse = await api.getMenu();
             const existingCategories =
               currentMenuResponse.success && Array.isArray(currentMenuResponse.data)
                 ? currentMenuResponse.data
                 : [];
 
-            // Merge new categories with existing ones from backend
-            // If a category already exists, merge items; otherwise add new category
+            
+            
             const mergedCategories = [...existingCategories];
 
             newCategories.forEach((newCategory) => {
@@ -827,7 +827,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
               );
 
               if (existingIndex >= 0) {
-                // Category exists - merge items (avoid duplicates by name)
+                
                 const existingItems = mergedCategories[existingIndex].items || [];
                 const existingItemNames = new Set(existingItems.map((item) => item.name));
 
@@ -839,12 +839,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
                 mergedCategories[existingIndex].items = existingItems;
               } else {
-                // New category - add it
+                
                 mergedCategories.push(newCategory);
               }
             });
 
-            // Flatten for saving to backend
+            
             const flattenedItems = [];
             mergedCategories.forEach((category) => {
               if (category.items && Array.isArray(category.items)) {
@@ -861,10 +861,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
               }
             });
 
-            // Save to backend FIRST (don't update local state)
+            
             await saveMenuItemsToBackend(flattenedItems);
 
-            // Reload from backend to sync local state with backend data
+            
             await loadMenuItems();
 
             const importedCount = newCategories.reduce(
@@ -893,7 +893,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     }
   };
 
-  // Handle edit item
+  
   const handleEditItem = async () => {
     if (!formData.name.trim() || !formData.price || formData.price <= 0) {
       if (showNotification) {
@@ -911,7 +911,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           price: parseFloat(formData.price),
           imageUrl: formData.imageUrl || '',
           isAvailable: formData.isAvailable !== false,
-          category: formData.category || selectedItem.category || '', // Use form category if provided, otherwise preserve existing
+          category: formData.category || selectedItem.category || '', 
         };
 
         const updatedItems = menuItems.map((item) =>
@@ -925,10 +925,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           allItems: updatedItems.map((i) => ({ name: i.name, id: i.id })),
         });
 
-        // Save to backend FIRST
+        
         await saveMenuItemsToBackend(updatedItems);
 
-        // Reload from backend to ensure we have the latest data
+        
         await loadMenuItems();
 
         setShowEditModal(false);
@@ -942,7 +942,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           category: '',
         });
 
-        // Notification is already shown in saveMenuItemsToBackend, no need to show again
+        
       } catch (error) {
         console.error('Error updating menu item:', error);
         if (showNotification) {
@@ -964,7 +964,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     }
   };
 
-  // Handle delete item
+  
   const handleDeleteItem = async () => {
     try {
       const updatedItems = menuItems.filter((item) => item.id !== selectedItem.id);
@@ -977,16 +977,16 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         remainingItems: updatedItems.map((i) => ({ name: i.name, id: i.id })),
       });
 
-      // Save to backend FIRST
+      
       await saveMenuItemsToBackend(updatedItems);
 
-      // Reload from backend to ensure we have the latest data
+      
       await loadMenuItems();
 
       setShowDeleteModal(false);
       setSelectedItem(null);
 
-      // Notification is already shown in saveMenuItemsToBackend, no need to show again
+      
     } catch (error) {
       console.error('Error deleting menu item:', error);
       if (showNotification) {
@@ -995,19 +995,19 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     }
   };
 
-  // Handle toggle availability
+  
   const handleToggleAvailability = async (item) => {
     try {
       const updatedItem = { ...item, isAvailable: !item.isAvailable };
       const updatedItems = menuItems.map((i) => (i.id === item.id ? updatedItem : i));
 
-      // Save to backend FIRST
+      
       await saveMenuItemsToBackend(updatedItems);
 
-      // Reload from backend to ensure we have the latest data
+      
       await loadMenuItems();
 
-      // Notification is already shown in saveMenuItemsToBackend, no need to show again
+      
     } catch (error) {
       console.error('Error toggling availability:', error);
       if (showNotification) {
@@ -1016,7 +1016,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     }
   };
 
-  // Open edit modal
+  
   const openEditModal = (item) => {
     setSelectedItem(item);
     setFormData({
@@ -1030,7 +1030,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     setShowEditModal(true);
   };
 
-  // Open delete modal
+  
   const openDeleteModal = (item) => {
     setSelectedItem(item);
     setShowDeleteModal(true);
@@ -1046,13 +1046,13 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
   return (
     <div className='admin-content'>
-      {/* HEADER */}
+      {}
       <div className='dashboard-header'>
         <div className='action-buttons-group'>
           <button
             className='btn btn-primary btn-small'
             onClick={() => {
-              // Initialize form when opening add modal
+              
               setFormData({
                 name: '',
                 description: '',
@@ -1079,9 +1079,9 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                     confirmText: 'Delete All',
                     onConfirm: async () => {
                       try {
-                        // Delete the menu record from database
+                        
                         await api.deleteMenu();
-                        // Clear local state
+                        
                         setMenuItems([]);
                         setOriginalCategories([]);
                         if (showNotification) {
@@ -1111,7 +1111,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           <button
             className='btn btn-secondary btn-small'
             onClick={async () => {
-              // Manual sync to gallery
+              
               try {
                 showNotification('Syncing menu items to gallery...', 'info');
                 await syncMenuItemsToGallery(menuItems, showNotification);
@@ -1137,7 +1137,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         </div>
       </div>
 
-      {/* FILTER & ACTION BAR */}
+      {}
       <div className='dashboard-card dashboard-card-spaced'>
         <div className='filter-container'>
           <div className='search-input-wrapper search-input-wrapper-flex'>
@@ -1200,7 +1200,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         </div>
       </div>
 
-      {/* MENU ITEMS GRID */}
+      {}
       {filteredMenuItems.length === 0 ? (
         <div className='dashboard-card' style={{ textAlign: 'center', padding: '48px' }}>
           <i
@@ -1219,14 +1219,14 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
             <button
               className='btn btn-primary'
               onClick={() => {
-                // Initialize form with default category when opening add modal
+                
                 setFormData({
                   name: '',
                   description: '',
                   price: 0,
                   isAvailable: true,
                   imageUrl: '',
-                  category: '', // Start with empty, user can select
+                  category: '', 
                 });
                 setShowAddModal(true);
               }}
@@ -1237,283 +1237,264 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         </div>
       ) : (
         <div className='dashboard-grid-layout menu-items-grid'>
-          {filteredMenuItems.map((item, index) => (
-            <div
-              key={`${item.id}-${item.name}-${index}`}
-              className='dashboard-card menu-item-card'
-              style={{ position: 'relative', animationDelay: `${index * 0.05}s` }}
-            >
-              {/* Item Image */}
-              {item.imageUrl && item.imageUrl.trim() !== '' ? (
-                <div
-                  style={{
-                    width: '100%',
-                    height: '200px',
-                    marginBottom: '16px',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    background: 'var(--admin-glass-border)',
-                    position: 'relative',
-                  }}
-                >
-                  <img
-                    src={(() => {
-                      // Available images in public folder
-                      const publicImages = [
-                        'Amritsarichhole.png',
-                        'Curd.jpg',
-                        'DeliciousAaluParatha.jpg',
-                        'DesiThali.jpeg',
-                        'food.jpeg',
-                        'FullTiffin.jpg',
-                        'hero.jpeg',
-                        'kadhipakora.jpg',
-                        'kalachana.jpg',
-                        'lobhiya.jpg',
-                        'lokikofte.jpg',
-                        'MoondDalKhichdi.jpg',
-                        'rajma.jpg',
-                        'RotiSabji.png',
-                        'veg-thali.png',
-                        'VegThali.png',
-                      ];
+          {filteredMenuItems.map((item, index) => {
+            const getImageUrl = () => {
+              const publicImages = [
+                'Amritsarichhole.png',
+                'Curd.jpg',
+                'DeliciousAaluParatha.jpg',
+                'DesiThali.jpeg',
+                'food.jpeg',
+                'FullTiffin.jpg',
+                'hero.jpeg',
+                'kadhipakora.jpg',
+                'kalachana.jpg',
+                'lobhiya.jpg',
+                'lokikofte.jpg',
+                'MoondDalKhichdi.jpg',
+                'rajma.jpg',
+                'RotiSabji.png',
+                'veg-thali.png',
+                'VegThali.png',
+              ];
 
-                      // Convert item name to image filename format
-                      const normalizeName = (name) => {
-                        return name
-                          .toLowerCase()
-                          .replace(/\s+/g, '')
-                          .replace(/[^a-z0-9]/g, '')
-                          .trim();
-                      };
+              const normalizeName = (name) => {
+                return name
+                  .toLowerCase()
+                  .replace(/\s+/g, '')
+                  .replace(/[^a-z0-9]/g, '')
+                  .trim();
+              };
 
-                      // Find matching image from public folder based on item name
-                      const findImageByName = (itemName) => {
-                        if (!itemName) return '/food.jpeg';
-                        const normalizedName = normalizeName(itemName);
+              const findImageByName = (itemName) => {
+                if (!itemName) return '/food.jpeg';
+                const normalizedName = normalizeName(itemName);
 
-                        // Check for common food name variations first (more specific)
-                        const commonMatches = {
-                          chhole: 'Amritsarichhole.png',
-                          chole: 'Amritsarichhole.png',
-                          chana: 'kalachana.jpg',
-                          dal: 'MoondDalKhichdi.jpg',
-                          khichdi: 'MoondDalKhichdi.jpg',
-                          paratha: 'DeliciousAaluParatha.jpg',
-                          aloo: 'DeliciousAaluParatha.jpg',
-                          thali: 'DesiThali.jpeg',
-                          rajma: 'rajma.jpg',
-                          roti: 'RotiSabji.png',
-                          sabji: 'RotiSabji.png',
-                          pakora: 'kadhipakora.jpg',
-                          kadhi: 'kadhipakora.jpg',
-                          lobhiya: 'lobhiya.jpg',
-                          kofta: 'lokikofte.jpg',
-                          koofte: 'lokikofte.jpg',
-                          curd: 'Curd.jpg',
-                          dahi: 'Curd.jpg',
-                          tiffin: 'FullTiffin.jpg',
-                          full: 'FullTiffin.jpg',
-                        };
+                const commonMatches = {
+                  chhole: 'Amritsarichhole.png',
+                  chole: 'Amritsarichhole.png',
+                  chana: 'kalachana.jpg',
+                  dal: 'MoondDalKhichdi.jpg',
+                  khichdi: 'MoondDalKhichdi.jpg',
+                  paratha: 'DeliciousAaluParatha.jpg',
+                  aloo: 'DeliciousAaluParatha.jpg',
+                  thali: 'DesiThali.jpeg',
+                  rajma: 'rajma.jpg',
+                  roti: 'RotiSabji.png',
+                  sabji: 'RotiSabji.png',
+                  pakora: 'kadhipakora.jpg',
+                  kadhi: 'kadhipakora.jpg',
+                  lobhiya: 'lobhiya.jpg',
+                  kofta: 'lokikofte.jpg',
+                  koofte: 'lokikofte.jpg',
+                  curd: 'Curd.jpg',
+                  dahi: 'Curd.jpg',
+                  tiffin: 'FullTiffin.jpg',
+                  full: 'FullTiffin.jpg',
+                };
 
-                        for (const [key, imageFile] of Object.entries(commonMatches)) {
-                          if (normalizedName.includes(key)) {
-                            return '/' + imageFile;
-                          }
-                        }
+                for (const [key, imageFile] of Object.entries(commonMatches)) {
+                  if (normalizedName.includes(key)) {
+                    return '/' + imageFile;
+                  }
+                }
 
-                        // Try to find exact or partial match
-                        for (const image of publicImages) {
-                          const imageName = normalizeName(image.replace(/\.(jpg|jpeg|png)$/i, ''));
-                          if (
-                            imageName.includes(normalizedName) ||
-                            normalizedName.includes(imageName)
-                          ) {
-                            return '/' + image;
-                          }
-                        }
+                for (const image of publicImages) {
+                  const imageName = normalizeName(image.replace(/\.(jpg|jpeg|png)$/i, ''));
+                  if (
+                    imageName.includes(normalizedName) ||
+                    normalizedName.includes(imageName)
+                  ) {
+                    return '/' + image;
+                  }
+                }
 
-                        return '/food.jpeg';
-                      };
+                return '/food.jpeg';
+              };
 
-                      // If imageUrl is explicitly provided, use it
-                      if (item.imageUrl && item.imageUrl.trim() !== '') {
-                        const imageUrl = item.imageUrl.trim();
-                        if (imageUrl.startsWith('/')) {
-                          return imageUrl;
-                        } else if (
-                          imageUrl.startsWith('http://') ||
-                          imageUrl.startsWith('https://')
-                        ) {
-                          return imageUrl;
-                        } else {
-                          return '/' + imageUrl;
-                        }
-                      }
+              if (item.imageUrl && item.imageUrl.trim() !== '') {
+                const imageUrl = item.imageUrl.trim();
+                if (imageUrl.startsWith('/')) {
+                  return imageUrl;
+                } else if (
+                  imageUrl.startsWith('http://') ||
+                  imageUrl.startsWith('https://')
+                ) {
+                  return imageUrl;
+                } else {
+                  return '/' + imageUrl;
+                }
+              }
 
-                      // If no imageUrl, try to find matching image from public folder
-                      const matchedImage = findImageByName(item.name);
-                      if (matchedImage) {
-                        return matchedImage;
-                      }
+              return findImageByName(item.name);
+            };
 
-                      return '/food.jpeg';
-                    })()}
-                    alt={item.name || 'Menu item'}
+            const categoryColors = {
+              Lunch: {
+                bg: 'var(--admin-accent-light, rgba(68, 144, 49, 0.1))',
+                color: 'var(--admin-accent, #449031)',
+                icon: 'fa-utensils',
+              },
+              Dinner: {
+                bg: 'var(--admin-secondary-light, rgba(196, 92, 45, 0.1))',
+                color: 'var(--admin-secondary, #c45c2d)',
+                icon: 'fa-moon',
+              },
+              Breakfast: {
+                bg: 'rgba(255, 193, 7, 0.1)',
+                color: '#ffc107',
+                icon: 'fa-sun',
+              },
+            };
+
+            const categoryStyle = categoryColors[item.category] || {
+              bg: 'var(--admin-glass-border)',
+              color: 'var(--admin-text-secondary)',
+              icon: 'fa-circle',
+            };
+
+            return (
+              <div
+                key={`${item.id}-${item.name}-${index}`}
+                className='menu-item-card-enhanced'
+                style={{ animationDelay: `${index * 0.05}s` }}
+              >
+                <div className='menu-item-card-header'>
+                  <div
+                    className='menu-item-image-wrapper'
                     style={{
+                      position: 'relative',
                       width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      display: 'block',
-                    }}
-                    onError={(e) => {
-                      console.warn(
-                        '[Menu Item Image] Failed to load:',
-                        e.target.src,
-                        '- Using fallback'
-                      );
-                      const fallback = '/food.jpeg';
-                      if (e.target.src !== fallback && !e.target.src.includes(fallback)) {
-                        e.target.src = fallback;
-                      }
-                    }}
-                    loading='lazy'
-                  />
-                </div>
-              ) : (
-                <div
-                  style={{
-                    width: '100%',
-                    height: '200px',
-                    marginBottom: '16px',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    background: 'var(--admin-glass-border)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--admin-text-light)',
-                  }}
-                >
-                  <i className='fa-solid fa-image' style={{ fontSize: '48px', opacity: 0.3 }}></i>
-                </div>
-              )}
-
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'start',
-                  marginBottom: '12px',
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ marginBottom: '4px', fontSize: '18px', fontWeight: '600' }}>
-                    {item.name}
-                  </h3>
-                  <div
-                    className='badge'
-                    style={{
-                      background:
-                        item.category === 'Lunch'
-                          ? 'var(--admin-accent-light)'
-                          : item.category === 'Dinner'
-                          ? 'var(--admin-secondary-light)'
-                          : 'var(--admin-glass-border)',
-                      color:
-                        item.category === 'Lunch'
-                          ? 'var(--admin-accent)'
-                          : item.category === 'Dinner'
-                          ? 'var(--admin-secondary)'
-                          : 'var(--admin-text-secondary)',
-                      fontSize: '12px',
-                      padding: '4px 8px',
+                      height: '220px',
+                      borderRadius: '12px 12px 0 0',
+                      overflow: 'hidden',
+                      background: 'linear-gradient(135deg, var(--admin-glass-border) 0%, var(--admin-bg-secondary) 100%)',
                     }}
                   >
-                    {item.category}
+                    <img
+                      src={getImageUrl()}
+                      alt={item.name || 'Menu item'}
+                      className='menu-item-image'
+                      onError={(e) => {
+                        const fallback = '/food.jpeg';
+                        if (e.target.src !== fallback && !e.target.src.includes(fallback)) {
+                          e.target.src = fallback;
+                        }
+                      }}
+                      loading='lazy'
+                    />
+                    <div
+                      className='menu-item-availability-badge'
+                      style={{
+                        position: 'absolute',
+                        top: '12px',
+                        right: '12px',
+                        background: item.isAvailable
+                          ? 'rgba(16, 185, 129, 0.95)'
+                          : 'rgba(239, 68, 68, 0.95)',
+                        color: '#ffffff',
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        backdropFilter: 'blur(4px)',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                      }}
+                    >
+                      <i
+                        className={`fa-solid ${item.isAvailable ? 'fa-check-circle' : 'fa-times-circle'}`}
+                      ></i>
+                      <span>{item.isAvailable ? 'Available' : 'Unavailable'}</span>
+                    </div>
+                    <div
+                      className='menu-item-category-badge'
+                      style={{
+                        position: 'absolute',
+                        top: '12px',
+                        left: '12px',
+                        background: categoryStyle.bg,
+                        color: categoryStyle.color,
+                        padding: '8px 14px',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        backdropFilter: 'blur(4px)',
+                        border: `1.5px solid ${categoryStyle.color}20`,
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                      }}
+                    >
+                      <i className={`fa-solid ${categoryStyle.icon}`}></i>
+                      <span>{item.category || 'Uncategorized'}</span>
+                    </div>
                   </div>
                 </div>
-                <div
-                  className='badge'
-                  style={{
-                    background: item.isAvailable
-                      ? 'var(--admin-success-light)'
-                      : 'var(--admin-danger-light)',
-                    color: item.isAvailable ? 'var(--admin-success)' : 'var(--admin-danger)',
-                    fontSize: '11px',
-                    padding: '4px 8px',
-                  }}
-                >
-                  {item.isAvailable ? 'Available' : 'Unavailable'}
-                </div>
-              </div>
 
-              {item.description && (
-                <p
-                  style={{
-                    color: 'var(--admin-text-secondary)',
-                    fontSize: '14px',
-                    marginBottom: '12px',
-                    lineHeight: '1.5',
-                  }}
-                >
-                  {item.description}
-                </p>
-              )}
+                <div className='menu-item-card-body'>
+                  <div className='menu-item-title-section'>
+                    <h3 className='menu-item-title'>{item.name}</h3>
+                    {item.description && (
+                      <p className='menu-item-description'>{item.description}</p>
+                    )}
+                  </div>
 
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginTop: '16px',
-                  paddingTop: '16px',
-                  borderTop: '1px solid var(--admin-border)',
-                }}
-              >
-                <div>
-                  <div
-                    style={{ fontSize: '24px', fontWeight: '700', color: 'var(--admin-accent)' }}
-                  >
-                    {formatCurrency(item.price || 0)}
+                  <div className='menu-item-footer'>
+                    <div className='menu-item-price-section'>
+                      <span className='menu-item-price-label'>Price</span>
+                      <div className='menu-item-price'>
+                        <span className='menu-item-price-symbol'>₹</span>
+                        <span className='menu-item-price-amount'>{formatCurrency(item.price || 0)}</span>
+                      </div>
+                    </div>
+                    <div className='menu-item-actions'>
+                      <button
+                        className='menu-item-action-btn menu-item-action-toggle'
+                        onClick={() => handleToggleAvailability(item)}
+                        title={item.isAvailable ? 'Mark as Unavailable' : 'Mark as Available'}
+                        style={{
+                          background: item.isAvailable
+                            ? 'rgba(16, 185, 129, 0.1)'
+                            : 'rgba(239, 68, 68, 0.1)',
+                          color: item.isAvailable ? '#10b981' : '#ef4444',
+                        }}
+                      >
+                        <i className={`fa-solid ${item.isAvailable ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                      </button>
+                      <button
+                        className='menu-item-action-btn menu-item-action-edit'
+                        onClick={() => openEditModal(item)}
+                        title='Edit Item'
+                      >
+                        <i className='fa-solid fa-pencil'></i>
+                      </button>
+                      <button
+                        className='menu-item-action-btn menu-item-action-delete'
+                        onClick={() => openDeleteModal(item)}
+                        title='Delete Item'
+                      >
+                        <i className='fa-solid fa-trash'></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className='action-buttons-group' style={{ gap: '8px' }}>
-                  <button
-                    className='action-button'
-                    onClick={() => handleToggleAvailability(item)}
-                    title={item.isAvailable ? 'Mark as Unavailable' : 'Mark as Available'}
-                  >
-                    <i className={`fa-solid ${item.isAvailable ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                  </button>
-                  <button
-                    className='action-button edit'
-                    onClick={() => openEditModal(item)}
-                    title='Edit'
-                  >
-                    <i className='fa-solid fa-pencil'></i>
-                  </button>
-                  <button
-                    className='action-button delete'
-                    onClick={() => openDeleteModal(item)}
-                    title='Delete'
-                  >
-                    <i className='fa-solid fa-trash'></i>
-                  </button>
-                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {/* ADD MODAL */}
+      {}
       {showAddModal && (
         <div className='modal-overlay'>
           <div className='modal-container' style={{ maxWidth: '540px' }}>
             <div className='modal-header' style={{ padding: '18px 24px' }}>
               <h2 style={{ fontSize: '20px', margin: 0 }}>Add Menu Item</h2>
-              <button className='modal-close' onClick={() => setShowAddModal(false)}>
+              <button className='btn btn-ghost btn-icon modal-close' onClick={() => setShowAddModal(false)}>
                 <i className='fa-solid fa-times'></i>
               </button>
             </div>
@@ -1671,13 +1652,13 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         </div>
       )}
 
-      {/* EDIT MODAL */}
+      {}
       {showEditModal && selectedItem && (
         <div className='modal-overlay'>
           <div className='modal-container' style={{ maxWidth: '540px' }}>
             <div className='modal-header' style={{ padding: '18px 24px' }}>
               <h2 style={{ fontSize: '20px', margin: 0 }}>Edit Menu Item</h2>
-              <button className='modal-close' onClick={() => setShowEditModal(false)}>
+              <button className='btn btn-ghost btn-icon modal-close' onClick={() => setShowEditModal(false)}>
                 <i className='fa-solid fa-times'></i>
               </button>
             </div>
@@ -1839,7 +1820,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         </div>
       )}
 
-      {/* DELETE MODAL */}
+      {}
       {showDeleteModal && selectedItem && (
         <ConfirmModal
           show={showDeleteModal}
