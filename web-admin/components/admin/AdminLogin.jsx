@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
 import api from '../../lib/api-admin.js';
 import './AdminLogin.css';
 import { useNotification } from './contexts/NotificationContext.jsx';
 import InstallPrompt from './InstallPrompt.jsx';
-import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
 import './styles/index.css';
 
 const AdminLogin = ({ onLoginSuccess }) => {
@@ -12,27 +12,22 @@ const AdminLogin = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
   const { error: showError, success: showSuccess } = useNotification();
 
-  
   useAutoKeyboardAvoidance({
     containerSelector: '.login-form',
     inputSelector: 'input, textarea, select',
   });
 
-  
   useEffect(() => {
     const applyThemeSettings = () => {
       try {
-        
         const primaryColor = localStorage.getItem('homiebites_primary_color') || '#449031';
         const fontFamily = localStorage.getItem('homiebites_font_family') || 'Baloo 2';
         const fontSize = localStorage.getItem('homiebites_font_size') || 'medium';
         const theme = localStorage.getItem('homiebites_theme') || 'light';
 
-        
         const root = document.documentElement;
         const loginWrapper = document.querySelector('.login-page-wrapper');
 
-        
         const hexToRgb = (hex) => {
           const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
           return result
@@ -44,11 +39,9 @@ const AdminLogin = ({ onLoginSuccess }) => {
             : null;
         };
 
-        
         if (primaryColor) {
           root.style.setProperty('--admin-accent', primaryColor);
 
-          
           const rgb = hexToRgb(primaryColor);
           if (rgb) {
             root.style.setProperty(
@@ -56,7 +49,6 @@ const AdminLogin = ({ onLoginSuccess }) => {
               `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`
             );
 
-            
             const darkerR = Math.max(0, Math.floor(rgb.r * 0.7));
             const darkerG = Math.max(0, Math.floor(rgb.g * 0.7));
             const darkerB = Math.max(0, Math.floor(rgb.b * 0.7));
@@ -67,7 +59,6 @@ const AdminLogin = ({ onLoginSuccess }) => {
           }
         }
 
-        
         if (fontFamily) {
           const fontFamilyValue = `'${fontFamily}', sans-serif`;
           root.style.setProperty('--font-primary', fontFamilyValue);
@@ -76,7 +67,6 @@ const AdminLogin = ({ onLoginSuccess }) => {
           }
         }
 
-        
         if (fontSize) {
           const fontSizeMap = {
             small: '14px',
@@ -91,7 +81,6 @@ const AdminLogin = ({ onLoginSuccess }) => {
           }
         }
 
-        
         if (theme === 'dark') {
           if (loginWrapper) {
             loginWrapper.classList.add('dark-theme');
@@ -103,7 +92,6 @@ const AdminLogin = ({ onLoginSuccess }) => {
             loginWrapper.classList.remove('dark-theme');
           }
         } else if (theme === 'auto') {
-          
           const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
           if (loginWrapper) {
             if (prefersDark) {
@@ -115,15 +103,11 @@ const AdminLogin = ({ onLoginSuccess }) => {
             }
           }
         }
-      } catch (error) {
-        
-      }
+      } catch (error) {}
     };
 
-    
     applyThemeSettings();
 
-    
     const handleStorageChange = (e) => {
       if (
         e.key === 'homiebites_primary_color' ||
@@ -137,7 +121,6 @@ const AdminLogin = ({ onLoginSuccess }) => {
 
     window.addEventListener('storage', handleStorageChange);
 
-    
     const handleThemeChange = () => {
       applyThemeSettings();
     };
@@ -150,15 +133,12 @@ const AdminLogin = ({ onLoginSuccess }) => {
     };
   }, []);
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      
       try {
-        
         const data = await api.login(email, password);
 
         if (
@@ -170,16 +150,14 @@ const AdminLogin = ({ onLoginSuccess }) => {
           localStorage.setItem('homiebites_user', JSON.stringify(data.user));
           localStorage.setItem('homiebites_admin', 'true');
 
-          
           if (data.requirePasswordChange) {
-            
             window.location.href = '/admin/change-password?temporary=true';
             return;
           }
 
-          
-          
-          console.log('[AdminLogin] Login successful, redirecting to dashboard');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[AdminLogin] Login successful, redirecting to dashboard');
+          }
           window.location.href = '/admin/dashboard';
           return;
         } else {
@@ -188,9 +166,6 @@ const AdminLogin = ({ onLoginSuccess }) => {
           return;
         }
       } catch (apiError) {
-        
-        
-        
         const isNetworkError =
           apiError.message &&
           (apiError.message.includes('HTML') ||
@@ -200,7 +175,6 @@ const AdminLogin = ({ onLoginSuccess }) => {
             apiError.message.includes('Failed to fetch'));
 
         if (!isNetworkError) {
-          
           showError(
             apiError.message ||
               'Invalid credentials. Please check your username and password. Make sure the backend server is running.'
@@ -210,11 +184,9 @@ const AdminLogin = ({ onLoginSuccess }) => {
         }
       }
 
-      
       showError('Invalid credentials. Please check your username and password.');
       setLoading(false);
     } catch (err) {
-      
       showError(
         'Login failed. Please check your credentials and ensure the backend server is running.'
       );

@@ -34,9 +34,22 @@ const AllOrdersDataTab = ({
   onRecordsPerPageChange,
   loadOrders,
   showConfirmation,
-  initialDateFilter = null, 
+  initialDateFilter = null,
 }) => {
-  
+  // Mobile detection for responsive layout
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < 480 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 480);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [filtersExpanded, setFiltersExpanded] = useState(!!initialDateFilter);
   const [dateRangeFrom, setDateRangeFrom] = useState(initialDateFilter || '');
   const [dateRangeTo, setDateRangeTo] = useState(initialDateFilter || '');
@@ -47,18 +60,14 @@ const AllOrdersDataTab = ({
   const [filterAddress, setFilterAddress] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
-  
   useEffect(() => {
     if (initialDateFilter) {
       setDateRangeFrom(initialDateFilter);
       setDateRangeTo(initialDateFilter);
       setFiltersExpanded(true);
-      
-      
     }
   }, [initialDateFilter]);
 
-  
   const [selectedRows, setSelectedRows] = useState(new Set());
   const [selectAll, setSelectAll] = useState(false);
 
@@ -68,7 +77,6 @@ const AllOrdersDataTab = ({
   const filteredOrders = useMemo(() => {
     let filtered = [...orders];
 
-    
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((order) => {
@@ -83,14 +91,12 @@ const AllOrdersDataTab = ({
       });
     }
 
-    
     if (allOrdersFilterMonth) {
       filtered = filtered.filter((order) => {
-        
         let month, year;
         if (order.billingMonth && order.billingYear) {
-          month = parseInt(order.billingMonth);
-          year = parseInt(order.billingYear);
+          month = parseInt(order.billingMonth) || new Date().getUTCMonth() + 1;
+          year = parseInt(order.billingYear) || new Date().getUTCFullYear();
         } else {
           const orderDate = parseOrderDate(order.date || order.order_date || null);
           if (!orderDate) return false;
@@ -101,7 +107,6 @@ const AllOrdersDataTab = ({
       });
     }
 
-    
     if (allOrdersFilterAddress && allOrdersFilterAddress.trim()) {
       filtered = filtered.filter((order) => {
         const address = (
@@ -114,7 +119,6 @@ const AllOrdersDataTab = ({
       });
     }
 
-    
     if (allOrdersFilterPaymentStatus) {
       const statusFilter = allOrdersFilterPaymentStatus.toLowerCase();
       if (statusFilter === 'paid') {
@@ -124,20 +128,16 @@ const AllOrdersDataTab = ({
       }
     }
 
-    
     if (filterStatus) {
       filtered = filtered.filter((o) => {
         const status = (o.status || '').toLowerCase().trim();
         const filterValue = filterStatus.toLowerCase().trim();
 
-        
-        
         if (filterValue === 'paid') {
           return isPaidStatus(o.status, o.paymentStatus);
         } else if (filterValue === 'pending' || filterValue === 'unpaid') {
           return isPendingStatus(o.status, o.paymentStatus);
         } else {
-          
           return status === filterValue;
         }
       });
@@ -159,7 +159,6 @@ const AllOrdersDataTab = ({
 
     if (filterYear) {
       filtered = filtered.filter((order) => {
-        
         let year;
         if (order.billingYear) {
           year = parseInt(order.billingYear);
@@ -185,7 +184,6 @@ const AllOrdersDataTab = ({
       });
     }
 
-    
     if (dateRangeFrom) {
       const fromDate = parseOrderDate(dateRangeFrom);
       if (fromDate) {
@@ -199,7 +197,7 @@ const AllOrdersDataTab = ({
     if (dateRangeTo) {
       const toDate = parseOrderDate(dateRangeTo);
       if (toDate) {
-        toDate.setHours(23, 59, 59, 999); 
+        toDate.setHours(23, 59, 59, 999);
         filtered = filtered.filter((order) => {
           const orderDate = parseOrderDate(order.date || order.order_date || null);
           return orderDate && orderDate <= toDate;
@@ -236,8 +234,8 @@ const AllOrdersDataTab = ({
           bVal = (b.deliveryAddress || b.customerAddress || b.address || '').toLowerCase();
           break;
         case 'quantity':
-          aVal = parseInt(a.quantity || 1);
-          bVal = parseInt(b.quantity || 1);
+          aVal = Math.max(1, parseInt(a.quantity) || 1);
+          bVal = Math.max(1, parseInt(b.quantity) || 1);
           break;
         case 'total': {
           let aTotal = null;
@@ -247,7 +245,9 @@ const AllOrdersDataTab = ({
             aTotal = parseFloat(a.total);
           }
           if (aTotal === null || isNaN(aTotal)) {
-            aTotal = parseFloat(a.quantity || 1) * parseFloat(a.unitPrice || 0);
+            const aQty = Math.max(1, parseInt(a.quantity) || 1);
+            const aPrice = parseFloat(a.unitPrice) || 0;
+            aTotal = aQty * aPrice;
           }
 
           let bTotal = null;
@@ -257,7 +257,9 @@ const AllOrdersDataTab = ({
             bTotal = parseFloat(b.total);
           }
           if (bTotal === null || isNaN(bTotal)) {
-            bTotal = parseFloat(b.quantity || 1) * parseFloat(b.unitPrice || 0);
+            const bQty = Math.max(1, parseInt(b.quantity) || 1);
+            const bPrice = parseFloat(b.unitPrice) || 0;
+            bTotal = bQty * bPrice;
           }
 
           aVal = isNaN(aTotal) ? 0 : aTotal;
@@ -377,7 +379,7 @@ const AllOrdersDataTab = ({
   ]);
 
   const handleSort = (column) => {
-    if (!column) return; 
+    if (!column) return;
     if (sortColumn === column) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -395,7 +397,6 @@ const AllOrdersDataTab = ({
     }
   };
 
-  
   const handleRowSelect = (index, checked) => {
     const newSelected = new Set(selectedRows);
     if (checked) {
@@ -407,7 +408,6 @@ const AllOrdersDataTab = ({
     setSelectAll(newSelected.size === paginatedOrders.length);
   };
 
-  
   const clearAllFilters = () => {
     setFilterStatus('');
     setFilterMode('');
@@ -424,7 +424,6 @@ const AllOrdersDataTab = ({
     if (setAllOrdersFilterPaymentStatus) setAllOrdersFilterPaymentStatus('');
   };
 
-  
   const removeFilter = (filter) => {
     switch (filter.key) {
       case 'paymentStatus':
@@ -455,7 +454,6 @@ const AllOrdersDataTab = ({
     }
   };
 
-  
   const handleBulkAction = async (action) => {
     const selectedOrderIds = Array.from(selectedRows).map(
       (idx) => filteredOrders[idx]._id || filteredOrders[idx].orderId
@@ -492,7 +490,6 @@ const AllOrdersDataTab = ({
         });
       }
     } else if (action === 'paid' || action === 'pending') {
-      
       const normalizedStatus = action === 'paid' ? 'Paid' : 'Unpaid';
       const statusLabel = action === 'paid' ? 'Paid' : 'Unpaid';
 
@@ -506,8 +503,6 @@ const AllOrdersDataTab = ({
           confirmText: `Mark as ${statusLabel}`,
           onConfirm: async () => {
             try {
-              
-              
               for (const id of selectedOrderIds) {
                 if (onUpdateOrderStatus) {
                   await onUpdateOrderStatus(id, normalizedStatus, true);
@@ -520,7 +515,7 @@ const AllOrdersDataTab = ({
                   `Selected orders marked as ${statusLabel.toLowerCase()}`,
                   'success'
                 );
-              
+
               if (loadOrders) {
                 setTimeout(() => {
                   loadOrders();
@@ -529,19 +524,17 @@ const AllOrdersDataTab = ({
             } catch (error) {
               console.error('Error updating order status:', error);
               if (showNotification) showNotification('Error updating order status', 'error');
-              
+
               if (loadOrders) loadOrders();
             }
           },
         });
       }
     } else if (action === 'export') {
-      
       const csvContent =
         'Date,Address,Quantity,Amount,Mode,Status\n' +
         selectedOrders
           .map((o) => {
-            
             const date = parseOrderDate(o.date || o.order_date || null);
             return `"${date ? formatDate(date) : ''}","${
               o.deliveryAddress || o.customerAddress || o.address || 'N/A'
@@ -559,7 +552,6 @@ const AllOrdersDataTab = ({
     }
   };
 
-  
   const uniqueStatuses = useMemo(() => {
     const statuses = new Set();
     orders.forEach((o) => {
@@ -587,10 +579,9 @@ const AllOrdersDataTab = ({
   const uniqueYears = useMemo(() => {
     const years = new Set();
     orders.forEach((o) => {
-      
       let year;
       if (o.billingYear) {
-        year = parseInt(o.billingYear);
+        year = parseInt(o.billingYear) || new Date().getFullYear();
       } else {
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         if (orderDate) {
@@ -602,18 +593,17 @@ const AllOrdersDataTab = ({
     return Array.from(years).sort().reverse();
   }, [orders]);
 
-  
   const handleExport = () => {
     const csvContent =
       'S.No,Date,Address,Quantity,Price,Total,Mode,Status,Payment,Month,Year,OrderID\n' +
       filteredOrders
         .map((o, idx) => {
           const date = parseOrderDate(o.date || o.order_date || null);
-          
+
           let month, year;
           if (o.billingMonth && o.billingYear) {
-            month = parseInt(o.billingMonth);
-            year = parseInt(o.billingYear);
+            month = parseInt(o.billingMonth) || new Date().getUTCMonth() + 1;
+            year = parseInt(o.billingYear) || new Date().getUTCFullYear();
           } else if (date) {
             month = date.getUTCMonth() + 1;
             year = date.getUTCFullYear();
@@ -720,7 +710,7 @@ const AllOrdersDataTab = ({
                   setAllOrdersFilterPaymentStatus(e.target.value);
                   if (setAllOrdersFilterPaymentStatus)
                     setAllOrdersFilterPaymentStatus(e.target.value);
-                  
+
                   if (e.target.value) {
                     setFilterStatus('');
                   }
@@ -742,7 +732,7 @@ const AllOrdersDataTab = ({
                 value={filterStatus}
                 onChange={(e) => {
                   setFilterStatus(e.target.value);
-                  
+
                   if (e.target.value) {
                     setAllOrdersFilterPaymentStatus('');
                     if (setAllOrdersFilterPaymentStatus) setAllOrdersFilterPaymentStatus('');
@@ -1021,16 +1011,14 @@ const AllOrdersDataTab = ({
                 </tr>
               ) : (
                 paginatedOrders.map((order, idx) => {
-                  
                   const orderDate = parseOrderDate(order.date || order.order_date || null);
                   const dateStr = formatDate(orderDate);
-                  
+
                   let month, year;
                   if (order.billingMonth && order.billingYear) {
                     month = parseInt(order.billingMonth);
                     year = parseInt(order.billingYear);
                   } else if (orderDate) {
-                    
                     month = orderDate.getUTCMonth() + 1;
                     year = orderDate.getUTCFullYear();
                   } else {
@@ -1064,7 +1052,12 @@ const AllOrdersDataTab = ({
                       </td>
                       <td>
                         <div className='order-row-address'>
-                          <span>{order.deliveryAddress || order.customerAddress || order.address || 'N/A'}</span>
+                          <span>
+                            {order.deliveryAddress ||
+                              order.customerAddress ||
+                              order.address ||
+                              'N/A'}
+                          </span>
                         </div>
                       </td>
                       <td>
@@ -1075,7 +1068,9 @@ const AllOrdersDataTab = ({
                       <td>
                         <div className='order-row-price'>
                           <span className='order-row-price-symbol'>₹</span>
-                          <span className='order-row-price-value'>{formatCurrency(order.unitPrice || 0)}</span>
+                          <span className='order-row-price-value'>
+                            {formatCurrency(order.unitPrice || 0)}
+                          </span>
                         </div>
                       </td>
                       <td>
@@ -1097,7 +1092,6 @@ const AllOrdersDataTab = ({
                       </td>
                       <td>
                         {(() => {
-                          
                           const normalizedStatus = isPaidStatus(order.status, order.paymentStatus)
                             ? 'Paid'
                             : 'Unpaid';
@@ -1114,7 +1108,6 @@ const AllOrdersDataTab = ({
                                 const newStatus = e.target.value;
                                 if (newStatus === normalizedStatus) return;
 
-                                
                                 const selectElement = e.target;
 
                                 if (showConfirmation && onUpdateOrderStatus) {
@@ -1126,7 +1119,6 @@ const AllOrdersDataTab = ({
                                     type: 'info',
                                     confirmText: 'Update Status',
                                     onConfirm: () => {
-                                      
                                       onUpdateOrderStatus(
                                         order._id || order.orderId,
                                         newStatus,
@@ -1134,15 +1126,12 @@ const AllOrdersDataTab = ({
                                       );
                                     },
                                     onCancelCallback: () => {
-                                      
                                       selectElement.value = normalizedStatus;
                                     },
                                   });
                                 } else if (onUpdateOrderStatus) {
-                                  
                                   onUpdateOrderStatus(order._id || order.orderId, newStatus, true);
                                 } else {
-                                  
                                   selectElement.value = normalizedStatus;
                                 }
                               }}

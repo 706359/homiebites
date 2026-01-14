@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
+import PremiumLoader from './PremiumLoader.jsx';
 import { getFilteredOrdersByDate } from './utils/calculations.js';
 import { formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
 import {
+  extractOrderIdSequence,
   formatCurrency,
   getTotalRevenue,
   isPaidStatus,
   isPendingStatus,
-  extractOrderIdSequence,
 } from './utils/orderUtils.js';
-import PremiumLoader from './PremiumLoader.jsx';
 
 const PendingAmountsTab = ({
   orders = [],
@@ -20,29 +20,24 @@ const PendingAmountsTab = ({
   showOverdueFilter = false,
   onOverdueFilterApplied,
 }) => {
-
-  
-  const [filterUrgency, setFilterUrgency] = useState('all'); 
-  const [filterDaysPending, setFilterDaysPending] = useState('all'); 
+  const [filterUrgency, setFilterUrgency] = useState('all');
+  const [filterDaysPending, setFilterDaysPending] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const now = new Date();
 
-  
   const summaryStats = useMemo(() => {
     const paidOrders = orders.filter((o) => isPaidStatus(o.status));
     const pendingOrders = orders.filter((o) => isPendingStatus(o.status));
 
-    
     const fortyFiveDaysAgo = new Date(now);
     fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
-    fortyFiveDaysAgo.setHours(0, 0, 0, 0); 
+    fortyFiveDaysAgo.setHours(0, 0, 0, 0);
     const overdueOrders = pendingOrders.filter((o) => {
       try {
-        
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         if (!orderDate) return false;
-        
+
         const orderDateMidnight = new Date(orderDate);
         orderDateMidnight.setHours(0, 0, 0, 0);
         return orderDateMidnight < fortyFiveDaysAgo;
@@ -51,7 +46,6 @@ const PendingAmountsTab = ({
       }
     });
 
-    
     const currentMonthOrders = getFilteredOrdersByDate(orders, 'month', '', '');
     const currentMonthRevenue = getTotalRevenue(currentMonthOrders);
 
@@ -67,10 +61,9 @@ const PendingAmountsTab = ({
     };
   }, [orders, now]);
 
-  
   const pendingPayments = useMemo(() => {
     const pending = orders.filter((o) => isPendingStatus(o.status));
-    
+
     const fortyFiveDaysAgo = new Date(now);
     fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
     fortyFiveDaysAgo.setHours(0, 0, 0, 0);
@@ -89,7 +82,7 @@ const PendingAmountsTab = ({
             };
           }
           const daysPending = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24));
-          
+
           const orderDateMidnight = new Date(orderDate);
           orderDateMidnight.setHours(0, 0, 0, 0);
           const isOverdue = orderDateMidnight < fortyFiveDaysAgo;
@@ -98,7 +91,7 @@ const PendingAmountsTab = ({
             orderDate,
             daysPending,
             isUrgent: daysPending > 7,
-            isOverdue, 
+            isOverdue,
           };
         } catch (e) {
           return {
@@ -127,9 +120,7 @@ const PendingAmountsTab = ({
         return 0;
       });
 
-    
     if (filterUrgency === 'urgent') {
-      
       payments = payments.filter((p) => p.isOverdue);
     } else if (filterUrgency === 'normal') {
       payments = payments.filter((p) => !p.isOverdue);
@@ -140,14 +131,11 @@ const PendingAmountsTab = ({
     } else if (filterDaysPending === '4-7') {
       payments = payments.filter((p) => p.daysPending >= 4 && p.daysPending <= 7);
     } else if (filterDaysPending === '7+') {
-      
       payments = payments.filter((p) => p.daysPending > 7);
     } else if (filterDaysPending === '45+') {
-      
       payments = payments.filter((p) => p.isOverdue);
     }
 
-    
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       payments = payments.filter((p) => {
@@ -160,19 +148,17 @@ const PendingAmountsTab = ({
     return payments;
   }, [orders, now, filterUrgency, filterDaysPending, searchQuery]);
 
-  
   useEffect(() => {
     if (showOverdueFilter) {
       setFilterDaysPending('45+');
       setFilterUrgency('urgent');
-      
+
       if (onOverdueFilterApplied) {
         onOverdueFilterApplied();
       }
     }
   }, [showOverdueFilter, onOverdueFilterApplied]);
 
-  
   const paymentTimeline = useMemo(() => {
     const timeline = [];
     for (let i = 29; i >= 0; i--) {
@@ -184,7 +170,6 @@ const PendingAmountsTab = ({
 
       const dayOrders = orders.filter((o) => {
         try {
-          
           const orderDate = parseOrderDate(o.date || o.order_date || null);
           return orderDate >= date && orderDate < nextDay;
         } catch (e) {
@@ -205,7 +190,6 @@ const PendingAmountsTab = ({
     return timeline;
   }, [orders, now]);
 
-  
   const avgCollectionTime = useMemo(() => {
     const paidOrders = orders.filter((o) => isPaidStatus(o.status));
     if (paidOrders.length === 0) return 0;
@@ -215,13 +199,11 @@ const PendingAmountsTab = ({
       try {
         const orderDate = parseOrderDate(order.date || order.order_date || null);
         if (!orderDate) return;
-        const paidDate = order.paidDate ? parseOrderDate(order.paidDate) : orderDate; 
+        const paidDate = order.paidDate ? parseOrderDate(order.paidDate) : orderDate;
         if (!paidDate) return;
         const days = Math.floor((paidDate - orderDate) / (1000 * 60 * 60 * 24));
         totalDays += Math.max(0, days);
-      } catch (e) {
-        
-      }
+      } catch (e) {}
     });
 
     return paidOrders.length > 0 ? (totalDays / paidOrders.length).toFixed(1) : 0;
@@ -229,7 +211,6 @@ const PendingAmountsTab = ({
 
   const maxTimelineCollection = Math.max(...paymentTimeline.map((t) => t.collection), 1);
 
-  
   const paymentModePerformance = useMemo(() => {
     const modeStats = {};
     orders.forEach((o) => {
@@ -238,20 +219,20 @@ const PendingAmountsTab = ({
         modeStats[mode] = { count: 0, amount: 0 };
       }
       modeStats[mode].count++;
-      
+
       let amount = null;
       if (o.totalAmount !== undefined && o.totalAmount !== null) {
         amount = parseFloat(o.totalAmount);
       } else if (o.total !== undefined && o.total !== null) {
         amount = parseFloat(o.total);
       }
-      
+
       if (amount === null || isNaN(amount)) {
         const qty = parseFloat(o.quantity || 1);
         const price = parseFloat(o.unitPrice || 0);
         amount = qty * price;
       }
-      
+
       modeStats[mode].amount += isNaN(amount) ? 0 : amount;
     });
     return Object.entries(modeStats)
@@ -261,11 +242,12 @@ const PendingAmountsTab = ({
 
   const totalPaymentAmount = paymentModePerformance.reduce((sum, p) => sum + p.amount, 0);
 
-  
   const handleMarkAsPaid = async (orderId) => {
     const order = orders.find((o) => (o._id || o.orderId) === orderId);
     const orderInfo = order
-      ? `Order ${order.orderId || orderId} for ${order.deliveryAddress || order.customerAddress || 'N/A'}`
+      ? `Order ${order.orderId || orderId} for ${
+          order.deliveryAddress || order.customerAddress || 'N/A'
+        }`
       : `Order ${orderId}`;
 
     if (showConfirmation && onUpdateOrderStatus) {
@@ -297,7 +279,9 @@ const PendingAmountsTab = ({
     if (showConfirmation) {
       showConfirmation({
         title: 'Mark All Urgent as Paid',
-        message: `Are you sure you want to mark ${count} urgent order${count > 1 ? 's' : ''} as paid?`,
+        message: `Are you sure you want to mark ${count} urgent order${
+          count > 1 ? 's' : ''
+        } as paid?`,
         type: 'info',
         confirmText: 'Mark All as Paid',
         onConfirm: async () => {
@@ -329,7 +313,6 @@ const PendingAmountsTab = ({
     }
   };
 
-
   if (loading) {
     return (
       <div className='admin-content'>
@@ -340,23 +323,14 @@ const PendingAmountsTab = ({
 
   return (
     <div className='admin-content'>
-
       {}
       <div className='admin-stats'>
         <div className='stat-card'>
-          <i className='fa-solid fa-check-circle' style={{ color: 'var(--admin-success)' }}></i>
+          <i className='fa-solid fa-check-circle icon-success'></i>
           <div>
             <h3>₹{formatCurrency(summaryStats.totalPaid)}</h3>
             <p>Total Paid</p>
-            <p
-              style={{
-                fontSize: '0.85rem',
-                marginTop: '0.25rem',
-                color: 'var(--admin-text-light)',
-              }}
-            >
-              {summaryStats.totalPaidCount} orders
-            </p>
+            <p className='stat-card-subtitle'>{summaryStats.totalPaidCount} orders</p>
           </div>
         </div>
         <div className='stat-card'>
@@ -367,47 +341,23 @@ const PendingAmountsTab = ({
           <div>
             <h3>₹{formatCurrency(summaryStats.pending)}</h3>
             <p>Pending</p>
-            <p
-              style={{
-                fontSize: '0.85rem',
-                marginTop: '0.25rem',
-                color: 'var(--admin-text-light)',
-              }}
-            >
-              {summaryStats.pendingCount} orders
-            </p>
+            <p className='stat-card-subtitle'>{summaryStats.pendingCount} orders</p>
           </div>
         </div>
         <div className='stat-card'>
-          <i className='fa-solid fa-times-circle' style={{ color: 'var(--admin-danger)' }}></i>
+          <i className='fa-solid fa-times-circle icon-danger'></i>
           <div>
             <h3>₹{formatCurrency(summaryStats.overdue)}</h3>
             <p>Overdue</p>
-            <p
-              style={{
-                fontSize: '0.85rem',
-                marginTop: '0.25rem',
-                color: 'var(--admin-text-light)',
-              }}
-            >
-              {summaryStats.overdueCount} orders
-            </p>
+            <p className='stat-card-subtitle'>{summaryStats.overdueCount} orders</p>
           </div>
         </div>
         <div className='stat-card'>
-          <i className='fa-solid fa-calendar-alt' style={{ color: 'var(--admin-accent)' }}></i>
+          <i className='fa-solid fa-calendar-alt icon-accent'></i>
           <div>
             <h3>₹{formatCurrency(summaryStats.thisMonth)}</h3>
             <p>This Month</p>
-            <p
-              style={{
-                fontSize: '0.85rem',
-                marginTop: '0.25rem',
-                color: 'var(--admin-text-light)',
-              }}
-            >
-              {summaryStats.thisMonthCount} orders
-            </p>
+            <p className='stat-card-subtitle'>{summaryStats.thisMonthCount} orders</p>
           </div>
         </div>
       </div>
@@ -480,11 +430,11 @@ const PendingAmountsTab = ({
                   setFilterUrgency('all');
                   setFilterDaysPending('all');
                 }}
-                style={{ 
-                  fontSize: '13px', 
+                style={{
+                  fontSize: '13px',
                   padding: '10px 16px',
                   whiteSpace: 'nowrap',
-                  height: 'fit-content'
+                  height: 'fit-content',
                 }}
                 title='Clear all filters'
               >
@@ -503,15 +453,10 @@ const PendingAmountsTab = ({
         </div>
 
         {pendingPayments.length === 0 ? (
-          <div className='empty-state' style={{ padding: '48px', textAlign: 'center' }}>
-            <i
-              className='fa-solid fa-check-circle'
-              style={{ fontSize: '64px', color: 'var(--admin-success)', marginBottom: '16px' }}
-            ></i>
+          <div className='empty-state-container'>
+            <i className='fa-solid fa-check-circle empty-state-icon-success'></i>
             <p>No pending payments</p>
-            <p style={{ color: 'var(--admin-text-light)', fontSize: '0.9rem' }}>
-              All orders are paid!
-            </p>
+            <p className='empty-state-text'>All orders are paid!</p>
           </div>
         ) : (
           <div className='orders-table-container'>
@@ -529,7 +474,6 @@ const PendingAmountsTab = ({
               <tbody>
                 {pendingPayments.map((order, idx) => {
                   const orderDate = parseOrderDate(
-                    
                     order.orderDate || order.date || order.order_date || null
                   );
                   const dateStr = formatDateMonthDay(orderDate);
@@ -538,10 +482,10 @@ const PendingAmountsTab = ({
                     order.daysPending > 45
                       ? 'overdue'
                       : order.daysPending > 7
-                        ? 'urgent'
-                        : order.daysPending > 3
-                          ? 'warning'
-                          : 'normal';
+                      ? 'urgent'
+                      : order.daysPending > 3
+                      ? 'warning'
+                      : 'normal';
 
                   return (
                     <tr
@@ -557,7 +501,12 @@ const PendingAmountsTab = ({
                       <td>
                         <div className='pending-payment-address'>
                           <i className='fa-solid fa-location-dot'></i>
-                          <span>{order.deliveryAddress || order.customerAddress || order.address || 'N/A'}</span>
+                          <span>
+                            {order.deliveryAddress ||
+                              order.customerAddress ||
+                              order.address ||
+                              'N/A'}
+                          </span>
                         </div>
                       </td>
                       <td>
@@ -569,22 +518,26 @@ const PendingAmountsTab = ({
                         </div>
                       </td>
                       <td>
-                        <div className={`pending-payment-days-badge pending-payment-days-${urgencyLevel}`}>
+                        <div
+                          className={`pending-payment-days-badge pending-payment-days-${urgencyLevel}`}
+                        >
                           <i
                             className={`fa-solid ${
                               urgencyLevel === 'overdue'
                                 ? 'fa-exclamation-triangle'
                                 : urgencyLevel === 'urgent'
-                                  ? 'fa-clock'
-                                  : urgencyLevel === 'warning'
-                                    ? 'fa-hourglass-half'
-                                    : 'fa-check'
+                                ? 'fa-clock'
+                                : urgencyLevel === 'warning'
+                                ? 'fa-hourglass-half'
+                                : 'fa-check'
                             }`}
                           ></i>
                           <span>
                             {order.daysPending} {order.daysPending === 1 ? 'day' : 'days'}
                           </span>
-                          {urgencyLevel === 'overdue' && <span className='overdue-indicator'>OVERDUE</span>}
+                          {urgencyLevel === 'overdue' && (
+                            <span className='overdue-indicator'>OVERDUE</span>
+                          )}
                         </div>
                       </td>
                       <td>
@@ -650,7 +603,7 @@ const PendingAmountsTab = ({
                     title={`${day.date}: ₹${formatCurrency(day.collection)} (${day.orders} orders)`}
                   >
                     <div
-                      className="pending-amounts-timeline-bar"
+                      className='pending-amounts-timeline-bar'
                       style={{
                         width: '100%',
                         height: `${(day.collection / maxTimelineCollection) * 180}px`,
@@ -702,7 +655,6 @@ const PendingAmountsTab = ({
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {paymentModePerformance.map((mode, idx) => {
-                  
                   const percentage =
                     totalPaymentAmount > 0
                       ? Math.min(
@@ -769,7 +721,6 @@ const PendingAmountsTab = ({
           </div>
         </div>
       </div>
-
     </div>
   );
 };

@@ -62,11 +62,6 @@
 
 /* Font size hierarchy moved to font-size-hierarchy.css */
 
-/* Font size for admin-content - consolidated */
-.admin-content {
-  font-size: var(--admin-base-font-size, 16px);
-}
-
 .admin-dashboard,
 .admin-dashboard * {
   font-size: inherit;
@@ -124,29 +119,44 @@
   position: relative;
 }
 
+/* ============================================
+   MAIN CONTENT AREA - Single source of truth
+   ============================================ */
 .admin-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-left: 200px;
   transition: margin-left 0.3s ease;
   min-width: 0;
   overflow: hidden;
+  min-height: 0;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
 }
 
 .admin-main.sidebar-collapsed {
-  margin-left: 80px;
+  margin-left: 70px;
 }
 
 .admin-content {
-  flex: 1;
+  flex: 1 1 0%;
   padding: 14px !important;
+  padding-left: max(14px, env(safe-area-inset-left)) !important;
+  padding-right: max(14px, env(safe-area-inset-right)) !important;
   overflow-y: auto;
   overflow-x: hidden;
-  background: transparent;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--admin-border, #e2e8f0) transparent;
+  background: transparent;
   min-height: 0;
   max-height: none;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-size: var(--admin-base-font-size, 16px);
 }
 
 @media (max-width: 480px) {
@@ -320,7 +330,7 @@
   position: fixed;
   left: 0;
   top: 0;
-  width: 200px;
+  width: 180px;
   height: 100vh;
   background: var(--admin-bg);
   border-right: 1px solid var(--admin-border);
@@ -333,16 +343,16 @@
 }
 
 .admin-sidebar.collapsed {
-  width: 80px;
+  width: 70px;
 }
 
 .sidebar-header {
-  padding: 24px 20px;
+  padding: 20px 16px;
   border-bottom: 1px solid var(--admin-border);
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100px;
+  min-height: 90px;
   flex-shrink: 0;
   background: var(--admin-bg);
   transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -350,8 +360,8 @@
 }
 
 .admin-sidebar.collapsed .sidebar-header {
-  padding: 16px 12px;
-  min-height: 80px;
+  padding: 14px 10px;
+  min-height: 70px;
 }
 
 .sidebar-logo {
@@ -366,10 +376,10 @@
 
 .sidebar-logo-img {
   object-fit: contain;
-  width: 160px;
+  width: 140px;
   height: auto;
-  max-width: 160px;
-  max-height: 140px;
+  max-width: 140px;
+  max-height: 120px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   transition: opacity 0.15s ease;
@@ -1822,7 +1832,7 @@ select.input-field option:focus,
 .action-buttons-group {
   display: flex;
   align-items: center;
-  gap: 20px !important;
+  gap: 8px !important;
   flex-wrap: wrap;
 }
 
@@ -1884,14 +1894,7 @@ select.input-field option:focus,
   box-shadow: 0 0 0 4px rgba(68, 144, 49, 0.1);
 }
 
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 32px;
-  flex-wrap: wrap;
-  gap: 20px !important;
-}
+/* Note: .pagination-controls complete definition is below at line ~4089 */
 
 .orders-table-container {
   background: var(--admin-bg);
@@ -4009,18 +4012,9 @@ select.input-field option {
   flex-wrap: wrap;
 }
 
-.action-buttons-group {
-  display: flex;
-  align-items: center;
-  gap: 8px !important;
-  flex-wrap: wrap;
-}
+/* .action-buttons-group defined above - line 1832 */
 
-.search-input-wrapper {
-  position: relative;
-  flex: 1;
-  min-width: 200px;
-}
+/* .search-input-wrapper defined above - line 1721 */
 
 .search-input-icon {
   position: absolute;
@@ -4170,17 +4164,7 @@ select.input-field {
   max-height: 95vh;
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 24px;
-  margin: 0;
-  margin-inline: 10px;
-  border-bottom: 1px solid var(--admin-border, #e2e8f0);
-  width: calc(100% - 20px);
-  box-sizing: border-box;
-}
+/* .modal-header defined above - line 2138 */
 
 .modal-header h2 {
   margin: 0;
@@ -4213,17 +4197,7 @@ select.input-field {
   box-sizing: border-box;
 }
 
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 12px 24px;
-  margin: 0;
-  margin-inline: 10px;
-  border-top: 1px solid var(--admin-border);
-  width: calc(100% - 20px);
-  box-sizing: border-box;
-}
+/* .modal-footer defined above - line 2427 */
 
 .form-grid {
   display: grid;

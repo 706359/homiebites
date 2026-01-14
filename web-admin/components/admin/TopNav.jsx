@@ -24,7 +24,6 @@ const TopNav = ({
   const [refreshing, setRefreshing] = useState(false);
   const profileDropdownRef = useRef(null);
 
-  
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -32,7 +31,6 @@ const TopNav = ({
         setShowSearchModal(true);
       }
 
-      
       if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
         e.preventDefault();
         if (onNewOrder) {
@@ -40,7 +38,6 @@ const TopNav = ({
         }
       }
 
-      
       if (e.key === 'Escape' && showSearchModal) {
         setShowSearchModal(false);
       }
@@ -50,7 +47,6 @@ const TopNav = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [showSearchModal, onNewOrder]);
 
-  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
@@ -66,7 +62,6 @@ const TopNav = ({
     }
   }, [showProfileDropdown]);
 
-  
   useEffect(() => {
     const stored = localStorage.getItem('homiebites_recent_searches');
     if (stored) {
@@ -81,12 +76,10 @@ const TopNav = ({
   const handleSearch = (query) => {
     if (!query.trim()) return;
 
-    
     const updated = [query, ...recentSearches.filter((s) => s !== query)].slice(0, 5);
     setRecentSearches(updated);
     localStorage.setItem('homiebites_recent_searches', JSON.stringify(updated));
 
-    
     if (query.toLowerCase().includes('order')) {
       setActiveTab('allOrdersData');
     } else if (query.toLowerCase().includes('customer')) {
@@ -106,18 +99,14 @@ const TopNav = ({
   const handleRefresh = () => {
     if (!onRefresh || refreshing) return;
 
-    
     setRefreshing(true);
     const startTime = Date.now();
 
-    
     (async () => {
       try {
-        
         if (typeof onRefresh === 'function') {
-          
           const refreshResult = onRefresh();
-          
+
           if (refreshResult && typeof refreshResult.catch === 'function') {
             refreshResult.catch((err) => {
               console.error('Error refreshing data:', err);
@@ -125,7 +114,6 @@ const TopNav = ({
           }
         }
 
-        
         const elapsed = Date.now() - startTime;
         const remainingTime = Math.max(0, 2000 - elapsed);
         if (remainingTime > 0) {
@@ -188,15 +176,7 @@ const TopNav = ({
         <div className='top-nav-right'>
           {onRefresh && (
             <button
-              className='top-nav-search-btn tooltip-wrapper'
-              onClick={handleRefresh}
-              title={refreshing ? 'Refreshing...' : 'Refresh Data'}
-              aria-label={refreshing ? 'Refreshing Data' : 'Refresh Data'}
-              disabled={refreshing}
-              style={{
-                opacity: refreshing ? 0.7 : 1,
-                cursor: refreshing ? 'wait' : 'pointer',
-              }}
+              className={`top-nav-search-btn tooltip-wrapper ${refreshing ? 'opacity-70' : ''}`}
             >
               {refreshing ? (
                 <i className='fa-solid fa-spinner fa-spin'></i>
@@ -272,8 +252,9 @@ const TopNav = ({
                 <span className='top-nav-profile-name'>{currentUser.name}</span>
               )}
               <i
-                className={`fa-solid fa-chevron-${showProfileDropdown ? 'up' : 'down'}`}
-                style={{ fontSize: '12px', marginLeft: '8px', opacity: 0.6 }}
+                className={`fa-solid fa-chevron-${
+                  showProfileDropdown ? 'up' : 'down'
+                } profile-chevron-icon`}
               ></i>
               <span className='tooltip'>Profile</span>
             </button>

@@ -6,12 +6,11 @@ const ConfirmationModal = ({
   message,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
-  type = 'warning', 
+  type = 'warning',
   onConfirm,
   onCancel,
   isLoading = false,
 }) => {
-  
   useEffect(() => {
     if (!show) return;
 
@@ -50,7 +49,7 @@ const ConfirmationModal = ({
           iconBg: 'rgba(68, 144, 49, 0.1)',
           confirmBtn: 'btn-primary',
         };
-      default: 
+      default:
         return {
           icon: 'fa-exclamation-circle',
           iconColor: 'var(--admin-warning, #f59e0b)',
@@ -63,22 +62,11 @@ const ConfirmationModal = ({
   const styles = getTypeStyles();
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-container" style={{ maxWidth: '480px' }}>
-        <div className="modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-            <div
-              style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '12px',
-                background: styles.iconBg,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
+    <div className='modal-overlay'>
+      <div className='modal-container max-width-540'>
+        <div className='modal-header'>
+          <div className='flex-center'>
+            <div className='modal-icon-box' style={{ background: styles.iconBg }}>
               <i
                 className={`fa-solid ${styles.icon}`}
                 style={{ fontSize: '24px', color: styles.iconColor }}
@@ -87,27 +75,17 @@ const ConfirmationModal = ({
             <h2>{title}</h2>
           </div>
         </div>
-        <div className="modal-body">
-          <p style={{ margin: 0, lineHeight: '1.6', color: 'var(--admin-text, #1a202c)' }}>
-            {message}
-          </p>
+        <div className='modal-body'>
+          <p className='text-no-margin'>{message}</p>
         </div>
-        <div className="modal-footer">
-          <button
-            className="btn btn-ghost"
-            onClick={onCancel}
-            disabled={isLoading}
-          >
+        <div className='modal-footer'>
+          <button className='btn btn-ghost' onClick={onCancel} disabled={isLoading}>
             {cancelText}
           </button>
-          <button
-            className={`btn ${styles.confirmBtn}`}
-            onClick={onConfirm}
-            disabled={isLoading}
-          >
+          <button className={`btn ${styles.confirmBtn}`} onClick={onConfirm} disabled={isLoading}>
             {isLoading ? (
               <>
-                <i className="fa-solid fa-spinner fa-spin"></i> Processing...
+                <i className='fa-solid fa-spinner fa-spin'></i> Processing...
               </>
             ) : (
               confirmText
@@ -120,4 +98,3 @@ const ConfirmationModal = ({
 };
 
 export default ConfirmationModal;
-

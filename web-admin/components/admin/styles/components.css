@@ -259,10 +259,7 @@
   flex-shrink: 0;
 }
 
-.filter-bar-container {
-  align-items: center;
-}
-
+/* .filter-bar-container additional alignment */
 .filter-bar-container > * {
   display: flex;
   align-items: center;

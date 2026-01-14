@@ -1,18 +1,19 @@
-import { useEffect, useRef, useState } from "react";
-import { useLanguage } from "../contexts/LanguageContext";
+import { useEffect, useRef, useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getFormattedPhone, getWhatsAppLink } from '../lib/businessConstants';
 
 const Chatbot = () => {
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
-  const [currentStep, setCurrentStep] = useState("greeting");
+  const [currentStep, setCurrentStep] = useState('greeting');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const greetingSentRef = useRef(false);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -31,27 +32,21 @@ const Chatbot = () => {
     if (isOpen && !greetingSentRef.current && messages.length === 0) {
       greetingSentRef.current = true;
       setTimeout(() => {
-        addBotMessage(t("chatbot.greeting"));
+        addBotMessage(t('chatbot.greeting'));
         setTimeout(() => {
-          addBotMessage(t("chatbot.options"));
+          addBotMessage(t('chatbot.options'));
         }, 1000);
       }, 500);
     }
   }, [isOpen, t]); // Include t for translation
 
   const addBotMessage = (text) => {
-    setMessages((prev) => [
-      ...prev,
-      { type: "bot", text, timestamp: new Date() },
-    ]);
+    setMessages((prev) => [...prev, { type: 'bot', text, timestamp: new Date() }]);
     setIsTyping(false);
   };
 
   const addUserMessage = (text) => {
-    setMessages((prev) => [
-      ...prev,
-      { type: "user", text, timestamp: new Date() },
-    ]);
+    setMessages((prev) => [...prev, { type: 'user', text, timestamp: new Date() }]);
   };
 
   const handleSendMessage = (text) => {
@@ -69,285 +64,280 @@ const Chatbot = () => {
   const processUserInput = (input) => {
     // Order related - redirect to WhatsApp (marketing site only)
     if (
-      input.includes("order") ||
-      input.includes("place order") ||
-      input.includes("buy") ||
-      input.includes("purchase") ||
-      input === "1"
+      input.includes('order') ||
+      input.includes('place order') ||
+      input.includes('buy') ||
+      input.includes('purchase') ||
+      input === '1'
     ) {
-      addBotMessage(t("chatbot.howToOrder") || "To place an order, please contact us directly on WhatsApp at +91-9958983578. We'll be happy to help you!");
+      addBotMessage(
+        t('chatbot.howToOrder') ||
+          `To place an order, please contact us directly on WhatsApp at ${getFormattedPhone()}. We'll be happy to help you!`
+      );
       setTimeout(() => {
-        window.open("https://wa.me/919958983578", "_blank", "noopener");
+        window.open(getWhatsAppLink(), '_blank', 'noopener');
       }, 1000);
       return;
     }
 
     if (
-      input.includes("how to order") ||
-      input.includes("how do i order") ||
-      input.includes("order process")
+      input.includes('how to order') ||
+      input.includes('how do i order') ||
+      input.includes('order process')
     ) {
-      addBotMessage(t("chatbot.howToOrder"));
+      addBotMessage(t('chatbot.howToOrder'));
       return;
     }
 
     if (
-      input.includes("modify order") ||
-      input.includes("change order") ||
-      input.includes("edit order")
+      input.includes('modify order') ||
+      input.includes('change order') ||
+      input.includes('edit order')
     ) {
-      addBotMessage(t("chatbot.modifyOrder"));
+      addBotMessage(t('chatbot.modifyOrder'));
       return;
     }
 
-    if (input.includes("cancel order") || input.includes("cancel my order")) {
-      addBotMessage(t("chatbot.cancelOrder"));
+    if (input.includes('cancel order') || input.includes('cancel my order')) {
+      addBotMessage(t('chatbot.cancelOrder'));
       return;
     }
 
     if (
-      input.includes("track order") ||
-      input.includes("order status") ||
-      input.includes("where is my order")
+      input.includes('track order') ||
+      input.includes('order status') ||
+      input.includes('where is my order')
     ) {
-      addBotMessage(t("chatbot.trackOrder"));
+      addBotMessage(t('chatbot.trackOrder'));
       return;
     }
 
     // Menu related
     if (
-      input.includes("menu") ||
-      input.includes("what do you serve") ||
-      input.includes("what food") ||
-      input.includes("items") ||
-      input === "2"
+      input.includes('menu') ||
+      input.includes('what do you serve') ||
+      input.includes('what food') ||
+      input.includes('items') ||
+      input === '2'
     ) {
-      addBotMessage(t("chatbot.menuInfo"));
+      addBotMessage(t('chatbot.menuInfo'));
       return;
     }
 
     if (
-      input.includes("price") ||
-      input.includes("cost") ||
-      input.includes("how much") ||
-      input.includes("pricing")
+      input.includes('price') ||
+      input.includes('cost') ||
+      input.includes('how much') ||
+      input.includes('pricing')
     ) {
-      addBotMessage(t("chatbot.pricing"));
+      addBotMessage(t('chatbot.pricing'));
       return;
     }
 
     if (
-      input.includes("customize") ||
-      input.includes("custom") ||
-      input.includes("mix and match")
+      input.includes('customize') ||
+      input.includes('custom') ||
+      input.includes('mix and match')
     ) {
-      addBotMessage(t("chatbot.customize"));
+      addBotMessage(t('chatbot.customize'));
       return;
     }
 
-    if (input.includes("what is tiffin") || input.includes("tiffin")) {
-      addBotMessage(t("chatbot.tiffin"));
+    if (input.includes('what is tiffin') || input.includes('tiffin')) {
+      addBotMessage(t('chatbot.tiffin'));
       return;
     }
 
     // Delivery related
     if (
-      input.includes("delivery") ||
-      input.includes("deliver") ||
-      input.includes("when will") ||
-      input === "3"
+      input.includes('delivery') ||
+      input.includes('deliver') ||
+      input.includes('when will') ||
+      input === '3'
     ) {
-      addBotMessage(t("chatbot.deliveryInfo"));
+      addBotMessage(t('chatbot.deliveryInfo'));
       return;
     }
 
     if (
-      input.includes("delivery time") ||
-      input.includes("when do you deliver") ||
-      input.includes("delivery hours")
+      input.includes('delivery time') ||
+      input.includes('when do you deliver') ||
+      input.includes('delivery hours')
     ) {
-      addBotMessage(t("chatbot.deliveryTime"));
+      addBotMessage(t('chatbot.deliveryTime'));
       return;
     }
 
     if (
-      input.includes("delivery area") ||
-      input.includes("where do you deliver") ||
-      input.includes("service area") ||
-      input.includes("coverage")
+      input.includes('delivery area') ||
+      input.includes('where do you deliver') ||
+      input.includes('service area') ||
+      input.includes('coverage')
     ) {
-      addBotMessage(t("chatbot.deliveryArea"));
+      addBotMessage(t('chatbot.deliveryArea'));
       return;
     }
 
     if (
-      input.includes("free delivery") ||
-      input.includes("delivery charge") ||
-      input.includes("shipping")
+      input.includes('free delivery') ||
+      input.includes('delivery charge') ||
+      input.includes('shipping')
     ) {
-      addBotMessage(t("chatbot.deliveryCharge"));
+      addBotMessage(t('chatbot.deliveryCharge'));
       return;
     }
 
-    if (input.includes("minimum order") || input.includes("min order")) {
-      addBotMessage(t("chatbot.minOrder"));
+    if (input.includes('minimum order') || input.includes('min order')) {
+      addBotMessage(t('chatbot.minOrder'));
       return;
     }
 
     if (
-      input.includes("not available") ||
-      input.includes("not home") ||
-      input.includes("missed delivery")
+      input.includes('not available') ||
+      input.includes('not home') ||
+      input.includes('missed delivery')
     ) {
-      addBotMessage(t("chatbot.notAvailable"));
+      addBotMessage(t('chatbot.notAvailable'));
       return;
     }
 
     // Payment related
     if (
-      input.includes("payment") ||
-      input.includes("pay") ||
-      input.includes("cash") ||
-      input.includes("upi") ||
-      input.includes("online payment")
+      input.includes('payment') ||
+      input.includes('pay') ||
+      input.includes('cash') ||
+      input.includes('upi') ||
+      input.includes('online payment')
     ) {
-      addBotMessage(t("chatbot.payment"));
+      addBotMessage(t('chatbot.payment'));
       return;
     }
 
     // Account related
     if (
-      input.includes("account") ||
-      input.includes("login") ||
-      input.includes("register") ||
-      input.includes("sign up") ||
-      input === "4"
+      input.includes('account') ||
+      input.includes('login') ||
+      input.includes('register') ||
+      input.includes('sign up') ||
+      input === '4'
     ) {
-      addBotMessage(t("chatbot.accountSupport"));
+      addBotMessage(t('chatbot.accountSupport'));
       return;
     }
 
     if (
-      input.includes("forgot password") ||
-      input.includes("reset password") ||
-      input.includes("password")
+      input.includes('forgot password') ||
+      input.includes('reset password') ||
+      input.includes('password')
     ) {
-      addBotMessage(t("chatbot.password"));
+      addBotMessage(t('chatbot.password'));
       return;
     }
 
     if (
-      input.includes("order history") ||
-      input.includes("past orders") ||
-      input.includes("my orders")
+      input.includes('order history') ||
+      input.includes('past orders') ||
+      input.includes('my orders')
     ) {
-      addBotMessage(t("chatbot.orderHistory"));
+      addBotMessage(t('chatbot.orderHistory'));
       return;
     }
 
     // Contact related
     if (
-      input.includes("contact") ||
-      input.includes("phone") ||
-      input.includes("number") ||
-      input.includes("call") ||
-      input.includes("whatsapp")
+      input.includes('contact') ||
+      input.includes('phone') ||
+      input.includes('number') ||
+      input.includes('call') ||
+      input.includes('whatsapp')
     ) {
-      addBotMessage(t("chatbot.contact"));
+      addBotMessage(t('chatbot.contact'));
       return;
     }
 
     if (
-      input.includes("address") ||
-      input.includes("location") ||
-      input.includes("where are you")
+      input.includes('address') ||
+      input.includes('location') ||
+      input.includes('where are you')
     ) {
-      addBotMessage(t("chatbot.address"));
+      addBotMessage(t('chatbot.address'));
       return;
     }
 
     // Hours/Timings
     if (
-      input.includes("hours") ||
-      input.includes("timing") ||
-      input.includes("open") ||
-      input.includes("close") ||
-      input.includes("when are you")
+      input.includes('hours') ||
+      input.includes('timing') ||
+      input.includes('open') ||
+      input.includes('close') ||
+      input.includes('when are you')
     ) {
-      addBotMessage(t("chatbot.hours"));
+      addBotMessage(t('chatbot.hours'));
       return;
     }
 
     if (
-      input.includes("weekend") ||
-      input.includes("saturday") ||
-      input.includes("sunday") ||
-      input.includes("holiday")
+      input.includes('weekend') ||
+      input.includes('saturday') ||
+      input.includes('sunday') ||
+      input.includes('holiday')
     ) {
-      addBotMessage(t("chatbot.weekend"));
+      addBotMessage(t('chatbot.weekend'));
       return;
     }
 
     // Food quality related
     if (
-      input.includes("vegetarian") ||
-      input.includes("veg") ||
-      input.includes("non-veg") ||
-      input.includes("pure veg")
+      input.includes('vegetarian') ||
+      input.includes('veg') ||
+      input.includes('non-veg') ||
+      input.includes('pure veg')
     ) {
-      addBotMessage(t("chatbot.vegetarian"));
+      addBotMessage(t('chatbot.vegetarian'));
       return;
     }
 
     if (
-      input.includes("fresh") ||
-      input.includes("quality") ||
-      input.includes("hygienic") ||
-      input.includes("clean")
+      input.includes('fresh') ||
+      input.includes('quality') ||
+      input.includes('hygienic') ||
+      input.includes('clean')
     ) {
-      addBotMessage(t("chatbot.quality"));
+      addBotMessage(t('chatbot.quality'));
       return;
     }
 
-    if (
-      input.includes("oil") ||
-      input.includes("spicy") ||
-      input.includes("spices")
-    ) {
-      addBotMessage(t("chatbot.oilSpices"));
+    if (input.includes('oil') || input.includes('spicy') || input.includes('spices')) {
+      addBotMessage(t('chatbot.oilSpices'));
       return;
     }
 
     // Subscription/Offers
     if (
-      input.includes("subscription") ||
-      input.includes("subscribe") ||
-      input.includes("weekly") ||
-      input.includes("monthly") ||
-      input.includes("offer") ||
-      input.includes("discount")
+      input.includes('subscription') ||
+      input.includes('subscribe') ||
+      input.includes('weekly') ||
+      input.includes('monthly') ||
+      input.includes('offer') ||
+      input.includes('discount')
     ) {
-      addBotMessage(t("chatbot.subscription"));
+      addBotMessage(t('chatbot.subscription'));
       return;
     }
 
     // General support
     if (
-      input.includes("help") ||
-      input.includes("support") ||
-      input.includes("assistance") ||
-      input.includes("problem")
+      input.includes('help') ||
+      input.includes('support') ||
+      input.includes('assistance') ||
+      input.includes('problem')
     ) {
-      addBotMessage(t("chatbot.help"));
+      addBotMessage(t('chatbot.help'));
       return;
     }
 
-    if (
-      input.includes("about") ||
-      input.includes("who are you") ||
-      input.includes("homiebites")
-    ) {
-      addBotMessage(t("chatbot.about"));
+    if (input.includes('about') || input.includes('who are you') || input.includes('homiebites')) {
+      addBotMessage(t('chatbot.about'));
       return;
     }
 
@@ -357,8 +347,8 @@ const Chatbot = () => {
     const navigateToLink = (url, message) => {
       addBotMessage(message || `Opening ${url}...`);
       setTimeout(() => {
-        if (url.startsWith("http")) {
-          window.open(url, "_blank", "noopener");
+        if (url.startsWith('http')) {
+          window.open(url, '_blank', 'noopener');
         } else {
           window.location.href = url;
         }
@@ -367,125 +357,110 @@ const Chatbot = () => {
 
     // Links and navigation
     if (
-      input.includes("menu page") ||
-      input.includes("view menu") ||
-      input.includes("go to menu")
+      input.includes('menu page') ||
+      input.includes('view menu') ||
+      input.includes('go to menu')
     ) {
-      navigateToLink("/#gallery", t("chatbot.openingMenu"));
+      navigateToLink('/#gallery', t('chatbot.openingMenu'));
+      return;
+    }
+
+    if (input.includes('faq page') || input.includes('view faq') || input.includes('go to faq')) {
+      navigateToLink('/faq', t('chatbot.openingFaq'));
       return;
     }
 
     if (
-      input.includes("faq page") ||
-      input.includes("view faq") ||
-      input.includes("go to faq")
+      input.includes('support page') ||
+      input.includes('view support') ||
+      input.includes('go to support')
     ) {
-      navigateToLink("/faq", t("chatbot.openingFaq"));
+      navigateToLink('/support', t('chatbot.openingSupport'));
       return;
     }
 
-    if (
-      input.includes("support page") ||
-      input.includes("view support") ||
-      input.includes("go to support")
-    ) {
-      navigateToLink("/support", t("chatbot.openingSupport"));
+    if (input.includes('gallery') || input.includes('food gallery') || input.includes('photos')) {
+      navigateToLink('/#gallery', t('chatbot.openingGallery'));
       return;
     }
 
-    if (
-      input.includes("gallery") ||
-      input.includes("food gallery") ||
-      input.includes("photos")
-    ) {
-      navigateToLink("/#gallery", t("chatbot.openingGallery"));
+    if (input.includes('contact') && (input.includes('page') || input.includes('section'))) {
+      navigateToLink('/#contact', t('chatbot.openingContact'));
       return;
     }
 
-    if (
-      input.includes("contact") &&
-      (input.includes("page") || input.includes("section"))
-    ) {
-      navigateToLink("/#contact", t("chatbot.openingContact"));
-      return;
-    }
-
-    if (
-      input.includes("home") ||
-      input.includes("homepage") ||
-      input.includes("main page")
-    ) {
-      navigateToLink("/", t("chatbot.openingHome"));
+    if (input.includes('home') || input.includes('homepage') || input.includes('main page')) {
+      navigateToLink('/', t('chatbot.openingHome'));
       return;
     }
 
     // Default response
-    addBotMessage(t("chatbot.defaultResponse"));
+    addBotMessage(t('chatbot.defaultResponse'));
   };
 
   // Removed sendOrderToWhatsApp - website is marketing only
   // Users should contact directly via WhatsApp
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       const input = inputRef.current;
       if (input && input.value.trim()) {
         handleSendMessage(input.value);
-        input.value = "";
+        input.value = '';
       }
     }
   };
 
   const quickActions = [
-    { text: t("chatbot.quickOrder"), action: () => handleSendMessage("order") },
+    { text: t('chatbot.quickOrder'), action: () => handleSendMessage('order') },
     {
-      text: t("chatbot.quickMenu"),
-      action: () => (window.location.href = "/#gallery"),
+      text: t('chatbot.quickMenu'),
+      action: () => (window.location.href = '/#gallery'),
     },
     {
-      text: t("chatbot.quickDelivery"),
-      action: () => handleSendMessage("delivery"),
+      text: t('chatbot.quickDelivery'),
+      action: () => handleSendMessage('delivery'),
     },
   ];
 
   return (
     <>
-      <div className={`chatbot-container ${isOpen ? "open" : ""}`}>
-        <div className="chatbot-header">
-          <div className="chatbot-header-info">
-            <div className="chatbot-avatar">
-              <i className="fa-solid fa-robot"></i>
+      <div className={`chatbot-container ${isOpen ? 'open' : ''}`}>
+        <div className='chatbot-header'>
+          <div className='chatbot-header-info'>
+            <div className='chatbot-avatar'>
+              <i className='fa-solid fa-robot'></i>
             </div>
             <div>
               <h3>HomieBites Assistant</h3>
-              <p className="chatbot-status">{t("chatbot.online")}</p>
+              <p className='chatbot-status'>{t('chatbot.online')}</p>
             </div>
           </div>
           <button
-            className="chatbot-close"
+            className='chatbot-close'
             onClick={() => {
               setIsOpen(false);
               // Reset messages when closing
               setMessages([]);
-              setCurrentStep("greeting");
+              setCurrentStep('greeting');
               greetingSentRef.current = false;
             }}
           >
-            <i className="fa-solid fa-times"></i>
+            <i className='fa-solid fa-times'></i>
           </button>
         </div>
 
-        <div className="chatbot-messages">
+        <div className='chatbot-messages'>
           {messages.length === 0 && (
-            <div className="chatbot-welcome">
-              <p>{t("chatbot.welcome")}</p>
+            <div className='chatbot-welcome'>
+              <p>{t('chatbot.welcome')}</p>
             </div>
           )}
           {messages.map((msg, index) => (
             <div key={index} className={`chatbot-message ${msg.type}`}>
-              <div className="message-content">
-                {msg.text.split("\n").map((line, i) => {
+              <div className='message-content'>
+                {msg.text.split('\n').map((line, i) => {
                   // Check if line contains links
                   const hasLinks = /(https?:\/\/[^\s]+|\/[a-z#]+)/g.test(line);
                   if (hasLinks) {
@@ -498,9 +473,9 @@ const Chatbot = () => {
                               <a
                                 key={j}
                                 href={part}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="message-link"
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                className='message-link'
                               >
                                 {part}
                               </a>
@@ -510,7 +485,7 @@ const Chatbot = () => {
                               <a
                                 key={j}
                                 href={part}
-                                className="message-link"
+                                className='message-link'
                                 onClick={(e) => {
                                   e.preventDefault();
                                   window.location.href = part;
@@ -528,17 +503,17 @@ const Chatbot = () => {
                   return <p key={i}>{line}</p>;
                 })}
               </div>
-              <span className="message-time">
+              <span className='message-time'>
                 {msg.timestamp.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
+                  hour: '2-digit',
+                  minute: '2-digit',
                 })}
               </span>
             </div>
           ))}
           {isTyping && (
-            <div className="chatbot-message bot typing">
-              <div className="typing-indicator">
+            <div className='chatbot-message bot typing'>
+              <div className='typing-indicator'>
                 <span></span>
                 <span></span>
                 <span></span>
@@ -549,60 +524,52 @@ const Chatbot = () => {
         </div>
 
         {messages.length > 0 && messages.length < 3 && (
-          <div className="chatbot-quick-actions">
+          <div className='chatbot-quick-actions'>
             {quickActions.map((action, index) => (
-              <button
-                key={index}
-                className="chatbot-quick-btn"
-                onClick={action.action}
-              >
+              <button key={index} className='chatbot-quick-btn' onClick={action.action}>
                 {action.text}
               </button>
             ))}
           </div>
         )}
 
-        <div className="chatbot-input-container">
+        <div className='chatbot-input-container'>
           <input
             ref={inputRef}
-            type="text"
-            className="chatbot-input"
-            placeholder={t("chatbot.typeMessage")}
+            type='text'
+            className='chatbot-input'
+            placeholder={t('chatbot.typeMessage')}
             onKeyPress={handleKeyPress}
           />
           <button
-            className="chatbot-send"
+            className='chatbot-send'
             onClick={() => {
               if (inputRef.current && inputRef.current.value.trim()) {
                 handleSendMessage(inputRef.current.value);
-                inputRef.current.value = "";
+                inputRef.current.value = '';
               }
             }}
           >
-            <i className="fa-solid fa-paper-plane"></i>
+            <i className='fa-solid fa-paper-plane'></i>
           </button>
         </div>
       </div>
 
       <button
-        className="chatbot-toggle"
+        className='chatbot-toggle'
         onClick={() => {
           const newIsOpen = !isOpen;
           setIsOpen(newIsOpen);
           // Reset when closing chatbot
           if (!newIsOpen) {
             setMessages([]);
-            setCurrentStep("greeting");
+            setCurrentStep('greeting');
             greetingSentRef.current = false;
           }
         }}
-        aria-label="Open chatbot"
+        aria-label='Open chatbot'
       >
-        {isOpen ? (
-          <i className="fa-solid fa-times"></i>
-        ) : (
-          <i className="fa-solid fa-comments"></i>
-        )}
+        {isOpen ? <i className='fa-solid fa-times'></i> : <i className='fa-solid fa-comments'></i>}
       </button>
     </>
   );

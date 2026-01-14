@@ -12,6 +12,7 @@ import CSVUploadModal from './CSVUploadModal.jsx';
 import ConfirmationModal from './ConfirmationModal.jsx';
 import CurrentMonthOrdersTab from './CurrentMonthOrdersTab.jsx';
 import DashboardTab from './DashboardTab.jsx';
+import ErrorBoundary from './ErrorBoundary.jsx';
 import ImportantNotificationsBanner from './ImportantNotificationsBanner.jsx';
 import InstallPrompt from './InstallPrompt.jsx';
 import MenuPriceTab from './MenuPriceTab.jsx';
@@ -22,18 +23,17 @@ import ReportsTab from './ReportsTab.jsx';
 import SettingsTab from './SettingsTab.jsx';
 import Sidebar from './Sidebar.jsx';
 import TopNav from './TopNav.jsx';
-import ErrorBoundary from './ErrorBoundary.jsx';
 import { useNotification } from './contexts/NotificationContext.jsx';
 import { useFastDataSync } from './hooks/useFastDataSync.js';
 import dataSyncManager from './utils/dataSyncManager.js';
 import { getNotificationDuration, getNotificationMessage } from './utils/notificationMessages.js';
-import { autoFixThemeOnLoad, watchThemeChanges } from './utils/themeFixer.js';
 import './utils/sidebarFontSizeFix.js';
+import { autoFixThemeOnLoad, watchThemeChanges } from './utils/themeFixer.js';
 
 const AdminDashboard = () => {
   const router = useRouter();
   const { showNotification } = useNotification();
-  
+
   const [activeTab, setActiveTab] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('homiebites_active_tab') || 'dashboard';
@@ -41,7 +41,6 @@ const AdminDashboard = () => {
     return 'dashboard';
   });
 
-  
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const cleanup = setupGlobalErrorHandlers(showNotification);
@@ -81,10 +80,9 @@ const AdminDashboard = () => {
   const [allOrdersFilterPaymentStatus, setAllOrdersFilterPaymentStatus] = useState('');
   const [dismissedNotifications, setDismissedNotifications] = useState([]);
   const [showOverdueFilter, setShowOverdueFilter] = useState(false);
-  const [dateFilterForOrders, setDateFilterForOrders] = useState(null); 
+  const [dateFilterForOrders, setDateFilterForOrders] = useState(null);
   const [isMounted, setIsMounted] = useState(false);
 
-  
   const {
     orders,
     settings,
@@ -101,24 +99,23 @@ const AdminDashboard = () => {
     cancelAll,
   } = useFastDataSync();
 
-  
   useEffect(() => {
     const token = localStorage.getItem('homiebites_token');
     const adminFlag = localStorage.getItem('homiebites_admin');
     const userStr = localStorage.getItem('homiebites_user');
-    
-    
+
     const userRole = userStr ? JSON.parse(userStr).role : null;
     const isAdminRole = userRole && (userRole.toLowerCase() === 'admin' || userRole === 'Admin');
     const isAdmin = adminFlag === 'true' || isAdminRole;
 
     if (!token || !isAdmin) {
-      console.warn('[AdminDashboard] Authentication check failed, redirecting to /admin');
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[AdminDashboard] Authentication check failed, redirecting to /admin');
+      }
       router.replace('/admin');
     }
   }, [router]);
 
-  
   useEffect(() => {
     return () => {
       if (cancelAll) cancelAll();
@@ -131,10 +128,9 @@ const AdminDashboard = () => {
     setIsMounted(true);
   }, []);
 
-  
   useEffect(() => {
     if (!isMounted || typeof window === 'undefined') return;
-    
+
     const savedTheme = localStorage.getItem('homiebites_theme') || 'light';
     const savedPrimaryColor = localStorage.getItem('homiebites_primary_color') || '#449031';
     const savedSecondaryColor = localStorage.getItem('homiebites_secondary_color') || '#B8D84E';
@@ -142,53 +138,42 @@ const AdminDashboard = () => {
     const savedFontFamily = localStorage.getItem('homiebites_font_family') || 'Baloo 2';
 
     const root = document.documentElement;
+    const adminDashboard = document.querySelector('.admin-dashboard');
 
-    
     root.style.setProperty('--admin-accent', savedPrimaryColor);
     const rgb = hexToRgb(savedPrimaryColor);
     if (rgb) {
       root.style.setProperty('--admin-accent-light', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`);
     }
 
-    
     if (savedSecondaryColor) {
       root.style.setProperty('--admin-secondary', savedSecondaryColor);
       const secondaryRgb = hexToRgb(savedSecondaryColor);
       if (secondaryRgb) {
-        root.style.setProperty('--admin-secondary-light', `rgba(${secondaryRgb.r}, ${secondaryRgb.g}, ${secondaryRgb.b}, 0.15)`);
+        root.style.setProperty(
+          '--admin-secondary-light',
+          `rgba(${secondaryRgb.r}, ${secondaryRgb.g}, ${secondaryRgb.b}, 0.15)`
+        );
       }
     }
 
-    
     if (savedFontFamily) {
       const fontFamily = `'${savedFontFamily}', sans-serif`;
       root.style.setProperty('--font-primary', fontFamily);
       document.body.style.fontFamily = fontFamily;
-      const adminDashboard = document.querySelector('.admin-dashboard');
-      if (adminDashboard) {
-        adminDashboard.style.fontFamily = fontFamily;
-      }
     }
 
-    
     const fontSizeMap = {
       small: '14px',
-      medium: '16px', 
+      medium: '16px',
       large: '18px',
       'extra-large': '20px',
     };
-    
+
     const defaultFontSize = savedFontSize || 'medium';
-    const fontSize = fontSizeMap[defaultFontSize] || '16px'; 
+    const fontSize = fontSizeMap[defaultFontSize] || '16px';
     root.style.setProperty('--admin-base-font-size', fontSize);
     document.body.style.fontSize = fontSize;
-
-    
-    const adminDashboard = document.querySelector('.admin-dashboard');
-    if (adminDashboard) {
-      adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
-      adminDashboard.style.fontSize = fontSize;
-    }
     // CSS variables are now set on :root, so sidebar will inherit them automatically
 
     if (savedTheme === 'dark') {
@@ -197,7 +182,7 @@ const AdminDashboard = () => {
       if (adminDashboard) {
         adminDashboard.classList.add('dark-theme');
         adminDashboard.classList.remove('light-theme');
-        
+
         const allElements = adminDashboard.querySelectorAll('*');
         allElements.forEach((el) => {
           el.classList.add('dark-theme-applied');
@@ -209,7 +194,7 @@ const AdminDashboard = () => {
       if (adminDashboard) {
         adminDashboard.classList.add('light-theme');
         adminDashboard.classList.remove('dark-theme');
-        
+
         const allElements = adminDashboard.querySelectorAll('*');
         allElements.forEach((el) => {
           el.classList.remove('dark-theme-applied');
@@ -242,26 +227,21 @@ const AdminDashboard = () => {
       }
     }
 
-    
     setTimeout(() => {
       autoFixThemeOnLoad(5, 200);
     }, 100);
 
-    
     const themeWatcher = watchThemeChanges();
 
     return () => {
-      
       if (themeWatcher && themeWatcher.disconnect) {
         themeWatcher.disconnect();
       }
     };
   }, [isMounted]);
 
-  
   useEffect(() => {
     if (settings) {
-      
       if (settings.theme !== undefined) {
         localStorage.setItem('homiebites_theme', settings.theme);
       }
@@ -280,30 +260,29 @@ const AdminDashboard = () => {
     }
   }, [settings]);
 
-  
   useEffect(() => {
     if (typeof window !== 'undefined' && activeTab) {
       localStorage.setItem('homiebites_active_tab', activeTab);
     }
   }, [activeTab]);
 
-  
   useEffect(() => {
     if (!isMounted || typeof window === 'undefined') return;
-    
+
     const syncSidebarFontSize = () => {
       const adminDashboard = document.querySelector('.admin-dashboard');
       const root = document.documentElement;
-      
+
       if (!adminDashboard) return;
-      
-      const baseFontSize = getComputedStyle(adminDashboard).getPropertyValue('--admin-base-font-size').trim() || 
-                          getComputedStyle(root).getPropertyValue('--admin-base-font-size').trim() ||
-                          '16px';
-      
+
+      const baseFontSize =
+        getComputedStyle(adminDashboard).getPropertyValue('--admin-base-font-size').trim() ||
+        getComputedStyle(root).getPropertyValue('--admin-base-font-size').trim() ||
+        '16px';
+
       // Set CSS variables on :root instead of directly on sidebar to avoid inline styles
       root.style.setProperty('--admin-base-font-size', baseFontSize);
-      
+
       const baseSize = parseFloat(baseFontSize);
       if (!isNaN(baseSize)) {
         root.style.setProperty('--admin-font-size-h1', `${baseSize * 1.75}px`);
@@ -323,13 +302,13 @@ const AdminDashboard = () => {
       const { fontSize } = event.detail;
       const adminDashboard = document.querySelector('.admin-dashboard');
       const adminSidebar = document.querySelector('.admin-sidebar');
-      
+
       if (adminDashboard) {
         adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
         adminDashboard.style.fontSize = fontSize;
         void adminDashboard.offsetHeight;
       }
-      
+
       syncSidebarFontSize();
     };
 
@@ -339,7 +318,7 @@ const AdminDashboard = () => {
       setTimeout(syncSidebarFontSize, 100);
       setTimeout(syncSidebarFontSize, 500);
     });
-    
+
     window.addEventListener('adminFontSizeChanged', handleFontSizeChange);
 
     return () => {
@@ -347,7 +326,6 @@ const AdminDashboard = () => {
     };
   }, [isMounted]);
 
-  
   const hexToRgb = (hex) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
@@ -390,12 +368,11 @@ const AdminDashboard = () => {
           try {
             await loadOrders();
           } catch (refreshError) {
-            console.warn('Error refreshing orders after save:', refreshError);
-            
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('Error refreshing orders after save:', refreshError);
+            }
           }
 
-          
-          
           const today = new Date();
           const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(
             today.getMonth() + 1
@@ -411,10 +388,11 @@ const AdminDashboard = () => {
             status: 'Unpaid',
             paymentMode: '',
           });
-          
         },
         (error) => {
-          console.error('Error adding order:', error);
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Error adding order:', error);
+          }
           if (showNotification) {
             const errorMessage = error?.message || getNotificationMessage('orders', 'addError');
             showNotification(errorMessage, 'error', getNotificationDuration('error'));
@@ -422,7 +400,9 @@ const AdminDashboard = () => {
         }
       );
     } catch (error) {
-      console.error('Error adding order:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error adding order:', error);
+      }
       if (showNotification) {
         const errorMessage = error?.message || getNotificationMessage('orders', 'addError');
         showNotification(errorMessage, 'error', getNotificationDuration('error'));
@@ -446,21 +426,32 @@ const AdminDashboard = () => {
 
         const updateData = {};
         const allowedFields = [
-          'orderId', 'date', 'deliveryAddress', 'quantity', 'unitPrice', 'mode', 
-          'status', 'paymentStatus', 'paymentMode', 'notes', 'customerName',
-          'billingMonth', 'billingYear', 'addressId'
+          'orderId',
+          'date',
+          'deliveryAddress',
+          'quantity',
+          'unitPrice',
+          'mode',
+          'status',
+          'paymentStatus',
+          'paymentMode',
+          'notes',
+          'customerName',
+          'billingMonth',
+          'billingYear',
+          'addressId',
         ];
-        
-        allowedFields.forEach(key => {
+
+        allowedFields.forEach((key) => {
           if (orderData[key] !== undefined) {
             if (key === 'paymentMode' || key === 'notes' || key === 'customerName') {
-              updateData[key] = orderData[key] === '' ? '' : (orderData[key] || '');
+              updateData[key] = orderData[key] === '' ? '' : orderData[key] || '';
             } else if (orderData[key] !== null) {
               updateData[key] = orderData[key];
             }
           }
         });
-        
+
         if (updateData.status && !updateData.paymentStatus) {
           const statusLower = String(updateData.status).toLowerCase().trim();
           if (statusLower === 'paid' || statusLower === 'delivered') {
@@ -469,7 +460,6 @@ const AdminDashboard = () => {
             updateData.paymentStatus = 'Pending';
           }
         } else if (updateData.paymentStatus && !updateData.status) {
-          
           if (updateData.paymentStatus === 'Paid') {
             updateData.status = 'Paid';
           } else if (updateData.paymentStatus === 'Pending') {
@@ -490,7 +480,7 @@ const AdminDashboard = () => {
             }
             setShowOrderModal(false);
             setEditingOrder(null);
-            
+
             if (loadOrders) {
               setTimeout(() => {
                 loadOrders();
@@ -498,7 +488,9 @@ const AdminDashboard = () => {
             }
           },
           (error) => {
-            console.error('Error updating order:', error);
+            if (process.env.NODE_ENV === 'development') {
+              console.error('Error updating order:', error);
+            }
             if (showNotification) {
               const errorMessage =
                 error?.message || getNotificationMessage('orders', 'updateError');
@@ -507,7 +499,9 @@ const AdminDashboard = () => {
           }
         );
       } catch (error) {
-        console.error('Error updating order:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error updating order:', error);
+        }
         if (showNotification) {
           const errorMessage = error?.message || getNotificationMessage('orders', 'updateError');
           showNotification(errorMessage, 'error', getNotificationDuration('error'));
@@ -524,7 +518,6 @@ const AdminDashboard = () => {
     });
   };
 
-  
   const showConfirmation = (config) => {
     setConfirmationModal({
       show: true,
@@ -537,13 +530,11 @@ const AdminDashboard = () => {
             await config.onConfirm();
             setConfirmationModal((prev) => ({ ...prev, show: false }));
           } catch (error) {
-            
-            
             const errorMessage = error?.message || error?.error || String(error) || 'Action failed';
             if (showNotification) {
               showNotification(errorMessage, 'error', 6000);
             }
-            
+
             return;
           }
         } else {
@@ -583,7 +574,9 @@ const AdminDashboard = () => {
               }
             },
             (error) => {
-              console.error('Error deleting order:', error);
+              if (process.env.NODE_ENV === 'development') {
+                console.error('Error deleting order:', error);
+              }
               if (showNotification) {
                 const errorMessage =
                   error?.message || getNotificationMessage('orders', 'deleteError');
@@ -592,7 +585,9 @@ const AdminDashboard = () => {
             }
           );
         } catch (error) {
-          console.error('Error deleting order:', error);
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Error deleting order:', error);
+          }
           if (showNotification) {
             showNotification(
               getNotificationMessage('orders', 'deleteError'),
@@ -624,49 +619,42 @@ const AdminDashboard = () => {
     const orderInfo = `Order ${order.orderId || orderId} for ${
       order.deliveryAddress || order.customerAddress || 'N/A'
     }`;
-    
+
     const currentStatus = order.status || order.paymentStatus || 'Unknown';
     const normalizedCurrentStatus = currentStatus.toLowerCase().trim();
     const normalizedNewStatus = status.toLowerCase().trim();
-    
-    
-    const isCurrentlyPaid = normalizedCurrentStatus === 'paid' || normalizedCurrentStatus === 'delivered';
+
+    const isCurrentlyPaid =
+      normalizedCurrentStatus === 'paid' || normalizedCurrentStatus === 'delivered';
     const isNewlyPaid = normalizedNewStatus === 'paid';
-    const isCurrentlyPending = normalizedCurrentStatus === 'pending' || normalizedCurrentStatus === 'unpaid';
+    const isCurrentlyPending =
+      normalizedCurrentStatus === 'pending' || normalizedCurrentStatus === 'unpaid';
     const isNewlyPending = normalizedNewStatus === 'pending' || normalizedNewStatus === 'unpaid';
-    
-    
+
     if ((isCurrentlyPaid && isNewlyPaid) || (isCurrentlyPending && isNewlyPending)) {
-      
       return;
     }
 
-    
     const performUpdate = async () => {
       try {
-        
         const apiOrderId = order._id || order.id || order.orderId;
 
-        
-        
-        
-        
         let normalizedStatus;
         let normalizedPaymentStatus;
-        
+
         const statusLower = String(status).toLowerCase().trim();
         if (statusLower === 'paid') {
           normalizedStatus = 'Paid';
           normalizedPaymentStatus = 'Paid';
         } else if (statusLower === 'unpaid' || statusLower === 'pending') {
           normalizedStatus = 'Unpaid';
-          normalizedPaymentStatus = 'Pending'; 
+          normalizedPaymentStatus = 'Pending';
         } else {
           normalizedStatus = status.trim();
-          normalizedPaymentStatus = statusLower === 'paid' || statusLower === 'delivered' ? 'Paid' : 'Pending';
+          normalizedPaymentStatus =
+            statusLower === 'paid' || statusLower === 'delivered' ? 'Paid' : 'Pending';
         }
 
-        
         await fastUpdate(
           apiOrderId,
           {
@@ -681,8 +669,7 @@ const AdminDashboard = () => {
                 getNotificationDuration('success')
               );
             }
-            
-            
+
             if (loadOrders) {
               setTimeout(() => {
                 loadOrders();
@@ -690,33 +677,36 @@ const AdminDashboard = () => {
             }
           },
           (error) => {
-            console.error('Error updating order status:', error);
+            if (process.env.NODE_ENV === 'development') {
+              console.error('Error updating order status:', error);
+            }
             if (showNotification) {
               const errorMessage =
                 error?.message || getNotificationMessage('orders', 'statusUpdateError');
               showNotification(errorMessage, 'error', getNotificationDuration('error'));
             }
-            
+
             if (loadOrders) {
               loadOrders();
             }
           }
         );
       } catch (error) {
-        console.error('Error updating order status:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error updating order status:', error);
+        }
         if (showNotification) {
           const errorMessage =
             error?.message || getNotificationMessage('orders', 'statusUpdateError');
           showNotification(errorMessage, 'error', getNotificationDuration('error'));
         }
-        
+
         if (loadOrders) {
           loadOrders();
         }
       }
     };
 
-    
     if (!skipConfirmation) {
       showConfirmation({
         title: 'Update Order Status',
@@ -726,18 +716,15 @@ const AdminDashboard = () => {
         onConfirm: performUpdate,
       });
     } else {
-      
       await performUpdate();
     }
   };
 
-  
   const handleViewCustomerOrders = (address) => {
     setAllOrdersFilterAddress(address);
     setActiveTab('allOrdersData');
   };
 
-  
   const handleDismissNotification = (notificationId) => {
     setDismissedNotifications((prev) => [...prev, notificationId]);
     const stored = JSON.parse(localStorage.getItem('homiebites_dismissed_notifications') || '[]');
@@ -747,19 +734,16 @@ const AdminDashboard = () => {
     }
   };
 
-  
   const handleViewPendingAmounts = () => {
     setShowOverdueFilter(true);
     setActiveTab('pendingAmounts');
   };
 
-  
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem('homiebites_dismissed_notifications') || '[]');
     setDismissedNotifications(stored);
   }, []);
 
-  
   const handleViewOrder = (orderId) => {
     const order = (orders || []).find((o) => (o._id || o.orderId) === orderId);
     if (order) {
@@ -768,9 +752,7 @@ const AdminDashboard = () => {
     }
   };
 
-  
   const handleSendReminder = (_orderId) => {
-    
     if (showNotification) {
       showNotification(
         getNotificationMessage('reminders', 'sentSuccess'),
@@ -780,18 +762,12 @@ const AdminDashboard = () => {
     }
   };
 
-  
   const handleUpdateSettings = async (newSettings) => {
     try {
-      
       const response = await api.updateSettings(newSettings);
 
       if (response && response.success) {
-        
-        
-
         if (showNotification) {
-          
           let message = '';
 
           if (newSettings.businessInfo) {
@@ -821,9 +797,9 @@ const AdminDashboard = () => {
               ? 'Your profile and password have been updated'
               : 'Your profile has been updated successfully';
           } else if (newSettings.themeSettings) {
-            const { theme, primaryColor, secondaryColor, fontSize, fontFamily } = newSettings.themeSettings;
-            
-            
+            const { theme, primaryColor, secondaryColor, fontSize, fontFamily } =
+              newSettings.themeSettings;
+
             if (theme !== undefined) {
               localStorage.setItem('homiebites_theme', theme);
             }
@@ -842,7 +818,6 @@ const AdminDashboard = () => {
 
             const changes = [];
 
-            
             if (theme) {
               const themeName = theme === 'light' ? 'Light' : theme === 'dark' ? 'Dark' : 'Auto';
               changes.push(`${themeName} theme`);
@@ -878,7 +853,6 @@ const AdminDashboard = () => {
               changes.push(`${fontFamily} font family`);
             }
 
-            
             if (changes.length > 0) {
               message = `Appearance updated: ${changes.join(', ')}`;
             } else {
@@ -898,7 +872,9 @@ const AdminDashboard = () => {
         throw new Error('Failed to save settings');
       }
     } catch (error) {
-      console.error('Error updating settings:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error updating settings:', error);
+      }
       if (showNotification) {
         const errorMessage = error.message || 'Error updating settings';
         showNotification(
@@ -910,10 +886,8 @@ const AdminDashboard = () => {
     }
   };
 
-  
   const handleBackup = async () => {
     try {
-      
       if (showNotification) {
         showNotification(
           getNotificationMessage('backup', 'createSuccess'),
@@ -922,7 +896,9 @@ const AdminDashboard = () => {
         );
       }
     } catch (error) {
-      console.error('Error creating backup:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error creating backup:', error);
+      }
       if (showNotification) {
         showNotification(
           getNotificationMessage('backup', 'createError'),
@@ -933,10 +909,8 @@ const AdminDashboard = () => {
     }
   };
 
-  
   const handleRestore = async () => {
     try {
-      
       if (showNotification) {
         showNotification(
           getNotificationMessage('backup', 'restoreSuccess'),
@@ -946,7 +920,9 @@ const AdminDashboard = () => {
       }
       if (loadOrders) loadOrders();
     } catch (error) {
-      console.error('Error restoring data:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error restoring data:', error);
+      }
       if (showNotification) {
         showNotification(
           getNotificationMessage('backup', 'restoreError'),
@@ -957,7 +933,6 @@ const AdminDashboard = () => {
     }
   };
 
-  
   const handleClearAllData = async (skipConfirmation = false) => {
     const performClear = async () => {
       try {
@@ -966,7 +941,6 @@ const AdminDashboard = () => {
           const deletedCount = response.deletedCount || 0;
           const afterCount = response.afterCount !== undefined ? response.afterCount : null;
 
-          
           if (afterCount !== null && afterCount > 0) {
             if (showNotification) {
               showNotification(
@@ -989,7 +963,7 @@ const AdminDashboard = () => {
             if (loadOrders) {
               try {
                 await loadOrders();
-                
+
                 setTimeout(async () => {
                   try {
                     if (loadOrders) await loadOrders();
@@ -1022,7 +996,9 @@ const AdminDashboard = () => {
           }
         }
       } catch (error) {
-        console.error('Error clearing data:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error clearing data:', error);
+        }
         if (showNotification) {
           showNotification(
             error.message || getNotificationMessage('orders', 'clearAllError'),
@@ -1033,7 +1009,6 @@ const AdminDashboard = () => {
       }
     };
 
-    
     if (!skipConfirmation) {
       showConfirmation({
         title: 'Clear All Data',
@@ -1044,7 +1019,6 @@ const AdminDashboard = () => {
         onConfirm: performClear,
       });
     } else {
-      
       await performClear();
     }
   };
@@ -1076,9 +1050,7 @@ const AdminDashboard = () => {
           const year = lockedDate.getFullYear();
           return { status: 'LOCKED', lockedTill: `${month} ${year}` };
         }
-      } catch (e) {
-        
-      }
+      } catch (e) {}
       return { status: 'OPEN', lockedTill: null };
     };
 
@@ -1144,11 +1116,10 @@ const AdminDashboard = () => {
   const tabInfo = getTabInfo();
 
   const renderActiveTab = () => {
-    
     const safeOrders = Array.isArray(orders) ? orders : [];
-    
+
     // Debug logging for orders (only log if not loading to avoid spam)
-    if (!loading) {
+    if (!loading && process.env.NODE_ENV === 'development') {
       console.log('=== ADMIN DASHBOARD ORDERS DEBUG ===');
       console.log('Orders array length:', safeOrders.length);
       console.log('Loading state:', loading);
@@ -1233,7 +1204,6 @@ const AdminDashboard = () => {
           <AnalyticsTab
             {...commonProps}
             onViewDayDetails={(date) => {
-              
               setDateFilterForOrders(date);
               setActiveTab('allOrdersData');
               showNotification(
@@ -1302,25 +1272,18 @@ const AdminDashboard = () => {
     }
   };
 
-  
   const handleRefresh = () => {
-    
     (async () => {
       try {
-        
         if (typeof window !== 'undefined') {
-          
-          
           const cachedOrders = localStorage.getItem('homiebites_orders');
           if (cachedOrders) {
             localStorage.removeItem('homiebites_orders');
           }
         }
 
-        
         const promises = [];
 
-        
         if (loadOrders && typeof loadOrders === 'function') {
           promises.push(
             loadOrders({}, true).catch((err) => console.error('Error reloading orders:', err))
@@ -1338,7 +1301,6 @@ const AdminDashboard = () => {
           promises.push(loadUsers().catch((err) => console.error('Error reloading users:', err)));
         }
 
-        
         if (loadSettings && typeof loadSettings === 'function') {
           try {
             loadSettings();
@@ -1347,7 +1309,6 @@ const AdminDashboard = () => {
           }
         }
 
-        
         if (promises.length > 0) {
           await Promise.all(promises);
         }
@@ -1407,44 +1368,42 @@ const AdminDashboard = () => {
             />
 
             {}
-            <ErrorBoundary>
-              {renderActiveTab()}
-            </ErrorBoundary>
+            <ErrorBoundary>{renderActiveTab()}</ErrorBoundary>
           </div>
         </div>
 
         {}
         {showOrderModal && (
           <OrderModal
-          show={showOrderModal}
-          editingOrder={editingOrder}
-          newOrder={newOrder}
-          orders={orders}
-          addressSuggestions={addressSuggestions}
-          showAddressSuggestions={showAddressSuggestions}
-          onClose={() => {
-            setShowOrderModal(false);
-            setEditingOrder(null);
-            setNewOrder({
-              date: new Date().toISOString().split('T')[0],
-              deliveryAddress: '',
-              quantity: 1,
-              unitPrice: settings?.defaultUnitPrice || 100,
-              total: settings?.defaultUnitPrice || 100,
-              mode: 'Lunch',
-              status: 'Unpaid',
-              paymentMode: '',
-            });
-          }}
-          onSave={editingOrder ? handleEditOrder : handleAddOrder}
-          onNewOrderChange={(field, value) => {
-            setNewOrder({ ...newOrder, [field]: value });
-          }}
-          onEditingOrderChange={(field, value) => {
-            setEditingOrder({ ...editingOrder, [field]: value });
-          }}
-          setAddressSuggestions={setAddressSuggestions}
-          setShowAddressSuggestions={setShowAddressSuggestions}
+            show={showOrderModal}
+            editingOrder={editingOrder}
+            newOrder={newOrder}
+            orders={orders}
+            addressSuggestions={addressSuggestions}
+            showAddressSuggestions={showAddressSuggestions}
+            onClose={() => {
+              setShowOrderModal(false);
+              setEditingOrder(null);
+              setNewOrder({
+                date: new Date().toISOString().split('T')[0],
+                deliveryAddress: '',
+                quantity: 1,
+                unitPrice: settings?.defaultUnitPrice || 100,
+                total: settings?.defaultUnitPrice || 100,
+                mode: 'Lunch',
+                status: 'Unpaid',
+                paymentMode: '',
+              });
+            }}
+            onSave={editingOrder ? handleEditOrder : handleAddOrder}
+            onNewOrderChange={(field, value) => {
+              setNewOrder({ ...newOrder, [field]: value });
+            }}
+            onEditingOrderChange={(field, value) => {
+              setEditingOrder({ ...editingOrder, [field]: value });
+            }}
+            setAddressSuggestions={setAddressSuggestions}
+            setShowAddressSuggestions={setShowAddressSuggestions}
           />
         )}
 
@@ -1453,9 +1412,7 @@ const AdminDashboard = () => {
           <CSVUploadModal
             show={showCSVUploadModal}
             onClose={() => setShowCSVUploadModal(false)}
-            onUploadSuccess={(_data) => {
-              
-            }}
+            onUploadSuccess={(_data) => {}}
             showNotification={showNotification}
             loadOrders={loadOrders}
             showConfirmation={showConfirmation}

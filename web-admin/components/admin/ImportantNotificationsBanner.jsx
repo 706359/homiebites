@@ -9,21 +9,19 @@ const ImportantNotificationsBanner = ({
   onViewPendingAmounts,
   dismissedNotifications = [],
 }) => {
-  
   const importantNotifications = useMemo(() => {
     const notifications = [];
     const now = new Date();
     const fortyFiveDaysAgo = new Date(now);
     fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
-    fortyFiveDaysAgo.setHours(0, 0, 0, 0); 
+    fortyFiveDaysAgo.setHours(0, 0, 0, 0);
 
-    
     const overdueOrders = orders.filter((order) => {
       if (!isPendingStatus(order.status)) return false;
-      
+
       const orderDate = parseOrderDate(order.date || order.order_date || null);
       if (!orderDate) return false;
-      
+
       const orderDateMidnight = new Date(orderDate);
       orderDateMidnight.setHours(0, 0, 0, 0);
       return orderDateMidnight < fortyFiveDaysAgo;
@@ -49,20 +47,21 @@ const ImportantNotificationsBanner = ({
         type: 'danger',
         icon: 'fa-exclamation-triangle',
         title: 'Overdue Payments',
-        message: `${overdueOrders.length} order${overdueOrders.length > 1 ? 's' : ''} overdue (${formatCurrency(totalOverdue)})`,
+        message: `${overdueOrders.length} order${
+          overdueOrders.length > 1 ? 's' : ''
+        } overdue (${formatCurrency(totalOverdue)})`,
         action: 'viewPending',
         priority: 1,
       });
     }
 
-    
     const threeDaysAgo = new Date(now);
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
     const sevenDaysAgo = new Date(now);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const urgentOrders = orders.filter((order) => {
       if (!isPendingStatus(order.status)) return false;
-      
+
       const orderDate = parseOrderDate(order.date || order.order_date || null);
       if (!orderDate) return false;
       return orderDate >= threeDaysAgo && orderDate < sevenDaysAgo;
@@ -88,7 +87,9 @@ const ImportantNotificationsBanner = ({
         type: 'warning',
         icon: 'fa-clock',
         title: 'Urgent Payments',
-        message: `${urgentOrders.length} order${urgentOrders.length > 1 ? 's' : ''} pending payment (${formatCurrency(totalUrgent)})`,
+        message: `${urgentOrders.length} order${
+          urgentOrders.length > 1 ? 's' : ''
+        } pending payment (${formatCurrency(totalUrgent)})`,
         action: 'viewPending',
         priority: 2,
       });
@@ -96,20 +97,20 @@ const ImportantNotificationsBanner = ({
 
     const highValuePending = orders.filter((order) => {
       if (!isPendingStatus(order.status)) return false;
-      
+
       let amount = null;
       if (order.totalAmount !== undefined && order.totalAmount !== null) {
         amount = parseFloat(order.totalAmount);
       } else if (order.total !== undefined && order.total !== null) {
         amount = parseFloat(order.total);
       }
-      
+
       if (amount === null || isNaN(amount)) {
         const qty = parseFloat(order.quantity || 1);
         const price = parseFloat(order.unitPrice || 0);
         amount = qty * price;
       }
-      
+
       return amount > 500;
     });
 
@@ -133,13 +134,14 @@ const ImportantNotificationsBanner = ({
         type: 'info',
         icon: 'fa-money-bill-wave',
         title: 'High Value Pending',
-        message: `${highValuePending.length} high-value order${highValuePending.length > 1 ? 's' : ''} pending (${formatCurrency(totalHighValue)})`,
+        message: `${highValuePending.length} high-value order${
+          highValuePending.length > 1 ? 's' : ''
+        } pending (${formatCurrency(totalHighValue)})`,
         action: 'viewPending',
         priority: 3,
       });
     }
 
-    
     return notifications
       .filter((notif) => !dismissedNotifications.includes(notif.id))
       .sort((a, b) => a.priority - b.priority);
@@ -163,7 +165,7 @@ const ImportantNotificationsBanner = ({
           iconColor: 'var(--admin-warning, #f59e0b)',
           textColor: 'var(--admin-warning, #f59e0b)',
         };
-      default: 
+      default:
         return {
           background: 'rgba(68, 144, 49, 0.08)',
           borderColor: 'var(--admin-accent, #449031)',
@@ -200,9 +202,8 @@ const ImportantNotificationsBanner = ({
             <div className='important-notification-actions'>
               {notif.action === 'viewPending' && onViewPendingAmounts && (
                 <button
-                  className='btn btn-primary btn-small'
+                  className='btn btn-primary btn-small mr-md'
                   onClick={() => onViewPendingAmounts()}
-                  style={{ marginRight: '8px' }}
                 >
                   View Details
                 </button>

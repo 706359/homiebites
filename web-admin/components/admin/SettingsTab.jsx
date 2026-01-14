@@ -12,15 +12,13 @@ const SettingsTab = ({
   loading = false,
   showConfirmation,
 }) => {
-  const [activeTab, setActiveTab] = useState('general'); 
+  const [activeTab, setActiveTab] = useState('general');
 
-  
   useAutoKeyboardAvoidance({
     containerSelector: '.settings-tab-content-enhanced',
     inputSelector: 'input, textarea, select',
   });
 
-  
   const [businessInfo, setBusinessInfo] = useState({
     businessName: settings?.businessName || 'HomieBites',
     contact: settings?.contact || '',
@@ -72,13 +70,10 @@ const SettingsTab = ({
       settings?.primaryColor || localStorage.getItem('homiebites_primary_color') || '#A4672E',
     secondaryColor:
       settings?.secondaryColor || localStorage.getItem('homiebites_secondary_color') || '#B8D84E',
-    fontSize: settings?.fontSize || localStorage.getItem('homiebites_font_size') || 'medium', 
+    fontSize: settings?.fontSize || localStorage.getItem('homiebites_font_size') || 'medium',
     fontFamily: settings?.fontFamily || localStorage.getItem('homiebites_font_family') || 'Baloo 2',
   });
 
-  
-
-  
   const hexToRgb = (hex) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
@@ -90,7 +85,6 @@ const SettingsTab = ({
       : null;
   };
 
-  
   const applyTheme = (theme) => {
     try {
       const adminDashboard = document.querySelector('.admin-dashboard');
@@ -98,16 +92,16 @@ const SettingsTab = ({
         return;
       }
 
-      
-      const preservedBgSecondary = getComputedStyle(adminDashboard).getPropertyValue('--admin-bg-secondary') || '#f5f5f7';
-      const preservedBg = getComputedStyle(adminDashboard).getPropertyValue('--admin-bg') || '#ffffff';
-      const preservedBgTertiary = getComputedStyle(adminDashboard).getPropertyValue('--admin-bg-tertiary') || '#fafafa';
+      const preservedBgSecondary =
+        getComputedStyle(adminDashboard).getPropertyValue('--admin-bg-secondary') || '#f5f5f7';
+      const preservedBg =
+        getComputedStyle(adminDashboard).getPropertyValue('--admin-bg') || '#ffffff';
+      const preservedBgTertiary =
+        getComputedStyle(adminDashboard).getPropertyValue('--admin-bg-tertiary') || '#fafafa';
 
-      
       if (theme && theme.primaryColor) {
         adminDashboard.style.setProperty('--admin-accent', theme.primaryColor);
 
-        
         const rgb = hexToRgb(theme.primaryColor);
         if (rgb) {
           adminDashboard.style.setProperty(
@@ -117,11 +111,9 @@ const SettingsTab = ({
         }
       }
 
-      
       if (theme && theme.secondaryColor) {
         adminDashboard.style.setProperty('--admin-secondary', theme.secondaryColor);
 
-        
         const rgb = hexToRgb(theme.secondaryColor);
         if (rgb) {
           adminDashboard.style.setProperty(
@@ -131,28 +123,24 @@ const SettingsTab = ({
         }
       }
 
-      
       adminDashboard.style.setProperty('--admin-bg-secondary', preservedBgSecondary);
       adminDashboard.style.setProperty('--admin-bg', preservedBg);
       adminDashboard.style.setProperty('--admin-bg-tertiary', preservedBgTertiary);
 
-      
-      
       const fontSizeMap = {
         small: '14px',
-        medium: '16px', 
+        medium: '16px',
         large: '18px',
         'extra-large': '20px',
       };
-      const selectedFontSize = theme?.fontSize || 'medium'; 
-      const fontSize = fontSizeMap[selectedFontSize] || '16px'; 
-      
-      
+      const selectedFontSize = theme?.fontSize || 'medium';
+      const fontSize = fontSizeMap[selectedFontSize] || '16px';
+
       // Set CSS variables on :root so they cascade to all elements (including sidebar)
       document.documentElement.style.setProperty('--admin-base-font-size', fontSize);
       adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
       adminDashboard.style.fontSize = fontSize;
-      
+
       // Calculate and set all derived font sizes on :root
       const baseSize = parseFloat(fontSize);
       if (!isNaN(baseSize)) {
@@ -160,38 +148,53 @@ const SettingsTab = ({
         document.documentElement.style.setProperty('--admin-font-size-h2', `${baseSize * 1.375}px`);
         document.documentElement.style.setProperty('--admin-font-size-h3', `${baseSize * 1.125}px`);
         document.documentElement.style.setProperty('--admin-font-size-h4', `${baseSize}px`);
-        document.documentElement.style.setProperty('--admin-font-size-body-lg', `${baseSize * 0.9375}px`);
-        document.documentElement.style.setProperty('--admin-font-size-body', `${baseSize * 0.875}px`);
-        document.documentElement.style.setProperty('--admin-font-size-body-sm', `${baseSize * 0.8125}px`);
-        document.documentElement.style.setProperty('--admin-font-size-body-xs', `${baseSize * 0.75}px`);
-        document.documentElement.style.setProperty('--admin-font-size-body-xxs', `${baseSize * 0.6875}px`);
-        document.documentElement.style.setProperty('--admin-font-size-caption', `${baseSize * 0.625}px`);
+        document.documentElement.style.setProperty(
+          '--admin-font-size-body-lg',
+          `${baseSize * 0.9375}px`
+        );
+        document.documentElement.style.setProperty(
+          '--admin-font-size-body',
+          `${baseSize * 0.875}px`
+        );
+        document.documentElement.style.setProperty(
+          '--admin-font-size-body-sm',
+          `${baseSize * 0.8125}px`
+        );
+        document.documentElement.style.setProperty(
+          '--admin-font-size-body-xs',
+          `${baseSize * 0.75}px`
+        );
+        document.documentElement.style.setProperty(
+          '--admin-font-size-body-xxs',
+          `${baseSize * 0.6875}px`
+        );
+        document.documentElement.style.setProperty(
+          '--admin-font-size-caption',
+          `${baseSize * 0.625}px`
+        );
       }
-      
+
       void adminDashboard.offsetHeight;
-      
+
       window.dispatchEvent(new CustomEvent('adminFontSizeChanged', { detail: { fontSize } }));
 
-      
       if (theme && theme.fontFamily) {
         const fontFamily = `'${theme.fontFamily}', sans-serif`;
         const root = document.documentElement;
         root.style.setProperty('--font-primary', fontFamily);
         document.body.style.fontFamily = fontFamily;
-        
+
         if (adminDashboard) {
           adminDashboard.style.fontFamily = fontFamily;
         }
       }
 
-      
       if (theme && theme.theme === 'dark') {
-        
         document.documentElement.classList.add('dark-theme');
         document.documentElement.classList.remove('light-theme');
         adminDashboard.classList.add('dark-theme');
         adminDashboard.classList.remove('light-theme');
-        
+
         const allElements = adminDashboard.querySelectorAll('*');
         allElements.forEach((el) => {
           el.classList.add('dark-theme-applied');
@@ -201,13 +204,12 @@ const SettingsTab = ({
         document.documentElement.classList.remove('dark-theme');
         adminDashboard.classList.add('light-theme');
         adminDashboard.classList.remove('dark-theme');
-        
+
         const allElements = adminDashboard.querySelectorAll('*');
         allElements.forEach((el) => {
           el.classList.remove('dark-theme-applied');
         });
       } else if (theme && theme.theme === 'auto') {
-        
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         if (prefersDark) {
           document.documentElement.classList.add('dark-theme');
@@ -234,22 +236,18 @@ const SettingsTab = ({
     }
   };
 
-  
   useEffect(() => {
-    
     const applyThemeWhenReady = () => {
       const adminDashboard = document.querySelector('.admin-dashboard');
       if (adminDashboard && themeSettings) {
         applyTheme(themeSettings);
       } else if (!adminDashboard) {
-        
         setTimeout(applyThemeWhenReady, 100);
       }
     };
 
     applyThemeWhenReady();
 
-    
     if (themeSettings?.theme === 'auto') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleChange = (e) => {
@@ -267,9 +265,8 @@ const SettingsTab = ({
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
-  }, [themeSettings]); 
+  }, [themeSettings]);
 
-  
   const handleSaveBusinessInfo = () => {
     if (showConfirmation) {
       showConfirmation({
@@ -396,13 +393,12 @@ const SettingsTab = ({
   };
 
   const handleSaveTheme = () => {
-    
     if (themeSettings.fontFamily) {
       const root = document.documentElement;
       const fontFamily = `'${themeSettings.fontFamily}', sans-serif`;
       root.style.setProperty('--font-primary', fontFamily);
       document.body.style.fontFamily = fontFamily;
-      
+
       const adminDashboard = document.querySelector('.admin-dashboard');
       if (adminDashboard) {
         adminDashboard.style.fontFamily = fontFamily;
@@ -417,10 +413,8 @@ const SettingsTab = ({
         type: 'info',
         confirmText: 'Apply',
         onConfirm: () => {
-          
           applyTheme(themeSettings);
 
-          
           localStorage.setItem('homiebites_theme', themeSettings.theme);
           localStorage.setItem('homiebites_primary_color', themeSettings.primaryColor);
           if (themeSettings.secondaryColor) {
@@ -429,46 +423,38 @@ const SettingsTab = ({
           localStorage.setItem('homiebites_font_size', themeSettings.fontSize);
           localStorage.setItem('homiebites_font_family', themeSettings.fontFamily);
 
-          
           setTimeout(() => {
             import('./utils/themeFixer.js').then(({ fixTheme }) => {
               fixTheme({ silent: true });
             });
           }, 100);
 
-          
           if (onUpdateSettings) {
             onUpdateSettings({ themeSettings });
           }
         },
       });
     } else {
-      
       applyTheme(themeSettings);
 
-      
       localStorage.setItem('homiebites_theme', themeSettings.theme);
       localStorage.setItem('homiebites_primary_color', themeSettings.primaryColor);
       localStorage.setItem('homiebites_font_size', themeSettings.fontSize);
       localStorage.setItem('homiebites_font_family', themeSettings.fontFamily);
 
-      
       setTimeout(() => {
         import('./utils/themeFixer.js').then(({ fixTheme }) => {
           fixTheme({ silent: true });
         });
       }, 100);
 
-      
       if (onUpdateSettings) {
         onUpdateSettings({ themeSettings });
       }
     }
   };
 
-  
   const handleLogoTheme = () => {
-    
     const logoTheme = {
       primaryColor: '#A4672E',
       secondaryColor: '#B8D84E',
@@ -476,7 +462,6 @@ const SettingsTab = ({
     setThemeSettings({ ...themeSettings, ...logoTheme });
     handleThemeChange(logoTheme);
 
-    
     if (showNotification) {
       showNotification('HomieBites theme applied! Click "Apply Theme" to save.', 'success');
     }
@@ -485,7 +470,7 @@ const SettingsTab = ({
   const handleThemeChange = (updates) => {
     const newTheme = { ...themeSettings, ...updates };
     setThemeSettings(newTheme);
-    
+
     const applyWithRetry = () => {
       const adminDashboard = document.querySelector('.admin-dashboard');
       if (adminDashboard) {
@@ -497,7 +482,6 @@ const SettingsTab = ({
     applyWithRetry();
   };
 
-  
   const handleBackup = async () => {
     if (showConfirmation) {
       showConfirmation({
@@ -520,7 +504,6 @@ const SettingsTab = ({
     }
   };
 
-  
   const handleRestore = async () => {
     if (showConfirmation) {
       showConfirmation({
@@ -555,7 +538,12 @@ const SettingsTab = ({
   const settingsTabs = [
     { id: 'general', label: 'General', icon: 'fa-cog', description: 'Business & Pricing' },
     { id: 'orders', label: 'Orders', icon: 'fa-shopping-cart', description: 'Order Configuration' },
-    { id: 'notifications', label: 'Notifications', icon: 'fa-bell', description: 'Alerts & Preferences' },
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      icon: 'fa-bell',
+      description: 'Alerts & Preferences',
+    },
     { id: 'data', label: 'Data', icon: 'fa-database', description: 'Backup & Restore' },
     { id: 'profile', label: 'Profile', icon: 'fa-user', description: 'User Account' },
     { id: 'theme', label: 'Appearance', icon: 'fa-palette', description: 'Theme & Style' },
@@ -596,7 +584,9 @@ const SettingsTab = ({
                 </div>
                 <div className='settings-section-title-wrapper'>
                   <h3 className='settings-section-title'>Business Information</h3>
-                  <p className='settings-section-subtitle'>Manage your business details and contact information</p>
+                  <p className='settings-section-subtitle'>
+                    Manage your business details and contact information
+                  </p>
                 </div>
               </div>
               <div className='settings-section-body'>
@@ -676,7 +666,9 @@ const SettingsTab = ({
                 </div>
                 <div className='settings-section-title-wrapper'>
                   <h3 className='settings-section-title'>Pricing Configuration</h3>
-                  <p className='settings-section-subtitle'>Set default prices for your menu items</p>
+                  <p className='settings-section-subtitle'>
+                    Set default prices for your menu items
+                  </p>
                 </div>
               </div>
               <div className='settings-section-body'>
@@ -777,7 +769,9 @@ const SettingsTab = ({
               </div>
               <div className='settings-section-title-wrapper'>
                 <h3 className='settings-section-title'>Order Configuration</h3>
-                <p className='settings-section-subtitle'>Configure how orders are created and managed</p>
+                <p className='settings-section-subtitle'>
+                  Configure how orders are created and managed
+                </p>
               </div>
             </div>
             <div className='settings-section-body'>
@@ -796,7 +790,10 @@ const SettingsTab = ({
                     }
                     placeholder='HB-'
                   />
-                  <p className='settings-form-hint'>Orders will be numbered as: {orderSettings.orderIdPrefix}001, {orderSettings.orderIdPrefix}002, etc.</p>
+                  <p className='settings-form-hint'>
+                    Orders will be numbered as: {orderSettings.orderIdPrefix}001,{' '}
+                    {orderSettings.orderIdPrefix}002, etc.
+                  </p>
                 </div>
 
                 <div className='settings-toggle-group'>
@@ -806,7 +803,9 @@ const SettingsTab = ({
                         <i className='fa-solid fa-magic'></i>
                         <div>
                           <span className='settings-toggle-label'>Auto-generate Order ID</span>
-                          <span className='settings-toggle-description'>Automatically create unique order IDs</span>
+                          <span className='settings-toggle-description'>
+                            Automatically create unique order IDs
+                          </span>
                         </div>
                       </div>
                       <label className='settings-toggle-switch'>
@@ -814,7 +813,10 @@ const SettingsTab = ({
                           type='checkbox'
                           checked={orderSettings.autoGenerateOrderId}
                           onChange={(e) =>
-                            setOrderSettings({ ...orderSettings, autoGenerateOrderId: e.target.checked })
+                            setOrderSettings({
+                              ...orderSettings,
+                              autoGenerateOrderId: e.target.checked,
+                            })
                           }
                         />
                         <span className='settings-toggle-slider'></span>
@@ -828,7 +830,9 @@ const SettingsTab = ({
                         <i className='fa-solid fa-copy'></i>
                         <div>
                           <span className='settings-toggle-label'>Allow Duplicate Address</span>
-                          <span className='settings-toggle-description'>Allow multiple orders with same address</span>
+                          <span className='settings-toggle-description'>
+                            Allow multiple orders with same address
+                          </span>
                         </div>
                       </div>
                       <label className='settings-toggle-switch'>
@@ -852,8 +856,12 @@ const SettingsTab = ({
                       <div className='settings-toggle-label-wrapper'>
                         <i className='fa-solid fa-shield-halved'></i>
                         <div>
-                          <span className='settings-toggle-label'>Require Payment Confirmation</span>
-                          <span className='settings-toggle-description'>Confirm payment before marking as paid</span>
+                          <span className='settings-toggle-label'>
+                            Require Payment Confirmation
+                          </span>
+                          <span className='settings-toggle-description'>
+                            Confirm payment before marking as paid
+                          </span>
                         </div>
                       </div>
                       <label className='settings-toggle-switch'>
@@ -881,7 +889,7 @@ const SettingsTab = ({
                   <div className='settings-status-list'>
                     {orderSettings.statusOptions.map((status, idx) => (
                       <div key={idx} className='settings-status-item'>
-                        <i className='fa-solid fa-circle' style={{ fontSize: '8px', color: 'var(--admin-text-light)' }}></i>
+                        <i className='fa-solid fa-circle indicator-circle-small'></i>
                         <span>{status}</span>
                       </div>
                     ))}
@@ -910,7 +918,9 @@ const SettingsTab = ({
               </div>
               <div className='settings-section-title-wrapper'>
                 <h3 className='settings-section-title'>Notification Preferences</h3>
-                <p className='settings-section-subtitle'>Configure how and when you receive notifications</p>
+                <p className='settings-section-subtitle'>
+                  Configure how and when you receive notifications
+                </p>
               </div>
             </div>
             <div className='settings-section-body'>
@@ -927,7 +937,9 @@ const SettingsTab = ({
                           <i className='fa-solid fa-calendar-day'></i>
                           <div>
                             <span className='settings-toggle-label'>Daily Summary</span>
-                            <span className='settings-toggle-description'>Receive daily order summary via email</span>
+                            <span className='settings-toggle-description'>
+                              Receive daily order summary via email
+                            </span>
                           </div>
                         </div>
                         <label className='settings-toggle-switch'>
@@ -952,7 +964,9 @@ const SettingsTab = ({
                           <i className='fa-solid fa-bell'></i>
                           <div>
                             <span className='settings-toggle-label'>New Order Alert</span>
-                            <span className='settings-toggle-description'>Get notified when a new order is placed</span>
+                            <span className='settings-toggle-description'>
+                              Get notified when a new order is placed
+                            </span>
                           </div>
                         </div>
                         <label className='settings-toggle-switch'>
@@ -977,7 +991,9 @@ const SettingsTab = ({
                           <i className='fa-solid fa-money-bill-wave'></i>
                           <div>
                             <span className='settings-toggle-label'>Payment Received</span>
-                            <span className='settings-toggle-description'>Alert when payment is received</span>
+                            <span className='settings-toggle-description'>
+                              Alert when payment is received
+                            </span>
                           </div>
                         </div>
                         <label className='settings-toggle-switch'>
@@ -1002,7 +1018,9 @@ const SettingsTab = ({
                           <i className='fa-solid fa-exclamation-triangle'></i>
                           <div>
                             <span className='settings-toggle-label'>Low Order Day Warning</span>
-                            <span className='settings-toggle-description'>Alert when daily orders are below average</span>
+                            <span className='settings-toggle-description'>
+                              Alert when daily orders are below average
+                            </span>
                           </div>
                         </div>
                         <label className='settings-toggle-switch'>
@@ -1035,7 +1053,9 @@ const SettingsTab = ({
                           <i className='fa-solid fa-clock'></i>
                           <div>
                             <span className='settings-toggle-label'>Payment Reminders</span>
-                            <span className='settings-toggle-description'>Send SMS reminders for pending payments</span>
+                            <span className='settings-toggle-description'>
+                              Send SMS reminders for pending payments
+                            </span>
                           </div>
                         </div>
                         <label className='settings-toggle-switch'>
@@ -1060,7 +1080,9 @@ const SettingsTab = ({
                           <i className='fa-solid fa-check-circle'></i>
                           <div>
                             <span className='settings-toggle-label'>Order Confirmations</span>
-                            <span className='settings-toggle-description'>Send SMS when order is confirmed</span>
+                            <span className='settings-toggle-description'>
+                              Send SMS when order is confirmed
+                            </span>
                           </div>
                         </div>
                         <label className='settings-toggle-switch'>
@@ -1100,7 +1122,9 @@ const SettingsTab = ({
                 </div>
                 <div className='settings-section-title-wrapper'>
                   <h3 className='settings-section-title'>Backup & Restore</h3>
-                  <p className='settings-section-subtitle'>Manage your data backups and restore points</p>
+                  <p className='settings-section-subtitle'>
+                    Manage your data backups and restore points
+                  </p>
                 </div>
               </div>
               <div className='settings-section-body'>
@@ -1131,14 +1155,16 @@ const SettingsTab = ({
                   </button>
                 </div>
 
-                <div className='settings-form-group settings-form-group-full' style={{ marginTop: '32px' }}>
+                <div className='settings-form-group settings-form-group-full mt-2xl'>
                   <div className='settings-toggle-item'>
                     <div className='settings-toggle-content'>
                       <div className='settings-toggle-label-wrapper'>
                         <i className='fa-solid fa-clock-rotate-left'></i>
                         <div>
                           <span className='settings-toggle-label'>Enable Auto Backup</span>
-                          <span className='settings-toggle-description'>Automatically backup data daily</span>
+                          <span className='settings-toggle-description'>
+                            Automatically backup data daily
+                          </span>
                         </div>
                       </div>
                       <label className='settings-toggle-switch'>
@@ -1169,7 +1195,9 @@ const SettingsTab = ({
                         setDataSettings({ ...dataSettings, autoBackupTime: e.target.value })
                       }
                     />
-                    <p className='settings-form-hint'>Daily backup will run automatically at this time</p>
+                    <p className='settings-form-hint'>
+                      Daily backup will run automatically at this time
+                    </p>
                   </div>
                 )}
 
@@ -1186,11 +1214,11 @@ const SettingsTab = ({
 
             <div className='settings-section-card settings-danger-zone'>
               <div className='settings-section-header'>
-                <div className='settings-section-icon-wrapper' style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
+                <div className='settings-section-icon-wrapper danger-zone-icon-wrapper'>
                   <i className='fa-solid fa-triangle-exclamation'></i>
                 </div>
                 <div className='settings-section-title-wrapper'>
-                  <h3 className='settings-section-title' style={{ color: '#ef4444' }}>Danger Zone</h3>
+                  <h3 className='settings-section-title danger-zone-title'>Danger Zone</h3>
                   <p className='settings-section-subtitle'>Irreversible and destructive actions</p>
                 </div>
               </div>
@@ -1201,7 +1229,8 @@ const SettingsTab = ({
                     <div>
                       <span className='settings-danger-action-label'>Clear All Data</span>
                       <span className='settings-danger-action-description'>
-                        Permanently delete all orders, customers, and settings. This action cannot be undone.
+                        Permanently delete all orders, customers, and settings. This action cannot
+                        be undone.
                       </span>
                     </div>
                   </div>
@@ -1303,7 +1332,9 @@ const SettingsTab = ({
                 </div>
                 <div className='settings-section-title-wrapper'>
                   <h3 className='settings-section-title'>Change Password</h3>
-                  <p className='settings-section-subtitle'>Update your account password for better security</p>
+                  <p className='settings-section-subtitle'>
+                    Update your account password for better security
+                  </p>
                 </div>
               </div>
               <div className='settings-section-body'>
@@ -1332,7 +1363,9 @@ const SettingsTab = ({
                       type='password'
                       className='settings-input-field'
                       value={userProfile.newPassword}
-                      onChange={(e) => setUserProfile({ ...userProfile, newPassword: e.target.value })}
+                      onChange={(e) =>
+                        setUserProfile({ ...userProfile, newPassword: e.target.value })
+                      }
                       placeholder='Enter new password'
                     />
                   </div>
@@ -1372,7 +1405,9 @@ const SettingsTab = ({
                 </div>
                 <div className='settings-section-title-wrapper'>
                   <h3 className='settings-section-title'>Appearance Settings</h3>
-                  <p className='settings-section-subtitle'>Customize the look and feel of your dashboard</p>
+                  <p className='settings-section-subtitle'>
+                    Customize the look and feel of your dashboard
+                  </p>
                 </div>
               </div>
               <div className='settings-section-body'>
@@ -1383,7 +1418,9 @@ const SettingsTab = ({
                   </label>
                   <div className='settings-theme-options'>
                     <label
-                      className={`settings-theme-option-enhanced ${themeSettings.theme === 'light' ? 'active' : ''}`}
+                      className={`settings-theme-option-enhanced ${
+                        themeSettings.theme === 'light' ? 'active' : ''
+                      }`}
                     >
                       <input
                         type='radio'
@@ -1392,13 +1429,18 @@ const SettingsTab = ({
                         checked={themeSettings.theme === 'light'}
                         onChange={(e) => handleThemeChange({ theme: e.target.value })}
                       />
-                      <div className='settings-theme-option-preview' style={{ background: '#ffffff', border: '2px solid #e2e8f0' }}>
+                      <div
+                        className='settings-theme-option-preview'
+                        style={{ background: '#ffffff', border: '2px solid #e2e8f0' }}
+                      >
                         <i className='fa-solid fa-sun'></i>
                       </div>
                       <span className='settings-theme-option-label'>Light</span>
                     </label>
                     <label
-                      className={`settings-theme-option-enhanced ${themeSettings.theme === 'dark' ? 'active' : ''}`}
+                      className={`settings-theme-option-enhanced ${
+                        themeSettings.theme === 'dark' ? 'active' : ''
+                      }`}
                     >
                       <input
                         type='radio'
@@ -1407,13 +1449,18 @@ const SettingsTab = ({
                         checked={themeSettings.theme === 'dark'}
                         onChange={(e) => handleThemeChange({ theme: e.target.value })}
                       />
-                      <div className='settings-theme-option-preview' style={{ background: '#1e293b', border: '2px solid #334155' }}>
+                      <div
+                        className='settings-theme-option-preview'
+                        style={{ background: '#1e293b', border: '2px solid #334155' }}
+                      >
                         <i className='fa-solid fa-moon'></i>
                       </div>
                       <span className='settings-theme-option-label'>Dark</span>
                     </label>
                     <label
-                      className={`settings-theme-option-enhanced ${themeSettings.theme === 'auto' ? 'active' : ''}`}
+                      className={`settings-theme-option-enhanced ${
+                        themeSettings.theme === 'auto' ? 'active' : ''
+                      }`}
                     >
                       <input
                         type='radio'
@@ -1422,7 +1469,13 @@ const SettingsTab = ({
                         checked={themeSettings.theme === 'auto'}
                         onChange={(e) => handleThemeChange({ theme: e.target.value })}
                       />
-                      <div className='settings-theme-option-preview' style={{ background: 'linear-gradient(135deg, #ffffff 0%, #1e293b 100%)', border: '2px solid #64748b' }}>
+                      <div
+                        className='settings-theme-option-preview'
+                        style={{
+                          background: 'linear-gradient(135deg, #ffffff 0%, #1e293b 100%)',
+                          border: '2px solid #64748b',
+                        }}
+                      >
                         <i className='fa-solid fa-circle-half-stroke'></i>
                       </div>
                       <span className='settings-theme-option-label'>Auto</span>
@@ -1458,7 +1511,9 @@ const SettingsTab = ({
                         <i className='fa-solid fa-check'></i>
                       )}
                   </button>
-                  <p className='settings-form-hint'>Uses exact logo colors: Green (#449031) & Orange (#c45c2d)</p>
+                  <p className='settings-form-hint'>
+                    Uses exact logo colors: Green (#449031) & Orange (#c45c2d)
+                  </p>
                 </div>
 
                 <div className='settings-theme-section'>
@@ -1520,44 +1575,79 @@ const SettingsTab = ({
                     onChange={(e) => {
                       const newFontSize = e.target.value;
                       handleThemeChange({ fontSize: newFontSize });
-                      
+
                       const applyFontSize = () => {
                         const adminDashboard = document.querySelector('.admin-dashboard');
                         const adminSidebar = document.querySelector('.admin-sidebar');
                         if (adminDashboard) {
                           const fontSizeMap = {
                             small: '14px',
-                            medium: '16px', 
+                            medium: '16px',
                             large: '18px',
                             'extra-large': '20px',
                           };
-                          
+
                           const fontSize = fontSizeMap[newFontSize] || '16px';
-                          
+
                           // Set CSS variables on :root so they cascade to all elements (including sidebar)
-                          document.documentElement.style.setProperty('--admin-base-font-size', fontSize);
+                          document.documentElement.style.setProperty(
+                            '--admin-base-font-size',
+                            fontSize
+                          );
                           adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
                           adminDashboard.style.fontSize = fontSize;
-                          
+
                           // Calculate and set all derived font sizes on :root
                           const baseSize = parseFloat(fontSize);
                           if (!isNaN(baseSize)) {
-                            document.documentElement.style.setProperty('--admin-font-size-h1', `${baseSize * 1.75}px`);
-                            document.documentElement.style.setProperty('--admin-font-size-h2', `${baseSize * 1.375}px`);
-                            document.documentElement.style.setProperty('--admin-font-size-h3', `${baseSize * 1.125}px`);
-                            document.documentElement.style.setProperty('--admin-font-size-h4', `${baseSize}px`);
-                            document.documentElement.style.setProperty('--admin-font-size-body-lg', `${baseSize * 0.9375}px`);
-                            document.documentElement.style.setProperty('--admin-font-size-body', `${baseSize * 0.875}px`);
-                            document.documentElement.style.setProperty('--admin-font-size-body-sm', `${baseSize * 0.8125}px`);
-                            document.documentElement.style.setProperty('--admin-font-size-body-xs', `${baseSize * 0.75}px`);
-                            document.documentElement.style.setProperty('--admin-font-size-body-xxs', `${baseSize * 0.6875}px`);
-                            document.documentElement.style.setProperty('--admin-font-size-caption', `${baseSize * 0.625}px`);
+                            document.documentElement.style.setProperty(
+                              '--admin-font-size-h1',
+                              `${baseSize * 1.75}px`
+                            );
+                            document.documentElement.style.setProperty(
+                              '--admin-font-size-h2',
+                              `${baseSize * 1.375}px`
+                            );
+                            document.documentElement.style.setProperty(
+                              '--admin-font-size-h3',
+                              `${baseSize * 1.125}px`
+                            );
+                            document.documentElement.style.setProperty(
+                              '--admin-font-size-h4',
+                              `${baseSize}px`
+                            );
+                            document.documentElement.style.setProperty(
+                              '--admin-font-size-body-lg',
+                              `${baseSize * 0.9375}px`
+                            );
+                            document.documentElement.style.setProperty(
+                              '--admin-font-size-body',
+                              `${baseSize * 0.875}px`
+                            );
+                            document.documentElement.style.setProperty(
+                              '--admin-font-size-body-sm',
+                              `${baseSize * 0.8125}px`
+                            );
+                            document.documentElement.style.setProperty(
+                              '--admin-font-size-body-xs',
+                              `${baseSize * 0.75}px`
+                            );
+                            document.documentElement.style.setProperty(
+                              '--admin-font-size-body-xxs',
+                              `${baseSize * 0.6875}px`
+                            );
+                            document.documentElement.style.setProperty(
+                              '--admin-font-size-caption',
+                              `${baseSize * 0.625}px`
+                            );
                           }
-                          
+
                           void adminDashboard.offsetHeight;
                           if (adminSidebar) void adminSidebar.offsetHeight;
-                          
-                          window.dispatchEvent(new CustomEvent('adminFontSizeChanged', { detail: { fontSize } }));
+
+                          window.dispatchEvent(
+                            new CustomEvent('adminFontSizeChanged', { detail: { fontSize } })
+                          );
                         } else {
                           setTimeout(applyFontSize, 50);
                         }
@@ -1613,20 +1703,22 @@ const SettingsTab = ({
                             link.remove();
                           }
                         });
-                        
+
                         const link = document.createElement('link');
                         link.rel = 'stylesheet';
-                        link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(newFontFamily)}:wght@400;500;600;700&display=swap`;
+                        link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(
+                          newFontFamily
+                        )}:wght@400;500;600;700&display=swap`;
                         document.head.appendChild(link);
                       }
 
                       const applyFontFamily = () => {
                         const root = document.documentElement;
                         const fontFamily = `'${newFontFamily}', sans-serif`;
-                        
+
                         root.style.setProperty('--font-primary', fontFamily);
                         document.body.style.fontFamily = fontFamily;
-                        
+
                         const adminDashboard = document.querySelector('.admin-dashboard');
                         if (adminDashboard) {
                           adminDashboard.style.fontFamily = fontFamily;

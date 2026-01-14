@@ -42,19 +42,9 @@
     -webkit-overflow-scrolling: touch;
   }
 
+  /* Mobile override for admin-main */
   .admin-main {
-    margin-left: 0;
-    width: 100%;
-    max-width: 100vw;
-    display: flex;
-    flex-direction: column;
-    min-height: auto;
-    overflow-x: hidden;
-    overflow-y: auto;
-    height: auto;
-    max-height: none;
-    flex: 1;
-    -webkit-overflow-scrolling: touch;
+    margin-left: 0 !important;
   }
 
   .admin-sidebar {
@@ -115,14 +105,14 @@
   }
 
   .top-nav-left {
-    gap: 8px;
+    gap: 12px;
     min-width: 0;
-    flex: 1 1 0%;
+    flex: 1 1 auto;
     overflow: hidden;
     display: flex;
     flex-direction: row;
     align-items: center;
-    max-width: calc(100vw - 24px - 44px - 200px);
+    width: auto;
   }
 
   .top-nav-toggle,
@@ -221,12 +211,55 @@
   }
 
   .stat-card {
-    padding: 14px !important;
+    padding: 12px !important;
     flex-direction: row;
-    align-items: center;
-    gap: 12px !important;
+    align-items: flex-start;
+    gap: 10px !important;
     width: 100%;
     max-width: 100%;
+    margin-bottom: 8px;
+  }
+
+  .stat-card i {
+    min-width: 20px;
+    font-size: 1.2em;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .stat-card div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .stat-card h3 {
+    font-size: 1.4rem;
+    margin: 0 0 2px 0;
+    word-break: break-word;
+    line-height: 1.2;
+  }
+
+  .stat-card p {
+    margin: 2px 0;
+    font-size: 0.9rem;
+  }
+
+  .stat-card-subtitle {
+    font-size: 0.8rem;
+    color: #666;
+    margin: 2px 0 0 0;
+  }
+
+  .admin-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .admin-stats .stat-card:first-child {
+    border-top: 3px solid var(--primary-green);
+    border-radius: 8px;
   }
 
   .dashboard-card {
@@ -236,35 +269,41 @@
   .modal-container {
     width: 100vw;
     max-width: 100vw;
-    height: 100vh;
-    height: 100dvh;
-    max-height: 100vh;
-    max-height: 100dvh;
+    height: auto;
+    max-height: 90vh;
     margin: 0;
-    border-radius: 0;
+    margin-top: auto;
+    border-radius: 16px 16px 0 0;
+    border: none;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
   }
 
   .modal-overlay {
     padding: 0;
-    align-items: stretch;
-    justify-content: stretch;
+    align-items: flex-end;
+    justify-content: flex-end;
   }
 
   .modal-header {
-    padding: 8px 12px;
+    padding: 12px;
     margin: 0;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: center;
   }
 
   .modal-body {
-    padding: 8px 12px;
+    padding: 12px;
     margin: 0;
-    max-height: calc(100vh - 200px);
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .modal-footer {
-    padding: 8px 12px;
+    padding: 12px;
     margin: 0;
-    flex-wrap: wrap;
+    border-top: 1px solid #e0e0e0;
+    flex-wrap: nowrap;
     gap: 8px;
   }
 
@@ -284,6 +323,14 @@
 
   .form-group {
     margin-bottom: 12px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
   }
 
   .form-row {
@@ -353,6 +400,274 @@
   body {
     background-color: var(--admin-bg-light, #ffffff);
     color: var(--admin-text-light, #111827);
+  }
+}
+
+/* Mobile Card Layout for Tables */
+@media (max-width: 480px) {
+  .orders-table-container {
+    overflow-x: hidden;
+  }
+
+  .orders-table {
+    display: none;
+  }
+
+  .orders-mobile-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .order-card-mobile {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .order-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    background: #fafafa;
+  }
+
+  .order-id-badge {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .status-badge.status-paid,
+  .status-badge.status-Paid {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .status-badge.status-pending,
+  .status-badge.status-Pending {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  .status-badge.status-cancelled,
+  .status-badge.status-Cancelled {
+    background: #f8d7da;
+    color: #721c24;
+  }
+
+  .order-card-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .order-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .detail-label {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+    min-width: 80px;
+  }
+
+  .detail-value {
+    font-size: 0.95rem;
+    color: #333;
+    text-align: right;
+    flex: 1;
+    font-weight: 500;
+    word-break: break-word;
+  }
+
+  .order-card-actions {
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px;
+    border-top: 1px solid #f0f0f0;
+    background: #fafafa;
+  }
+
+  .btn-card-action {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    height: 36px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-edit {
+    background: #4caf50;
+    color: white;
+  }
+
+  .btn-edit:active {
+    background: #45a049;
+    transform: scale(0.98);
+  }
+
+  .btn-delete {
+    background: #f44336;
+    color: white;
+  }
+
+  .btn-delete:active {
+    background: #da190b;
+    transform: scale(0.98);
+  }
+
+  .empty-orders {
+    text-align: center;
+    padding: 32px 12px;
+    color: #999;
+    font-size: 0.95rem;
+  }
+
+  .table-checkbox-header {
+    display: none;
+  }
+
+  .sortable-header:first-child {
+    display: none;
+  }
+}
+
+/* Tablet Card Layout for Tables */
+@media (min-width: 480px) and (max-width: 768px) {
+  .orders-table {
+    font-size: 0.85rem;
+  }
+
+  .orders-table th,
+  .orders-table td {
+    padding: 10px 6px;
+  }
+}
+
+/* Tablet (480px - 768px) */
+@media (min-width: 480px) and (max-width: 768px) {
+  .admin-top-nav {
+    padding: 0 16px;
+    gap: 12px;
+    height: 60px;
+    min-height: 60px;
+  }
+
+  .top-nav-title {
+    font-size: 1.1rem;
+  }
+
+  .top-nav-subtitle {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--admin-text-secondary, #666);
+  }
+
+  .hamburger-btn {
+    display: none;
+  }
+
+  .stat-card {
+    padding: 14px;
+  }
+
+  .admin-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+/* Desktop (768px+) */
+@media (min-width: 768px) {
+  .admin-top-nav {
+    padding: 0 20px;
+    gap: 16px;
+    height: 64px;
+    min-height: 64px;
+  }
+
+  .top-nav-title {
+    font-size: 1.25rem;
+  }
+
+  .top-nav-subtitle {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--admin-text-secondary, #666);
+  }
+
+  .hamburger-btn {
+    display: none;
+  }
+
+  .admin-sidebar {
+    position: static;
+    width: 280px;
+    height: 100%;
+    transition: none;
+    box-shadow: none;
+  }
+
+  .admin-main {
+    display: flex;
+    flex: 1;
+  }
+
+  .modal-container {
+    width: auto;
+    max-width: 600px;
+    height: auto;
+    max-height: 90vh;
+    margin: auto;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .modal-overlay {
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
   }
 }
 

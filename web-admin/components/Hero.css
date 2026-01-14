@@ -1,6 +1,7 @@
 .hero-section {
   position: relative;
   min-height: 90vh;
+  max-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -9,9 +10,21 @@
   background-position: center;
   background-attachment: fixed;
   text-align: center;
-  padding-top: 140px;
+  padding-top: 80px;
   margin-top: 0;
   z-index: 0;
+}
+
+@media (min-width: 768px) {
+  .hero-section {
+    padding-top: 100px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .hero-section {
+    padding-top: 120px;
+  }
 }
 
 .hero-overlay {
@@ -129,6 +142,21 @@
   flex-wrap: wrap;
   animation: fadeInUp 0.8s ease 0.8s both;
   margin-bottom: 1.5rem;
+  margin-top: var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .hero-actions {
+    gap: var(--space-6);
+    margin-top: var(--space-8);
+  }
+}
+
+@media (min-width: 1200px) {
+  .hero-actions {
+    gap: var(--space-8);
+    margin-top: var(--space-10);
+  }
 }
 
 .hero-contact-info {
@@ -154,7 +182,6 @@
   font-weight: 600;
   transition: color 0.2s ease;
 }
-
 
 /* Hero buttons use standard button system - no custom overrides needed */
 

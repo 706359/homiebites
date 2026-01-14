@@ -1,16 +1,31 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
 import { getProfitStats } from './utils/calculations.js';
 import { formatDate, parseOrderDate } from './utils/dateUtils.js';
 import {
   extractOrderIdSequence,
   formatCurrency,
-  formatNumberIndian,
   getTotalRevenue,
   isPendingStatus,
 } from './utils/orderUtils.js';
 
 const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
+  // Detect mobile for responsive chart height
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < 480 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 480);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Chart height: 120px on mobile, 180px on desktop
+  const chartHeight = isMobile ? 120 : 180;
   // Early return if loading to avoid unnecessary calculations
   if (loading) {
     return (
@@ -29,7 +44,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   // Use raw orders array directly for all-time calculations to ensure no orders are excluded
   const allTimeOrders = Array.isArray(orders) ? orders : [];
   const allTimeTotal = allTimeOrders.length;
-  
+
   // Simple direct calculation: Sum totalAmount field from all orders, one by one
   let allTimeRevenue = 0;
   for (let i = 0; i < allTimeOrders.length; i++) {
@@ -41,7 +56,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
       }
     }
   }
-  
+
   // Log calculation results with sample order details
   const sampleOrder = allTimeOrders.length > 0 ? allTimeOrders[0] : null;
   let sampleAmount = null;
@@ -57,24 +72,26 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
       sampleAmount = Math.round(qty * price);
     }
   }
-  
+
   console.log('📊 DashboardTab Calculations:', {
     ordersCount: allTimeTotal,
     totalRevenue: allTimeRevenue,
     expectedRevenue: 374345,
     revenueMatch: allTimeRevenue === 374345,
     revenueDiff: 374345 - allTimeRevenue,
-    sampleOrder: sampleOrder ? {
-      orderId: sampleOrder.orderId,
-      totalAmount: sampleOrder.totalAmount,
-      total: sampleOrder.total,
-      quantity: sampleOrder.quantity,
-      unitPrice: sampleOrder.unitPrice,
-      calculatedAmount: sampleAmount,
-      usingStored: sampleOrder.totalAmount !== undefined && sampleOrder.totalAmount !== null
-    } : null
+    sampleOrder: sampleOrder
+      ? {
+          orderId: sampleOrder.orderId,
+          totalAmount: sampleOrder.totalAmount,
+          total: sampleOrder.total,
+          quantity: sampleOrder.quantity,
+          unitPrice: sampleOrder.unitPrice,
+          calculatedAmount: sampleAmount,
+          usingStored: sampleOrder.totalAmount !== undefined && sampleOrder.totalAmount !== null,
+        }
+      : null,
   });
-  
+
   const profitStats = getProfitStats(allTimeRevenue, 70, 30);
 
   // Calculate pending amount using the exact same logic as getTotalRevenue
@@ -95,16 +112,16 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     }
   }
   const unpaidOrdersCount = pendingOrders.length;
-  
+
   // Log pending calculations
   console.log('💰 DashboardTab Pending:', {
     pendingOrdersCount: unpaidOrdersCount,
     pendingAmount: allTimeUnpaidAmount,
     expectedPending: 7858,
     pendingMatch: allTimeUnpaidAmount === 7858,
-    pendingDiff: 7858 - allTimeUnpaidAmount
+    pendingDiff: 7858 - allTimeUnpaidAmount,
   });
-  
+
   // Critical validation - log only if values don't match expected (after calculations complete)
   if (allTimeOrders.length > 0) {
     if (Math.abs(allTimeRevenue - 374345) > 10) {
@@ -112,7 +129,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
         calculated: allTimeRevenue,
         expected: 374345,
         difference: 374345 - allTimeRevenue,
-        ordersCount: allTimeTotal
+        ordersCount: allTimeTotal,
       });
     }
     if (Math.abs(allTimeUnpaidAmount - 7858) > 10) {
@@ -120,11 +137,10 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
         calculated: allTimeUnpaidAmount,
         expected: 7858,
         difference: 7858 - allTimeUnpaidAmount,
-        pendingOrdersCount: unpaidOrdersCount
+        pendingOrdersCount: unpaidOrdersCount,
       });
     }
   }
-
 
   const allUniqueAddresses = new Set(
     orders.map((o) => o.deliveryAddress || o.customerAddress || o.address).filter(Boolean)
@@ -475,7 +491,10 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
       <div className='dashboard-with-sidebar'>
         <div className='dashboard-main-content'>
           {}
-          <div className='admin-stats' key={`stats-${allTimeTotal}-${allTimeRevenue}-${allTimeUnpaidAmount}`}>
+          <div
+            className='admin-stats'
+            key={`stats-${allTimeTotal}-${allTimeRevenue}-${allTimeUnpaidAmount}`}
+          >
             <div className='stat-card'>
               <i className='fa-solid fa-rupee-sign'></i>
               <div>
@@ -584,7 +603,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                             <div className='chart-bars-container'>
                               {yearEntries.map(([year, data]) => {
                                 const barHeight =
-                                  maxRevenue > 0 ? (data.revenue / maxRevenue) * 180 : 0;
+                                  maxRevenue > 0 ? (data.revenue / maxRevenue) * chartHeight : 0;
                                 const isCurrentYear = parseInt(year) === now.getFullYear();
                                 const isLastYear = parseInt(year) === now.getFullYear() - 1;
 
@@ -613,8 +632,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                       title={`${monthData.monthName} ${year}: ₹${formatCurrency(
                                         data.revenue
                                       )} (${data.orders} orders)`}
-                                    >
-                                    </div>
+                                    ></div>
                                     {yearEntries.length > 1 && (
                                       <span className='text-xs text-light chart-year-label'>
                                         {year.toString().slice(-2)}
@@ -689,16 +707,11 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                           0
                         );
 
-                        const cashHeight =
-                          maxAmount > 0 ? (totalCash / maxAmount) * 180 : 0;
-                        const onlineHeight =
-                          maxAmount > 0 ? (totalOnline / maxAmount) * 180 : 0;
+                        const cashHeight = maxAmount > 0 ? (totalCash / maxAmount) * 180 : 0;
+                        const onlineHeight = maxAmount > 0 ? (totalOnline / maxAmount) * 180 : 0;
 
                         return (
-                          <div
-                            key={idx}
-                            className='bar-chart-item bar-chart-item-single-year'
-                          >
+                          <div key={idx} className='bar-chart-item bar-chart-item-single-year'>
                             <div className='chart-bars-container chart-bars-container-payment-mode'>
                               <div className='chart-payment-mode-group'>
                                 <div

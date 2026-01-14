@@ -8,7 +8,7 @@ import { formatCurrency } from './utils/orderUtils.js';
 
 const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = false }) => {
   const [menuItems, setMenuItems] = useState([]);
-  const [originalCategories, setOriginalCategories] = useState([]); 
+  const [originalCategories, setOriginalCategories] = useState([]);
   const [categories, setCategories] = useState(['Breakfast', 'Lunch', 'Dinner']);
   const [loadingMenu, setLoadingMenu] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -17,16 +17,14 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
-  const [sortBy, setSortBy] = useState('name'); 
-  const [sortOrder, setSortOrder] = useState('asc'); 
+  const [sortBy, setSortBy] = useState('name');
+  const [sortOrder, setSortOrder] = useState('asc');
 
-  
   useAutoKeyboardAvoidance({
     containerSelector: '.modal-container, .menu-price-tab',
     inputSelector: 'input, textarea, select',
   });
 
-  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -36,12 +34,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     category: '',
   });
 
-  
   useEffect(() => {
     loadMenuItems();
   }, []);
 
-  
   useEffect(() => {
     const defaultCategories = ['Breakfast', 'Lunch', 'Dinner'];
     if (
@@ -49,7 +45,9 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       !categories.includes('Breakfast') ||
       !categories.includes('Dinner')
     ) {
-      console.log('[Categories] Ensuring default categories are present. Current:', categories);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Categories] Ensuring default categories are present. Current:', categories);
+      }
       const merged = [...new Set([...defaultCategories, ...categories])];
       setCategories(merged);
     }
@@ -58,32 +56,28 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
   const loadMenuItems = async () => {
     setLoadingMenu(true);
     try {
-      
       const response = await api.getMenu();
 
-      console.log('[Menu Load] Backend response:', {
-        success: response?.success,
-        hasData: !!response?.data,
-        isArray: Array.isArray(response?.data),
-        dataLength: response?.data?.length || 0,
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Menu Load] Backend response:', {
+          success: response?.success,
+          hasData: !!response?.data,
+          isArray: Array.isArray(response?.data),
+          dataLength: response?.data?.length || 0,
+        });
+      }
 
       if (response.success && response.data && Array.isArray(response.data)) {
         const totalItems = response.data.reduce((sum, cat) => sum + (cat.items?.length || 0), 0);
-        console.log('[Menu Load] Loaded categories:', {
-          categoriesCount: response.data.length,
-          totalItems: totalItems,
-          categoriesDetail: response.data.map((cat) => ({
-            category: cat.category,
-            itemsCount: cat.items?.length || 0,
-            itemNames: cat.items?.map((i) => i.name) || [],
-          })),
-        });
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Menu Load] Loaded categories:', {
+            categoriesCount: response.data.length,
+            totalItems: totalItems,
+          });
+        }
 
-        
         setOriginalCategories(response.data);
 
-        
         const flattenedItems = [];
         response.data.forEach((category) => {
           if (category.items && Array.isArray(category.items)) {
@@ -100,53 +94,52 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           }
         });
 
-        console.log('[Menu Load] Flattened items:', {
-          itemsCount: flattenedItems.length,
-          categories: [...new Set(flattenedItems.map((item) => item.category))],
-        });
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Menu Load] Flattened items:', {
+            itemsCount: flattenedItems.length,
+            categories: [...new Set(flattenedItems.map((item) => item.category))],
+          });
+        }
 
         setMenuItems(flattenedItems);
 
         const defaultCategories = ['Breakfast', 'Lunch', 'Dinner'];
 
-        
         const uniqueCategories = [...new Set(flattenedItems.map((item) => item.category))];
 
-        console.log('[Menu Load] Category processing:', {
-          defaultCategories,
-          uniqueCategoriesFromItems: uniqueCategories,
-        });
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Menu Load] Category processing:', {
+            defaultCategories,
+            uniqueCategoriesFromItems: uniqueCategories,
+          });
+        }
 
-        
         const allCategories = [...new Set([...defaultCategories, ...uniqueCategories])];
-
-        console.log('[Menu Load] Final categories to set:', allCategories);
-
-        
-        console.log('[Menu Load] Setting categories to:', allCategories);
         setCategories(allCategories);
       } else {
-        console.warn('[Menu Load] Invalid response structure:', response);
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('[Menu Load] Invalid response structure:', response);
+        }
         setMenuItems([]);
         setOriginalCategories([]);
-        
+
         setCategories(['Breakfast', 'Lunch', 'Dinner']);
       }
     } catch (error) {
-      console.error('[Menu Load] Error loading menu items:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[Menu Load] Error loading menu items:', error);
+      }
       setMenuItems([]);
-      
+
       setCategories(['Breakfast', 'Lunch', 'Dinner']);
     } finally {
       setLoadingMenu(false);
     }
   };
 
-  
   const convertItemsToCategories = (items) => {
     const categoriesMap = {};
 
-    
     if (originalCategories && originalCategories.length > 0) {
       originalCategories.forEach((originalCategory) => {
         const categoryName = originalCategory.category;
@@ -163,12 +156,9 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       });
     }
 
-    
     items.forEach((item) => {
-      
       let categoryName = item.category;
       if (!categoryName || categoryName.trim() === '') {
-        
         const existingCategoryNames = Object.keys(categoriesMap);
         if (existingCategoryNames.length > 0) {
           categoryName = existingCategoryNames[0];
@@ -177,15 +167,15 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         } else {
           categoryName = 'Lunch';
         }
-        console.log('[Convert Categories] Assigned category to item:', {
-          itemName: item.name,
-          assignedCategory: categoryName,
-        });
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Convert Categories] Assigned category to item:', {
+            itemName: item.name,
+            assignedCategory: categoryName,
+          });
+        }
       }
 
       if (!categoriesMap[categoryName]) {
-        
-        
         const existingItemInCategory = items.find(
           (i) => i.category === categoryName && i.categoryId
         );
@@ -201,7 +191,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         };
       }
 
-      
       const { category, categoryId, categoryIcon, categoryTag, categoryDescription, ...itemData } =
         item;
       categoriesMap[categoryName].items.push(itemData);
@@ -210,27 +199,27 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     const result = Object.values(categoriesMap);
     const totalItems = result.reduce((sum, cat) => sum + (cat.items?.length || 0), 0);
 
-    console.log('[Convert Categories] Converted to categories:', {
-      categoriesCount: result.length,
-      totalItems: totalItems,
-      categories: result.map((cat) => ({
-        name: cat.category,
-        itemsCount: cat.items?.length || 0,
-      })),
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Convert Categories] Converted to categories:', {
+        categoriesCount: result.length,
+        totalItems: totalItems,
+      });
+    }
 
-    
     const categoriesWithItems = result.filter((cat) => cat.items && cat.items.length > 0);
 
     if (categoriesWithItems.length === 0) {
-      console.error('[Convert Categories] Error: No categories with items found after conversion');
+      if (process.env.NODE_ENV === 'development') {
+        console.error(
+          '[Convert Categories] Error: No categories with items found after conversion'
+        );
+      }
       throw new Error('No menu items found. Please add at least one menu item.');
     }
 
     return categoriesWithItems;
   };
 
-  
   const publicImages = [
     'Amritsarichhole.png',
     'Curd.jpg',
@@ -250,7 +239,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     'VegThali.png',
   ];
 
-  
   const normalizeName = (name) => {
     return name
       .toLowerCase()
@@ -259,13 +247,11 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       .trim();
   };
 
-  
   const findImageByName = (itemName) => {
     if (!itemName) return '/food.jpeg';
 
     const normalizedName = normalizeName(itemName);
 
-    
     const commonMatches = {
       chhole: 'Amritsarichhole.png',
       chole: 'Amritsarichhole.png',
@@ -295,7 +281,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       }
     }
 
-    
     for (const image of publicImages) {
       const imageName = normalizeName(image.replace(/\.(jpg|jpeg|png)$/i, ''));
       if (imageName.includes(normalizedName) || normalizedName.includes(imageName)) {
@@ -303,12 +288,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       }
     }
 
-    return '/food.jpeg'; 
+    return '/food.jpeg';
   };
 
-  
   const getItemImageUrl = (item) => {
-    
     if (item.imageUrl && item.imageUrl.trim() !== '') {
       const imageUrl = item.imageUrl.trim();
       if (imageUrl.startsWith('/')) {
@@ -320,42 +303,39 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       }
     }
 
-    
     return findImageByName(item.name);
   };
 
-  
-  
-  
-  
   const syncMenuItemsToGallery = async (items, showNotification = null) => {
     try {
-      console.log('[Gallery Sync] Starting sync for', items.length, 'menu items');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Gallery Sync] Starting sync for', items.length, 'menu items');
+      }
 
-      
       let galleryResponse;
       try {
         galleryResponse = await api.getGallery();
-        console.log(
-          '[Gallery Sync] Fetched',
-          galleryResponse?.data?.length || 0,
-          'existing gallery items'
-        );
+        if (process.env.NODE_ENV === 'development') {
+          console.log(
+            '[Gallery Sync] Fetched',
+            galleryResponse?.data?.length || 0,
+            'existing gallery items'
+          );
+        }
       } catch (error) {
-        console.error('[Gallery Sync] Error fetching gallery:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[Gallery Sync] Error fetching gallery:', error);
+        }
         throw new Error('Failed to fetch gallery: ' + (error.message || 'Unknown error'));
       }
 
       const existingGalleryItems =
         galleryResponse.success && galleryResponse.data ? galleryResponse.data : [];
 
-      
       const itemsToSync = items
         .map((item) => {
-          
           let finalImageUrl = item.imageUrl;
           if (finalImageUrl && finalImageUrl.trim() !== '') {
-            
             finalImageUrl = finalImageUrl.trim();
             if (
               !finalImageUrl.startsWith('/') &&
@@ -365,7 +345,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
               finalImageUrl = '/' + finalImageUrl;
             }
           } else {
-            
             finalImageUrl = getItemImageUrl(item);
           }
 
@@ -381,43 +360,34 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           return hasImage && hasPrice && isAvailable;
         });
 
-      console.log('[Gallery Sync] Filtering items for gallery:', {
-        totalItems: items.length,
-        itemsWithImageAndPrice: itemsToSync.length,
-        itemsToSync: itemsToSync.map((i) => ({
-          name: i.name,
-          imageUrl: i.imageUrl, 
-          price: i.price,
-        })),
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Gallery Sync] Filtering items for gallery:', {
+          totalItems: items.length,
+          itemsWithImageAndPrice: itemsToSync.length,
+        });
+      }
 
-      if (itemsToSync.length === 0) {
+      if (itemsToSync.length === 0 && process.env.NODE_ENV === 'development') {
         console.warn(
           '[Gallery Sync] No items to sync - items need imageUrl and price to appear in gallery'
         );
       }
 
-      
       let created = 0;
       let updated = 0;
 
       for (const item of itemsToSync) {
-        
         const finalImageUrl = item.imageUrl;
 
-        console.log('[Gallery Sync] Syncing item:', {
-          name: item.name,
-          originalImageUrl: item.imageUrl,
-          finalImageUrl: finalImageUrl,
-          wasAutoGenerated:
-            !item.imageUrl || item.imageUrl.trim() === ''
-              ? 'Yes (from name)'
-              : 'No (user provided)',
-        });
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Gallery Sync] Syncing item:', {
+            name: item.name,
+          });
+        }
 
         const galleryItemData = {
           name: item.name,
-          imageUrl: finalImageUrl, 
+          imageUrl: finalImageUrl,
           alt: item.name,
           caption: item.price ? `${item.name} - ₹${item.price}` : item.name,
           price: item.price,
@@ -430,40 +400,44 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           isActive: item.isAvailable !== false,
         };
 
-        
         const existingItem = existingGalleryItems.find((gi) => gi.name === item.name);
 
         if (existingItem) {
-          
           try {
             const updateResponse = await api.updateGalleryItem(
               existingItem._id || existingItem.id,
               galleryItemData
             );
             updated++;
-            console.log('[Gallery Sync] Updated gallery item:', item.name);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[Gallery Sync] Updated gallery item:', item.name);
+            }
           } catch (error) {
-            console.error('[Gallery Sync] Error updating gallery item', item.name, ':', error);
+            if (process.env.NODE_ENV === 'development') {
+              console.error('[Gallery Sync] Error updating gallery item', item.name, ':', error);
+            }
             throw error;
           }
         } else {
-          
           try {
             const createResponse = await api.createGalleryItem(galleryItemData);
             created++;
-            console.log(
-              '[Gallery Sync] Created gallery item:',
-              item.name,
-              '- Now visible on website gallery'
-            );
+            if (process.env.NODE_ENV === 'development') {
+              console.log(
+                '[Gallery Sync] Created gallery item:',
+                item.name,
+                '- Now visible on website gallery'
+              );
+            }
           } catch (error) {
-            console.error('[Gallery Sync] Error creating gallery item', item.name, ':', error);
+            if (process.env.NODE_ENV === 'development') {
+              console.error('[Gallery Sync] Error creating gallery item', item.name, ':', error);
+            }
             throw error;
           }
         }
       }
 
-      
       const menuItemNames = new Set(itemsToSync.map((item) => item.name));
 
       let deactivated = 0;
@@ -474,20 +448,19 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         }
       }
 
-      console.log('[Gallery Sync] Sync complete:', {
-        created,
-        updated,
-        deactivated,
-        totalActive: created + updated,
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Gallery Sync] Sync complete:', {
+          created,
+          updated,
+          deactivated,
+          totalActive: created + updated,
+        });
+      }
 
-      
       try {
-        
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('gallery-updated'));
 
-          
           localStorage.setItem('gallery-last-update', Date.now().toString());
 
           console.log('[Gallery Sync] Triggered gallery refresh event');
@@ -496,16 +469,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         console.warn('[Gallery Sync] Could not trigger refresh event:', e);
       }
 
-      
       if (showNotification && (created > 0 || updated > 0)) {
         showNotification(
           `Gallery sync complete: ${created} created, ${updated} updated. Items should now appear on website.`,
           'success'
         );
       }
-
-      
-      
     } catch (error) {
       console.error('[Gallery Sync] Error syncing menu items to gallery:', error);
       if (showNotification) {
@@ -514,7 +483,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           'error'
         );
       }
-      
     }
   };
 
@@ -534,76 +502,85 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
       const categories = convertItemsToCategories(items);
 
-      
       const totalItemsInCategories = categories.reduce(
         (sum, cat) => sum + (cat.items?.length || 0),
         0
       );
       if (totalItemsInCategories === 0) {
-        console.warn('[Menu Save] Warning: No items to save after conversion');
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('[Menu Save] Warning: No items to save after conversion');
+        }
         throw new Error('No menu items to save. Please add at least one menu item.');
       }
 
-      
-      console.log('[Menu Save] Full categories structure:', JSON.stringify(categories, null, 2));
-      console.log('[Menu Save] Sending categories to backend:', {
-        categoriesCount: categories.length,
-        itemsCount: items.length,
-        totalItemsInCategories: totalItemsInCategories,
-        categoriesStructure: categories.map((cat) => ({
-          category: cat.category,
-          itemsCount: cat.items?.length || 0,
-          allItemNames: cat.items?.map((i) => i.name) || [],
-        })),
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Menu Save] Sending categories to backend:', {
+          categoriesCount: categories.length,
+          itemsCount: items.length,
+        });
+      }
 
       const response = await api.updateMenu(categories);
-      console.log('[Menu Save] Backend response:', {
-        success: response?.success,
-        dataLength: response?.data?.length || 0,
-        error: response?.error,
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Menu Save] Backend response:', {
+          success: response?.success,
+          dataLength: response?.data?.length || 0,
+        });
+      }
 
       if (!response) {
-        console.error('[Menu Save] No response from server');
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[Menu Save] No response from server');
+        }
         throw new Error('No response from server');
       }
 
       if (response.success !== true) {
         const errorMsg = response?.error || 'Failed to save menu';
-        console.error('[Menu Save] Backend returned error:', errorMsg);
-        console.error('[Menu Save] Full error response:', response);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[Menu Save] Backend returned error:', errorMsg);
+        }
         throw new Error(errorMsg);
       }
 
       if (!response.data || !Array.isArray(response.data)) {
-        console.warn('[Menu Save] Backend response missing valid data:', response);
-        
-      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('[Menu Save] Backend response missing valid data:', response);
+        }
+      } else if (process.env.NODE_ENV === 'development') {
         console.log('[Menu Save] Successfully saved menu with', response.data.length, 'categories');
       }
 
-      
-      console.log('[Menu Save] Starting gallery sync for', items.length, 'items...');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Menu Save] Starting gallery sync for', items.length, 'items...');
+      }
       try {
-        await syncMenuItemsToGallery(items, null); 
-        console.log('[Menu Save] Gallery sync completed - items should now be visible on website');
+        await syncMenuItemsToGallery(items, null);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(
+            '[Menu Save] Gallery sync completed - items should now be visible on website'
+          );
+        }
       } catch (syncError) {
-        console.error('[Menu Save] Gallery sync failed:', syncError);
-        
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[Menu Save] Gallery sync failed:', syncError);
+        }
+
         showNotification(
           'Menu saved, but gallery sync failed: ' + (syncError.message || 'Unknown error'),
           'warning'
         );
       }
 
-      
-      console.log('[Menu Save] Reloading menu items after save...');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Menu Save] Reloading menu items after save...');
+      }
       try {
         await loadMenuItems();
-        console.log('[Menu Save] Menu items reloaded successfully');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Menu Save] Menu items reloaded successfully');
+        }
 
-        
         const reloadedResponse = await api.getMenu();
         if (reloadedResponse.success && reloadedResponse.data) {
           const totalLoadedItems = reloadedResponse.data.reduce(
@@ -624,10 +601,8 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         }
       } catch (reloadError) {
         console.error('[Menu Save] Error reloading menu items:', reloadError);
-        
       }
 
-      
       if (showNotification) {
         showNotification('Menu saved successfully', 'success');
       }
@@ -647,11 +622,9 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     }
   };
 
-  
   const filteredMenuItems = useMemo(() => {
     let filtered = [...menuItems];
 
-    
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -662,12 +635,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       );
     }
 
-    
     if (filterCategory) {
       filtered = filtered.filter((item) => item.category === filterCategory);
     }
 
-    
     filtered.sort((a, b) => {
       let aVal, bVal;
 
@@ -680,7 +651,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           aVal = (a.category || '').toLowerCase();
           bVal = (b.category || '').toLowerCase();
           break;
-        default: 
+        default:
           aVal = (a.name || '').toLowerCase();
           bVal = (b.name || '').toLowerCase();
       }
@@ -695,7 +666,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     return filtered;
   }, [menuItems, searchQuery, filterCategory, sortBy, sortOrder]);
 
-  
   const handleAddItem = async () => {
     if (!formData.name.trim() || !formData.price || formData.price <= 0) {
       if (showNotification) {
@@ -706,12 +676,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
     const performAdd = async () => {
       try {
-        
         let itemCategory = 'Breakfast';
         if (categories.length > 0) {
           itemCategory = categories[0];
         } else if (menuItems.length > 0 && menuItems[0].category) {
-          
           itemCategory = menuItems[0].category;
         }
 
@@ -722,7 +690,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           price: parseFloat(formData.price),
           imageUrl: formData.imageUrl || '',
           isAvailable: formData.isAvailable !== false,
-          category: formData.category || itemCategory, 
+          category: formData.category || itemCategory,
         };
 
         console.log('[Add Item] New item created:', {
@@ -733,7 +701,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
         const updatedItems = [...menuItems, newItem];
 
-        
         console.log('[Add Item] Saving new item to backend:', {
           itemName: newItem.name,
           category: newItem.category,
@@ -748,12 +715,11 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           await saveMenuItemsToBackend(updatedItems);
           console.log('[Add Item] Successfully saved to backend, now reloading from backend...');
 
-          
           await loadMenuItems();
           console.log('[Add Item] Reloaded menu items from backend - should now be in sync');
         } catch (error) {
           console.error('[Add Item] Failed to save to backend:', error);
-          
+
           try {
             await loadMenuItems();
           } catch (reloadError) {
@@ -771,8 +737,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           imageUrl: '',
           category: '',
         });
-
-        
       } catch (error) {
         console.error('Error adding menu item:', error);
         if (showNotification) {
@@ -794,7 +758,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     }
   };
 
-  
   const handleImportMenuItems = async () => {
     if (showConfirmation) {
       showConfirmation({
@@ -807,18 +770,14 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           try {
             setLoadingMenu(true);
 
-            
             const newCategories = convertMenuItemsToCategories();
 
-            
             const currentMenuResponse = await api.getMenu();
             const existingCategories =
               currentMenuResponse.success && Array.isArray(currentMenuResponse.data)
                 ? currentMenuResponse.data
                 : [];
 
-            
-            
             const mergedCategories = [...existingCategories];
 
             newCategories.forEach((newCategory) => {
@@ -827,7 +786,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
               );
 
               if (existingIndex >= 0) {
-                
                 const existingItems = mergedCategories[existingIndex].items || [];
                 const existingItemNames = new Set(existingItems.map((item) => item.name));
 
@@ -839,12 +797,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
                 mergedCategories[existingIndex].items = existingItems;
               } else {
-                
                 mergedCategories.push(newCategory);
               }
             });
 
-            
             const flattenedItems = [];
             mergedCategories.forEach((category) => {
               if (category.items && Array.isArray(category.items)) {
@@ -861,10 +817,8 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
               }
             });
 
-            
             await saveMenuItemsToBackend(flattenedItems);
 
-            
             await loadMenuItems();
 
             const importedCount = newCategories.reduce(
@@ -893,7 +847,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     }
   };
 
-  
   const handleEditItem = async () => {
     if (!formData.name.trim() || !formData.price || formData.price <= 0) {
       if (showNotification) {
@@ -911,7 +864,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           price: parseFloat(formData.price),
           imageUrl: formData.imageUrl || '',
           isAvailable: formData.isAvailable !== false,
-          category: formData.category || selectedItem.category || '', 
+          category: formData.category || selectedItem.category || '',
         };
 
         const updatedItems = menuItems.map((item) =>
@@ -925,10 +878,8 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           allItems: updatedItems.map((i) => ({ name: i.name, id: i.id })),
         });
 
-        
         await saveMenuItemsToBackend(updatedItems);
 
-        
         await loadMenuItems();
 
         setShowEditModal(false);
@@ -941,8 +892,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           imageUrl: '',
           category: '',
         });
-
-        
       } catch (error) {
         console.error('Error updating menu item:', error);
         if (showNotification) {
@@ -964,7 +913,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     }
   };
 
-  
   const handleDeleteItem = async () => {
     try {
       const updatedItems = menuItems.filter((item) => item.id !== selectedItem.id);
@@ -977,16 +925,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         remainingItems: updatedItems.map((i) => ({ name: i.name, id: i.id })),
       });
 
-      
       await saveMenuItemsToBackend(updatedItems);
 
-      
       await loadMenuItems();
 
       setShowDeleteModal(false);
       setSelectedItem(null);
-
-      
     } catch (error) {
       console.error('Error deleting menu item:', error);
       if (showNotification) {
@@ -995,19 +939,14 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     }
   };
 
-  
   const handleToggleAvailability = async (item) => {
     try {
       const updatedItem = { ...item, isAvailable: !item.isAvailable };
       const updatedItems = menuItems.map((i) => (i.id === item.id ? updatedItem : i));
 
-      
       await saveMenuItemsToBackend(updatedItems);
 
-      
       await loadMenuItems();
-
-      
     } catch (error) {
       console.error('Error toggling availability:', error);
       if (showNotification) {
@@ -1016,7 +955,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     }
   };
 
-  
   const openEditModal = (item) => {
     setSelectedItem(item);
     setFormData({
@@ -1030,7 +968,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     setShowEditModal(true);
   };
 
-  
   const openDeleteModal = (item) => {
     setSelectedItem(item);
     setShowDeleteModal(true);
@@ -1052,7 +989,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           <button
             className='btn btn-primary btn-small'
             onClick={() => {
-              
               setFormData({
                 name: '',
                 description: '',
@@ -1079,9 +1015,8 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                     confirmText: 'Delete All',
                     onConfirm: async () => {
                       try {
-                        
                         await api.deleteMenu();
-                        
+
                         setMenuItems([]);
                         setOriginalCategories([]);
                         if (showNotification) {
@@ -1111,7 +1046,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           <button
             className='btn btn-secondary btn-small'
             onClick={async () => {
-              
               try {
                 showNotification('Syncing menu items to gallery...', 'info');
                 await syncMenuItemsToGallery(menuItems, showNotification);
@@ -1191,9 +1125,9 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                 setSearchQuery('');
                 setFilterCategory('');
               }}
-              style={{ fontSize: '13px', padding: '10px 16px' }}
+              className='form-label-small'
             >
-              <i className='fa-solid fa-xmark' style={{ marginRight: '6px' }}></i>
+              <i className='fa-solid fa-xmark icon-margin-right-sm'></i>
               Clear Filters
             </button>
           )}
@@ -1202,15 +1136,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
       {}
       {filteredMenuItems.length === 0 ? (
-        <div className='dashboard-card' style={{ textAlign: 'center', padding: '48px' }}>
-          <i
-            className='fa-solid fa-utensils'
-            style={{ fontSize: '64px', color: 'var(--admin-text-light)', marginBottom: '16px' }}
-          ></i>
-          <h3 style={{ color: 'var(--admin-text-secondary)', marginBottom: '8px' }}>
-            No Menu Items
-          </h3>
-          <p className='margin-bottom-24' style={{ color: 'var(--admin-text-light)' }}>
+        <div className='empty-state-container'>
+          <i className='fa-solid fa-utensils empty-state-icon'></i>
+          <h3 className='mb-md'>No Menu Items</h3>
+          <p className='mb-xl empty-state-text'>
             {searchQuery || filterCategory
               ? 'No items match your filters'
               : 'Get started by adding your first menu item'}
@@ -1219,14 +1148,13 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
             <button
               className='btn btn-primary'
               onClick={() => {
-                
                 setFormData({
                   name: '',
                   description: '',
                   price: 0,
                   isAvailable: true,
                   imageUrl: '',
-                  category: '', 
+                  category: '',
                 });
                 setShowAddModal(true);
               }}
@@ -1301,10 +1229,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
                 for (const image of publicImages) {
                   const imageName = normalizeName(image.replace(/\.(jpg|jpeg|png)$/i, ''));
-                  if (
-                    imageName.includes(normalizedName) ||
-                    normalizedName.includes(imageName)
-                  ) {
+                  if (imageName.includes(normalizedName) || normalizedName.includes(imageName)) {
                     return '/' + image;
                   }
                 }
@@ -1316,10 +1241,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                 const imageUrl = item.imageUrl.trim();
                 if (imageUrl.startsWith('/')) {
                   return imageUrl;
-                } else if (
-                  imageUrl.startsWith('http://') ||
-                  imageUrl.startsWith('https://')
-                ) {
+                } else if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
                   return imageUrl;
                 } else {
                   return '/' + imageUrl;
@@ -1368,7 +1290,8 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                       height: '220px',
                       borderRadius: '12px 12px 0 0',
                       overflow: 'hidden',
-                      background: 'linear-gradient(135deg, var(--admin-glass-border) 0%, var(--admin-bg-secondary) 100%)',
+                      background:
+                        'linear-gradient(135deg, var(--admin-glass-border) 0%, var(--admin-bg-secondary) 100%)',
                     }}
                   >
                     <img
@@ -1405,7 +1328,9 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                       }}
                     >
                       <i
-                        className={`fa-solid ${item.isAvailable ? 'fa-check-circle' : 'fa-times-circle'}`}
+                        className={`fa-solid ${
+                          item.isAvailable ? 'fa-check-circle' : 'fa-times-circle'
+                        }`}
                       ></i>
                       <span>{item.isAvailable ? 'Available' : 'Unavailable'}</span>
                     </div>
@@ -1448,7 +1373,9 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                       <span className='menu-item-price-label'>Price</span>
                       <div className='menu-item-price'>
                         <span className='menu-item-price-symbol'>₹</span>
-                        <span className='menu-item-price-amount'>{formatCurrency(item.price || 0)}</span>
+                        <span className='menu-item-price-amount'>
+                          {formatCurrency(item.price || 0)}
+                        </span>
                       </div>
                     </div>
                     <div className='menu-item-actions'>
@@ -1463,7 +1390,9 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                           color: item.isAvailable ? '#10b981' : '#ef4444',
                         }}
                       >
-                        <i className={`fa-solid ${item.isAvailable ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                        <i
+                          className={`fa-solid ${item.isAvailable ? 'fa-eye-slash' : 'fa-eye'}`}
+                        ></i>
                       </button>
                       <button
                         className='menu-item-action-btn menu-item-action-edit'
@@ -1491,43 +1420,44 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       {}
       {showAddModal && (
         <div className='modal-overlay'>
-          <div className='modal-container' style={{ maxWidth: '540px' }}>
-            <div className='modal-header' style={{ padding: '18px 24px' }}>
-              <h2 style={{ fontSize: '20px', margin: 0 }}>Add Menu Item</h2>
-              <button className='btn btn-ghost btn-icon modal-close' onClick={() => setShowAddModal(false)}>
+          <div className='modal-container max-width-540'>
+            <div className='modal-header-compact'>
+              <h2 className='modal-header-title'>Add Menu Item</h2>
+              <button
+                className='btn btn-ghost btn-icon modal-close'
+                onClick={() => setShowAddModal(false)}
+              >
                 <i className='fa-solid fa-times'></i>
               </button>
             </div>
-            <div className='modal-body' style={{ padding: '20px 24px' }}>
+            <div className='modal-body-compact'>
               <div className='form-grid' style={{ gap: '16px' }}>
-                <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-                  <label style={{ fontSize: '13px', marginBottom: '6px' }}>Item Name *</label>
+                <div className='form-group-full'>
+                  <label className='form-label-small'>Item Name *</label>
                   <input
                     type='text'
-                    className='input-field'
+                    className='input-field form-input-small'
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder='e.g., Lunch Combo'
                     required
-                    style={{ padding: '10px 12px', fontSize: '14px' }}
                   />
                 </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-                  <label style={{ fontSize: '13px', marginBottom: '6px' }}>Description</label>
+                <div className='form-group-full'>
+                  <label className='form-label-small'>Description</label>
                   <textarea
-                    className='input-field'
+                    className='input-field form-textarea'
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder='Item description...'
                     rows={2}
-                    style={{ padding: '10px 12px', fontSize: '14px', resize: 'vertical' }}
                   />
                 </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-                  <label style={{ fontSize: '13px', marginBottom: '6px' }}>Price (₹) *</label>
+                <div className='form-group-full'>
+                  <label className='form-label-small'>Price (₹) *</label>
                   <input
                     type='number'
-                    className='input-field'
+                    className='input-field form-input-small'
                     value={formData.price}
                     onChange={(e) =>
                       setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })
@@ -1658,7 +1588,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           <div className='modal-container' style={{ maxWidth: '540px' }}>
             <div className='modal-header' style={{ padding: '18px 24px' }}>
               <h2 style={{ fontSize: '20px', margin: 0 }}>Edit Menu Item</h2>
-              <button className='btn btn-ghost btn-icon modal-close' onClick={() => setShowEditModal(false)}>
+              <button
+                className='btn btn-ghost btn-icon modal-close'
+                onClick={() => setShowEditModal(false)}
+              >
                 <i className='fa-solid fa-times'></i>
               </button>
             </div>

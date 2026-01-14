@@ -1,8 +1,7 @@
 import { useState } from 'react';
+import PremiumLoader from './PremiumLoader.jsx';
 import { formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
 import { isPendingStatus, sortOrdersByOrderId } from './utils/orderUtils.js';
-import PremiumLoader from './PremiumLoader.jsx';
-
 
 function getTimeAgo(date) {
   if (!date) return 'N/A';
@@ -28,7 +27,7 @@ const NotificationsTab = ({
   setActiveTab,
   showConfirmation,
 }) => {
-  const [filter, setFilter] = useState('all'); 
+  const [filter, setFilter] = useState('all');
   const [readNotifications, setReadNotifications] = useState(new Set());
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [notificationSettings, setNotificationSettings] = useState({
@@ -43,16 +42,13 @@ const NotificationsTab = ({
     deliverySMS: false,
   });
 
-  
   const notifications = [];
   const now = new Date();
 
-  
   const fortyFiveDaysAgo = new Date(now);
   fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
   fortyFiveDaysAgo.setHours(0, 0, 0, 0);
 
-  
   const pendingOrders = orders.filter((o) => isPendingStatus(o.status));
   const overduePayments = pendingOrders
     .map((order) => {
@@ -71,7 +67,7 @@ const NotificationsTab = ({
     })
     .filter((item) => item && (item.isOverdue || item.isUrgent))
     .sort((a, b) => b.daysPending - a.daysPending)
-    .slice(0, 15); 
+    .slice(0, 15);
 
   overduePayments.forEach(({ order, orderDate, daysPending, isOverdue }) => {
     const timeAgo = getTimeAgo(orderDate);
@@ -91,10 +87,9 @@ const NotificationsTab = ({
     });
   });
 
-  
   const sevenDaysAgo = new Date(now);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  
+
   const recentOrders = sortOrdersByOrderId(
     orders.filter((order) => {
       try {
@@ -128,11 +123,10 @@ const NotificationsTab = ({
     });
   });
 
-  
   notifications.sort((a, b) => {
     if (a.isOverdue && !b.isOverdue) return -1;
     if (!a.isOverdue && b.isOverdue) return 1;
-    
+
     const timeA = a.timeAgo.includes('mins') ? 0 : a.timeAgo.includes('hour') ? 1 : 2;
     const timeB = b.timeAgo.includes('mins') ? 0 : b.timeAgo.includes('hour') ? 1 : 2;
     return timeA - timeB;
@@ -143,7 +137,6 @@ const NotificationsTab = ({
     read: readNotifications.has(notif.id) || notif.read,
   }));
 
-  
   const filteredNotifications = notificationsWithReadState.filter((notif) => {
     if (filter === 'all') return true;
     if (filter === 'unread') return !notif.read;
@@ -153,7 +146,6 @@ const NotificationsTab = ({
     return true;
   });
 
-  
   const unreadCount = notificationsWithReadState.filter((n) => !n.read).length;
   const paymentCount = notifications.filter((n) => n.type === 'payment').length;
   const orderCount = notifications.filter((n) => n.type === 'order').length;
@@ -174,7 +166,6 @@ const NotificationsTab = ({
     if (showNotification) showNotification('All notifications marked as read', 'success');
   };
 
-  
   const handleAction = (notif) => {
     switch (notif.action) {
       case 'viewOrder':
@@ -203,7 +194,9 @@ const NotificationsTab = ({
         if (showConfirmation && onMarkAsPaid) {
           const order = orders.find((o) => (o._id || o.orderId) === notif.orderId);
           const orderInfo = order
-            ? `Order ${order.orderId || notif.orderId} for ${order.deliveryAddress || order.customerAddress || 'N/A'}`
+            ? `Order ${order.orderId || notif.orderId} for ${
+                order.deliveryAddress || order.customerAddress || 'N/A'
+              }`
             : `Order ${notif.orderId}`;
           showConfirmation({
             title: 'Mark as Paid',
@@ -222,12 +215,10 @@ const NotificationsTab = ({
         if (setActiveTab) setActiveTab('reports');
         break;
       case 'viewDetails':
-        
         break;
     }
   };
 
-  
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'order':
@@ -241,7 +232,6 @@ const NotificationsTab = ({
     }
   };
 
-  
   const getNotificationColor = (type) => {
     switch (type) {
       case 'order':
@@ -330,7 +320,9 @@ const NotificationsTab = ({
             {filteredNotifications.map((notif) => (
               <div
                 key={notif.id}
-                className={`notification-card-grid list-item ${notif.read ? 'read' : 'unread'} ${notif.isOverdue ? 'overdue' : ''}`}
+                className={`notification-card-grid list-item ${notif.read ? 'read' : 'unread'} ${
+                  notif.isOverdue ? 'overdue' : ''
+                }`}
                 onClick={() => handleAction(notif)}
               >
                 <div className='notification-card-grid-header'>
@@ -407,25 +399,19 @@ const NotificationsTab = ({
           <div className='modal-container' onClick={(e) => e.stopPropagation()}>
             <div className='modal-header'>
               <h2>Notification Settings</h2>
-              <button className='btn btn-ghost btn-icon modal-close' onClick={() => setShowSettingsModal(false)}>
+              <button
+                className='btn btn-ghost btn-icon modal-close'
+                onClick={() => setShowSettingsModal(false)}
+              >
                 <i className='fa-solid fa-times'></i>
               </button>
             </div>
             <div className='modal-body'>
               <div className='form-grid'>
-                <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ fontWeight: '600', marginBottom: '12px', display: 'block' }}>
-                    Notify me about:
-                  </label>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                <div className='form-group-full'>
+                  <label className='form-label'>Notify me about:</label>
+                  <div className='flex-column'>
+                    <label className='flex-center cursor-pointer'>
                       <input
                         type='checkbox'
                         checked={notificationSettings.notifyNewOrders}
@@ -616,7 +602,6 @@ const NotificationsTab = ({
               <button
                 className='btn btn-primary'
                 onClick={() => {
-                  
                   if (showNotification) showNotification('Notification settings saved', 'success');
                   setShowSettingsModal(false);
                 }}

@@ -1182,3 +1182,563 @@
   font-weight: 600;
   padding: 4px 8px;
 }
+
+/* ============================================
+   INLINE STYLE CONVERSION CLASSES
+   All inline styles converted to CSS classes
+   ============================================ */
+
+/* FORM GROUPS & LABELS */
+.form-group-full {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+
+.form-group-full-top {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+  margin-top: 4px;
+}
+
+.form-label {
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.form-label-small {
+  font-size: 13px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* INPUTS & TEXTAREAS */
+.form-input-small {
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.form-input-medium {
+  padding: 10px 18px;
+  font-size: 14px;
+}
+
+.form-textarea {
+  padding: 10px 12px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+/* MODAL SECTIONS */
+.modal-header-compact {
+  padding: 18px 24px;
+}
+
+.modal-header-title {
+  font-size: 20px;
+  margin: 0;
+}
+
+.modal-body-compact {
+  padding: 20px 24px;
+}
+
+.modal-footer-compact {
+  padding: 16px 24px;
+  gap: 10px;
+}
+
+/* EMPTY STATES */
+.empty-state-container {
+  padding: 48px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 64px;
+  color: var(--admin-text-light);
+  margin-bottom: 16px;
+}
+
+.empty-state-icon-success {
+  font-size: 64px;
+  color: var(--admin-success);
+  margin-bottom: 16px;
+}
+
+.empty-state-text {
+  color: var(--admin-text-light);
+  font-size: 0.9rem;
+}
+
+/* ICON STYLING */
+.icon-small {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.icon-medium {
+  font-size: 1rem;
+  opacity: 0.7;
+}
+
+.icon-large {
+  font-size: 48px;
+  opacity: 0.3;
+}
+
+.icon-margin-right-xs {
+  margin-right: 6px;
+}
+
+.icon-margin-right-sm {
+  margin-right: 8px;
+}
+
+.icon-margin-left-xs {
+  margin-left: 4px;
+}
+
+/* ICON COLORS */
+.icon-success {
+  color: var(--admin-success);
+}
+
+.icon-warning {
+  color: var(--admin-warning);
+}
+
+.icon-danger {
+  color: var(--admin-danger);
+}
+
+.icon-accent {
+  color: var(--admin-accent);
+}
+
+/* TEXT STYLING */
+.text-bold {
+  font-weight: 600;
+}
+
+.text-bold-styled {
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.text-no-margin {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--admin-text, #1a202c);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-inline-block {
+  display: inline-block;
+}
+
+/* SPACING - PADDING */
+.p-none {
+  padding: 0;
+}
+
+.p-xs {
+  padding: 0.5rem 1rem;
+}
+
+.p-sm {
+  padding: 10px 12px;
+}
+
+.p-md {
+  padding: 10px 18px;
+}
+
+.p-lg {
+  padding: 16px 24px;
+}
+
+.p-extra-lg {
+  padding: 48px;
+}
+
+.px-sm {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.px-md {
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+.px-lg {
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* SPACING - MARGINS */
+.m-none {
+  margin: 0;
+}
+
+.m-xs {
+  margin: 2px 0;
+}
+
+.m-sm {
+  margin: 4px 0;
+}
+
+.m-md {
+  margin: 8px 0;
+}
+
+.m-lg {
+  margin: 12px 0;
+}
+
+.m-xl {
+  margin: 16px 0;
+}
+
+.mt-xs {
+  margin-top: 4px;
+}
+
+.mt-sm {
+  margin-top: 8px;
+}
+
+.mt-md {
+  margin-top: 12px;
+}
+
+.mt-lg {
+  margin-top: 16px;
+}
+
+.mt-xl {
+  margin-top: 1rem;
+}
+
+.mt-2xl {
+  margin-top: 32px;
+}
+
+.mb-xs {
+  margin-bottom: 4px;
+}
+
+.mb-sm {
+  margin-bottom: 6px;
+}
+
+.mb-md {
+  margin-bottom: 8px;
+}
+
+.mb-lg {
+  margin-bottom: 12px;
+}
+
+.mb-xl {
+  margin-bottom: 16px;
+}
+
+.mr-xs {
+  margin-right: 4px;
+}
+
+.mr-sm {
+  margin-right: 6px;
+}
+
+.mr-md {
+  margin-right: 8px;
+}
+
+.ml-xs {
+  margin-left: 4px;
+}
+
+/* DISPLAY & LAYOUT */
+.flex-center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.flex-column-md {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inline-flex {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* CURSOR & INTERACTION */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.select-none {
+  user-select: none;
+}
+
+.cursor-pointer-select-none {
+  cursor: pointer;
+  user-select: none;
+}
+
+/* VISIBILITY */
+.display-none {
+  display: none;
+}
+
+/* MAX WIDTH */
+.max-width-540 {
+  max-width: 540px;
+}
+
+/* MODAL ICON BOX */
+.modal-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* SIDEBAR UTILITIES */
+.sidebar-logo-clickable {
+  cursor: pointer;
+}
+
+.sidebar-logo-fallback-hidden {
+  display: none;
+}
+
+/* SETTINGS UTILITIES */
+.danger-zone-icon-wrapper {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.danger-zone-title {
+  color: #ef4444;
+}
+
+/* INDICATOR CIRCLE */
+.indicator-circle-small {
+  font-size: 8px;
+  color: var(--admin-text-light);
+}
+/* ============================================
+   PWA INSTALL PROMPT STYLES
+   Converted from inline styles
+   ============================================ */
+.pwa-prompt-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 40px);
+  width: min(400px, calc(100vw - 40px));
+  background: #ffffff;
+  border: 2px solid var(--admin-accent, #449031);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 99999;
+  animation: slideUp 0.3s ease;
+  box-sizing: border-box;
+}
+
+.pwa-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.pwa-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--admin-text, #1a202c);
+}
+
+.pwa-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--admin-text-secondary, #64748b);
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pwa-description {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: var(--admin-text-secondary, #64748b);
+  line-height: 1.5;
+}
+
+.pwa-instructions {
+  margin: 0 0 16px 0;
+  padding-left: 20px;
+  font-size: 14px;
+  color: var(--admin-text, #1a202c);
+  line-height: 1.8;
+}
+
+.pwa-instruction-item {
+  margin-bottom: 8px;
+}
+
+.pwa-share-icon {
+  font-size: 18px;
+  display: inline-block;
+  transform: rotate(45deg);
+  margin: 0 4px;
+}
+
+.pwa-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.install-prompt-fixed {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  left: auto;
+  z-index: 10000;
+  max-width: calc(100vw - 40px);
+  box-sizing: border-box;
+}
+
+.install-prompt-btn-style {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 8px rgba(68, 144, 49, 0.3);
+  white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ============================================
+   CSV UPLOAD MODAL STYLES
+   Converted from inline styles
+   ============================================ */
+.file-upload-container {
+  border: 2px dashed var(--admin-border);
+  padding: 48px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-upload-icon-style {
+  font-size: 64px;
+  color: var(--admin-accent);
+  margin-bottom: 16px;
+}
+
+.file-upload-title {
+  margin-bottom: 8px;
+}
+
+.file-upload-or {
+  color: var(--admin-text-secondary);
+  margin-bottom: 16px;
+}
+
+.file-upload-hint-style {
+  color: var(--admin-text-light);
+  font-size: 0.85rem;
+  margin-top: 16px;
+}
+
+.file-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.file-name-heading {
+  margin-bottom: 4px;
+  margin: 0;
+}
+
+.file-size-text {
+  color: var(--admin-text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ============================================
+   EMPTY STATE STYLES
+   Converted from inline styles
+   ============================================ */
+.empty-state-icon-large {
+  font-size: 3rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.empty-state-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.empty-state-message {
+  margin: 0 0 1.5rem 0;
+  font-size: 0.95rem;
+  color: #64748b;
+}
+
+.empty-state-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ============================================
+   TOP NAV STYLES
+   Converted from inline styles
+   ============================================ */
+.profile-chevron-icon {
+  font-size: 12px;
+  margin-left: 8px;
+  opacity: 0.6;
+}

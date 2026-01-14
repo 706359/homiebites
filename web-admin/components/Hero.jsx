@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { useLanguage } from '../contexts/LanguageContext';
+import { getFormattedPhone, getPhoneLink, getWhatsAppLink } from '../lib/businessConstants';
 import './Hero.css';
 
 const Hero = ({ onOrderClick }) => {
@@ -27,19 +27,16 @@ const Hero = ({ onOrderClick }) => {
           </span>
         </div>
         <div className='hero-actions'>
-          <a 
-            href='https://wa.me/919958983578' 
-            target='_blank' 
+          <a
+            href={getWhatsAppLink()}
+            target='_blank'
             rel='noopener noreferrer'
             className='btn btn-primary btn-large'
           >
             <i className='fa-brands fa-whatsapp'></i> Order on WhatsApp
           </a>
-          <a 
-            href='tel:+919958983578' 
-            className='btn btn-secondary btn-large'
-          >
-            <i className='fa-solid fa-phone'></i> Call +91-9958983578
+          <a href={getPhoneLink()} className='btn btn-secondary btn-large'>
+            <i className='fa-solid fa-phone'></i> Call {getFormattedPhone()}
           </a>
         </div>
       </div>

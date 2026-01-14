@@ -662,6 +662,23 @@ a.btn,
   color: rgba(229, 231, 235, 1);
 }
 
+/* Responsive Button Sizing */
+@media (min-width: 768px) {
+  .btn-large {
+    padding: 14px 32px;
+    font-size: var(--admin-font-size-body, 16px);
+    min-height: 48px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .btn-large {
+    padding: 16px 40px;
+    font-size: 1.1rem;
+    height: 48px;
+  }
+}
+
 @media print {
   .btn,
   .action-buttons-group {

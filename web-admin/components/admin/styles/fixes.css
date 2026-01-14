@@ -58,22 +58,14 @@
   margin-bottom: 0;
 }
 
-.action-buttons-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+/* Note: .action-buttons-group base definition is in tailwind-components.css */
 
 .action-buttons-group .action-button,
 .action-buttons-group .action-icon-btn {
   margin: 0;
 }
 
-.dashboard-card {
-  padding: 20px;
-  margin-bottom: 24px;
-}
+/* Note: .dashboard-card base definition is in dashboard-enhancements.css */
 
 .dashboard-card:last-child {
   margin-bottom: 0;
@@ -129,14 +121,7 @@
   }
 }
 
-.pagination-controls {
-  margin-top: 24px;
-  margin-bottom: 24px;
-  padding: 16px 0;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
+/* Note: .pagination-controls base definition is in tailwind-components.css line 4089 */
 
 .modal-header {
   padding: 24px 28px;
@@ -158,11 +143,7 @@
   margin-bottom: 12px;
 }
 
-.modal-footer {
-  padding: 20px 28px;
-  display: flex;
-  gap: 12px;
-}
+/* Note: .modal-footer definition is in tailwind-components.css */
 
 .action-bar {
   padding: 14px 16px;
@@ -220,7 +201,6 @@
   margin-bottom: 0;
 }
 
-
 @media (max-width: 480px) {
   .settings-tab-content {
     padding: 16px;
@@ -247,10 +227,7 @@
   margin-bottom: 0;
 }
 
-.stat-card {
-  padding: 16px 20px;
-  margin: 0;
-}
+/* Note: .stat-card base definition is in tailwind-components.css */
 
 .search-input-wrapper {
   margin: 0;
@@ -311,39 +288,13 @@
 /* ============================================
    TAB SCROLLING FIXES
    ============================================ */
-.admin-dashboard .admin-main {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-height: 0;
-  width: 100%;
-  max-width: 100vw;
-  box-sizing: border-box;
-}
+/* Note: .admin-main base styles moved to tailwind-components.css to avoid duplication */
+/* Only content-specific overrides remain here */
 
 .admin-dashboard .admin-main > .admin-top-nav,
 .admin-dashboard .admin-main > .important-notifications-banner {
   flex-shrink: 0;
   flex-grow: 0;
-}
-
-.admin-dashboard .admin-main > .admin-content,
-.admin-dashboard .admin-content {
-  flex: 1 1 0%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: var(--admin-border, #e2e8f0) transparent;
-  padding: 12px;
-  padding-left: max(12px, env(safe-area-inset-left));
-  padding-right: max(12px, env(safe-area-inset-right));
-  min-height: 0;
-  max-height: none;
-  position: relative;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
 }
 
 .admin-dashboard .admin-main > .admin-content::-webkit-scrollbar,
@@ -360,16 +311,6 @@
 .admin-dashboard .admin-content::-webkit-scrollbar-thumb {
   background: var(--admin-border, #e2e8f0);
   border-radius: 3px;
-}
-
-.admin-dashboard .admin-main > .admin-content,
-.admin-dashboard .admin-content {
-  padding: 14px;
-}
-
-.admin-dashboard .admin-main > .admin-content::-webkit-scrollbar,
-.admin-dashboard .admin-content::-webkit-scrollbar {
-  width: 8px;
 }
 
 .admin-dashboard .orders-table-container,
@@ -436,13 +377,7 @@
   min-width: 1000px;
 }
 
-.dashboard-card {
-  display: flex;
-  flex-direction: column;
-  overflow: visible;
-  max-height: none;
-}
-
+/* Table-specific dashboard card overrides */
 .dashboard-card.table-container-card,
 .dashboard-card:has(.orders-table-container),
 .dashboard-card:has(.table-wrapper) {
@@ -529,12 +464,7 @@
   margin-top: 16px;
 }
 
-.pagination-controls {
-  margin-top: 16px;
-  margin-bottom: 20px;
-  padding: 16px;
-  gap: 16px;
-}
+/* Note: .pagination-controls base definition is in tailwind-components.css */
 
 .orders-table-container::-webkit-scrollbar,
 .table-wrapper::-webkit-scrollbar,

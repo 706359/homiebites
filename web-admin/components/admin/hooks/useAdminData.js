@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useState } from 'react';
 import api from '../../../lib/api-admin.js';
 import { getMenuData, getMenuDataSync } from '../../../lib/menuData.js';
@@ -28,7 +27,9 @@ export const useAdminData = () => {
       const data = await getMenuData();
       setMenuData(data);
     } catch (error) {
-      console.error('Error loading menu:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading menu:', error);
+      }
       const data = getMenuDataSync();
       setMenuData(data);
     }
@@ -39,97 +40,124 @@ export const useAdminData = () => {
       const data = await getOffersData();
       setOffersData(data);
     } catch (error) {
-      console.error('Error loading offers:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading offers:', error);
+      }
       const data = getOffersDataSync();
       setOffersData(data);
     }
   }, []);
 
   const loadOrders = useCallback(async (filters = {}, hardRefresh = false) => {
-    console.log('[useAdminData] loadOrders called', { filters, hardRefresh });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[useAdminData] loadOrders called', { filters, hardRefresh });
+    }
     try {
       const token = localStorage.getItem('homiebites_token');
       const isAdmin = localStorage.getItem('homiebites_admin') === 'true';
 
-      console.log('[useAdminData] Auth check:', { hasToken: !!token, isAdmin });
-      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[useAdminData] Auth check:', { hasToken: !!token, isAdmin });
+      }
+
       if (!token || !isAdmin) {
-        console.warn('[useAdminData] Cannot load orders: missing token or admin status', {
-          hasToken: !!token,
-          isAdmin,
-        });
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('[useAdminData] Cannot load orders: missing token or admin status', {
+            hasToken: !!token,
+            isAdmin,
+          });
+        }
         setOrders([]);
         return;
       }
 
       try {
-        console.log('[useAdminData] Calling api.getAllOrders...');
-        
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[useAdminData] Calling api.getAllOrders...');
+        }
+
         const response = await api.getAllOrders({}, { hardRefresh });
-        
-        console.log('[useAdminData] API response:', {
-          success: response?.success,
-          dataLength: response?.data?.length,
-          hasData: !!response?.data,
-          error: response?.error
-        });
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[useAdminData] API response:', {
+            success: response?.success,
+            dataLength: response?.data?.length,
+            hasData: !!response?.data,
+            error: response?.error,
+          });
+        }
 
         if (response.success && response.data) {
           let nextOrders = Array.isArray(response.data) ? response.data : [];
-          console.log('[useAdminData] Orders received:', nextOrders.length);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[useAdminData] Orders received:', nextOrders.length);
+          }
           if (nextOrders.length > 0) {
             nextOrders = sortOrdersByOrderId(nextOrders);
-            console.log('[useAdminData] Orders sorted, first order:', nextOrders[0]?.orderId);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[useAdminData] Orders sorted, first order:', nextOrders[0]?.orderId);
+            }
           }
           setOrders((prev) => {
             const prevArr = Array.isArray(prev) ? prev : [];
             if (prevArr.length === 0 && nextOrders.length === 0) {
-              console.warn('[useAdminData] Both prev and next orders are empty, keeping prev');
+              if (process.env.NODE_ENV === 'development') {
+                console.warn('[useAdminData] Both prev and next orders are empty, keeping prev');
+              }
               return prevArr;
             }
-            console.log('[useAdminData] Setting orders:', nextOrders.length);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[useAdminData] Setting orders:', nextOrders.length);
+            }
             return nextOrders;
           });
         } else {
-          console.warn('[useAdminData] API returned unsuccessful response:', response);
-          
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('[useAdminData] API returned unsuccessful response:', response);
+          }
+
           if (response && response.error) {
-            console.error('[useAdminData] API error, clearing orders');
+            if (process.env.NODE_ENV === 'development') {
+              console.error('[useAdminData] API error, clearing orders');
+            }
             setOrders([]);
           }
         }
       } catch (apiError) {
-        console.error('[useAdminData] Failed to load orders from API:', apiError.message);
-
-        
-        if (apiError.message && apiError.message.includes('Authentication failed')) {
-          console.warn('[useAdminData] Authentication failed. Stopping data load.');
-          setOrders([]);
-          return; 
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[useAdminData] Failed to load orders from API:', apiError.message);
         }
 
-        
+        if (apiError.message && apiError.message.includes('Authentication failed')) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('[useAdminData] Authentication failed. Stopping data load.');
+          }
+          setOrders([]);
+          return;
+        }
+
         if (
           apiError.message &&
           (apiError.message.includes('HTML') ||
             apiError.message.includes('not available') ||
             apiError.message.includes('connect'))
         ) {
-          console.error(
-            '[useAdminData] Backend server appears to be offline. Please ensure the backend server is running on',
-            api.baseURL
-          );
+          if (process.env.NODE_ENV === 'development') {
+            console.error(
+              '[useAdminData] Backend server appears to be offline. Please ensure the backend server is running on',
+              api.baseURL
+            );
+          }
         }
 
-        
-        
-        throw apiError; 
+        throw apiError;
       }
     } catch (error) {
-      console.error('[useAdminData] Error loading orders:', error);
-      
-      
-      throw error; 
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[useAdminData] Error loading orders:', error);
+      }
+
+      throw error;
     }
   }, []);
 
@@ -144,14 +172,14 @@ export const useAdminData = () => {
             localStorage.setItem('homiebites_users', JSON.stringify(response.data));
             return;
           }
-          
+
           if (response.error && response.error.includes('Route not found')) {
-            
           }
         } catch (apiError) {
-          
           if (!apiError.message.includes('Route not found') && !apiError.message.includes('404')) {
-            console.warn('Failed to load users from API, using cached data:', apiError.message);
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('Failed to load users from API, using cached data:', apiError.message);
+            }
           }
         }
       }
@@ -161,13 +189,16 @@ export const useAdminData = () => {
         try {
           setUsers(JSON.parse(stored));
         } catch (parseError) {
-          console.error('Error parsing stored users:', parseError);
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Error parsing stored users:', parseError);
+          }
         }
       }
     } catch (error) {
-      
       if (!error.message.includes('Route not found') && !error.message.includes('404')) {
-        console.error('Error loading users:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error loading users:', error);
+        }
       }
     }
   }, []);
@@ -179,7 +210,9 @@ export const useAdminData = () => {
         setSettings(JSON.parse(stored));
       }
     } catch (e) {
-      console.error('Error loading settings:', e);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading settings:', e);
+      }
     }
   }, []);
 
@@ -190,7 +223,9 @@ export const useAdminData = () => {
         setNotifications(JSON.parse(stored));
       }
     } catch (e) {
-      console.error('Error loading notifications:', e);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading notifications:', e);
+      }
     }
   }, []);
 
@@ -201,7 +236,9 @@ export const useAdminData = () => {
         setNewsletterSubscriptions(JSON.parse(stored));
       }
     } catch (e) {
-      console.error('Error loading newsletter subscriptions:', e);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading newsletter subscriptions:', e);
+      }
     }
   }, []);
 
@@ -213,18 +250,20 @@ export const useAdminData = () => {
         setCurrentUser(user);
       }
     } catch (error) {
-      console.error('Error loading current user:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading current user:', error);
+      }
     }
   }, []);
 
-  
   useEffect(() => {
-    
     const token = localStorage.getItem('homiebites_token');
     const isAdmin = localStorage.getItem('homiebites_admin') === 'true';
 
     if (!token || !isAdmin) {
-      console.warn('[useAdminData] Skipping data load: user not authenticated');
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[useAdminData] Skipping data load: user not authenticated');
+      }
       return;
     }
 
@@ -270,7 +309,6 @@ export const useAdminData = () => {
           }),
         ]);
 
-        
         try {
           loadSettings();
         } catch (err) {
@@ -315,7 +353,9 @@ export const useAdminData = () => {
         setLoading(false);
       } catch (error) {
         errorTracker.failOperation(loadOpId, error);
-        console.error('Critical error loading dashboard data:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Critical error loading dashboard data:', error);
+        }
         setLoading(false);
       }
     };
@@ -347,7 +387,6 @@ export const useAdminData = () => {
   ]);
 
   return {
-    
     menuData,
     offersData,
     orders,
@@ -357,7 +396,7 @@ export const useAdminData = () => {
     notifications,
     currentUser,
     loading,
-    
+
     setMenuData,
     setOffersData,
     setOrders,
@@ -366,7 +405,7 @@ export const useAdminData = () => {
     setSettings,
     setNotifications,
     setCurrentUser,
-    
+
     loadMenuData,
     loadOffersData,
     loadOrders,
