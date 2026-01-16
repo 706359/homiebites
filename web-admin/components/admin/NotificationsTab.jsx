@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
+import './styles/notifications-tab.css';
 import { formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
 import { isPendingStatus, sortOrdersByOrderId } from './utils/orderUtils.js';
 
@@ -305,13 +306,10 @@ const NotificationsTab = ({
       {}
       <div className='dashboard-card'>
         {filteredNotifications.length === 0 ? (
-          <div className='empty-state' style={{ padding: '48px', textAlign: 'center' }}>
-            <i
-              className='fa-solid fa-bell-slash'
-              style={{ fontSize: '64px', color: 'var(--admin-text-light)', marginBottom: '16px' }}
-            ></i>
+          <div className='empty-state notifications-empty-state'>
+            <i className='fa-solid fa-bell-slash notifications-empty-icon'></i>
             <p>No notifications</p>
-            <p style={{ color: 'var(--admin-text-light)', fontSize: '0.9rem' }}>
+            <p className='notifications-empty-text'>
               You&apos;re all caught up!
             </p>
           </div>
@@ -328,8 +326,15 @@ const NotificationsTab = ({
                 <div className='notification-card-grid-header'>
                   <div className='notification-card-grid-icon'>
                     <i
-                      className={getNotificationIcon(notif.type)}
-                      style={{ color: getNotificationColor(notif.type) }}
+                      className={`${getNotificationIcon(notif.type)} ${
+                        notif.type === 'order'
+                          ? 'notification-icon-order'
+                          : notif.type === 'payment'
+                          ? 'notification-icon-payment'
+                          : notif.type === 'system'
+                          ? 'notification-icon-system'
+                          : 'notification-icon-default'
+                      }`}
                     ></i>
                   </div>
                   {!notif.read && <span className='notification-badge-unread-grid'>New</span>}
@@ -424,14 +429,7 @@ const NotificationsTab = ({
                       />
                       <span>New orders</span>
                     </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                    <label className='notifications-checkbox-label'>
                       <input
                         type='checkbox'
                         checked={notificationSettings.notifyPaymentReceived}
@@ -444,14 +442,7 @@ const NotificationsTab = ({
                       />
                       <span>Payment received</span>
                     </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                    <label className='notifications-checkbox-label'>
                       <input
                         type='checkbox'
                         checked={notificationSettings.notifyPaymentOverdue}
@@ -464,14 +455,7 @@ const NotificationsTab = ({
                       />
                       <span>Payment overdue (&gt;3 days)</span>
                     </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                    <label className='notifications-checkbox-label'>
                       <input
                         type='checkbox'
                         checked={notificationSettings.notifyDailySummary}
@@ -484,14 +468,7 @@ const NotificationsTab = ({
                       />
                       <span>Daily summary</span>
                     </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                    <label className='notifications-checkbox-label'>
                       <input
                         type='checkbox'
                         checked={notificationSettings.notifyWeeklyReport}
@@ -504,14 +481,7 @@ const NotificationsTab = ({
                       />
                       <span>Weekly report</span>
                     </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                    <label className='notifications-checkbox-label'>
                       <input
                         type='checkbox'
                         checked={notificationSettings.notifyLowOrderDays}
@@ -526,19 +496,12 @@ const NotificationsTab = ({
                     </label>
                   </div>
                 </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ fontWeight: '600', marginBottom: '12px', display: 'block' }}>
+                <div className='form-group notifications-settings-form-group'>
+                  <label className='notifications-settings-label'>
                     Delivery method:
                   </label>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                  <div className='notifications-settings-list'>
+                    <label className='notifications-checkbox-label'>
                       <input
                         type='checkbox'
                         checked={notificationSettings.deliveryInApp}
@@ -551,14 +514,7 @@ const NotificationsTab = ({
                       />
                       <span>In-app</span>
                     </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                    <label className='notifications-checkbox-label'>
                       <input
                         type='checkbox'
                         checked={notificationSettings.deliveryEmail}
@@ -571,14 +527,7 @@ const NotificationsTab = ({
                       />
                       <span>Email</span>
                     </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                    <label className='notifications-checkbox-label'>
                       <input
                         type='checkbox'
                         checked={notificationSettings.deliverySMS}

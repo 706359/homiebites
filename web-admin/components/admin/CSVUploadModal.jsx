@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import api from '../../lib/api-admin.js';
+import './styles/csv-upload-modal.css';
 
 const CSVUploadModal = ({
   show,
@@ -526,21 +527,12 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
           {file && !isUploading && uploadStatus !== 'success' && (
             <>
               <div className='dashboard-card margin-bottom-24'>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '16px',
-                  }}
-                >
+                <div className='csv-file-info'>
                   <div>
-                    <h3 style={{ marginBottom: '4px' }}>
+                    <h3 className='csv-file-name'>
                       <i className='fa-solid fa-file'></i> {file.name}
                     </h3>
-                    <p style={{ color: 'var(--admin-text-secondary)', fontSize: '0.9rem' }}>
-                      {(file.size / 1024).toFixed(2)} KB
-                    </p>
+                    <p className='csv-file-size'>{(file.size / 1024).toFixed(2)} KB</p>
                   </div>
                   <button
                     className='btn btn-ghost btn-small'
@@ -558,11 +550,8 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                 {}
                 {previewData && (
                   <div>
-                    <h4 style={{ marginBottom: '12px' }}>Preview (First row with headers):</h4>
-                    <div
-                      className='orders-table-container'
-                      style={{ maxHeight: '300px', overflow: 'auto' }}
-                    >
+                    <h4 className='csv-preview-title'>Preview (First row with headers):</h4>
+                    <div className='orders-table-container csv-preview-container'>
                       <table className='orders-table'>
                         <thead>
                           <tr>
@@ -582,13 +571,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                         </tbody>
                       </table>
                     </div>
-                    <p
-                      style={{
-                        color: 'var(--admin-text-secondary)',
-                        fontSize: '0.85rem',
-                        marginTop: '8px',
-                      }}
-                    >
+                    <p className='csv-preview-note'>
                       {previewData.isExcel
                         ? 'Excel file detected. Row count will be determined during upload.'
                         : `Total rows detected: ${previewData.totalRows || 0}`}
@@ -604,9 +587,9 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                     </div>
                     <div className='alert-content'>
                       <div className='alert-title'>Validation Errors:</div>
-                      <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
+                      <ul className='csv-error-list'>
                         {validationErrors.map((error, idx) => (
-                          <li key={idx} style={{ color: 'var(--admin-text)', marginBottom: '4px' }}>
+                          <li key={idx} className='csv-error-item'>
                             {error}
                           </li>
                         ))}
@@ -624,9 +607,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                     <div className='alert-content'>
                       <div className='alert-title'>File Validated Successfully</div>
                       <div className='alert-message'>
-                        <ul
-                          style={{ margin: '8px 0 0 0', paddingLeft: '20px', fontSize: '0.9rem' }}
-                        >
+                        <ul className='csv-success-list'>
                           <li>All required columns present</li>
                           <li>Date format correct</li>
                           <li>
@@ -640,23 +621,10 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                 )}
 
                 {}
-                <div
-                  style={{
-                    marginTop: '24px',
-                    paddingTop: '24px',
-                    borderTop: '2px solid var(--admin-border)',
-                  }}
-                >
-                  <h4 style={{ marginBottom: '12px' }}>Upload Options:</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                <div className='csv-upload-options'>
+                  <h4 className='csv-upload-options-title'>Upload Options:</h4>
+                  <div className='csv-upload-options-list'>
+                    <label className='csv-upload-option-label'>
                       <input
                         type='checkbox'
                         checked={uploadOptions.updateExisting}
@@ -667,26 +635,13 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                       <span>
                         <strong>Replace existing records</strong> (if Order ID matches)
                         <br />
-                        <span
-                          style={{
-                            fontSize: '0.85rem',
-                            color: 'var(--admin-text-secondary)',
-                            marginLeft: '24px',
-                          }}
-                        >
+                        <span className='csv-upload-option-hint'>
                           When checked, orders with matching Order IDs will be updated instead of
                           creating duplicates
                         </span>
                       </span>
                     </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                    <label className='csv-upload-option-label'>
                       <input
                         type='checkbox'
                         checked={uploadOptions.skipDuplicates}
@@ -697,27 +652,14 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                       <span>
                         Skip duplicate addresses (same day)
                         <br />
-                        <span
-                          style={{
-                            fontSize: '0.85rem',
-                            color: 'var(--admin-text-secondary)',
-                            marginLeft: '24px',
-                          }}
-                        >
+                        <span className='csv-upload-option-hint'>
                           Only applies when Order ID is not present
                         </span>
                       </span>
                     </label>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
+                    <label className='csv-upload-option-label'>
                       <input type='checkbox' checked={false} disabled={true} readOnly />
-                      <span style={{ opacity: 0.6 }}>
+                      <span className='csv-upload-option-disabled'>
                         Auto-generate Order IDs (disabled - Order IDs must be provided in your data)
                       </span>
                     </label>
@@ -729,87 +671,34 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
 
           {}
           {isUploading && !isProgressMinimized && (
-            <div
-              className='dashboard-card'
-              style={{ textAlign: 'center', padding: '48px', position: 'relative' }}
-            >
+            <div className='dashboard-card csv-upload-progress-container'>
               <button
                 onClick={() => setIsProgressMinimized(true)}
-                style={{
-                  position: 'absolute',
-                  top: '16px',
-                  right: '16px',
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'var(--admin-text-secondary)',
-                  cursor: 'pointer',
-                  padding: '8px',
-                  borderRadius: '8px',
-                  transition: 'all 0.2s ease',
-                  fontSize: '18px',
-                }}
                 title='Minimize and continue in background'
                 className='csv-upload-minimize-btn tooltip-wrapper'
               >
                 <i className='fa-solid fa-window-minimize'></i>
                 <span className='tooltip'>Minimize and continue in background</span>
               </button>
-              <h3 style={{ marginBottom: '20px', textAlign: 'center' }}>Uploading Orders</h3>
-              <div style={{ marginBottom: '24px' }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '8px',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: '14px',
-                      color: 'var(--admin-text-secondary)',
-                      fontWeight: '500',
-                    }}
-                  >
+              <h3 className='csv-upload-progress-title'>Uploading Orders</h3>
+              <div className='csv-upload-progress-info'>
+                <div className='csv-upload-progress-header'>
+                  <span className='csv-upload-progress-label'>
                     {totalRecords > 0
                       ? `Processing ${uploadedRecords} of ${totalRecords} records`
                       : 'Uploading file'}
                   </span>
-                  <span style={{ fontSize: '14px', color: 'var(--admin-text)', fontWeight: '600' }}>
+                  <span className='csv-upload-progress-count'>
                     {uploadedRecords > 0 && totalRecords > 0
                       ? `${uploadedRecords} / ${totalRecords}`
                       : `${Math.round(uploadProgress)}%`}
                   </span>
                 </div>
-                <div
-                  className='progress progress-bar-container'
-                  style={{
-                    height: '8px',
-                    borderRadius: '4px',
-                    overflow: 'hidden',
-                    background: 'var(--admin-bg-tertiary)',
-                  }}
-                >
-                  <div
-                    className='progress-bar progress-fill'
-                    style={{
-                      width: `${Math.max(1, uploadProgress)}%`,
-                      height: '100%',
-                      background: 'var(--admin-accent)',
-                      transition: 'width 0.3s ease',
-                      borderRadius: '4px',
-                    }}
-                  />
+                <div className='progress progress-bar-container csv-upload-progress-bar-container'>
+                  <div className='progress-bar progress-fill csv-upload-progress-bar-fill' />
                 </div>
               </div>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '12px',
-                  marginTop: '24px',
-                  justifyContent: 'center',
-                }}
-              >
+              <div className='csv-upload-progress-actions'>
                 <button
                   className='btn btn-ghost btn-small'
                   onClick={() => setIsProgressMinimized(true)}
@@ -826,60 +715,30 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
           {}
           {isUploading && isProgressMinimized && (
             <div
-              className='dashboard-card'
-              style={{
-                padding: '16px 20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                background: 'var(--admin-accent-light, rgba(68, 144, 49, 0.1))',
-                border: '2px solid var(--admin-accent, #449031)',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
+              className='dashboard-card csv-upload-progress-card'
               onClick={() => setIsProgressMinimized(false)}
-              className='csv-upload-progress-card'
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
-                <div
-                  className='avatar'
-                  style={{
-                    background: 'var(--admin-accent, #449031)',
-                    color: 'white',
-                    fontSize: '18px',
-                    flexShrink: 0,
-                  }}
-                >
+              <div className='csv-upload-progress-card-content'>
+                <div className='avatar csv-upload-progress-avatar'>
                   <i className='fa-solid fa-cloud-upload-alt'></i>
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div className='csv-upload-progress-details'>
                   <div className='progress-label'>
-                    <span
-                      style={{ fontWeight: '600', color: 'var(--admin-text)', fontSize: '14px' }}
-                    >
+                    <span className='csv-upload-progress-label-text'>
                       Uploading in background...
                     </span>
-                    <span
-                      className='progress-percentage'
-                      style={{ fontSize: '12px', color: 'var(--admin-text-secondary)' }}
-                    >
+                    <span className='progress-percentage csv-upload-progress-percentage'>
                       {uploadedRecords > 0 && totalRecords > 0
                         ? `${uploadedRecords} / ${totalRecords}`
                         : `${Math.round(uploadProgress)}%`}
                     </span>
                   </div>
                   <div className='progress progress-bar-container'>
-                    <div
-                      className='progress-bar progress-fill'
-                      style={{
-                        width: `${uploadProgress}%`,
-                      }}
-                    />
+                    <div className='progress-bar progress-fill' />
                   </div>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div className='csv-upload-progress-actions-mini'>
                 <button
                   className='btn btn-special danger btn-small'
                   onClick={(e) => {
@@ -895,16 +754,6 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                     e.stopPropagation();
                     setIsProgressMinimized(false);
                   }}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: 'var(--admin-text-secondary)',
-                    cursor: 'pointer',
-                    padding: '8px',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    transition: 'all 0.2s ease',
-                  }}
                   className='csv-upload-maximize-btn'
                   title='Show full progress'
                 >
@@ -916,23 +765,10 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
 
           {}
           {uploadStatus === 'success' && (
-            <div
-              className='dashboard-card'
-              style={{
-                background: 'var(--admin-success-light)',
-                border: '2px solid var(--admin-success)',
-                textAlign: 'center',
-                padding: '48px',
-              }}
-            >
-              <i
-                className='fa-solid fa-check-circle'
-                style={{ fontSize: '64px', color: 'var(--admin-success)', marginBottom: '16px' }}
-              ></i>
-              <h3 style={{ color: 'var(--admin-success)', marginBottom: '16px' }}>
-                Upload Complete!
-              </h3>
-              <p className='margin-bottom-24' style={{ color: 'var(--admin-text)' }}>
+            <div className='dashboard-card csv-upload-success'>
+              <i className='fa-solid fa-check-circle csv-upload-success-icon'></i>
+              <h3 className='csv-upload-success-title'>Upload Complete!</h3>
+              <p className='margin-bottom-24 csv-text-primary'>
                 Your orders have been successfully imported.
               </p>
             </div>
@@ -940,11 +776,11 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
 
           {}
           {!file && (
-            <div className='dashboard-card' style={{ marginTop: '24px' }}>
-              <h4 style={{ marginBottom: '12px' }}>
+            <div className='dashboard-card csv-format-requirements'>
+              <h4 className='csv-format-requirements-title'>
                 <i className='fa-solid fa-info-circle'></i> CSV Format Requirements:
               </h4>
-              <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--admin-text-secondary)' }}>
+              <ul className='csv-format-requirements-list'>
                 <li>
                   <strong>Required Columns:</strong> Date, Delivery Address, Quantity, Unit Price,
                   Mode, Status, Payment Mode
@@ -977,7 +813,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
               <button
                 className='btn btn-secondary btn-small'
                 onClick={handleDownloadTemplate}
-                style={{ marginTop: '16px' }}
+                className='csv-margin-top-16'
               >
                 <i className='fa-solid fa-download'></i> Download Sample CSV Template
               </button>
@@ -989,7 +825,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
             ref={fileInputRef}
             type='file'
             accept='.csv,.xlsx,.xls'
-            style={{ display: 'none' }}
+            className='csv-file-input-hidden'
             onChange={(e) => handleFileSelect(e.target.files[0])}
           />
           <button

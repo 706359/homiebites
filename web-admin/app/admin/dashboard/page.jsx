@@ -49,7 +49,7 @@ export default function AdminDashboardPage() {
     <ErrorBoundary>
       <NotificationProvider>
         <FontSettingsLoader />
-        <AdminDashboard onLogout={() => (window.location.href = '/admin')} />
+        <AdminDashboard />
         <NotificationWrapper />
       </NotificationProvider>
     </ErrorBoundary>

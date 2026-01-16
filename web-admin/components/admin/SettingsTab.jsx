@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
 import PremiumLoader from './PremiumLoader.jsx';
+import './styles/settings-tab.css';
 
 const SettingsTab = ({
   settings,
@@ -1429,10 +1430,7 @@ const SettingsTab = ({
                         checked={themeSettings.theme === 'light'}
                         onChange={(e) => handleThemeChange({ theme: e.target.value })}
                       />
-                      <div
-                        className='settings-theme-option-preview'
-                        style={{ background: '#ffffff', border: '2px solid #e2e8f0' }}
-                      >
+                      <div className='settings-theme-option-preview settings-theme-preview-light'>
                         <i className='fa-solid fa-sun'></i>
                       </div>
                       <span className='settings-theme-option-label'>Light</span>
@@ -1449,10 +1447,7 @@ const SettingsTab = ({
                         checked={themeSettings.theme === 'dark'}
                         onChange={(e) => handleThemeChange({ theme: e.target.value })}
                       />
-                      <div
-                        className='settings-theme-option-preview'
-                        style={{ background: '#1e293b', border: '2px solid #334155' }}
-                      >
+                      <div className='settings-theme-option-preview settings-theme-preview-dark'>
                         <i className='fa-solid fa-moon'></i>
                       </div>
                       <span className='settings-theme-option-label'>Dark</span>
@@ -1469,13 +1464,7 @@ const SettingsTab = ({
                         checked={themeSettings.theme === 'auto'}
                         onChange={(e) => handleThemeChange({ theme: e.target.value })}
                       />
-                      <div
-                        className='settings-theme-option-preview'
-                        style={{
-                          background: 'linear-gradient(135deg, #ffffff 0%, #1e293b 100%)',
-                          border: '2px solid #64748b',
-                        }}
-                      >
+                      <div className='settings-theme-option-preview'>
                         <i className='fa-solid fa-circle-half-stroke'></i>
                       </div>
                       <span className='settings-theme-option-label'>Auto</span>
@@ -1488,22 +1477,7 @@ const SettingsTab = ({
                     <i className='fa-solid fa-paintbrush'></i>
                     <span>Color Theme</span>
                   </label>
-                  <button
-                    className='settings-logo-theme-btn'
-                    onClick={handleLogoTheme}
-                    style={{
-                      background:
-                        themeSettings.primaryColor === '#449031' &&
-                        themeSettings.secondaryColor === '#c45c2d'
-                          ? 'linear-gradient(135deg, #449031 0%, #449031 50%, #c45c2d 50%, #c45c2d 100%)'
-                          : 'linear-gradient(135deg, rgba(68, 144, 49, 0.1) 0%, rgba(196, 92, 45, 0.1) 100%)',
-                      border:
-                        themeSettings.primaryColor === '#449031' &&
-                        themeSettings.secondaryColor === '#c45c2d'
-                          ? '3px solid rgba(68, 144, 49, 0.5)'
-                          : '2px solid var(--admin-border)',
-                    }}
-                  >
+                  <button className='settings-logo-theme-btn' onClick={handleLogoTheme}>
                     <i className='fa-solid fa-image'></i>
                     <span>Apply Logo Theme</span>
                     {themeSettings.primaryColor === '#449031' &&
@@ -1552,7 +1526,6 @@ const SettingsTab = ({
                             themeSettings.primaryColor === color ? 'active' : ''
                           }`}
                           onClick={() => handleThemeChange({ primaryColor: color })}
-                          style={{ background: color }}
                           title={color}
                         >
                           {themeSettings.primaryColor === color && (
@@ -1661,18 +1634,7 @@ const SettingsTab = ({
                     <option value='extra-large'>Extra Large (20px)</option>
                   </select>
                   <div className='settings-font-preview'>
-                    <p
-                      style={{
-                        fontSize:
-                          themeSettings.fontSize === 'small'
-                            ? '14px'
-                            : themeSettings.fontSize === 'large'
-                            ? '18px'
-                            : themeSettings.fontSize === 'extra-large'
-                            ? '20px'
-                            : '16px',
-                      }}
-                    >
+                    <p>
                       Preview: This is how text will look with {themeSettings.fontSize} font size.
                     </p>
                   </div>
@@ -1739,13 +1701,7 @@ const SettingsTab = ({
                     <option value='Ubuntu'>Ubuntu</option>
                   </select>
                   <div className='settings-font-preview'>
-                    <p
-                      style={{
-                        fontFamily: `'${themeSettings.fontFamily}', sans-serif`,
-                      }}
-                    >
-                      Preview: This is how text will look with {themeSettings.fontFamily} font.
-                    </p>
+                    <p>Preview: This is how text will look with {themeSettings.fontFamily} font.</p>
                   </div>
                 </div>
               </div>

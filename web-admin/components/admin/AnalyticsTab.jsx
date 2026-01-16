@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import './AnalyticsTab.css';
 import PremiumLoader from './PremiumLoader.jsx';
+import './styles/analytics-tab.css';
 import { getFilteredOrdersByDate, getProfitStats } from './utils/calculations.js';
 import { parseOrderDate } from './utils/dateUtils.js';
 import {
@@ -686,7 +687,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               </div>
             </div>
             <div className='stat-card'>
-              <i className='fa-solid fa-exclamation-triangle' className='icon-color-warning'></i>
+              <i className='fa-solid fa-exclamation-triangle icon-color-warning'></i>
               <div>
                 <h3>₹{formatCurrency(keyMetrics.pendingAmount)}</h3>
                 <p>Pending Payments</p>
@@ -739,7 +740,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
             <div className='dashboard-grid-item full-width'>
               <div className='dashboard-card'>
                 <h3 className='dashboard-section-title'>
-                  <i className='fa-solid fa-chart-line' className='icon-opacity'></i>
+                  <i className='fa-solid fa-chart-line icon-opacity'></i>
                   Monthly Revenue Trend (Last 12M)
                 </h3>
                 <div className='chart-container-padding'>
@@ -751,13 +752,6 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                             className={`chart-bar chart-bar-small ${
                               month.revenue > 0 ? '' : 'chart-bar-empty'
                             }`}
-                            style={{
-                              height: `${Math.max(
-                                (month.revenue / Math.max(maxMonthlyRevenue, 1)) * 180,
-                                10
-                              )}px`,
-                              minHeight: '10px',
-                            }}
                             title={`${month.month}: ₹${formatCurrency(month.revenue)} (${
                               month.orders
                             } orders)`}
@@ -772,16 +766,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                         </div>
                       ))
                     ) : (
-                      <div
-                        style={{
-                          textAlign: 'center',
-                          padding: '48px',
-                          color: 'var(--admin-text-light)',
-                          width: '100%',
-                        }}
-                      >
-                        No revenue data available
-                      </div>
+                      <div className='analytics-empty-state-center'>No revenue data available</div>
                     )}
                   </div>
                   {monthlyRevenueTrend && monthlyRevenueTrend.length > 0 && (
@@ -797,29 +782,14 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
             <div className='dashboard-grid-item full-width'>
               <div className='dashboard-card'>
                 <h3 className='dashboard-section-title'>
-                  <i className='fa-solid fa-map-marker-alt' className='icon-opacity'></i>
+                  <i className='fa-solid fa-map-marker-alt icon-opacity'></i>
                   Top 10 Delivery Areas
                 </h3>
-                <div
-                  style={{
-                    padding: '16px',
-                    borderTop: '2px solid var(--admin-border)',
-                    marginTop: '0.5rem',
-                  }}
-                >
+                <div className='analytics-chart-section'>
                   {topAreas.length === 0 ? (
-                    <div
-                      style={{
-                        textAlign: 'center',
-                        padding: '48px',
-                        color: 'var(--admin-text-light)',
-                      }}
-                    >
-                      <i
-                        className='fa-solid fa-inbox'
-                        style={{ fontSize: '48px', opacity: 0.3 }}
-                      ></i>
-                      <p style={{ marginTop: '16px' }}>No delivery areas found</p>
+                    <div className='analytics-empty-state-inline'>
+                      <i className='fa-solid fa-inbox analytics-empty-icon-large'></i>
+                      <p className='analytics-empty-text'>No delivery areas found</p>
                     </div>
                   ) : (
                     <div className='flex-col gap-12'>
@@ -839,19 +809,8 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                               {area.orders === 1 ? 'order' : 'orders'})
                             </span>
                           </div>
-                          <div
-                            className='progress-bar-container'
-                            style={{ height: '20px', borderRadius: '10px' }}
-                          >
-                            <div
-                              className='progress-bar-fill'
-                              style={{
-                                width: `${
-                                  maxAreaRevenue > 0 ? (area.revenue / maxAreaRevenue) * 100 : 0
-                                }%`,
-                                borderRadius: '10px',
-                              }}
-                            />
+                          <div className='progress-bar-container analytics-progress-bar-container'>
+                            <div className='progress-bar-fill rounded-xl' />
                           </div>
                         </div>
                       ))}
@@ -865,7 +824,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
             <div className='dashboard-grid-item full-width'>
               <div className='dashboard-card'>
                 <h3 className='dashboard-section-title'>
-                  <i className='fa-solid fa-credit-card' className='icon-opacity'></i>
+                  <i className='fa-solid fa-credit-card icon-opacity'></i>
                   Payment Mode Trends
                 </h3>
                 <div className='chart-container-padding'>
@@ -886,25 +845,8 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                               ₹{formatCurrency(trend.amount)} ({percentage.toFixed(2)}%)
                             </span>
                           </div>
-                          <div
-                            className='progress-bar-container progress-bar-container-alt'
-                            style={{
-                              overflow: 'hidden',
-                            }}
-                          >
-                            <div
-                              style={{
-                                width: `${percentage}%`,
-                                height: '100%',
-                                background: 'var(--admin-accent, #449031)',
-                                borderRadius: '6px',
-                                transition: 'width 0.5s ease',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'flex-end',
-                                paddingRight: '0.5rem',
-                              }}
-                            >
+                          <div className='progress-bar-container progress-bar-container-alt analytics-progress-bar-container-alt'>
+                            <div>
                               {percentage > 15 && (
                                 <span className='progress-bar-label'>{percentage.toFixed(0)}%</span>
                               )}
@@ -949,11 +891,10 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                                   setSortDirection('desc');
                                 }
                               }}
-                              style={{ cursor: 'pointer', userSelect: 'none' }}
                             >
                               {deliveryAddressAnalytics?.year1 || 'Year 1'}
                               {sortColumn === 'year1' && (
-                                <span style={{ marginLeft: '4px' }}>
+                                <span className='analytics-th-sort-indicator'>
                                   {sortDirection === 'asc' ? '↑' : '↓'}
                                 </span>
                               )}
@@ -968,17 +909,16 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                                   setSortDirection('desc');
                                 }
                               }}
-                              style={{ cursor: 'pointer', userSelect: 'none' }}
                             >
                               {deliveryAddressAnalytics?.year2 || 'Year 2'}
                               {sortColumn === 'year2' && (
-                                <span style={{ marginLeft: '4px' }}>
+                                <span className='analytics-th-sort-indicator'>
                                   {sortDirection === 'asc' ? '↑' : '↓'}
                                 </span>
                               )}
                             </th>
                             <th
-                              className='analytics-th-right analytics-th-year analytics-th-sortable'
+                              className='analytics-th-right analytics-th-year analytics-th-sortable cursor-pointer'
                               onClick={() => {
                                 if (sortColumn === 'year3') {
                                   setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -987,13 +927,10 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                                   setSortDirection('desc');
                                 }
                               }}
-                              style={{ cursor: 'pointer', userSelect: 'none' }}
                             >
                               {deliveryAddressAnalytics?.year3 || 'Year 3'}
                               {sortColumn === 'year3' && (
-                                <span style={{ marginLeft: '4px' }}>
-                                  {sortDirection === 'asc' ? '↑' : '↓'}
-                                </span>
+                                <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
                               )}
                             </th>
                             <th className='analytics-th-right analytics-th-grand-total'>
@@ -1208,76 +1145,21 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                   <i className='fa-solid fa-trophy icon-opacity'></i>
                   Top 7 Days All Time (By Revenue)
                 </h3>
-                <div
-                  style={{
-                    padding: '16px',
-                    borderTop: '2px solid var(--admin-border)',
-                    marginTop: '0.5rem',
-                  }}
-                >
+                <div>
                   {top20Days.length === 0 ? (
-                    <div
-                      style={{
-                        textAlign: 'center',
-                        padding: '48px',
-                        color: 'var(--admin-text-light)',
-                      }}
-                    >
-                      <i
-                        className='fa-solid fa-inbox'
-                        style={{ fontSize: '48px', opacity: 0.3 }}
-                      ></i>
-                      <p style={{ marginTop: '16px' }}>No orders data available</p>
+                    <div className='analytics-empty-state-center-text'>
+                      <i className='fa-solid fa-inbox empty-state-icon-large'></i>
+                      <p className='text-margin-top'>No orders data available</p>
                     </div>
                   ) : (
                     <>
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'flex-end',
-                          gap: '0.5rem',
-                          minHeight: '250px',
-                          marginBottom: '16px',
-                          overflowX: 'auto',
-                          paddingBottom: '8px',
-                        }}
-                      >
+                      <div className='analytics-chart-container'>
                         {top20Days.map((day, idx) => (
-                          <div
-                            key={idx}
-                            style={{
-                              flex: '1 1 0',
-                              minWidth: '60px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              gap: '0.5rem',
-                            }}
-                          >
+                          <div key={idx}>
                             <div
-                              style={{
-                                width: '100%',
-                                maxWidth: '80px',
-                                height: `${(day.revenue / maxDayRevenue) * 200}px`,
-                                minHeight: '10px',
-                                background:
-                                  idx < 3
-                                    ? 'var(--admin-accent, #449031)'
-                                    : 'var(--admin-accent, #449031)',
-                                borderRadius: '8px 8px 0 0',
-                                display: 'flex',
-                                alignItems: 'flex-end',
-                                justifyContent: 'center',
-                                paddingBottom: '0.5rem',
-                                cursor: 'pointer',
-                                boxShadow:
-                                  idx < 3
-                                    ? '0 4px 12px rgba(68, 144, 49, 0.3)'
-                                    : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                position: 'relative',
-                                transition: 'all 0.3s ease',
-                              }}
-                              className='analytics-day-card'
+                              className={`analytics-day-card ${
+                                idx < 3 ? 'analytics-day-card-top3' : 'analytics-day-card-regular'
+                              }`}
                               onClick={() => {
                                 if (onViewDayDetails) {
                                   onViewDayDetails(day.date);
@@ -1290,17 +1172,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                               })`}
                             >
                               {idx < 3 && (
-                                <span
-                                  className='rank-badge'
-                                  style={{
-                                    position: 'absolute',
-                                    top: '-8px',
-                                    right: '-8px',
-                                    background: 'var(--admin-warning, #f59e0b)',
-                                  }}
-                                >
-                                  {idx + 1}
-                                </span>
+                                <span className='rank-badge analytics-rank-badge'>{idx + 1}</span>
                               )}
                               <span className='chart-bar-value'>
                                 ₹{formatNumberIndian(day.revenue)}
@@ -1315,56 +1187,18 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                           </div>
                         ))}
                       </div>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          padding: '12px',
-                          background: 'var(--admin-glass-border)',
-                          borderRadius: '8px',
-                          marginTop: '16px',
-                        }}
-                      >
+                      <div className='analytics-day-summary'>
                         <div>
-                          <span
-                            style={{
-                              fontSize: '0.85rem',
-                              color: 'var(--admin-text-secondary)',
-                              fontWeight: '500',
-                            }}
-                          >
+                          <span className='analytics-day-summary-label'>
                             Total Revenue (Top 7 Days):
                           </span>
-                          <span
-                            style={{
-                              fontSize: '1.1rem',
-                              color: 'var(--admin-accent)',
-                              fontWeight: '700',
-                              marginLeft: '8px',
-                            }}
-                          >
+                          <span className='analytics-day-summary-value'>
                             ₹{formatCurrency(top20Days.reduce((sum, d) => sum + d.revenue, 0))}
                           </span>
                         </div>
                         <div>
-                          <span
-                            style={{
-                              fontSize: '0.85rem',
-                              color: 'var(--admin-text-secondary)',
-                              fontWeight: '500',
-                            }}
-                          >
-                            Peak Day:
-                          </span>
-                          <span
-                            style={{
-                              fontSize: '1rem',
-                              color: 'var(--admin-text)',
-                              fontWeight: '600',
-                              marginLeft: '8px',
-                            }}
-                          >
+                          <span className='analytics-day-summary-label'>Peak Day:</span>
+                          <span className='analytics-day-summary-text'>
                             {top20Days[0]?.formattedDate} (₹
                             {formatCurrency(top20Days[0]?.revenue || 0)})
                           </span>

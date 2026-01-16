@@ -33,14 +33,16 @@ const ConfirmationModal = ({
           icon: 'fa-exclamation-triangle',
           iconColor: 'var(--admin-danger, #dc2626)',
           iconBg: 'rgba(220, 38, 38, 0.1)',
-          confirmBtn: 'btn-danger',
+          confirmBtn: 'btn-special danger',
+          btnStyle: null, // Uses .danger modifier
         };
       case 'success':
         return {
           icon: 'fa-check-circle',
           iconColor: 'var(--admin-success, #16a34a)',
           iconBg: 'rgba(22, 163, 74, 0.1)',
-          confirmBtn: 'btn-success',
+          confirmBtn: 'btn-special',
+          btnStyle: { '--btn-bg': 'var(--admin-success, #16a34a)', '--btn-bg-hover': '#15803d' },
         };
       case 'info':
         return {
@@ -48,13 +50,15 @@ const ConfirmationModal = ({
           iconColor: 'var(--admin-accent, #449031)',
           iconBg: 'rgba(68, 144, 49, 0.1)',
           confirmBtn: 'btn-primary',
+          btnStyle: null,
         };
       default:
         return {
           icon: 'fa-exclamation-circle',
           iconColor: 'var(--admin-warning, #f59e0b)',
           iconBg: 'rgba(245, 158, 11, 0.1)',
-          confirmBtn: 'btn-warning',
+          confirmBtn: 'btn-special',
+          btnStyle: { '--btn-bg': 'var(--admin-warning, #f59e0b)', '--btn-bg-hover': '#d97706' },
         };
     }
   };
@@ -66,11 +70,8 @@ const ConfirmationModal = ({
       <div className='modal-container max-width-540'>
         <div className='modal-header'>
           <div className='flex-center'>
-            <div className='modal-icon-box' style={{ background: styles.iconBg }}>
-              <i
-                className={`fa-solid ${styles.icon}`}
-                style={{ fontSize: '24px', color: styles.iconColor }}
-              ></i>
+            <div className='modal-icon-box'>
+              <i className={`fa-solid ${styles.icon}`}></i>
             </div>
             <h2>{title}</h2>
           </div>
@@ -82,7 +83,12 @@ const ConfirmationModal = ({
           <button className='btn btn-ghost' onClick={onCancel} disabled={isLoading}>
             {cancelText}
           </button>
-          <button className={`btn ${styles.confirmBtn}`} onClick={onConfirm} disabled={isLoading}>
+          <button
+            className={`btn ${styles.confirmBtn}`}
+            style={styles.btnStyle || undefined}
+            onClick={onConfirm}
+            disabled={isLoading}
+          >
             {isLoading ? (
               <>
                 <i className='fa-solid fa-spinner fa-spin'></i> Processing...

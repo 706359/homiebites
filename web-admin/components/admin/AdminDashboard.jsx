@@ -110,7 +110,9 @@ const AdminDashboard = () => {
 
     if (!token || !isAdmin) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn('[AdminDashboard] Authentication check failed, redirecting to /admin');
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('[AdminDashboard] Authentication check failed, redirecting to /admin');
+        }
       }
       router.replace('/admin');
     }
@@ -337,7 +339,7 @@ const AdminDashboard = () => {
       : null;
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     showConfirmation({
       title: 'Logout',
       message:
@@ -345,9 +347,33 @@ const AdminDashboard = () => {
       type: 'warning',
       confirmText: 'Logout',
       cancelText: 'Cancel',
-      onConfirm: () => {
-        logout();
-        router.replace('/login');
+      onConfirm: async () => {
+        try {
+          // Perform logout cleanup
+          await logout();
+          
+          // Show success message
+          showNotification({
+            type: 'success',
+            message: 'Logged out successfully',
+            duration: getNotificationDuration('success'),
+          });
+          
+          // Add small delay to show success message before redirect
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          
+          // Redirect to admin login page consistently
+          window.location.href = '/admin';
+        } catch (error) {
+          if (process.env.NODE_ENV === 'development') {
+            if (process.env.NODE_ENV === 'development') {
+            console.error('[AdminDashboard] Error during logout:', error);
+          }
+          }
+          // Still redirect even if there's an error
+          await logout();
+          window.location.href = '/admin';
+        }
       },
     });
   };
@@ -369,7 +395,9 @@ const AdminDashboard = () => {
             await loadOrders();
           } catch (refreshError) {
             if (process.env.NODE_ENV === 'development') {
-              console.warn('Error refreshing orders after save:', refreshError);
+              if (process.env.NODE_ENV === 'development') {
+                console.warn('Error refreshing orders after save:', refreshError);
+              }
             }
           }
 
@@ -391,7 +419,9 @@ const AdminDashboard = () => {
         },
         (error) => {
           if (process.env.NODE_ENV === 'development') {
-            console.error('Error adding order:', error);
+            if (process.env.NODE_ENV === 'development') {
+          console.error('Error adding order:', error);
+        }
           }
           if (showNotification) {
             const errorMessage = error?.message || getNotificationMessage('orders', 'addError');
@@ -401,7 +431,9 @@ const AdminDashboard = () => {
       );
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error adding order:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error adding order:', error);
+        }
       }
       if (showNotification) {
         const errorMessage = error?.message || getNotificationMessage('orders', 'addError');
@@ -489,7 +521,9 @@ const AdminDashboard = () => {
           },
           (error) => {
             if (process.env.NODE_ENV === 'development') {
-              console.error('Error updating order:', error);
+              if (process.env.NODE_ENV === 'development') {
+                console.error('Error updating order:', error);
+              }
             }
             if (showNotification) {
               const errorMessage =
@@ -575,7 +609,9 @@ const AdminDashboard = () => {
             },
             (error) => {
               if (process.env.NODE_ENV === 'development') {
-                console.error('Error deleting order:', error);
+                if (process.env.NODE_ENV === 'development') {
+                  console.error('Error deleting order:', error);
+                }
               }
               if (showNotification) {
                 const errorMessage =
@@ -678,7 +714,9 @@ const AdminDashboard = () => {
           },
           (error) => {
             if (process.env.NODE_ENV === 'development') {
-              console.error('Error updating order status:', error);
+              if (process.env.NODE_ENV === 'development') {
+                console.error('Error updating order status:', error);
+              }
             }
             if (showNotification) {
               const errorMessage =
@@ -873,7 +911,9 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error updating settings:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error updating settings:', error);
+        }
       }
       if (showNotification) {
         const errorMessage = error.message || 'Error updating settings';
@@ -897,7 +937,9 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error creating backup:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error creating backup:', error);
+        }
       }
       if (showNotification) {
         showNotification(
@@ -921,7 +963,9 @@ const AdminDashboard = () => {
       if (loadOrders) loadOrders();
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error restoring data:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error restoring data:', error);
+        }
       }
       if (showNotification) {
         showNotification(
@@ -997,7 +1041,9 @@ const AdminDashboard = () => {
         }
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
-          console.error('Error clearing data:', error);
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Error clearing data:', error);
+          }
         }
         if (showNotification) {
           showNotification(
@@ -1334,6 +1380,7 @@ const AdminDashboard = () => {
           setSidebarOpen={setSidebarOpen}
           sidebarCollapsed={sidebarCollapsed}
           setSidebarCollapsed={setSidebarCollapsed}
+          onLogout={handleLogout}
         />
 
         <div className={`admin-main ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>

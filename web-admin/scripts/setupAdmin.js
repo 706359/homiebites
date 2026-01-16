@@ -1,16 +1,9 @@
-/**
- * Setup Admin User Script
- * Creates initial admin user with temporary password
- * Following ADMIN_PASSWORD.md specification
- * 
- * Usage: node scripts/setupAdmin.js
- */
-import mongoose from 'mongoose';
-import { hashPassword } from '../lib/utils/password.js';
-import User from '../lib/models/User.js';
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
 import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+import User from '../lib/models/User.js';
+import { hashPassword } from '../lib/utils/password.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -72,7 +65,6 @@ const setupAdmin = async () => {
 
     await mongoose.disconnect();
     process.exit(0);
-
   } catch (error) {
     console.error('❌ Error setting up admin:', error.message);
     if (error.stack) {

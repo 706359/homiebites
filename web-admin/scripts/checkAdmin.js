@@ -1,15 +1,9 @@
-/**
- * Check Admin User Script
- * Verifies admin user exists and password status
- * 
- * Usage: node scripts/checkAdmin.js
- */
-import mongoose from 'mongoose';
-import { verifyPassword } from '../lib/utils/password.js';
-import User from '../lib/models/User.js';
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
 import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+import User from '../lib/models/User.js';
+import { verifyPassword } from '../lib/utils/password.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -51,10 +45,13 @@ const checkAdmin = async () => {
     console.log('   Has Password:', !!admin.password);
     console.log('   Is Temporary Password:', admin.isTemporaryPassword);
     console.log('   Login Attempts:', admin.loginAttempts || 0);
-    
+
     if (admin.lockUntil) {
       const isLocked = admin.lockUntil > Date.now();
-      console.log('   Lock Status:', isLocked ? `🔒 LOCKED until ${admin.lockUntil.toISOString()}` : '✅ Not locked');
+      console.log(
+        '   Lock Status:',
+        isLocked ? `🔒 LOCKED until ${admin.lockUntil.toISOString()}` : '✅ Not locked'
+      );
       if (isLocked) {
         const minutesLeft = Math.ceil((admin.lockUntil.getTime() - Date.now()) / 60000);
         console.log('   Minutes Left:', minutesLeft);
@@ -86,7 +83,6 @@ const checkAdmin = async () => {
 
     await mongoose.disconnect();
     process.exit(0);
-
   } catch (error) {
     console.error('❌ Error checking admin:', error.message);
     if (error.stack) {

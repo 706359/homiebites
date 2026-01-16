@@ -1,5 +1,3 @@
-/* Order Modal - Hero Theme */
-
 .order-modal-overlay {
   position: fixed;
   top: 0;
@@ -26,7 +24,7 @@
   overflow-y: auto;
   position: relative;
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
 }
 
 .order-modal-close {
@@ -34,7 +32,7 @@
   top: 1.5rem;
   right: 1.5rem;
   background: var(--bg-white);
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -65,7 +63,7 @@
   padding: 2rem;
   background: var(--bg-green);
   border-radius: 12px;
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
 }
 
 .order-form-section h3 {
@@ -94,7 +92,7 @@
 .form-group textarea {
   width: 100%;
   padding: 0.875rem 1.25rem;
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 1rem;
   font-family: inherit;
@@ -112,7 +110,7 @@
 .order-items-list {
   max-height: 400px;
   overflow-y: auto;
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;
   background: var(--bg-white);
@@ -167,7 +165,7 @@
 .order-summary {
   margin-top: 2.5rem;
   padding-top: 2.5rem;
-  border-top: 2px solid var(--border-color);
+  border-top: 1px solid var(--border-color);
 }
 
 .order-summary-row {
@@ -192,5 +190,5 @@
   color: var(--primary-green);
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 2px solid var(--border-color);
+  border-top: 1px solid var(--border-color);
 }

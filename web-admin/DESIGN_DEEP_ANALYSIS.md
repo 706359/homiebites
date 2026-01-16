@@ -82,10 +82,10 @@ Available: 375px
 
 ```css
 .stat-card {
-  padding: 14px !important; /* TOO MUCH on mobile */
+  padding: 14px; /* TOO MUCH on mobile */
   flex-direction: row;
   align-items: center;
-  gap: 12px !important;
+  gap: 12px;
   width: 100%;
   max-width: 100%;
 }

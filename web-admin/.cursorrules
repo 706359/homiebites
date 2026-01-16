@@ -40,7 +40,7 @@
    - Check button system rules if working with buttons
    - Review accuracy and truthfulness standards
    - Check border width rules if modifying CSS
-   - Review !important usage rules if using CSS
+   - Review usage rules if using CSS
 
 2. **Before Making Changes:**
 
@@ -324,20 +324,20 @@ mv components/admin/styles/theme.css.bak .backups/theme.css.bak
 
 ---
 
-## ⚠️ CSS !important Usage Rule
+## ⚠️ CSS Usage Rule
 
-**CRITICAL RULE**: Never use `!important` without actual need. Always prefer proper CSS specificity and selector hierarchy.
+**CRITICAL RULE**: Never use `` without actual need. Always prefer proper CSS specificity and selector hierarchy.
 
-### Rules for !important Usage:
+### Rules for Usage:
 
-1. **When !important is ALLOWED:**
+1. **When is ALLOWED:**
 
-   - Overriding third-party library styles that use !important
+   - Overriding third-party library styles that use
    - Fixing critical accessibility issues that cannot be resolved with specificity
    - Overriding inline styles (when necessary for user settings/theme changes)
    - Font size hierarchy enforcement (only in dedicated font-size-hierarchy.css file)
 
-2. **When !important is FORBIDDEN:**
+2. **When is FORBIDDEN:**
 
    - Regular styling conflicts (use more specific selectors instead)
    - Component styling (increase selector specificity)
@@ -350,18 +350,18 @@ mv components/admin/styles/theme.css.bak .backups/theme.css.bak
    - **First attempt**: Increase selector specificity (e.g., `.parent .child` instead of `.child`)
    - **Second attempt**: Use more specific class names or IDs
    - **Third attempt**: Restructure CSS to avoid conflicts
-   - **Last resort**: Use !important only if absolutely necessary and document why
+   - **Last resort**: Use only if absolutely necessary and document why
 
 4. **Font Size Hierarchy Exception:**
-   - The `font-size-hierarchy.css` file may use !important to ensure font size consistency
-   - This is the ONLY exception for systematic use of !important
-   - All other CSS files must avoid !important
+   - The `font-size-hierarchy.css` file may use to ensure font size consistency
+   - This is the ONLY exception for systematic use of
+   - All other CSS files must avoid
 
 ### Example - WRONG:
 
 ```css
 .button {
-  color: blue !important; /* ❌ BAD - use more specific selector */
+  color: blue; /* ❌ BAD - use more specific selector */
 }
 ```
 
@@ -373,7 +373,7 @@ mv components/admin/styles/theme.css.bak .backups/theme.css.bak
 }
 ```
 
-**NEVER** use !important as a quick fix. Always find the root cause and fix it properly.
+**NEVER** use as a quick fix. Always find the root cause and fix it properly.
 
 ---
 

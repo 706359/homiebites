@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
+import './styles/dashboard-tab.css';
 import { getProfitStats } from './utils/calculations.js';
 import { formatDate, parseOrderDate } from './utils/dateUtils.js';
 import {
@@ -73,24 +74,26 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     }
   }
 
-  console.log('📊 DashboardTab Calculations:', {
-    ordersCount: allTimeTotal,
-    totalRevenue: allTimeRevenue,
-    expectedRevenue: 374345,
-    revenueMatch: allTimeRevenue === 374345,
-    revenueDiff: 374345 - allTimeRevenue,
-    sampleOrder: sampleOrder
-      ? {
-          orderId: sampleOrder.orderId,
-          totalAmount: sampleOrder.totalAmount,
-          total: sampleOrder.total,
-          quantity: sampleOrder.quantity,
-          unitPrice: sampleOrder.unitPrice,
-          calculatedAmount: sampleAmount,
-          usingStored: sampleOrder.totalAmount !== undefined && sampleOrder.totalAmount !== null,
-        }
-      : null,
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('📊 DashboardTab Calculations:', {
+      ordersCount: allTimeTotal,
+      totalRevenue: allTimeRevenue,
+      expectedRevenue: 374345,
+      revenueMatch: allTimeRevenue === 374345,
+      revenueDiff: 374345 - allTimeRevenue,
+      sampleOrder: sampleOrder
+        ? {
+            orderId: sampleOrder.orderId,
+            totalAmount: sampleOrder.totalAmount,
+            total: sampleOrder.total,
+            quantity: sampleOrder.quantity,
+            unitPrice: sampleOrder.unitPrice,
+            calculatedAmount: sampleAmount,
+            usingStored: sampleOrder.totalAmount !== undefined && sampleOrder.totalAmount !== null,
+          }
+        : null,
+    });
+  }
 
   const profitStats = getProfitStats(allTimeRevenue, 70, 30);
 
@@ -465,19 +468,17 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   if (!loading && allTimeOrders.length === 0) {
     return (
       <div className='admin-content'>
-        <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <div className='dashboard-empty-state'>
           <h2>No Orders Found</h2>
-          <p style={{ marginTop: '1rem', color: '#666' }}>
-            No orders are currently loaded. Please check:
-          </p>
-          <ul style={{ marginTop: '1rem', textAlign: 'left', display: 'inline-block' }}>
+          <p className='dashboard-empty-text'>No orders are currently loaded. Please check:</p>
+          <ul className='dashboard-empty-list'>
             <li>Is the backend API running?</li>
             <li>Are you authenticated as admin?</li>
             <li>Check the browser console for API errors</li>
           </ul>
           <button
+            className='btn btn-primary dashboard-empty-button'
             onClick={() => window.location.reload()}
-            style={{ marginTop: '1rem', padding: '0.5rem 1rem', cursor: 'pointer' }}
           >
             Reload Page
           </button>
@@ -626,9 +627,6 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                           ? 'chart-bar-last-year'
                                           : 'chart-bar-other-year'
                                       }`}
-                                      style={{
-                                        height: `${Math.max(barHeight, 10)}px`,
-                                      }}
                                       title={`${monthData.monthName} ${year}: ₹${formatCurrency(
                                         data.revenue
                                       )} (${data.orders} orders)`}
@@ -697,48 +695,77 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                       );
 
                       return monthlyPaymentModeData.map((monthData, idx) => {
-                        // Aggregate Cash and Online across all years for this month
-                        const totalCash = Object.values(monthData.years).reduce(
-                          (sum, y) => sum + (y.cash || 0),
-                          0
+                        const yearEntries = Object.entries(monthData.years).sort(
+                          ([a], [b]) => a - b
                         );
-                        const totalOnline = Object.values(monthData.years).reduce(
-                          (sum, y) => sum + (y.online || 0),
-                          0
-                        );
-
-                        const cashHeight = maxAmount > 0 ? (totalCash / maxAmount) * 180 : 0;
-                        const onlineHeight = maxAmount > 0 ? (totalOnline / maxAmount) * 180 : 0;
 
                         return (
-                          <div key={idx} className='bar-chart-item bar-chart-item-single-year'>
-                            <div className='chart-bars-container chart-bars-container-payment-mode'>
-                              <div className='chart-payment-mode-group'>
-                                <div
-                                  className={`chart-bar chart-bar-cash ${
-                                    totalCash > 0 ? '' : 'chart-bar-empty'
-                                  }`}
-                                  style={{
-                                    height: `${Math.max(cashHeight, 10)}px`,
-                                    minHeight: '10px',
-                                  }}
-                                  title={`${monthData.monthName} - Cash: ₹${formatCurrency(
-                                    totalCash
-                                  )}`}
-                                ></div>
-                                <div
-                                  className={`chart-bar chart-bar-online ${
-                                    totalOnline > 0 ? '' : 'chart-bar-empty'
-                                  }`}
-                                  style={{
-                                    height: `${Math.max(onlineHeight, 10)}px`,
-                                    minHeight: '10px',
-                                  }}
-                                  title={`${monthData.monthName} - Online: ₹${formatCurrency(
-                                    totalOnline
-                                  )}`}
-                                ></div>
-                              </div>
+                          <div
+                            key={idx}
+                            className={`bar-chart-item ${
+                              yearEntries.length > 1
+                                ? 'bar-chart-item-multi-year'
+                                : 'bar-chart-item-single-year'
+                            }`}
+                          >
+                            <div className='chart-bars-container'>
+                              {yearEntries.map(([year, data]) => {
+                                const cashHeight =
+                                  maxAmount > 0 ? ((data.cash || 0) / maxAmount) * chartHeight : 0;
+                                const onlineHeight =
+                                  maxAmount > 0
+                                    ? ((data.online || 0) / maxAmount) * chartHeight
+                                    : 0;
+                                const isCurrentYear = parseInt(year) === now.getFullYear();
+                                const isLastYear = parseInt(year) === now.getFullYear() - 1;
+
+                                return (
+                                  <div
+                                    key={year}
+                                    className={`chart-year-entry ${
+                                      yearEntries.length > 1
+                                        ? 'chart-year-entry-multi'
+                                        : 'chart-year-entry-single'
+                                    }`}
+                                  >
+                                    <div className='chart-payment-mode-group'>
+                                      <div
+                                        className={`chart-bar chart-bar-cash ${
+                                          (data.cash || 0) > 0 ? '' : 'chart-bar-empty'
+                                        } ${
+                                          isCurrentYear
+                                            ? 'chart-bar-current-year'
+                                            : isLastYear
+                                            ? 'chart-bar-last-year'
+                                            : 'chart-bar-other-year'
+                                        }`}
+                                        title={`${
+                                          monthData.monthName
+                                        } ${year} - Cash: ₹${formatCurrency(data.cash || 0)}`}
+                                      ></div>
+                                      <div
+                                        className={`chart-bar chart-bar-online ${
+                                          (data.online || 0) > 0 ? '' : 'chart-bar-empty'
+                                        } ${
+                                          isCurrentYear
+                                            ? 'chart-bar-current-year'
+                                            : isLastYear
+                                            ? 'chart-bar-last-year'
+                                            : 'chart-bar-other-year'
+                                        }`}
+                                        title={`${
+                                          monthData.monthName
+                                        } ${year} - Online: ₹${formatCurrency(data.online || 0)}`}
+                                      ></div>
+                                    </div>
+                                    {yearEntries.length > 1 && (
+                                      <span className='text-xs text-light chart-year-label'>
+                                        {year.toString().slice(-2)}
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
                             <span className='text-xs text-light text-center font-medium chart-month-label'>
                               {monthData.monthName}
@@ -751,7 +778,29 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                     <div className='empty-state-text'>No payment mode data available</div>
                   )}
                 </div>
-                <div className='chart-legend-container'>
+                {sortedYears.length > 1 && (
+                  <div className='chart-legend-container'>
+                    {sortedYears.map((year) => {
+                      const isCurrentYear = year === now.getFullYear();
+                      const isLastYear = year === now.getFullYear() - 1;
+                      return (
+                        <div key={year} className='chart-legend-item'>
+                          <div
+                            className={`chart-legend-color ${
+                              isCurrentYear
+                                ? 'chart-legend-color-current'
+                                : isLastYear
+                                ? 'chart-legend-color-last'
+                                : 'chart-legend-color-other'
+                            }`}
+                          />
+                          <span>{year}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className='chart-legend-container dashboard-chart-legend'>
                   <div className='chart-legend-item'>
                     <div className='chart-legend-color chart-legend-color-cash'></div>
                     <span>Cash</span>

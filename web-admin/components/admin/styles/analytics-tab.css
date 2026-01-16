@@ -1,0 +1,101 @@
+.analytics-empty-state-center {
+  text-align: center;
+  padding: 48px;
+  color: var(--admin-text-light);
+  width: 100%;
+}
+
+.analytics-empty-icon-large {
+  font-size: 48px;
+  opacity: 0.3;
+}
+
+.analytics-empty-text {
+  margin-top: 16px;
+}
+
+.analytics-chart-section {
+  padding: 16px;
+  border-top: 1px solid var(--admin-border);
+  margin-top: 0.5rem;
+}
+
+.analytics-empty-state-inline {
+  text-align: center;
+  padding: 48px;
+  color: var(--admin-text-light);
+}
+
+.analytics-progress-bar-container {
+  height: 20px;
+  border-radius: 10px;
+}
+
+.analytics-progress-bar-container-alt {
+  overflow: hidden;
+}
+
+.analytics-th-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.analytics-th-sort-indicator {
+  margin-left: 4px;
+}
+
+.analytics-top-days-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  min-height: 250px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.analytics-day-item {
+  flex: 1 1 0;
+  min-width: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.analytics-day-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--admin-glass-border);
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.analytics-day-summary-label {
+  font-size: 0.85rem;
+  color: var(--admin-text-secondary);
+  font-weight: 500;
+}
+
+.analytics-day-summary-value {
+  font-size: 1.1rem;
+  color: var(--admin-accent);
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+.analytics-day-summary-text {
+  font-size: 1rem;
+  color: var(--admin-text);
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.analytics-rank-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--admin-warning, #f59e0b);
+}

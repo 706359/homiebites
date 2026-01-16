@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
+import './styles/all-addresses-tab.css';
 import { formatDate, formatDateShort, parseOrderDate } from './utils/dateUtils.js';
 import { formatCurrency, sortOrdersByOrderId } from './utils/orderUtils.js';
 
@@ -11,17 +12,16 @@ const AllAddressesTab = ({
   showNotification,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all'); 
-  const [filterSegment, setFilterSegment] = useState('all'); 
-  const [sortBy, setSortBy] = useState('totalSpent'); 
-  const [sortOrder, setSortOrder] = useState('desc'); 
-  const [viewMode, setViewMode] = useState('table'); 
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterSegment, setFilterSegment] = useState('all');
+  const [sortBy, setSortBy] = useState('totalSpent');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [viewMode, setViewMode] = useState('table');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
 
-  
   const customerStats = useMemo(() => {
     if (!orders || orders.length === 0) {
       return [];
@@ -36,7 +36,6 @@ const AllAddressesTab = ({
     let ordersWithoutAddresses = 0;
 
     orders.forEach((order, idx) => {
-      
       const address =
         order.deliveryAddress ||
         order.customerAddress ||
@@ -67,23 +66,22 @@ const AllAddressesTab = ({
 
       customerMap[address].orders.push(order);
       customerMap[address].totalOrders++;
-      
+
       let orderTotal = null;
       if (order.totalAmount !== undefined && order.totalAmount !== null) {
         orderTotal = parseFloat(order.totalAmount);
       } else if (order.total !== undefined && order.total !== null) {
         orderTotal = parseFloat(order.total);
       }
-      
+
       if (orderTotal === null || isNaN(orderTotal)) {
         const qty = parseFloat(order.quantity || 1);
         const price = parseFloat(order.unitPrice || 0);
         orderTotal = qty * price;
       }
-      
+
       customerMap[address].totalSpent += isNaN(orderTotal) ? 0 : orderTotal;
 
-      
       const orderDate = parseOrderDate(order.date || order.order_date || null);
 
       if (orderDate) {
@@ -98,23 +96,19 @@ const AllAddressesTab = ({
         }
       }
 
-      
       const mode = order.mode || 'Not Set';
       customerMap[address].preferredMode[mode] =
         (customerMap[address].preferredMode[mode] || 0) + 1;
 
-      
       const paymentMode = order.paymentMode || 'Not Set';
       customerMap[address].paymentModes[paymentMode] =
         (customerMap[address].paymentModes[paymentMode] || 0) + 1;
     });
 
-    
     const customers = Object.values(customerMap).map((customer) => {
       const avgOrderValue =
         customer.totalOrders > 0 ? customer.totalSpent / customer.totalOrders : 0;
 
-      
       const preferredMode =
         Object.entries(customer.preferredMode).sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A';
       const preferredModePercent =
@@ -122,7 +116,6 @@ const AllAddressesTab = ({
           ? (customer.preferredMode[preferredMode] / customer.totalOrders) * 100
           : 0;
 
-      
       const preferredPayment =
         Object.entries(customer.paymentModes).sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A';
       const preferredPaymentPercent =
@@ -130,11 +123,6 @@ const AllAddressesTab = ({
           ? (customer.paymentModes[preferredPayment] / customer.totalOrders) * 100
           : 0;
 
-      
-      
-      
-      
-      
       let segment = 'New';
       if (customer.totalSpent >= 15000) {
         segment = 'Super VIP';
@@ -144,7 +132,6 @@ const AllAddressesTab = ({
         segment = 'Regular';
       }
 
-      
       const isInactive = customer.lastOrderDate && customer.lastOrderDate < thirtyDaysAgo;
 
       return {
@@ -162,29 +149,24 @@ const AllAddressesTab = ({
     return customers;
   }, [orders]);
 
-  
   const filteredCustomers = useMemo(() => {
     let filtered = [...customerStats];
 
-    
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((c) => c.address.toLowerCase().includes(query));
     }
 
-    
     if (filterStatus === 'active') {
       filtered = filtered.filter((c) => !c.isInactive);
     } else if (filterStatus === 'inactive') {
       filtered = filtered.filter((c) => c.isInactive);
     }
 
-    
     if (filterSegment !== 'all') {
       filtered = filtered.filter((c) => c.segment === filterSegment);
     }
 
-    
     filtered.sort((a, b) => {
       let comparison = 0;
       switch (sortBy) {
@@ -215,7 +197,6 @@ const AllAddressesTab = ({
     return filtered;
   }, [customerStats, searchQuery, filterStatus, filterSegment, sortBy, sortOrder]);
 
-  
   const paginatedCustomers = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
@@ -224,7 +205,6 @@ const AllAddressesTab = ({
 
   const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
 
-  
   const handleSort = (column) => {
     if (sortBy === column) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -234,7 +214,6 @@ const AllAddressesTab = ({
     }
   };
 
-  
   const segments = useMemo(() => {
     return {
       superVip: customerStats.filter((c) => c.segment === 'Super VIP').length,
@@ -246,12 +225,10 @@ const AllAddressesTab = ({
     };
   }, [customerStats]);
 
-  
   const inactiveCustomers = useMemo(() => {
     return customerStats.filter((c) => c.isInactive);
   }, [customerStats]);
 
-  
   const formatDateDiff = (date) => {
     if (!date) return 'Never';
     try {
@@ -276,7 +253,6 @@ const AllAddressesTab = ({
     setShowCustomerModal(true);
   };
 
-  
   const handleExport = () => {
     const csvContent =
       'Address,Total Orders,Total Spent,Avg Order Value,Last Order,Segment\n' +
@@ -304,7 +280,6 @@ const AllAddressesTab = ({
     );
   }
 
-  
   if (!orders || orders.length === 0) {
     return (
       <div className='admin-content'>
@@ -312,9 +287,7 @@ const AllAddressesTab = ({
           <div className='empty-state'>
             <i className='fa-solid fa-users empty-state-icon'></i>
             <p>No orders found</p>
-            <p className='empty-state-text'>
-              Add some orders to see customer data here
-            </p>
+            <p className='empty-state-text'>Add some orders to see customer data here</p>
           </div>
         </div>
       </div>
@@ -369,9 +342,7 @@ const AllAddressesTab = ({
       <div className='dashboard-card filter-bar-card filter-bar-compact'>
         <div className='filter-bar-container-compact'>
           {}
-          <div
-            className='search-input-wrapper search-input-compact search-input-flex'
-          >
+          <div className='search-input-wrapper search-input-compact search-input-flex'>
             <i className='fa-solid fa-search search-input-icon'></i>
             <input
               type='text'
@@ -408,14 +379,14 @@ const AllAddressesTab = ({
           {}
           <div className='view-toggle-compact'>
             <button
-              className={`btn btn-ghost btn-icon btn-icon-compact ${viewMode === 'table' ? 'active' : ''}`}
+              className={`btn btn-ghost btn-icon-compact ${viewMode === 'table' ? 'active' : ''}`}
               onClick={() => setViewMode('table')}
               title='Table View'
             >
               <i className='fa-solid fa-table'></i>
             </button>
             <button
-              className={`btn btn-ghost btn-icon btn-icon-compact ${viewMode === 'cards' ? 'active' : ''}`}
+              className={`btn btn-ghost btn-icon-compact ${viewMode === 'cards' ? 'active' : ''}`}
               onClick={() => setViewMode('cards')}
               title='Card View'
             >
@@ -451,25 +422,17 @@ const AllAddressesTab = ({
 
       {}
       {inactiveCustomers.length > 0 && (
-        <div
-          className='dashboard-card margin-bottom-24'
-          style={{
-            background: 'var(--admin-warning-light)',
-            border: '2px solid var(--admin-warning)',
-          }}
-        >
+        <div className='dashboard-card margin-bottom-24'>
           <div className='flex justify-between items-center'>
             <div>
               <h3 className='text-warning mb-8'>
                 ⚠️ {inactiveCustomers.length} customers haven&apos;t ordered in 30+ days
               </h3>
-              <p className='text-base'>
-                Consider reaching out to re-engage these customers
-              </p>
+              <p className='text-base'>Consider reaching out to re-engage these customers</p>
             </div>
             <div className='action-buttons-group'>
               <button
-                className='btn btn-warning btn-small'
+                className='btn btn-special btn-small'
                 onClick={() => {
                   setFilterStatus('inactive');
                 }}
@@ -494,8 +457,8 @@ const AllAddressesTab = ({
                     {orders.length > 0 && customerStats.length === 0
                       ? `Found ${orders.length} orders, but none have valid delivery addresses.`
                       : searchQuery || filterStatus !== 'all' || filterSegment !== 'all'
-                        ? 'Try adjusting your search or filters'
-                        : 'No customer data available. Add orders with delivery addresses to see customers here.'}
+                      ? 'Try adjusting your search or filters'
+                      : 'No customer data available. Add orders with delivery addresses to see customers here.'}
                   </p>
                 </div>
               </div>
@@ -511,7 +474,9 @@ const AllAddressesTab = ({
                         Address
                         {sortBy === 'address' && (
                           <i
-                            className={`fa-solid fa-arrow-${sortOrder === 'asc' ? 'up' : 'down'} ml-6 text-xs`}
+                            className={`fa-solid fa-arrow-${
+                              sortOrder === 'asc' ? 'up' : 'down'
+                            } ml-6 text-xs`}
                           ></i>
                         )}
                       </th>
@@ -522,7 +487,9 @@ const AllAddressesTab = ({
                         Orders
                         {sortBy === 'totalOrders' && (
                           <i
-                            className={`fa-solid fa-arrow-${sortOrder === 'asc' ? 'up' : 'down'} ml-6 text-xs`}
+                            className={`fa-solid fa-arrow-${
+                              sortOrder === 'asc' ? 'up' : 'down'
+                            } ml-6 text-xs`}
                           ></i>
                         )}
                       </th>
@@ -533,7 +500,9 @@ const AllAddressesTab = ({
                         Total Spent
                         {sortBy === 'totalSpent' && (
                           <i
-                            className={`fa-solid fa-arrow-${sortOrder === 'asc' ? 'up' : 'down'} ml-6 text-xs`}
+                            className={`fa-solid fa-arrow-${
+                              sortOrder === 'asc' ? 'up' : 'down'
+                            } ml-6 text-xs`}
                           ></i>
                         )}
                       </th>
@@ -544,7 +513,9 @@ const AllAddressesTab = ({
                         Avg Order
                         {sortBy === 'avgOrderValue' && (
                           <i
-                            className={`fa-solid fa-arrow-${sortOrder === 'asc' ? 'up' : 'down'} ml-6 text-xs`}
+                            className={`fa-solid fa-arrow-${
+                              sortOrder === 'asc' ? 'up' : 'down'
+                            } ml-6 text-xs`}
                           ></i>
                         )}
                       </th>
@@ -555,7 +526,9 @@ const AllAddressesTab = ({
                         Last Order
                         {sortBy === 'lastOrder' && (
                           <i
-                            className={`fa-solid fa-arrow-${sortOrder === 'asc' ? 'up' : 'down'} ml-6 text-xs`}
+                            className={`fa-solid fa-arrow-${
+                              sortOrder === 'asc' ? 'up' : 'down'
+                            } ml-6 text-xs`}
                           ></i>
                         )}
                       </th>
@@ -571,10 +544,10 @@ const AllAddressesTab = ({
                         customer.segment === 'Super VIP'
                           ? 'var(--admin-warning)'
                           : customer.segment === 'VIP'
-                            ? 'var(--admin-accent)'
-                            : customer.segment === 'Regular'
-                              ? 'var(--admin-success)'
-                              : 'var(--admin-text-secondary)';
+                          ? 'var(--admin-accent)'
+                          : customer.segment === 'Regular'
+                          ? 'var(--admin-success)'
+                          : 'var(--admin-text-secondary)';
                       return (
                         <tr
                           key={idx}
@@ -582,9 +555,7 @@ const AllAddressesTab = ({
                           className='cursor-pointer'
                         >
                           <td>
-                            <div className='font-semibold text-primary'>
-                              {customer.address}
-                            </div>
+                            <div className='font-semibold text-primary'>{customer.address}</div>
                           </td>
                           <td>
                             <span className='font-semibold'>{customer.totalOrders}</span>
@@ -605,21 +576,14 @@ const AllAddressesTab = ({
                             </span>
                           </td>
                           <td>
-                            <span
-                              className='badge badge-small'
-                              style={{
-                                background: segmentColor + '20',
-                                color: segmentColor,
-                                fontWeight: '600',
-                              }}
-                            >
+                            <span className='badge badge-small'>
                               {customer.segment === 'Super VIP'
                                 ? '👑'
                                 : customer.segment === 'VIP'
-                                  ? '🌟'
-                                  : customer.segment === 'Regular'
-                                    ? '📈'
-                                    : '👤'}{' '}
+                                ? '🌟'
+                                : customer.segment === 'Regular'
+                                ? '📈'
+                                : '👤'}{' '}
                               {customer.segment}
                             </span>
                           </td>
@@ -628,13 +592,9 @@ const AllAddressesTab = ({
                           </td>
                           <td>
                             {customer.isInactive ? (
-                              <span className='badge badge-warning badge-small'>
-                                Inactive
-                              </span>
+                              <span className='badge badge-warning badge-small'>Inactive</span>
                             ) : (
-                              <span className='badge badge-success badge-small'>
-                                Active
-                              </span>
+                              <span className='badge badge-success badge-small'>Active</span>
                             )}
                           </td>
                           <td className='text-center'>
@@ -700,7 +660,6 @@ const AllAddressesTab = ({
           </div>
         </div>
       ) : (
-        
         <div className='customer-cards-grid'>
           {filteredCustomers.length === 0 ? (
             <div className='dashboard-card grid-col-full empty-state-center'>
@@ -711,8 +670,8 @@ const AllAddressesTab = ({
                   {orders.length > 0 && customerStats.length === 0
                     ? `Found ${orders.length} orders, but none have valid delivery addresses.`
                     : searchQuery || filterStatus !== 'all' || filterSegment !== 'all'
-                      ? 'Try adjusting your search or filters'
-                      : 'No customer data available. Add orders with delivery addresses to see customers here.'}
+                    ? 'Try adjusting your search or filters'
+                    : 'No customer data available. Add orders with delivery addresses to see customers here.'}
                 </p>
               </div>
             </div>
@@ -722,18 +681,18 @@ const AllAddressesTab = ({
                 customer.segment === 'Super VIP'
                   ? '👑'
                   : customer.segment === 'VIP'
-                    ? '🌟'
-                    : customer.segment === 'Regular'
-                      ? '📈'
-                      : '👤';
+                  ? '🌟'
+                  : customer.segment === 'Regular'
+                  ? '📈'
+                  : '👤';
               const segmentLabel =
                 customer.segment === 'Super VIP'
                   ? 'Super VIP Customer'
                   : customer.segment === 'VIP'
-                    ? 'VIP Customer'
-                    : customer.segment === 'Regular'
-                      ? 'Regular Customer'
-                      : 'New Customer';
+                  ? 'VIP Customer'
+                  : customer.segment === 'Regular'
+                  ? 'Regular Customer'
+                  : 'New Customer';
 
               const segmentColors = {
                 'Super VIP': {
@@ -769,15 +728,13 @@ const AllAddressesTab = ({
                   key={idx}
                   className='customer-card-enhanced'
                   onClick={() => handleViewCustomer(customer)}
-                  style={{
-                    background: segmentStyle.bg,
-                    border: `2px solid ${segmentStyle.border}`,
-                  }}
                 >
                   <div className='customer-card-enhanced-header'>
-                    <div className='customer-card-enhanced-segment-badge' style={{ color: segmentStyle.color }}>
+                    <div className='customer-card-enhanced-segment-badge'>
                       <span className='customer-card-enhanced-segment-icon'>{segmentIcon}</span>
-                      <span className='customer-card-enhanced-segment-label'>{customer.segment}</span>
+                      <span className='customer-card-enhanced-segment-label'>
+                        {customer.segment}
+                      </span>
                     </div>
                     {customer.isInactive ? (
                       <span className='customer-card-enhanced-status-badge inactive'>
@@ -794,7 +751,7 @@ const AllAddressesTab = ({
 
                   <div className='customer-card-enhanced-body'>
                     <h3 className='customer-card-enhanced-title'>{customer.address}</h3>
-                    
+
                     <div className='customer-card-enhanced-stats'>
                       <div className='customer-card-enhanced-stat-item'>
                         <div className='customer-card-enhanced-stat-icon'>
@@ -802,17 +759,19 @@ const AllAddressesTab = ({
                         </div>
                         <div className='customer-card-enhanced-stat-content'>
                           <span className='customer-card-enhanced-stat-label'>Total Orders</span>
-                          <span className='customer-card-enhanced-stat-value'>{customer.totalOrders}</span>
+                          <span className='customer-card-enhanced-stat-value'>
+                            {customer.totalOrders}
+                          </span>
                         </div>
                       </div>
 
                       <div className='customer-card-enhanced-stat-item highlight'>
-                        <div className='customer-card-enhanced-stat-icon' style={{ color: segmentStyle.color }}>
+                        <div className='customer-card-enhanced-stat-icon'>
                           <i className='fa-solid fa-rupee-sign'></i>
                         </div>
                         <div className='customer-card-enhanced-stat-content'>
                           <span className='customer-card-enhanced-stat-label'>Total Spent</span>
-                          <span className='customer-card-enhanced-stat-value' style={{ color: segmentStyle.color }}>
+                          <span className='customer-card-enhanced-stat-value'>
                             ₹{formatCurrency(customer.totalSpent)}
                           </span>
                         </div>
@@ -894,7 +853,10 @@ const AllAddressesTab = ({
           <div className='modal-container' onClick={(e) => e.stopPropagation()}>
             <div className='modal-header'>
               <h2>{selectedCustomer.address} Customer Details</h2>
-              <button className='btn btn-ghost btn-icon modal-close' onClick={() => setShowCustomerModal(false)}>
+              <button
+                className='btn btn-ghost btn-icon modal-close'
+                onClick={() => setShowCustomerModal(false)}
+              >
                 <i className='fa-solid fa-times'></i>
               </button>
             </div>
@@ -902,9 +864,7 @@ const AllAddressesTab = ({
               <div className='filter-bar-flex-col'>
                 {}
                 <div>
-                  <h3 className='section-title-mb'>
-                    Customer Information
-                  </h3>
+                  <h3 className='section-title-mb'>Customer Information</h3>
                   <div className='customer-detail-grid'>
                     <div>
                       <span className='customer-detail-label'>Status:</span>
@@ -922,9 +882,7 @@ const AllAddressesTab = ({
                     </div>
                     <div>
                       <span className='customer-detail-label'>Total Orders:</span>
-                      <span className='customer-detail-value'>
-                        {selectedCustomer.totalOrders}
-                      </span>
+                      <span className='customer-detail-value'>{selectedCustomer.totalOrders}</span>
                     </div>
                     <div>
                       <span className='customer-detail-label'>Total Spent:</span>
@@ -933,9 +891,7 @@ const AllAddressesTab = ({
                       </span>
                     </div>
                     <div>
-                      <span className='customer-detail-label'>
-                        Average Order Value:
-                      </span>
+                      <span className='customer-detail-label'>Average Order Value:</span>
                       <span className='customer-detail-value'>
                         ₹{formatCurrency(selectedCustomer.avgOrderValue)}
                       </span>
@@ -965,9 +921,7 @@ const AllAddressesTab = ({
 
                 {}
                 <div>
-                  <h3 className='section-title-mb'>
-                    Order History (Last 10)
-                  </h3>
+                  <h3 className='section-title-mb'>Order History (Last 10)</h3>
                   <div className='orders-table-container'>
                     <table className='orders-table'>
                       <thead>
@@ -983,7 +937,6 @@ const AllAddressesTab = ({
                           .slice(0, 10)
                           .map((order, idx) => {
                             const orderDate = parseOrderDate(
-                              
                               order.date || order.order_date || null
                             );
                             const dateStr = formatDate(orderDate);

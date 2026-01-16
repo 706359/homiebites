@@ -27,10 +27,10 @@
 
 ```css
 .stat-card {
-  padding: 14px !important;
+  padding: 14px;
   flex-direction: row;
   align-items: center;
-  gap: 12px !important;
+  gap: 12px;
   width: 100%;
   max-width: 100%;
 }
@@ -45,10 +45,10 @@
 
 ```css
 .stat-card {
-  padding: 14px !important;
+  padding: 14px;
   flex-direction: row;
   align-items: center;
-  gap: 12px !important;
+  gap: 12px;
 }
 ```
 
@@ -56,10 +56,10 @@
 
 ```css
 .stat-card {
-  padding: 12px !important;
+  padding: 12px;
   flex-direction: row;
   align-items: flex-start;
-  gap: 10px !important;
+  gap: 10px;
   margin-bottom: 8px;
 }
 

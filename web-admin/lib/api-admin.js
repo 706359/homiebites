@@ -3,13 +3,6 @@ let resolvedApiUrl = '';
 if (typeof window !== 'undefined') {
 }
 
-/**
- * Retry helper for failed API requests with exponential backoff
- * @param {Function} fn - Async function to retry
- * @param {number} maxAttempts - Maximum number of attempts (default: 3)
- * @param {number} initialDelayMs - Initial delay in milliseconds (default: 1000)
- * @returns {Promise} Result of the function
- */
 export const retryAsync = async (fn, maxAttempts = 3, initialDelayMs = 1000) => {
   let lastError;
 

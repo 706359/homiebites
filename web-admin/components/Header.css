@@ -4,17 +4,17 @@
   border-bottom: 1px solid var(--border-light);
 }
 
-.user-avatar-wrapper {
+.mobile-menu-user-info .user-avatar-wrapper {
   margin: 0 auto var(--space-2) auto;
 }
 
-.user-avatar-img {
+.mobile-menu-user-info .user-avatar-img {
   width: var(--avatar-size);
   height: var(--avatar-size);
   border-radius: var(--border-radius-full);
 }
 
-.user-avatar {
+.mobile-menu-user-info .user-avatar {
   width: var(--avatar-size);
   height: var(--avatar-size);
   border-radius: var(--border-radius-full);

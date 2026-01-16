@@ -7,6 +7,7 @@ const Sidebar = ({
   setSidebarOpen,
   sidebarCollapsed,
   setSidebarCollapsed,
+  onLogout,
 }) => {
   return (
     <div
@@ -26,13 +27,8 @@ const Sidebar = ({
               e.target.nextSibling.style.display = 'flex';
             }}
             onClick={() => setActiveTab('dashboard')}
-            style={{ cursor: 'pointer' }}
           />
-          <div
-            className='sidebar-logo-fallback'
-            style={{ display: 'none' }}
-            onClick={() => setActiveTab('dashboard')}
-          >
+          <div className='sidebar-logo-fallback' onClick={() => setActiveTab('dashboard')}>
             <i className='fa-solid fa-shield-halved'></i>
           </div>
         </div>
@@ -81,6 +77,20 @@ const Sidebar = ({
             className={`fa-solid ${sidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'}`}
           ></i>
         </button>
+        {onLogout && (
+          <button
+            className='sidebar-item logout-btn'
+            onClick={() => {
+              onLogout();
+              setSidebarOpen(false);
+            }}
+            title={sidebarCollapsed ? 'Logout' : ''}
+            aria-label='Logout'
+          >
+            <i className='fa-solid fa-sign-out-alt'></i>
+            {!sidebarCollapsed && <span>Logout</span>}
+          </button>
+        )}
       </div>
     </div>
   );

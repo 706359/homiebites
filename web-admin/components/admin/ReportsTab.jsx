@@ -1,7 +1,7 @@
+import ExcelJS from 'exceljs';
 import { useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
 import { formatDate, formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
-import ExcelJS from 'exceljs';
 
 const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
   const [selectedReportType, setSelectedReportType] = useState('');
@@ -11,7 +11,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
   const [includeSummary, setIncludeSummary] = useState(true);
   const [groupByArea, setGroupByArea] = useState(false);
   const [groupByMode, setGroupByMode] = useState(false);
-  const [reportFormat, setReportFormat] = useState('csv'); 
+  const [reportFormat, setReportFormat] = useState('csv');
   const [showGenerator, setShowGenerator] = useState(false);
 
   const [scheduledReports, setScheduledReports] = useState([
@@ -61,19 +61,19 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
 
   const getOrderAmount = (order) => {
     let amount = null;
-    
+
     if (order.totalAmount !== undefined && order.totalAmount !== null) {
       amount = parseFloat(order.totalAmount);
     } else if (order.total !== undefined && order.total !== null) {
       amount = parseFloat(order.total);
     }
-    
+
     if (amount === null || isNaN(amount)) {
       const qty = parseFloat(order.quantity || 1);
       const price = parseFloat(order.unitPrice || 0);
       amount = qty * price;
     }
-    
+
     return isNaN(amount) ? 0 : amount;
   };
 
@@ -109,7 +109,6 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
     const reportDate = new Date().toISOString().split('T')[0];
 
     if (selectedReportType === 'Sales Report') {
-      
       csvContent =
         'Order ID,Date,Delivery Address,Quantity,Unit Price (₹),Total Amount (₹),Mode,Status,Payment Mode\n';
       filteredOrders
@@ -133,7 +132,11 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           const status = o.status || 'N/A';
           const paymentMode = o.paymentMode || 'N/A';
 
-          csvContent += `${escapeCSV(orderId)},${escapeCSV(dateStr)},${escapeCSV(address)},${escapeCSV(quantity)},${escapeCSV(unitPrice)},${escapeCSV(totalAmount)},${escapeCSV(mode)},${escapeCSV(status)},${escapeCSV(paymentMode)}\n`;
+          csvContent += `${escapeCSV(orderId)},${escapeCSV(dateStr)},${escapeCSV(
+            address
+          )},${escapeCSV(quantity)},${escapeCSV(unitPrice)},${escapeCSV(totalAmount)},${escapeCSV(
+            mode
+          )},${escapeCSV(status)},${escapeCSV(paymentMode)}\n`;
         });
 
       const totalRevenue = filteredOrders.reduce((sum, o) => sum + getOrderAmount(o), 0);
@@ -152,7 +155,6 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
       csvContent += `Paid Orders,${paidOrders}\n`;
       csvContent += `Unpaid Orders,${unpaidOrders}\n`;
     } else if (selectedReportType === 'Payment Report') {
-      
       csvContent =
         'Payment Mode,Total Orders,Total Amount (₹),Paid Orders,Paid Amount (₹),Unpaid Orders,Unpaid Amount (₹),Pending Orders,Pending Amount (₹)\n';
 
@@ -194,10 +196,15 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
       Object.values(paymentStats)
         .sort((a, b) => b.totalAmount - a.totalAmount)
         .forEach((stat) => {
-          csvContent += `${escapeCSV(stat.paymentMode)},${escapeCSV(stat.totalOrders)},${escapeCSV(stat.totalAmount.toFixed(2))},${escapeCSV(stat.paidOrders)},${escapeCSV(stat.paidAmount.toFixed(2))},${escapeCSV(stat.unpaidOrders)},${escapeCSV(stat.unpaidAmount.toFixed(2))},${escapeCSV(stat.pendingOrders)},${escapeCSV(stat.pendingAmount.toFixed(2))}\n`;
+          csvContent += `${escapeCSV(stat.paymentMode)},${escapeCSV(stat.totalOrders)},${escapeCSV(
+            stat.totalAmount.toFixed(2)
+          )},${escapeCSV(stat.paidOrders)},${escapeCSV(stat.paidAmount.toFixed(2))},${escapeCSV(
+            stat.unpaidOrders
+          )},${escapeCSV(stat.unpaidAmount.toFixed(2))},${escapeCSV(
+            stat.pendingOrders
+          )},${escapeCSV(stat.pendingAmount.toFixed(2))}\n`;
         });
     } else if (selectedReportType === 'Monthly Statement') {
-      
       csvContent =
         'Month,Year,Total Orders,Total Revenue (₹),Paid Orders,Paid Amount (₹),Unpaid Orders,Unpaid Amount (₹),Average Order Value (₹)\n';
 
@@ -206,7 +213,10 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         if (!orderDate) return;
 
-        const monthKey = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`;
+        const monthKey = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(
+          2,
+          '0'
+        )}`;
         const monthName = orderDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
         if (!monthStats[monthKey]) {
@@ -245,10 +255,15 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         .forEach((stat) => {
           const avgOrderValue =
             stat.totalOrders > 0 ? (stat.totalRevenue / stat.totalOrders).toFixed(2) : '0.00';
-          csvContent += `${escapeCSV(stat.month)},${escapeCSV(stat.year)},${escapeCSV(stat.totalOrders)},${escapeCSV(stat.totalRevenue.toFixed(2))},${escapeCSV(stat.paidOrders)},${escapeCSV(stat.paidAmount.toFixed(2))},${escapeCSV(stat.unpaidOrders)},${escapeCSV(stat.unpaidAmount.toFixed(2))},${escapeCSV(avgOrderValue)}\n`;
+          csvContent += `${escapeCSV(stat.month)},${escapeCSV(stat.year)},${escapeCSV(
+            stat.totalOrders
+          )},${escapeCSV(stat.totalRevenue.toFixed(2))},${escapeCSV(stat.paidOrders)},${escapeCSV(
+            stat.paidAmount.toFixed(2)
+          )},${escapeCSV(stat.unpaidOrders)},${escapeCSV(stat.unpaidAmount.toFixed(2))},${escapeCSV(
+            avgOrderValue
+          )}\n`;
         });
     } else if (selectedReportType === 'Area-wise Report' || groupByArea) {
-      
       csvContent =
         'Delivery Area,Total Orders,Total Revenue (₹),Paid Orders,Paid Amount (₹),Unpaid Orders,Unpaid Amount (₹),Average Order Value (₹)\n';
 
@@ -287,10 +302,13 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         .forEach((stat) => {
           const avgOrderValue =
             stat.totalOrders > 0 ? (stat.totalRevenue / stat.totalOrders).toFixed(2) : '0.00';
-          csvContent += `${escapeCSV(stat.address)},${escapeCSV(stat.totalOrders)},${escapeCSV(stat.totalRevenue.toFixed(2))},${escapeCSV(stat.paidOrders)},${escapeCSV(stat.paidAmount.toFixed(2))},${escapeCSV(stat.unpaidOrders)},${escapeCSV(stat.unpaidAmount.toFixed(2))},${escapeCSV(avgOrderValue)}\n`;
+          csvContent += `${escapeCSV(stat.address)},${escapeCSV(stat.totalOrders)},${escapeCSV(
+            stat.totalRevenue.toFixed(2)
+          )},${escapeCSV(stat.paidOrders)},${escapeCSV(stat.paidAmount.toFixed(2))},${escapeCSV(
+            stat.unpaidOrders
+          )},${escapeCSV(stat.unpaidAmount.toFixed(2))},${escapeCSV(avgOrderValue)}\n`;
         });
     } else if (selectedReportType === 'Customer Report') {
-      
       csvContent =
         'Customer Address,Total Orders,Total Spent (₹),First Order Date,Last Order Date,Average Order Value (₹),Paid Orders,Unpaid Orders,Outstanding Amount (₹)\n';
 
@@ -345,10 +363,15 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           const firstOrder = stat.firstOrderDate ? formatDate(stat.firstOrderDate) : 'N/A';
           const lastOrder = stat.lastOrderDate ? formatDate(stat.lastOrderDate) : 'N/A';
 
-          csvContent += `${escapeCSV(stat.address)},${escapeCSV(stat.totalOrders)},${escapeCSV(stat.totalSpent.toFixed(2))},${escapeCSV(firstOrder)},${escapeCSV(lastOrder)},${escapeCSV(avgOrderValue)},${escapeCSV(stat.paidOrders)},${escapeCSV(stat.unpaidOrders)},${escapeCSV(stat.outstandingAmount.toFixed(2))}\n`;
+          csvContent += `${escapeCSV(stat.address)},${escapeCSV(stat.totalOrders)},${escapeCSV(
+            stat.totalSpent.toFixed(2)
+          )},${escapeCSV(firstOrder)},${escapeCSV(lastOrder)},${escapeCSV(
+            avgOrderValue
+          )},${escapeCSV(stat.paidOrders)},${escapeCSV(stat.unpaidOrders)},${escapeCSV(
+            stat.outstandingAmount.toFixed(2)
+          )}\n`;
         });
     } else if (selectedReportType === 'Growth Report') {
-      
       csvContent =
         'Month,Year,Orders,Revenue (₹),Growth Rate (%),Orders Growth (%),Average Order Value (₹)\n';
 
@@ -357,7 +380,10 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         if (!orderDate) return;
 
-        const monthKey = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`;
+        const monthKey = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(
+          2,
+          '0'
+        )}`;
 
         if (!monthStats[monthKey]) {
           monthStats[monthKey] = {
@@ -389,10 +415,13 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
             : '0.00';
         const avgOrderValue = stat.orders > 0 ? (stat.revenue / stat.orders).toFixed(2) : '0.00';
 
-        csvContent += `${escapeCSV(stat.month)},${escapeCSV(stat.year)},${escapeCSV(stat.orders)},${escapeCSV(stat.revenue.toFixed(2))},${escapeCSV(revenueGrowth)},${escapeCSV(ordersGrowth)},${escapeCSV(avgOrderValue)}\n`;
+        csvContent += `${escapeCSV(stat.month)},${escapeCSV(stat.year)},${escapeCSV(
+          stat.orders
+        )},${escapeCSV(stat.revenue.toFixed(2))},${escapeCSV(revenueGrowth)},${escapeCSV(
+          ordersGrowth
+        )},${escapeCSV(avgOrderValue)}\n`;
       });
     } else if (groupByMode) {
-      
       csvContent = 'Mode,Total Orders,Total Revenue (₹),Average Order Value (₹)\n';
 
       const modeStats = {};
@@ -409,10 +438,11 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
         .sort((a, b) => b.revenue - a.revenue)
         .forEach((stat) => {
           const avgOrderValue = stat.orders > 0 ? (stat.revenue / stat.orders).toFixed(2) : '0.00';
-          csvContent += `${escapeCSV(stat.mode)},${escapeCSV(stat.orders)},${escapeCSV(stat.revenue.toFixed(2))},${escapeCSV(avgOrderValue)}\n`;
+          csvContent += `${escapeCSV(stat.mode)},${escapeCSV(stat.orders)},${escapeCSV(
+            stat.revenue.toFixed(2)
+          )},${escapeCSV(avgOrderValue)}\n`;
         });
     } else {
-      
       csvContent =
         'Order ID,Date,Delivery Address,Quantity,Unit Price (₹),Total Amount (₹),Mode,Status,Payment Mode\n';
       filteredOrders
@@ -436,7 +466,11 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           const status = o.status || 'N/A';
           const paymentMode = o.paymentMode || 'N/A';
 
-          csvContent += `${escapeCSV(orderId)},${escapeCSV(dateStr)},${escapeCSV(address)},${escapeCSV(quantity)},${escapeCSV(unitPrice)},${escapeCSV(totalAmount)},${escapeCSV(mode)},${escapeCSV(status)},${escapeCSV(paymentMode)}\n`;
+          csvContent += `${escapeCSV(orderId)},${escapeCSV(dateStr)},${escapeCSV(
+            address
+          )},${escapeCSV(quantity)},${escapeCSV(unitPrice)},${escapeCSV(totalAmount)},${escapeCSV(
+            mode
+          )},${escapeCSV(status)},${escapeCSV(paymentMode)}\n`;
         });
     }
 
@@ -457,7 +491,9 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
 
     const period =
       reportDateFrom && reportDateTo
-        ? `${formatDate(parseOrderDate(reportDateFrom))} - ${formatDate(parseOrderDate(reportDateTo))}`
+        ? `${formatDate(parseOrderDate(reportDateFrom))} - ${formatDate(
+            parseOrderDate(reportDateTo)
+          )}`
         : 'All Time';
     setReportHistory([
       {
@@ -595,18 +631,16 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
       } else {
         // For other report types, use a simplified structure
         headers = ['Order ID', 'Date', 'Address', 'Amount (₹)', 'Status'];
-        rows = filteredOrders
-          .slice(0, 1000)
-          .map((o) => {
-            const orderDate = parseOrderDate(o.date || o.order_date || null);
-            return [
-              o.orderId || o._id || 'N/A',
-              orderDate ? formatDate(orderDate) : 'N/A',
-              o.deliveryAddress || o.customerAddress || o.address || 'N/A',
-              parseFloat(getOrderAmount(o)),
-              o.status || 'N/A',
-            ];
-          });
+        rows = filteredOrders.slice(0, 1000).map((o) => {
+          const orderDate = parseOrderDate(o.date || o.order_date || null);
+          return [
+            o.orderId || o._id || 'N/A',
+            orderDate ? formatDate(orderDate) : 'N/A',
+            o.deliveryAddress || o.customerAddress || o.address || 'N/A',
+            parseFloat(getOrderAmount(o)),
+            o.status || 'N/A',
+          ];
+        });
       }
 
       // Add headers
@@ -721,7 +755,11 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                     .join('')}
                 </tbody>
               </table>
-              ${filteredOrders.length > 100 ? '<p>Showing first 100 records. Use CSV/Excel for full export.</p>' : ''}
+              ${
+                filteredOrders.length > 100
+                  ? '<p>Showing first 100 records. Use CSV/Excel for full export.</p>'
+                  : ''
+              }
             </body>
           </html>
         `);
@@ -749,11 +787,8 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
   return (
     <div className='admin-content'>
       {}
-      <div className="flex-start gap-12 mb-24 flex-wrap">
-        <button
-          className='btn btn-primary btn-icon-inline'
-          onClick={() => setShowGenerator(true)}
-        >
+      <div className='flex-start gap-12 mb-24 flex-wrap'>
+        <button className='btn btn-primary btn-icon-inline' onClick={() => setShowGenerator(true)}>
           <i className='fa-solid fa-file-alt'></i>
           Generate Report
         </button>
@@ -893,7 +928,10 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           <div className='modal-container' onClick={(e) => e.stopPropagation()}>
             <div className='modal-header'>
               <h2>Generate Report</h2>
-              <button className='btn btn-ghost btn-icon modal-close' onClick={() => setShowGenerator(false)}>
+              <button
+                className='btn btn-ghost btn-icon modal-close'
+                onClick={() => setShowGenerator(false)}
+              >
                 <i className='fa-solid fa-times'></i>
               </button>
             </div>
@@ -918,7 +956,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
 
                 <div className='form-group'>
                   <label>Date Range</label>
-                  <div className="flex-start gap-12">
+                  <div className='flex-start gap-12'>
                     <input
                       type='date'
                       className='input-field'
@@ -938,8 +976,8 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
 
                 <div className='form-group grid-col-full'>
                   <label>Filters</label>
-                  <div className="flex-column-gap-12">
-                    <label className="form-label-inline">
+                  <div className='flex-column-gap-12'>
+                    <label className='form-label-inline'>
                       <input
                         type='checkbox'
                         checked={includeCharts}
@@ -947,7 +985,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                       />
                       <span>Include Charts</span>
                     </label>
-                    <label className="form-label-inline">
+                    <label className='form-label-inline'>
                       <input
                         type='checkbox'
                         checked={includeSummary}
@@ -955,7 +993,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                       />
                       <span>Include Summary</span>
                     </label>
-                    <label className="form-label-inline">
+                    <label className='form-label-inline'>
                       <input
                         type='checkbox'
                         checked={groupByArea}
@@ -966,7 +1004,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                       />
                       <span>Group by Area</span>
                     </label>
-                    <label className="form-label-inline">
+                    <label className='form-label-inline'>
                       <input
                         type='checkbox'
                         checked={groupByMode}
@@ -982,8 +1020,8 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
 
                 <div className='form-group grid-col-full'>
                   <label>Format</label>
-                  <div className="flex-start gap-16 mt-8">
-                    <label className="form-label-inline">
+                  <div className='flex-start gap-16 mt-8'>
+                    <label className='form-label-inline'>
                       <input
                         type='radio'
                         name='format'
@@ -993,7 +1031,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                       />
                       <span>PDF</span>
                     </label>
-                    <label className="form-label-inline">
+                    <label className='form-label-inline'>
                       <input
                         type='radio'
                         name='format'
@@ -1003,7 +1041,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                       />
                       <span>Excel</span>
                     </label>
-                    <label className="form-label-inline">
+                    <label className='form-label-inline'>
                       <input
                         type='radio'
                         name='format'
@@ -1033,10 +1071,10 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
       )}
 
       {}
-      <div className='reports-side-by-side-container' style={{ gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+      <div className='reports-side-by-side-container'>
         {}
         <div className='dashboard-card'>
-          <div className="flex-between mb-16">
+          <div className='flex-between mb-16'>
             <h3 className='dashboard-section-title mb-0'>
               <i className='fa-solid fa-clock opacity-70'></i>
               Automated Reports
@@ -1062,11 +1100,14 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                     <td>{report.schedule}</td>
                     <td>{report.format}</td>
                     <td>
-                      <div className="flex-start gap-8">
+                      <div className='flex-start gap-8'>
                         <button className='btn btn-ghost btn-icon action-icon-edit' title='Edit'>
                           <i className='fa-solid fa-pencil'></i>
                         </button>
-                        <button className='btn btn-ghost btn-icon action-icon-delete' title='Delete'>
+                        <button
+                          className='btn btn-ghost btn-icon action-icon-delete'
+                          title='Delete'
+                        >
                           <i className='fa-solid fa-trash'></i>
                         </button>
                       </div>
@@ -1097,7 +1138,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
               <tbody>
                 {reportHistory.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="text-center" style={{ padding: '48px' }}>
+                    <td colSpan={4} className='text-center'>
                       <div className='empty-state'>
                         <i className='fa-solid fa-inbox empty-state-icon'></i>
                         <p>No reports generated yet</p>
@@ -1123,7 +1164,6 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           </div>
         </div>
       </div>
-
     </div>
   );
 };

@@ -664,8 +664,8 @@ MAIN CONTENT
 flex: 1;
 padding: 16px;
 width: 100%;
-margin-left: 0 !important;
-margin-right: 0 !important;
+margin-left: 0 ;
+margin-right: 0 ;
 max-width: 100%;
 }
 
@@ -1543,7 +1543,7 @@ min-height: 36px;
 /_ Loading Button _/
 .btn-loading {
 position: relative;
-color: transparent !important;
+color: transparent ;
 pointer-events: none;
 }
 .btn-loading::after {
@@ -2183,8 +2183,8 @@ margin: 16px 0;
 position: relative;
 }
 canvas {
-max-width: 100% !important;
-height: auto !important;
+max-width: 100% ;
+height: auto ;
 }
 .chart-legend {
 display: flex;
@@ -2591,11 +2591,11 @@ UTILITY CLASSES
 ============================================ _/
 .hide-mobile,
 .d-none-mobile {
-display: none !important;
+display: none ;
 }
 .show-mobile,
 .d-mobile {
-display: block !important;
+display: block ;
 }
 .text-center { text-align: center; }
 .text-left { text-align: left; }
@@ -2747,7 +2747,7 @@ PRINT STYLES
 .bottom-nav,
 .sidebar-overlay,
 .no-print {
-display: none !important;
+display: none ;
 }
 .main-content {
 padding: 0;

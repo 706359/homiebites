@@ -1,17 +1,5 @@
-@import './theme.css';
-@import './buttons.css';
-@import './tailwind-components.css';
-@import './font-size-hierarchy.css';
-@import './utilities.css';
-@import './fixes.css';
-@import './components.css';
-@import './sidebar-redesign.css';
-@import './dashboard-enhancements.css';
-@import './settings-theme.css';
-@import './custom-overrides.css';
-@import './responsive.css';
-@import './hover-effects.css';
-@import './order-form-fixes.css';
+@import './admin-core.css';
+@import './admin-components.css';
 
 .admin-dashboard {
   --primary-green: var(--admin-accent, #449031);

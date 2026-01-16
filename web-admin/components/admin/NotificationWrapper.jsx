@@ -8,11 +8,10 @@ const NotificationWrapper = () => {
   const containerRef = useRef(null);
   const notificationRefs = useRef(new Map());
 
-  
   useEffect(() => {
     if (containerRef.current && notifications.length > 0) {
       const container = containerRef.current;
-      
+
       container.scrollTo({
         top: container.scrollHeight,
         behavior: 'smooth',
@@ -20,7 +19,6 @@ const NotificationWrapper = () => {
     }
   }, [notifications]);
 
-  
   useEffect(() => {
     notifications.forEach((notification, index) => {
       const element = notificationRefs.current.get(notification.id);
@@ -65,7 +63,6 @@ const NotificationWrapper = () => {
   };
 
   const handleNotificationClick = (id) => {
-    
     const notification = notifications.find((n) => n.id === id);
     if (notification && notification.type !== 'error') {
       removeNotification(id);
@@ -134,12 +131,7 @@ const NotificationWrapper = () => {
           </button>
           {notification.duration > 0 && (
             <div className='admin-notification-progress' aria-hidden='true'>
-              <div
-                className='admin-notification-progress-bar'
-                style={{
-                  animationDuration: `${notification.duration}ms`,
-                }}
-              />
+              <div className='admin-notification-progress-bar' />
             </div>
           )}
         </div>

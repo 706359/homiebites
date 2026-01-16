@@ -1,13 +1,6 @@
-/* About Section - Hero Theme */
-
 .about-section {
   padding: 5rem 2rem;
   background: var(--bg-white);
-}
-
-.section-container {
-  max-width: 1400px;
-  margin: 0 auto;
 }
 
 .about-content {
@@ -38,12 +31,11 @@
   max-width: 900px;
   padding: 3rem 2.5rem;
   background: var(--bg-white);
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
-
 
 .why-choose-heading {
   font-size: clamp(1.75rem, 3.5vw, 2.25rem);
@@ -69,6 +61,5 @@
   padding: 2rem;
   background: var(--bg-green);
   border-radius: 12px;
-  border-left: 4px solid var(--primary-green);
+  border-left: 1px solid var(--primary-green);
 }
-

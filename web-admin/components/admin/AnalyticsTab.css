@@ -23,7 +23,7 @@
   font-size: var(--admin-font-size-body, 14px);
   color: var(--admin-text);
   background: var(--admin-bg);
-  border-bottom: 2px solid var(--admin-border, #d2d2d7);
+  border-bottom: 1px solid var(--admin-border, #d2d2d7);
   border-top: 1px solid var(--admin-border, #d2d2d7);
   border-left: 1px solid transparent;
   border-right: 1px solid transparent;
@@ -234,14 +234,14 @@
 .analytics-monthly-value-year3-positive {
   background: rgba(68, 144, 49, 0.15);
   color: var(--admin-success);
-  border: 1.5px solid var(--admin-success);
+  border: 1px solid var(--admin-success);
   font-weight: 600;
 }
 
 .analytics-monthly-value-year3-negative {
   background: rgba(220, 38, 38, 0.12);
   color: var(--admin-danger);
-  border: 1.5px solid var(--admin-danger);
+  border: 1px solid var(--admin-danger);
   font-weight: 600;
 }
 
@@ -288,7 +288,7 @@
 
 .analytics-chart-container {
   padding: 20px;
-  border-top: 2px solid var(--admin-border);
+  border-top: 1px solid var(--admin-border);
   margin-top: 0.5rem;
   background: var(--admin-bg);
 }

@@ -1,8 +1,3 @@
-/**
- * Form Validation Utilities
- * Common validation functions for admin forms
- */
-
 export const validateOrder = (orderData) => {
   const errors = {};
 
@@ -129,20 +124,10 @@ export const validateSettings = (settings) => {
   return errors;
 };
 
-/**
- * Check if validation has errors
- * @param {Object} errors - Errors object from validation
- * @returns {boolean} True if there are errors
- */
 export const hasValidationErrors = (errors) => {
   return errors && Object.keys(errors).length > 0;
 };
 
-/**
- * Get first error message
- * @param {Object} errors - Errors object
- * @returns {string|null} First error message or null
- */
 export const getFirstError = (errors) => {
   if (!errors) return null;
   const keys = Object.keys(errors);

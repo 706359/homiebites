@@ -183,7 +183,6 @@ const TopNav = ({
               ) : (
                 <i className='fa-solid fa-rotate'></i>
               )}
-              <span className='tooltip'>{refreshing ? 'Refreshing...' : 'Refresh Data'}</span>
             </button>
           )}
           {onNewOrder && (
@@ -194,8 +193,6 @@ const TopNav = ({
               aria-label='Add New Order'
             >
               <i className='fa-solid fa-plus'></i>
-              <span className='top-nav-search-shortcut'>Ctrl+N</span>
-              <span className='tooltip'>Add New Order</span>
             </button>
           )}
           <button
@@ -205,7 +202,6 @@ const TopNav = ({
             aria-label='Search'
           >
             <i className='fa-solid fa-search'></i>
-            <span className='tooltip'>Search</span>
           </button>
           <button
             className='top-nav-notification-btn tooltip-wrapper'

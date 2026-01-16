@@ -6,10 +6,6 @@
 @import './_buttons.css';
 @import './hover-effects.css';
 
-/* Note: * and body styles are defined in globals.css to avoid duplication */
-
-/* Note: .section-container is defined in globals.css to avoid duplication */
-
 .section-with-kicker {
   position: relative;
 }
@@ -29,8 +25,6 @@
   font-weight: 600;
   letter-spacing: 0.12em;
 }
-
-/* Note: .section-heading and .section-subtitle are defined in globals.css to avoid duplication */
 
 .loader-container {
   display: flex;

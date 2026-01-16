@@ -1,6 +1,5 @@
 import React from 'react';
 
-
 const PremiumLoader = ({ message = 'Loading...', size = 'large', showText = false }) => {
   const sizeClasses = {
     small: { container: '64px', logo: '120px', text: '0.85rem' },
@@ -19,41 +18,17 @@ const PremiumLoader = ({ message = 'Loading...', size = 'large', showText = fals
             src='/logo.png'
             alt='HomieBites'
             className='premium-loader-logo'
-            style={{
-              width: 'auto',
-              height: dimensions.logo,
-              maxWidth: '300px',
-              maxHeight: dimensions.logo,
-              objectFit: 'contain',
-            }}
             onError={(e) => {
               e.target.style.display = 'none';
               e.target.nextSibling.style.display = 'flex';
             }}
           />
-          <div
-            className='premium-loader-logo-fallback'
-            style={{
-              display: 'none',
-              width: 'auto',
-              minWidth: dimensions.logo,
-              height: dimensions.logo,
-              fontSize: `calc(${dimensions.logo} * 0.35)`,
-              fontWeight: '700',
-              letterSpacing: '0.02em',
-            }}
-          >
-            HomieBites
-          </div>
+          <div className='premium-loader-logo-fallback'>HomieBites</div>
         </div>
       </div>
 
       {}
-      {showText && (
-        <div className='premium-loader-text' style={{ fontSize: dimensions.text }}>
-          {message}
-        </div>
-      )}
+      {showText && <div className='premium-loader-text'>{message}</div>}
     </div>
   );
 };

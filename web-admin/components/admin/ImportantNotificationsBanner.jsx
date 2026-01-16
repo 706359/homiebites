@@ -180,22 +180,13 @@ const ImportantNotificationsBanner = ({
       {importantNotifications.map((notif) => {
         const styles = getNotificationStyles(notif.type);
         return (
-          <div
-            key={notif.id}
-            className='important-notification-item'
-            style={{
-              background: styles.background,
-              borderLeft: `4px solid ${styles.borderColor}`,
-            }}
-          >
+          <div key={notif.id} className='important-notification-item'>
             <div className='important-notification-content'>
-              <div className='important-notification-icon' style={{ color: styles.iconColor }}>
+              <div className='important-notification-icon'>
                 <i className={`fa-solid ${notif.icon}`}></i>
               </div>
               <div className='important-notification-text'>
-                <div className='important-notification-title' style={{ color: styles.textColor }}>
-                  {notif.title}
-                </div>
+                <div className='important-notification-title'>{notif.title}</div>
                 <div className='important-notification-message'>{notif.message}</div>
               </div>
             </div>

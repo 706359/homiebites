@@ -1,5 +1,3 @@
-/* Features Section - Premium Design */
-
 .features-section {
   padding: 6rem 2rem;
   background: var(--bg-white);
@@ -14,8 +12,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(0, 0, 0, 0.02) 0%, transparent 50%),
+  background: radial-gradient(circle at 20% 50%, rgba(0, 0, 0, 0.02) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.02) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
@@ -55,9 +52,7 @@
   text-align: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  box-shadow: 
-    0 2px 12px rgba(0, 0, 0, 0.06),
-    0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
   overflow: hidden;
 }
 
@@ -72,8 +67,6 @@
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-
-
 
 .feature-badge {
   position: absolute;
@@ -101,7 +94,7 @@
   align-items: center;
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid rgba(68, 144, 49, 0.15);
+  border: 1px solid rgba(68, 144, 49, 0.15);
   position: relative;
 }
 
@@ -110,8 +103,6 @@
   transition: color 0.3s ease;
   color: var(--primary-green);
 }
-
-
 
 .feature-title {
   font-size: clamp(1.125rem, 1.5vw, 1.375rem);
@@ -147,4 +138,3 @@
   line-height: 1.6;
   margin: 0;
 }
-

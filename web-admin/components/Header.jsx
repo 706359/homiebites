@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
-import { useLanguage } from "../contexts/LanguageContext";
-import { getOffersDataSync } from "../lib/offersData";
-import "./Header.css";
-import LanguageSwitcher from "./LanguageSwitcher";
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getOffersDataSync } from '../lib/offersData';
+import './Header.css';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Header = ({ onOrderClick }) => {
   const { t } = useLanguage();
@@ -30,34 +30,32 @@ const Header = ({ onOrderClick }) => {
   const handleHashLink = (e, hash) => {
     e.preventDefault();
     closeMenu();
-    if (pathname === "/") {
+    if (pathname === '/') {
       // Already on home page, just scroll
       setTimeout(() => {
         const targetElement = document.querySelector(hash);
         if (targetElement) {
           const headerOffset = 60;
           const elementPosition = targetElement.getBoundingClientRect().top;
-          const offsetPosition =
-            elementPosition + window.pageYOffset - headerOffset;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
           window.scrollTo({
             top: offsetPosition,
-            behavior: "smooth",
+            behavior: 'smooth',
           });
         }
       }, 50);
     } else {
       // Navigate to home first, then scroll after navigation
-      router.push("/");
+      router.push('/');
       setTimeout(() => {
         const targetElement = document.querySelector(hash);
         if (targetElement) {
           const headerOffset = 60;
           const elementPosition = targetElement.getBoundingClientRect().top;
-          const offsetPosition =
-            elementPosition + window.pageYOffset - headerOffset;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
           window.scrollTo({
             top: offsetPosition,
-            behavior: "smooth",
+            behavior: 'smooth',
           });
         }
       }, 300);
@@ -78,12 +76,11 @@ const Header = ({ onOrderClick }) => {
       checkOffers();
     };
 
-    window.addEventListener("offersDataUpdated", handleOffersUpdate);
+    window.addEventListener('offersDataUpdated', handleOffersUpdate);
     return () => {
-      window.removeEventListener("offersDataUpdated", handleOffersUpdate);
+      window.removeEventListener('offersDataUpdated', handleOffersUpdate);
     };
   }, []);
-
 
   // Prevent body scroll when menu is open, restore when closed
   useEffect(() => {
@@ -112,7 +109,7 @@ const Header = ({ onOrderClick }) => {
       const target = e.target;
       const menu = document.querySelector('.mobile-menu');
       const button = document.querySelector('.menu-btn');
-      
+
       if (menu && button) {
         if (!menu.contains(target) && !button.contains(target)) {
           closeMenu();
@@ -138,23 +135,21 @@ const Header = ({ onOrderClick }) => {
     };
   }, [isMenuOpen]);
 
-
   return (
     <header>
-      {/* Top Announcement Bar */}
-      <div className="header-top-bar">
-        <div className="top-bar-content">
-          <span className="announcement">{t("header.announcement")}</span>
-          <div className="top-bar-right">
+      <div className='header-top-bar'>
+        <div className='top-bar-content'>
+          <span className='announcement'>{t('header.announcement')}</span>
+          <div className='top-bar-right'>
             <a
-              href="https://wa.me/919958983578"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="whatsapp-order-link"
-              aria-label="Order on WhatsApp"
-              title="Order on WhatsApp"
+              href='https://wa.me/919958983578'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='whatsapp-order-link'
+              aria-label='Order on WhatsApp'
+              title='Order on WhatsApp'
             >
-              <i className="fa-brands fa-whatsapp"></i>
+              <i className='fa-brands fa-whatsapp'></i>
               <span>+91-9958983578</span>
             </a>
             <LanguageSwitcher />
@@ -162,109 +157,100 @@ const Header = ({ onOrderClick }) => {
         </div>
       </div>
 
-      {/* Main Navigation */}
-      <nav className="nav">
-        <div className="nav-left">
-          <Link href="/" className="brand-logo" onClick={handleNavClick}>
+      <nav className='nav'>
+        <div className='nav-left'>
+          <Link href='/' className='brand-logo' onClick={handleNavClick}>
             <img
-              src="/logo.png"
-              alt="HomieBites"
-              className="logo-img"
+              src='/logo.png'
+              alt='HomieBites'
+              className='logo-img'
               onError={(e) => {
-                e.target.style.display = "none";
-                e.target.nextSibling.style.display = "block";
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'block';
               }}
             />
-            <span className="brand-name-fallback" style={{ display: "none" }}>
-              HOMIEBITES
-            </span>
+            <span className='brand-name-fallback'>HOMIEBITES</span>
           </Link>
         </div>
 
-        <div className="nav-right">
-          <Link href="/" onClick={handleNavClick}>
-            {t("common.home")}
+        <div className='nav-right'>
+          <Link href='/' onClick={handleNavClick}>
+            {t('common.home')}
           </Link>
-          <a href="/#about" onClick={(e) => handleHashLink(e, "#about")}>
-            {t("common.about")}
+          <a href='/#about' onClick={(e) => handleHashLink(e, '#about')}>
+            {t('common.about')}
           </a>
-          <a href="/#gallery" onClick={(e) => handleHashLink(e, "#gallery")}>
-            {t("header.gallery") || "Gallery"}
+          <a href='/#gallery' onClick={(e) => handleHashLink(e, '#gallery')}>
+            {t('header.gallery') || 'Gallery'}
           </a>
-          <Link href="/faq" onClick={handleNavClick}>
-            {t("header.faq")}
+          <Link href='/faq' onClick={handleNavClick}>
+            {t('header.faq')}
           </Link>
           <a
-            href="https://wa.me/919958983578"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="nav-icon cart-icon"
-            aria-label="Contact us on WhatsApp"
-            title="Contact us on WhatsApp"
+            href='https://wa.me/919958983578'
+            target='_blank'
+            rel='noopener noreferrer'
+            className='nav-icon cart-icon'
+            aria-label='Contact us on WhatsApp'
+            title='Contact us on WhatsApp'
           ></a>
           <button
-            className={`menu-btn ${isMenuOpen ? "open" : ""}`}
+            className={`menu-btn ${isMenuOpen ? 'open' : ''}`}
             onClick={toggleMenu}
-            aria-label="Toggle menu"
-            type="button"
+            aria-label='Toggle menu'
+            type='button'
             aria-expanded={isMenuOpen}
           >
-            <i className="fa-solid fa-bars menu-icon"></i>
-            <i className="fa-solid fa-xmark close-icon"></i>
+            <i className='fa-solid fa-bars menu-icon'></i>
+            <i className='fa-solid fa-xmark close-icon'></i>
           </button>
         </div>
       </nav>
 
-      {/* Mobile Menu Backdrop */}
       {isMenuOpen && (
-        <div
-          className="mobile-menu-backdrop active"
-          onClick={closeMenu}
-          aria-hidden="true"
-        />
+        <div className='mobile-menu-backdrop active' onClick={closeMenu} aria-hidden='true' />
       )}
 
-      {/* Mobile Menu */}
-      <div className={`mobile-menu ${isMenuOpen ? "open" : ""}`}>
+      <div className={`mobile-menu ${isMenuOpen ? 'open' : ''}`}>
         <button
-          className="mobile-menu-close-btn"
+          className='mobile-menu-close-btn'
           onClick={closeMenu}
-          aria-label="Close menu"
-          type="button"
+          aria-label='Close menu'
+          type='button'
         >
-          <i className="fa-solid fa-xmark"></i>
+          <i className='fa-solid fa-xmark'></i>
         </button>
-        <a href="/#gallery" onClick={(e) => handleHashLink(e, "#gallery")}>
-          {t("header.menu")}
+        <a href='/#gallery' onClick={(e) => handleHashLink(e, '#gallery')}>
+          {t('header.menu')}
         </a>
-        <Link href="/" onClick={handleNavClick}>
-          {t("common.home")}
+        <Link href='/' onClick={handleNavClick}>
+          {t('common.home')}
         </Link>
-        <a href="/#about" onClick={(e) => handleHashLink(e, "#about")}>
-          {t("common.about")}
+        <a href='/#about' onClick={(e) => handleHashLink(e, '#about')}>
+          {t('common.about')}
         </a>
-        <a href="/#gallery" onClick={(e) => handleHashLink(e, "#gallery")}>
-          {t("header.gallery") || "Gallery"}
+        <a href='/#gallery' onClick={(e) => handleHashLink(e, '#gallery')}>
+          {t('header.gallery') || 'Gallery'}
         </a>
-        <Link href="/search" onClick={handleNavClick}>
-          {t("header.search")}
+        <Link href='/search' onClick={handleNavClick}>
+          {t('header.search')}
         </Link>
         {hasActiveOffers && (
-          <Link href="/offers" onClick={handleNavClick}>
-            {t("header.offers") || "Offers"}
+          <Link href='/offers' onClick={handleNavClick}>
+            {t('header.offers') || 'Offers'}
           </Link>
         )}
-        <Link href="/faq" onClick={handleNavClick}>
-          {t("header.faq")}
+        <Link href='/faq' onClick={handleNavClick}>
+          {t('header.faq')}
         </Link>
         <a
-          href="https://wa.me/919958983578"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn-primary btn-small"
+          href='https://wa.me/919958983578'
+          target='_blank'
+          rel='noopener noreferrer'
+          className='btn btn-primary btn-small'
           onClick={handleNavClick}
         >
-          {t("header.subscribe")}
+          {t('header.subscribe')}
         </a>
       </div>
     </header>

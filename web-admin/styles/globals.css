@@ -3,7 +3,7 @@
 .btn-primary,
 button.btn-primary,
 a.btn-primary {
-  border: 2px solid var(--text-white);
+  border: 1px solid var(--text-white);
 }
 
 .kicker {
@@ -366,7 +366,7 @@ header .nav {
   height: 40px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.9);
-  border: 2px solid var(--black);
+  border: 1px solid var(--black);
   color: var(--black);
   align-items: center;
   justify-content: center;
@@ -562,7 +562,6 @@ header .nav {
     box-shadow: 0 0 0 10px rgba(255, 107, 53, 0);
   }
 }
-
 
 .view-menu-btn {
   display: inline-block;
@@ -852,7 +851,7 @@ header .nav {
   font-size: 1.15rem;
   font-weight: 700;
   padding-top: 0.75rem;
-  border-top: 2px solid var(--border-color);
+  border-top: 1px solid var(--border-color);
   margin-top: 0.5rem;
 }
 
@@ -896,7 +895,7 @@ header .nav {
 .customer-form textarea {
   width: 100%;
   padding: 0.875rem 1.25rem;
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 0.95rem;
   font-family: inherit;
@@ -995,7 +994,7 @@ header .nav {
   padding: 5rem 2rem;
   background: linear-gradient(135deg, rgba(68, 144, 49, 0.03) 0%, rgba(196, 92, 45, 0.03) 100%);
   border-radius: 20px;
-  border: 2px dashed rgba(196, 92, 45, 0.2);
+  border: 1px dashed rgba(196, 92, 45, 0.2);
   position: relative;
   overflow: hidden;
   max-width: 500px;
@@ -1083,7 +1082,7 @@ header .nav {
   padding: 4rem 2rem;
   background: linear-gradient(135deg, rgba(68, 144, 49, 0.03) 0%, rgba(196, 92, 45, 0.03) 100%);
   border-radius: 16px;
-  border: 2px dashed rgba(196, 92, 45, 0.2);
+  border: 1px dashed rgba(196, 92, 45, 0.2);
   position: relative;
   overflow: hidden;
   max-width: 500px;
@@ -1462,7 +1461,7 @@ header .nav {
 
 .legal-toc {
   background: linear-gradient(135deg, rgba(68, 144, 49, 0.05) 0%, rgba(196, 92, 45, 0.05) 100%);
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 2rem;
   margin-bottom: 3rem;
@@ -1473,7 +1472,7 @@ header .nav {
   font-weight: 700;
   margin-bottom: 1.5rem;
   color: var(--text-primary);
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 0.75rem;
 }
 
@@ -1498,7 +1497,7 @@ header .nav {
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
   transition: all 0.2s ease;
-  border-left: 3px solid transparent;
+  border-left: 1px solid transparent;
 }
 
 .legal-content {
@@ -1540,7 +1539,7 @@ header .nav {
   margin-bottom: 1rem;
   color: var(--text-primary);
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .legal-section h3 {
@@ -1624,18 +1623,6 @@ header .nav {
   color: var(--gray);
   margin-bottom: 1.5rem;
 }
-
-/* =========================================================
-   LEGACY BUTTON MAPPINGS - REMOVE AFTER v1.2.0
-   =========================================================
-   TODO: Delete all legacy button classes after v1.2.0 release
-   Date: 2025-01-27
-   Target Removal: After v1.2.0 (Q2 2025)
-   
-   These classes exist for backward compatibility only.
-   All JSX has been migrated to the new 5-button system.
-   After v1.2.0, these can be safely removed.
-   ========================================================= */
 
 .faq-list {
   display: flex;
@@ -1768,7 +1755,7 @@ header .nav {
   min-height: 400px;
   background: linear-gradient(135deg, rgba(68, 144, 49, 0.03) 0%, rgba(196, 92, 45, 0.03) 100%);
   border-radius: 20px;
-  border: 2px dashed rgba(196, 92, 45, 0.2);
+  border: 1px dashed rgba(196, 92, 45, 0.2);
   position: relative;
   overflow: hidden;
   margin: 2rem 0;
@@ -1892,7 +1879,7 @@ header .nav {
 }
 
 .address-option {
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1rem;
   cursor: pointer;
@@ -2043,7 +2030,7 @@ header .nav {
   height: 80px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--primary-green);
+  border: 1px solid var(--primary-green);
 }
 
 .profile-picture-upload {
@@ -2058,7 +2045,7 @@ header .nav {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border: 2px solid var(--white);
+  border: 1px solid var(--white);
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
@@ -2352,9 +2339,6 @@ header .nav {
   }
 }
 
-/* ============================================
-   MODAL WRAPPER (Reusable)
-   ============================================ */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -2425,9 +2409,6 @@ header .nav {
   max-height: 95vh;
 }
 
-/* ============================================
-   PREMIUM GLASS FORM ELEMENTS
-   ============================================ */
 input:not([type='checkbox']):not([type='radio']):not([type='submit']):not([type='button']):not(
     [type='reset']
   ),
@@ -2462,7 +2443,6 @@ select:focus {
     0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-
 input:disabled,
 textarea:disabled,
 select:disabled {
@@ -2471,9 +2451,6 @@ select:disabled {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* ============================================
-   ERROR & NOT FOUND PAGES
-   ============================================ */
 .error-container,
 .not-found-container {
   min-height: calc(100vh - 200px);
@@ -2670,10 +2647,6 @@ select:disabled {
 .modal-wrapper:has(.modal-content:first-child) .modal-content {
   padding: 2.5rem;
 }
-
-/* ============================================
-   Premium Loader Component
-   ============================================ */
 
 .premium-loader-container {
   display: flex;

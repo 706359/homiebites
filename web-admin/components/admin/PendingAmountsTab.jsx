@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
+import './styles/pending-amounts-tab.css';
 import { getFilteredOrdersByDate } from './utils/calculations.js';
 import { formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
 import {
@@ -334,10 +335,7 @@ const PendingAmountsTab = ({
           </div>
         </div>
         <div className='stat-card'>
-          <i
-            className='fa-solid fa-exclamation-triangle'
-            style={{ color: 'var(--admin-warning)' }}
-          ></i>
+          <i className='fa-solid fa-exclamation-triangle' className='pending-warning-text'></i>
           <div>
             <h3>₹{formatCurrency(summaryStats.pending)}</h3>
             <p>Pending</p>
@@ -364,27 +362,8 @@ const PendingAmountsTab = ({
 
       {}
       <div className='dashboard-card margin-bottom-24'>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'flex-start',
-            marginBottom: '20px',
-            flexWrap: 'wrap',
-            gap: '16px',
-          }}
-        >
-          <div
-            className='filter-container'
-            style={{
-              display: 'flex',
-              alignItems: 'flex-end',
-              gap: '12px',
-              flexWrap: 'wrap',
-              flex: '1 1 auto',
-              justifyContent: 'flex-end',
-            }}
-          >
+        <div className='pending-filter-bar'>
+          <div className='filter-container pending-filter-container'>
             {}
             <div className='search-input-wrapper search-input-wrapper-flex'>
               <i className='fa-solid fa-search search-input-icon'></i>
@@ -430,22 +409,17 @@ const PendingAmountsTab = ({
                   setFilterUrgency('all');
                   setFilterDaysPending('all');
                 }}
-                style={{
-                  fontSize: '13px',
-                  padding: '10px 16px',
-                  whiteSpace: 'nowrap',
-                  height: 'fit-content',
-                }}
+                className='btn btn-ghost btn-small pending-clear-filter-btn'
                 title='Clear all filters'
               >
-                <i className='fa-solid fa-xmark' style={{ marginRight: '6px' }}></i>
+                <i className='fa-solid fa-xmark pending-clear-filter-icon'></i>
                 Clear
               </button>
             )}
             {}
             <div className='action-buttons-group'>
-              <button className='btn btn-success btn-small' onClick={handleBulkMarkAsPaid}>
-                <i className='fa-solid fa-check-circle' style={{ marginRight: '6px' }}></i>
+              <button className='btn btn-special btn-small' onClick={handleBulkMarkAsPaid}>
+                <i className='fa-solid fa-check-circle pending-mark-paid-icon'></i>
                 Mark All as Paid
               </button>
             </div>
@@ -548,7 +522,7 @@ const PendingAmountsTab = ({
                       </td>
                       <td>
                         <button
-                          className='btn btn-success btn-small pending-payment-action-btn'
+                          className='btn btn-special btn-small pending-payment-action-btn'
                           onClick={() => handleMarkAsPaid(order._id || order.orderId)}
                           title='Mark as Paid'
                         >
@@ -571,68 +545,25 @@ const PendingAmountsTab = ({
         <div className='dashboard-grid-item two-thirds'>
           <div className='dashboard-card'>
             <h3 className='dashboard-section-title'>
-              <i className='fa-solid fa-chart-area' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
+              <i className='fa-solid fa-chart-area pending-chart-icon'></i>
               Payment Collection Timeline (30 days)
             </h3>
-            <div
-              style={{
-                padding: '16px',
-                borderTop: '2px solid var(--admin-border)',
-                marginTop: '0.5rem',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-end',
-                  gap: '0.5rem',
-                  minHeight: '200px',
-                  marginBottom: '16px',
-                }}
-              >
+            <div className='pending-timeline-section'>
+              <div className='pending-timeline-container'>
                 {paymentTimeline.map((day, idx) => (
                   <div
                     key={idx}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                    }}
+                    className='pending-timeline-item'
                     title={`${day.date}: ₹${formatCurrency(day.collection)} (${day.orders} orders)`}
                   >
-                    <div
-                      className='pending-amounts-timeline-bar'
-                      style={{
-                        width: '100%',
-                        height: `${(day.collection / maxTimelineCollection) * 180}px`,
-                        minHeight: '4px',
-                        background: 'var(--admin-success, #16a34a)',
-                        borderRadius: '4px 4px 0 0',
-                      }}
-                    />
+                    <div className='pending-amounts-timeline-bar pending-timeline-bar' />
                     {idx % 5 === 0 && (
-                      <span
-                        style={{
-                          fontSize: '0.7rem',
-                          color: 'var(--admin-text-light)',
-                          fontWeight: '500',
-                        }}
-                      >
-                        {day.date.split(' ')[0]}
-                      </span>
+                      <span className='pending-timeline-label'>{day.date.split(' ')[0]}</span>
                     )}
                   </div>
                 ))}
               </div>
-              <div
-                style={{
-                  textAlign: 'center',
-                  color: 'var(--admin-text-secondary)',
-                  fontSize: '0.9rem',
-                }}
-              >
+              <div className='pending-timeline-summary'>
                 Avg collection time: {avgCollectionTime} days
               </div>
             </div>
@@ -643,17 +574,11 @@ const PendingAmountsTab = ({
         <div className='dashboard-grid-item third-width'>
           <div className='dashboard-card'>
             <h3 className='dashboard-section-title'>
-              <i className='fa-solid fa-chart-pie' style={{ fontSize: '1rem', opacity: 0.7 }}></i>
+              <i className='fa-solid fa-chart-pie pending-chart-icon'></i>
               Payment Mode Breakdown
             </h3>
-            <div
-              style={{
-                padding: '16px',
-                borderTop: '2px solid var(--admin-border)',
-                marginTop: '0.5rem',
-              }}
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className='pending-payment-mode-section'>
+              <div className='pending-payment-mode-list'>
                 {paymentModePerformance.map((mode, idx) => {
                   const percentage =
                     totalPaymentAmount > 0
@@ -664,54 +589,17 @@ const PendingAmountsTab = ({
                       : 0;
                   return (
                     <div key={idx}>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          marginBottom: '8px',
-                        }}
-                      >
-                        <span style={{ fontWeight: '600', color: 'var(--admin-text)' }}>
-                          {mode.mode}
-                        </span>
-                        <span
-                          style={{
-                            fontWeight: '700',
-                            color: 'var(--admin-accent)',
-                            fontSize: '1rem',
-                          }}
-                        >
+                      <div className='pending-payment-mode-header'>
+                        <span className='pending-payment-mode-label'>{mode.mode}</span>
+                        <span className='pending-payment-mode-percentage'>
                           {percentage.toFixed(0)}%
                         </span>
                       </div>
-                      <div
-                        style={{
-                          fontSize: '0.9rem',
-                          color: 'var(--admin-text-secondary)',
-                          marginBottom: '4px',
-                        }}
-                      >
+                      <div className='pending-payment-mode-details'>
                         ₹{formatCurrency(mode.amount)} ({mode.count} orders)
                       </div>
-                      <div
-                        style={{
-                          width: '100%',
-                          height: '20px',
-                          background: 'var(--admin-glass-border)',
-                          borderRadius: '10px',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: `${percentage}%`,
-                            height: '100%',
-                            background: 'var(--admin-accent, #449031)',
-                            borderRadius: '10px',
-                            transition: 'width 0.5s ease',
-                          }}
-                        />
+                      <div className='pending-payment-mode-bar-container'>
+                        <div className='pending-payment-mode-bar-fill' />
                       </div>
                     </div>
                   );

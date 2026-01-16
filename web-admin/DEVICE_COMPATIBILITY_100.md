@@ -131,7 +131,7 @@ The HomieBites Admin Dashboard is now fully optimized for **100% device compatib
 input,
 textarea,
 select {
-  font-size: 16px !important;
+  font-size: 16px;
 }
 
 /* Prevent double-tap zoom delay */

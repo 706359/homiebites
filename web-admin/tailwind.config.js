@@ -8,30 +8,29 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Map existing design tokens to Tailwind
         primary: {
           50: '#eff6ff',
           100: '#dbeafe',
           200: '#bfdbfe',
           300: '#93c5fd',
           400: '#60a5fa',
-          500: '#3b82f6', // Main Brand Color
+          500: '#3b82f6',
           600: '#2563eb',
           700: '#1d4ed8',
           800: '#1e40af',
           900: '#1e3a8a',
         },
         secondary: {
-          500: '#10b981', // Success/Green
+          500: '#10b981',
         },
         warning: {
-          500: '#f59e0b', // Warning/Orange
+          500: '#f59e0b',
         },
         danger: {
-          500: '#ef4444', // Error/Red
+          500: '#ef4444',
         },
         info: {
-          500: '#06b6d4', // Info/Cyan
+          500: '#06b6d4',
         },
         gray: {
           50: '#f9fafb',

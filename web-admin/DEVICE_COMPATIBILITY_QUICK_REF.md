@@ -33,7 +33,7 @@ input,
 input,
 textarea,
 select {
-  font-size: 16px !important;
+  font-size: 16px;
 }
 ```
 
@@ -184,8 +184,8 @@ body,
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   * {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms;
+    transition-duration: 0.01ms;
   }
 }
 ```

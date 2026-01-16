@@ -1,0 +1,86 @@
+.notifications-empty-state {
+  padding: 48px;
+  text-align: center;
+}
+
+.notifications-empty-icon {
+  font-size: 64px;
+  color: var(--admin-text-light);
+  margin-bottom: 16px;
+}
+
+.notifications-empty-text {
+  color: var(--admin-text-light);
+  font-size: 0.9rem;
+}
+
+.notification-icon-order {
+  color: var(--admin-accent);
+}
+
+.notification-icon-payment {
+  color: var(--admin-warning);
+}
+
+.notification-icon-system {
+  color: var(--admin-info);
+}
+
+.notification-icon-default {
+  color: var(--admin-text-secondary);
+}
+
+.notifications-settings-form-group {
+  grid-column: 1 / -1;
+}
+
+.notifications-settings-label {
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.notifications-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notifications-settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: var(--admin-bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+}
+
+.notifications-settings-item-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.notifications-settings-item-title {
+  font-weight: 600;
+  color: var(--admin-text);
+  font-size: 0.9rem;
+}
+
+.notifications-settings-item-description {
+  font-size: 0.85rem;
+  color: var(--admin-text-secondary);
+}
+
+.notifications-settings-item-toggle {
+  margin-left: 16px;
+}
+
+.notifications-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}

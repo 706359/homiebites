@@ -1,13 +1,6 @@
-/* Contact Section - Hero Theme */
-
 .contact-section {
   padding: 5rem 2rem;
   background: var(--bg-white);
-}
-
-.section-container {
-  max-width: 1400px;
-  margin: 0 auto;
 }
 
 .contact-primary-actions {
@@ -19,7 +12,7 @@
   padding: 2rem;
   background: linear-gradient(135deg, rgba(68, 144, 49, 0.05) 0%, rgba(196, 92, 45, 0.05) 100%);
   border-radius: 20px;
-  border: 2px solid rgba(68, 144, 49, 0.1);
+  border: 1px solid rgba(68, 144, 49, 0.1);
 }
 
 .contact-action-btn {
@@ -38,12 +31,11 @@
   text-align: center;
   background: var(--bg-white);
   padding: 2.5rem 2rem;
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
-
 
 .contact-item h3 {
   font-size: 1.5rem;
@@ -74,5 +66,3 @@
   font-weight: 600;
   transition: color 0.2s ease;
 }
-
-

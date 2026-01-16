@@ -1,15 +1,9 @@
-/**
- * Reset Admin Password Script
- * Resets admin password to TempPass@123
- * 
- * Usage: node scripts/resetAdminPassword.js
- */
-import mongoose from 'mongoose';
-import { hashPassword } from '../lib/utils/password.js';
-import User from '../lib/models/User.js';
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
 import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+import User from '../lib/models/User.js';
+import { hashPassword } from '../lib/utils/password.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -37,7 +31,7 @@ const resetAdminPassword = async () => {
     if (!admin) {
       console.log('❌ Admin user NOT FOUND!');
       console.log('💡 Creating new admin user...\n');
-      
+
       const hashedPassword = await hashPassword(tempPassword);
       admin = new User({
         email: email.toLowerCase(),
@@ -51,14 +45,14 @@ const resetAdminPassword = async () => {
         loginAttempts: 0,
         createdAt: new Date(),
       });
-      
+
       await admin.save();
       console.log('✅ Admin user created successfully!');
     } else {
       console.log('✅ Admin user found!');
       console.log('   Email:', admin.email);
       console.log('   Resetting password...\n');
-      
+
       // Reset password and role
       const hashedPassword = await hashPassword(tempPassword);
       admin.password = hashedPassword;
@@ -67,7 +61,7 @@ const resetAdminPassword = async () => {
       admin.isActive = true;
       admin.loginAttempts = 0;
       admin.lockUntil = null;
-      
+
       await admin.save();
       console.log('✅ Password and role reset successfully!');
     }
@@ -80,7 +74,6 @@ const resetAdminPassword = async () => {
 
     await mongoose.disconnect();
     process.exit(0);
-
   } catch (error) {
     console.error('❌ Error resetting admin password:', error.message);
     if (error.stack) {

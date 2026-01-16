@@ -10,7 +10,6 @@ const Contact = () => {
       <div className='section-container'>
         <h2 className='section-heading'>{t('contact.title')}</h2>
 
-        {/* Primary Order Options */}
         <div className='contact-primary-actions'>
           <a
             href={getWhatsAppLink()}

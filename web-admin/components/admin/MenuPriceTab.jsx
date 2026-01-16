@@ -4,6 +4,7 @@ import api from '../../lib/api-admin.js';
 import { convertMenuItemsToCategories } from '../../lib/menuData.js';
 import ConfirmModal from './ConfirmationModal.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
+import './styles/menu-price-tab.css';
 import { formatCurrency } from './utils/orderUtils.js';
 
 const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = false }) => {
@@ -1004,7 +1005,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           </button>
           {menuItems.length > 0 && (
             <button
-              className='btn btn-danger btn-small'
+              className='btn btn-special danger btn-small'
               onClick={async () => {
                 if (showConfirmation) {
                   showConfirmation({
@@ -1062,7 +1063,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
             <i className='fa-solid fa-sync-alt'></i> Sync to Gallery
           </button>
           <button
-            className='btn btn-success btn-small'
+            className='btn btn-special btn-small'
             onClick={handleImportMenuItems}
             title='Import predefined menu items (adds to existing items)'
           >
@@ -1276,24 +1277,9 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
             };
 
             return (
-              <div
-                key={`${item.id}-${item.name}-${index}`}
-                className='menu-item-card-enhanced'
-                style={{ animationDelay: `${index * 0.05}s` }}
-              >
+              <div key={`${item.id}-${item.name}-${index}`} className='menu-item-card-enhanced'>
                 <div className='menu-item-card-header'>
-                  <div
-                    className='menu-item-image-wrapper'
-                    style={{
-                      position: 'relative',
-                      width: '100%',
-                      height: '220px',
-                      borderRadius: '12px 12px 0 0',
-                      overflow: 'hidden',
-                      background:
-                        'linear-gradient(135deg, var(--admin-glass-border) 0%, var(--admin-bg-secondary) 100%)',
-                    }}
-                  >
+                  <div className='menu-item-image-wrapper'>
                     <img
                       src={getImageUrl()}
                       alt={item.name || 'Menu item'}
@@ -1306,27 +1292,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                       }}
                       loading='lazy'
                     />
-                    <div
-                      className='menu-item-availability-badge'
-                      style={{
-                        position: 'absolute',
-                        top: '12px',
-                        right: '12px',
-                        background: item.isAvailable
-                          ? 'rgba(16, 185, 129, 0.95)'
-                          : 'rgba(239, 68, 68, 0.95)',
-                        color: '#ffffff',
-                        padding: '6px 12px',
-                        borderRadius: '20px',
-                        fontSize: '11px',
-                        fontWeight: '600',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        backdropFilter: 'blur(4px)',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                      }}
-                    >
+                    <div className='menu-item-availability-badge'>
                       <i
                         className={`fa-solid ${
                           item.isAvailable ? 'fa-check-circle' : 'fa-times-circle'
@@ -1334,26 +1300,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                       ></i>
                       <span>{item.isAvailable ? 'Available' : 'Unavailable'}</span>
                     </div>
-                    <div
-                      className='menu-item-category-badge'
-                      style={{
-                        position: 'absolute',
-                        top: '12px',
-                        left: '12px',
-                        background: categoryStyle.bg,
-                        color: categoryStyle.color,
-                        padding: '8px 14px',
-                        borderRadius: '20px',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        backdropFilter: 'blur(4px)',
-                        border: `1.5px solid ${categoryStyle.color}20`,
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                      }}
-                    >
+                    <div className='menu-item-category-badge'>
                       <i className={`fa-solid ${categoryStyle.icon}`}></i>
                       <span>{item.category || 'Uncategorized'}</span>
                     </div>
@@ -1383,12 +1330,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                         className='menu-item-action-btn menu-item-action-toggle'
                         onClick={() => handleToggleAvailability(item)}
                         title={item.isAvailable ? 'Mark as Unavailable' : 'Mark as Available'}
-                        style={{
-                          background: item.isAvailable
-                            ? 'rgba(16, 185, 129, 0.1)'
-                            : 'rgba(239, 68, 68, 0.1)',
-                          color: item.isAvailable ? '#10b981' : '#ef4444',
-                        }}
                       >
                         <i
                           className={`fa-solid ${item.isAvailable ? 'fa-eye-slash' : 'fa-eye'}`}
@@ -1431,7 +1372,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
               </button>
             </div>
             <div className='modal-body-compact'>
-              <div className='form-grid' style={{ gap: '16px' }}>
+              <div className='form-grid menu-form-grid'>
                 <div className='form-group-full'>
                   <label className='form-label-small'>Item Name *</label>
                   <input
@@ -1466,27 +1407,18 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                     min='0'
                     step='0.01'
                     required
-                    style={{ padding: '10px 12px', fontSize: '14px' }}
+                    className='menu-form-input'
                   />
                 </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-                  <label style={{ fontSize: '13px', marginBottom: '6px' }}>
-                    Category{' '}
-                    <span
-                      style={{
-                        color: 'var(--admin-text-light)',
-                        fontWeight: 400,
-                        fontSize: '11px',
-                      }}
-                    >
-                      (Optional)
-                    </span>
+                <div className='form-group menu-form-group-full'>
+                  <label className='menu-form-label'>
+                    Category <span className='menu-form-label-optional'>(Optional)</span>
                   </label>
                   <select
                     className='input-field'
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    style={{ padding: '10px 12px', fontSize: '14px' }}
+                    className='menu-form-input'
                   >
                     <option value=''>Select Category</option>
                     {categories && categories.length > 0 ? (
@@ -1504,77 +1436,42 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                     )}
                   </select>
                 </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-                  <label style={{ fontSize: '13px', marginBottom: '6px' }}>
-                    Image URL{' '}
-                    <span
-                      style={{
-                        color: 'var(--admin-text-light)',
-                        fontWeight: 400,
-                        fontSize: '11px',
-                      }}
-                    >
-                      (Optional)
-                    </span>
+                <div className='form-group menu-form-group-full'>
+                  <label className='menu-form-label'>
+                    Image URL <span className='menu-form-label-optional'>(Optional)</span>
                   </label>
                   <input
                     type='text'
-                    className='input-field'
+                    className='input-field menu-form-input'
                     value={formData.imageUrl}
                     onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                     placeholder='/food.jpeg or https://example.com/image.jpg'
-                    style={{ padding: '10px 12px', fontSize: '14px' }}
                   />
-                  <small
-                    style={{
-                      color: 'var(--admin-text-light)',
-                      fontSize: '11px',
-                      marginTop: '4px',
-                      display: 'block',
-                      lineHeight: '1.4',
-                    }}
-                  >
+                  <small className='menu-form-helper-text'>
                     Use /filename.jpg for public folder, or full URL for external images
                   </small>
                 </div>
-                <div
-                  className='form-group'
-                  style={{ gridColumn: '1 / -1', marginBottom: 0, marginTop: '4px' }}
-                >
-                  <label
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                      marginBottom: 0,
-                    }}
-                  >
+                <div className='form-group menu-form-group-full-mt'>
+                  <label className='menu-checkbox-label'>
                     <input
                       type='checkbox'
+                      className='menu-checkbox-input'
                       checked={formData.isAvailable}
                       onChange={(e) => setFormData({ ...formData, isAvailable: e.target.checked })}
-                      style={{ margin: 0 }}
                     />
                     <span>Available for ordering</span>
                   </label>
                 </div>
               </div>
             </div>
-            <div className='modal-footer' style={{ padding: '16px 24px', gap: '10px' }}>
+            <div className='modal-footer menu-modal-footer'>
               <button
-                className='btn btn-ghost'
+                className='btn btn-ghost menu-modal-btn'
                 onClick={() => setShowAddModal(false)}
-                style={{ padding: '10px 18px', fontSize: '14px' }}
               >
                 Cancel
               </button>
-              <button
-                className='btn btn-primary'
-                onClick={handleAddItem}
-                style={{ padding: '10px 18px', fontSize: '14px' }}
-              >
+              <button className='btn btn-primary menu-modal-btn' onClick={handleAddItem}>
                 <i className='fa-solid fa-plus'></i> Add Item
               </button>
             </div>
@@ -1585,9 +1482,9 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       {}
       {showEditModal && selectedItem && (
         <div className='modal-overlay'>
-          <div className='modal-container' style={{ maxWidth: '540px' }}>
-            <div className='modal-header' style={{ padding: '18px 24px' }}>
-              <h2 style={{ fontSize: '20px', margin: 0 }}>Edit Menu Item</h2>
+          <div className='modal-container menu-edit-modal-container'>
+            <div className='modal-header menu-edit-modal-header'>
+              <h2>Edit Menu Item</h2>
               <button
                 className='btn btn-ghost btn-icon modal-close'
                 onClick={() => setShowEditModal(false)}
@@ -1595,10 +1492,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                 <i className='fa-solid fa-times'></i>
               </button>
             </div>
-            <div className='modal-body' style={{ padding: '20px 24px' }}>
-              <div className='form-grid' style={{ gap: '16px' }}>
-                <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-                  <label style={{ fontSize: '13px', marginBottom: '6px' }}>Item Name *</label>
+            <div className='modal-body menu-edit-modal-body'>
+              <div className='form-grid menu-form-grid'>
+                <div className='form-group menu-form-group-full'>
+                  <label className='menu-form-label'>Item Name *</label>
                   <input
                     type='text'
                     className='input-field'
@@ -1606,22 +1503,23 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder='e.g., Lunch Combo'
                     required
-                    style={{ padding: '10px 12px', fontSize: '14px' }}
+                    className='menu-form-input'
                   />
                 </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-                  <label style={{ fontSize: '13px', marginBottom: '6px' }}>Description</label>
+                <div className='form-group menu-form-group-full'>
+                  <label className='menu-form-label'>Description</label>
                   <textarea
                     className='input-field'
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder='Item description...'
                     rows={2}
-                    style={{ padding: '10px 12px', fontSize: '14px', resize: 'vertical' }}
+                    className='menu-form-input'
+                    className='menu-form-textarea'
                   />
                 </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-                  <label style={{ fontSize: '13px', marginBottom: '6px' }}>Price (₹) *</label>
+                <div className='form-group menu-form-group-full'>
+                  <label className='menu-form-label'>Price (₹) *</label>
                   <input
                     type='number'
                     className='input-field'
@@ -1633,27 +1531,18 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                     min='0'
                     step='0.01'
                     required
-                    style={{ padding: '10px 12px', fontSize: '14px' }}
+                    className='menu-form-input'
                   />
                 </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-                  <label style={{ fontSize: '13px', marginBottom: '6px' }}>
-                    Category{' '}
-                    <span
-                      style={{
-                        color: 'var(--admin-text-light)',
-                        fontWeight: 400,
-                        fontSize: '11px',
-                      }}
-                    >
-                      (Optional)
-                    </span>
+                <div className='form-group menu-form-group-full'>
+                  <label className='menu-form-label'>
+                    Category <span className='menu-form-label-optional'>(Optional)</span>
                   </label>
                   <select
                     className='input-field'
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    style={{ padding: '10px 12px', fontSize: '14px' }}
+                    className='menu-form-input'
                   >
                     <option value=''>Select Category</option>
                     {categories && categories.length > 0 ? (
@@ -1671,36 +1560,18 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                     )}
                   </select>
                 </div>
-                <div className='form-group' style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-                  <label style={{ fontSize: '13px', marginBottom: '6px' }}>
-                    Image URL{' '}
-                    <span
-                      style={{
-                        color: 'var(--admin-text-light)',
-                        fontWeight: 400,
-                        fontSize: '11px',
-                      }}
-                    >
-                      (Optional)
-                    </span>
+                <div className='form-group menu-form-group-full'>
+                  <label className='menu-form-label'>
+                    Image URL <span className='menu-form-label-optional'>(Optional)</span>
                   </label>
                   <input
                     type='text'
-                    className='input-field'
+                    className='input-field menu-form-input'
                     value={formData.imageUrl}
                     onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                     placeholder='Leave empty to auto-match, or enter /filename.jpg'
-                    style={{ padding: '10px 12px', fontSize: '14px' }}
                   />
-                  <small
-                    style={{
-                      color: 'var(--admin-text-light)',
-                      fontSize: '11px',
-                      marginTop: '4px',
-                      display: 'block',
-                      lineHeight: '1.4',
-                    }}
-                  >
+                  <small className='menu-form-helper-text'>
                     {formData.imageUrl ? (
                       <>Custom: {formData.imageUrl}</>
                     ) : (
@@ -1708,44 +1579,27 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                     )}
                   </small>
                 </div>
-                <div
-                  className='form-group'
-                  style={{ gridColumn: '1 / -1', marginBottom: 0, marginTop: '4px' }}
-                >
-                  <label
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                      marginBottom: 0,
-                    }}
-                  >
+                <div className='form-group menu-form-group-full-mt'>
+                  <label className='menu-checkbox-label'>
                     <input
                       type='checkbox'
+                      className='menu-checkbox-input'
                       checked={formData.isAvailable}
                       onChange={(e) => setFormData({ ...formData, isAvailable: e.target.checked })}
-                      style={{ margin: 0 }}
                     />
                     <span>Available for ordering</span>
                   </label>
                 </div>
               </div>
             </div>
-            <div className='modal-footer' style={{ padding: '16px 24px', gap: '10px' }}>
+            <div className='modal-footer menu-modal-footer'>
               <button
-                className='btn btn-ghost'
+                className='btn btn-ghost menu-modal-btn'
                 onClick={() => setShowEditModal(false)}
-                style={{ padding: '10px 18px', fontSize: '14px' }}
               >
                 Cancel
               </button>
-              <button
-                className='btn btn-primary'
-                onClick={handleEditItem}
-                style={{ padding: '10px 18px', fontSize: '14px' }}
-              >
+              <button className='btn btn-primary menu-modal-btn' onClick={handleEditItem}>
                 <i className='fa-solid fa-save'></i> Save Changes
               </button>
             </div>

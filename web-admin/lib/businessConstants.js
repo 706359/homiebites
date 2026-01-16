@@ -1,9 +1,3 @@
-/**
- * Business Constants
- * Centralized location for business-specific constants that should not be hard-coded
- * Update these values here instead of searching through files
- */
-
 export const BUSINESS_CONSTANTS = {
   // Contact Information
   PHONE_NUMBER: '+919958983578',
@@ -26,11 +20,6 @@ export const BUSINESS_CONSTANTS = {
   DINNER_END: '22:00',
 };
 
-/**
- * Get WhatsApp link
- * @param {string} message - Optional message to send
- * @returns {string} WhatsApp URL
- */
 export const getWhatsAppLink = (message = '') => {
   const baseUrl = `${BUSINESS_CONSTANTS.WHATSAPP_PREFIX}${BUSINESS_CONSTANTS.WHATSAPP_NUMBER}`;
   if (message) {
@@ -40,18 +29,10 @@ export const getWhatsAppLink = (message = '') => {
   return baseUrl;
 };
 
-/**
- * Get phone call link
- * @returns {string} tel: link
- */
 export const getPhoneLink = () => {
   return `tel:${BUSINESS_CONSTANTS.PHONE_NUMBER}`;
 };
 
-/**
- * Get formatted phone number
- * @returns {string} Formatted phone number
- */
 export const getFormattedPhone = () => {
   return BUSINESS_CONSTANTS.PHONE_NUMBER_FORMATTED;
 };

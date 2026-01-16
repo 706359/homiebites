@@ -670,7 +670,7 @@ const AllOrdersDataTab = ({
           </button>
           {onClearAllData && (
             <button
-              className='btn btn-danger btn-small'
+              className='btn btn-special danger btn-small'
               onClick={() => {
                 if (showConfirmation) {
                   showConfirmation({
@@ -698,9 +698,7 @@ const AllOrdersDataTab = ({
       {}
       <div className='dashboard-card filter-bar-card'>
         <div className='filter-bar-container'>
-          {}
           <div className='filter-bar-quick-filters'>
-            {}
             <div className='premium-select-wrapper'>
               <i className='fa-solid fa-credit-card select-icon'></i>
               <select
@@ -777,29 +775,140 @@ const AllOrdersDataTab = ({
                 </option>
               ))}
             </select>
+
+            <button
+              onClick={() => setFiltersExpanded(!filtersExpanded)}
+              className={`btn btn-ghost btn-small filter-toggle-btn ${
+                filtersExpanded ? 'active' : ''
+              }`}
+            >
+              <i className='fa-solid fa-sliders filter-toggle-icon'></i>
+              Advanced Filters
+              <i
+                className={`fa-solid fa-chevron-${
+                  filtersExpanded ? 'up' : 'down'
+                } filter-toggle-chevron`}
+              ></i>
+            </button>
+
+            {(allOrdersFilterPaymentStatus ||
+              filterStatus ||
+              filterMode ||
+              filterPayment ||
+              filterAddress ||
+              dateRangeFrom ||
+              dateRangeTo ||
+              allOrdersFilterMonth ||
+              filterYear) && (
+              <button
+                className='btn btn-ghost btn-small filter-clear-btn'
+                onClick={clearAllFilters}
+              >
+                <i className='fa-solid fa-xmark filter-clear-icon'></i>
+                Clear
+              </button>
+            )}
           </div>
 
-          {}
-          <button
-            onClick={() => setFiltersExpanded(!filtersExpanded)}
-            className={`btn btn-ghost btn-small filter-toggle-btn ${
-              filtersExpanded ? 'active' : ''
-            }`}
-          >
-            <i className='fa-solid fa-sliders filter-toggle-icon'></i>
-            Advanced Filters
-            <i
-              className={`fa-solid fa-chevron-${
-                filtersExpanded ? 'up' : 'down'
-              } filter-toggle-chevron`}
-            ></i>
-          </button>
+          {filtersExpanded && (
+            <div className='advanced-filters-container'>
+              <div className='advanced-filters-grid'>
+                <div className='filter-field-group'>
+                  <label className='filter-label'>Date Range</label>
+                  <div className='filter-input-group'>
+                    <input
+                      type='date'
+                      className='input-field filter-input'
+                      value={dateRangeFrom}
+                      onChange={(e) => setDateRangeFrom(e.target.value)}
+                      placeholder='From'
+                    />
+                    <span className='filter-date-separator'>to</span>
+                    <input
+                      type='date'
+                      className='input-field filter-input'
+                      value={dateRangeTo}
+                      onChange={(e) => setDateRangeTo(e.target.value)}
+                      placeholder='To'
+                    />
+                  </div>
+                </div>
+
+                <div className='filter-field-group'>
+                  <label className='filter-label'>Month</label>
+                  <select
+                    className='input-field filter-input'
+                    value={allOrdersFilterMonth || ''}
+                    onChange={(e) => {
+                      setAllOrdersFilterMonth(e.target.value);
+                      if (setAllOrdersFilterMonth) setAllOrdersFilterMonth(e.target.value);
+                    }}
+                  >
+                    <option value=''>All Months</option>
+                    {uniqueYears.flatMap((year) => {
+                      const yearStr = String(year).slice(-2);
+                      const monthNames = [
+                        'Jan',
+                        'Feb',
+                        'Mar',
+                        'Apr',
+                        'May',
+                        'Jun',
+                        'Jul',
+                        'Aug',
+                        'Sep',
+                        'Oct',
+                        'Nov',
+                        'Dec',
+                      ];
+                      return monthNames.map((month) => (
+                        <option key={`${month}'${yearStr}`} value={`${month}'${yearStr}`}>
+                          {month}&apos;{yearStr}
+                        </option>
+                      ));
+                    })}
+                  </select>
+                </div>
+
+                <div className='filter-field-group'>
+                  <label className='filter-label'>Year</label>
+                  <select
+                    className='input-field filter-input'
+                    value={filterYear}
+                    onChange={(e) => setFilterYear(e.target.value)}
+                  >
+                    <option value=''>All Years</option>
+                    {uniqueYears.map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className='filter-field-group'>
+                  <label className='filter-label'>Address Search</label>
+                  <div className='search-input-wrapper'>
+                    <i className='fa-solid fa-map-marker-alt search-input-icon'></i>
+                    <input
+                      type='text'
+                      className='input-field search-input-with-icon'
+                      value={filterAddress}
+                      onChange={(e) => setFilterAddress(e.target.value)}
+                      placeholder='Search by address...'
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {selectedRows.size > 0 && (
             <div className='bulk-actions-bar-inline'>
               <span className='bulk-actions-label'>{selectedRows.size} selected</span>
               <div className='action-buttons-group'>
                 <button
-                  className='btn btn-success btn-small'
+                  className='btn btn-special btn-small'
                   onClick={() => handleBulkAction('paid')}
                 >
                   Mark as Paid
@@ -807,108 +916,7 @@ const AllOrdersDataTab = ({
               </div>
             </div>
           )}
-          {}
-          {(allOrdersFilterPaymentStatus ||
-            filterStatus ||
-            filterMode ||
-            filterPayment ||
-            filterAddress ||
-            dateRangeFrom ||
-            dateRangeTo ||
-            allOrdersFilterMonth ||
-            filterYear) && (
-            <button className='btn btn-ghost btn-small filter-clear-btn' onClick={clearAllFilters}>
-              <i className='fa-solid fa-xmark filter-clear-icon'></i>
-              Clear
-            </button>
-          )}
         </div>
-
-        {}
-        {filtersExpanded && (
-          <div className='advanced-filters-container'>
-            <div className='filter-field-group date-range'>
-              <label className='filter-label'>Date Range</label>
-              <div className='filter-input-group'>
-                <input
-                  type='date'
-                  className='input-field filter-input'
-                  value={dateRangeFrom}
-                  onChange={(e) => setDateRangeFrom(e.target.value)}
-                />
-                <input
-                  type='date'
-                  className='input-field filter-input'
-                  value={dateRangeTo}
-                  onChange={(e) => setDateRangeTo(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className='filter-field-group month'>
-              <label className='filter-label'>Month</label>
-              <select
-                className='input-field filter-input'
-                value={allOrdersFilterMonth || ''}
-                onChange={(e) => {
-                  setAllOrdersFilterMonth(e.target.value);
-                  if (setAllOrdersFilterMonth) setAllOrdersFilterMonth(e.target.value);
-                }}
-              >
-                <option value=''>All Months</option>
-                {uniqueYears.flatMap((year) => {
-                  const yearStr = String(year).slice(-2);
-                  const monthNames = [
-                    'Jan',
-                    'Feb',
-                    'Mar',
-                    'Apr',
-                    'May',
-                    'Jun',
-                    'Jul',
-                    'Aug',
-                    'Sep',
-                    'Oct',
-                    'Nov',
-                    'Dec',
-                  ];
-                  return monthNames.map((month) => (
-                    <option key={`${month}'${yearStr}`} value={`${month}'${yearStr}`}>
-                      {month}&apos;{yearStr}
-                    </option>
-                  ));
-                })}
-              </select>
-            </div>
-
-            <div className='filter-field-group year'>
-              <label className='filter-label'>Year</label>
-              <select
-                className='input-field filter-input'
-                value={filterYear}
-                onChange={(e) => setFilterYear(e.target.value)}
-              >
-                <option value=''>All Years</option>
-                {uniqueYears.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className='filter-field-group address'>
-              <label className='filter-label'>Address Search</label>
-              <input
-                type='text'
-                className='input-field filter-input'
-                value={filterAddress}
-                onChange={(e) => setFilterAddress(e.target.value)}
-                placeholder='Search by address...'
-              />
-            </div>
-          </div>
-        )}
       </div>
 
       {}

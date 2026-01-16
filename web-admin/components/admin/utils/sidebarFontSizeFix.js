@@ -1,24 +1,20 @@
-/**
- * Sidebar Font Size Fix Utility
- * Ensures sidebar font size variables are synchronized with admin-dashboard
- */
-
 export const syncSidebarFontSize = () => {
   const adminDashboard = document.querySelector('.admin-dashboard');
   const root = document.documentElement;
-  
+
   if (!adminDashboard) {
     return;
   }
-  
+
   // Get the base font size from admin-dashboard
-  const baseFontSize = getComputedStyle(adminDashboard).getPropertyValue('--admin-base-font-size').trim() || 
-                       getComputedStyle(root).getPropertyValue('--admin-base-font-size').trim() ||
-                       '16px';
-  
+  const baseFontSize =
+    getComputedStyle(adminDashboard).getPropertyValue('--admin-base-font-size').trim() ||
+    getComputedStyle(root).getPropertyValue('--admin-base-font-size').trim() ||
+    '16px';
+
   // Set CSS variables on :root instead of directly on sidebar to avoid inline styles
   root.style.setProperty('--admin-base-font-size', baseFontSize);
-  
+
   // Calculate and set all derived font sizes on :root
   const baseSize = parseFloat(baseFontSize);
   if (!isNaN(baseSize)) {
@@ -38,7 +34,7 @@ export const syncSidebarFontSize = () => {
 // Auto-sync on font size changes
 if (typeof window !== 'undefined') {
   window.addEventListener('adminFontSizeChanged', syncSidebarFontSize);
-  
+
   // Wait for React hydration to complete before syncing
   // Use requestAnimationFrame to ensure DOM is ready after hydration
   const syncAfterHydration = () => {
@@ -48,7 +44,7 @@ if (typeof window !== 'undefined') {
       setTimeout(syncSidebarFontSize, 100);
     });
   };
-  
+
   // Sync on load, but wait for hydration
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', syncAfterHydration);
@@ -56,7 +52,7 @@ if (typeof window !== 'undefined') {
     // Use a small delay to ensure React has hydrated
     setTimeout(syncAfterHydration, 0);
   }
-  
+
   // Sync periodically to catch any missed updates (but only after initial hydration)
   setTimeout(() => {
     setInterval(syncSidebarFontSize, 1000);

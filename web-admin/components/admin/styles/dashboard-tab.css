@@ -1,0 +1,25 @@
+.dashboard-empty-state {
+  padding: 2rem;
+  text-align: center;
+}
+
+.dashboard-empty-text {
+  margin-top: 1rem;
+  color: #666;
+}
+
+.dashboard-empty-list {
+  margin-top: 1rem;
+  text-align: left;
+  display: inline-block;
+}
+
+.dashboard-empty-button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.dashboard-chart-legend {
+  margin-top: 8px;
+}

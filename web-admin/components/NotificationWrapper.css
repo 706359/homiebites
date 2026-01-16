@@ -108,7 +108,7 @@
 }
 
 .notification-success .notification-body {
-  border-left: 3px solid var(--success-green-light);
+  border-left: 1px solid var(--success-green-light);
 }
 
 .notification-success .notification-icon-wrapper {
@@ -124,7 +124,7 @@
 }
 
 .notification-error .notification-body {
-  border-left: 3px solid var(--error-red);
+  border-left: 1px solid var(--error-red);
 }
 
 .notification-error .notification-icon-wrapper {
@@ -140,7 +140,7 @@
 }
 
 .notification-warning .notification-body {
-  border-left: 3px solid var(--primary-orange);
+  border-left: 1px solid var(--primary-orange);
 }
 
 .notification-warning .notification-icon-wrapper {
@@ -156,7 +156,7 @@
 }
 
 .notification-info .notification-body {
-  border-left: 3px solid var(--info-blue-light);
+  border-left: 1px solid var(--info-blue-light);
 }
 
 .notification-info .notification-icon-wrapper {

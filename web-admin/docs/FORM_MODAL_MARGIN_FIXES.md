@@ -121,7 +121,7 @@ Fixed all margin issues in forms and modals/popups by standardizing spacing usin
 ```css
 .modal-footer {
   padding: 16px 24px;
-  gap: var(--admin-spacing-3xl, 20px) !important;
+  gap: var(--admin-spacing-3xl, 20px);
 }
 ```
 

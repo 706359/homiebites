@@ -44,7 +44,6 @@ const Footer = ({ onOrderClick }) => {
     }
   };
 
-
   return (
     <footer>
       <div className='footer-inner'>
@@ -59,25 +58,20 @@ const Footer = ({ onOrderClick }) => {
                 e.target.nextSibling.style.display = 'block';
               }}
             />
-            <h2 className='footer-logo-text' style={{ display: 'none' }}>
-              HOMIEBITES
-            </h2>
+            <h2 className='footer-logo-text'>HOMIEBITES</h2>
           </Link>
         </div>
 
         <div className='footer-actions'>
-          <a 
-            href='https://wa.me/919958983578' 
-            target='_blank' 
+          <a
+            href='https://wa.me/919958983578'
+            target='_blank'
             rel='noopener noreferrer'
             className='btn btn-primary btn-small'
           >
             <i className='fa-brands fa-whatsapp'></i> Order on WhatsApp
           </a>
-          <a 
-            href='tel:+919958983578' 
-            className='btn btn-secondary btn-small'
-          >
+          <a href='tel:+919958983578' className='btn btn-secondary btn-small'>
             <i className='fa-solid fa-phone'></i> Call +91-9958983578
           </a>
         </div>
@@ -134,7 +128,6 @@ const Footer = ({ onOrderClick }) => {
             <li className='footer-note'>{t('footer.emergencyDelivery')}</li>
           </ul>
         </div>
-
       </div>
 
       <div className='footer-bottom'>

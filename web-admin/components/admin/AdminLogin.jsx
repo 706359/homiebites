@@ -151,14 +151,29 @@ const AdminLogin = ({ onLoginSuccess }) => {
           localStorage.setItem('homiebites_admin', 'true');
 
           if (data.requirePasswordChange) {
+            // Show success message before redirect for password change
+            showSuccess('Login successful. Redirecting to change password...');
+            await new Promise((resolve) => setTimeout(resolve, 800));
             window.location.href = '/admin/change-password?temporary=true';
             return;
           }
 
+          // Show success message and add proper delay before redirect
+          showSuccess('Login successful! Redirecting to dashboard...');
+          
           if (process.env.NODE_ENV === 'development') {
             console.log('[AdminLogin] Login successful, redirecting to dashboard');
           }
-          window.location.href = '/admin/dashboard';
+          
+          // Add delay for user to see success message
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          
+          // Redirect to dashboard
+          if (onLoginSuccess && typeof onLoginSuccess === 'function') {
+            onLoginSuccess();
+          } else {
+            window.location.href = '/admin/dashboard';
+          }
           return;
         } else {
           showError(data.error || 'Invalid credentials. Admin access required.');
