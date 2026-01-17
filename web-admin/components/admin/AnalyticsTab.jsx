@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import './AnalyticsTab.css';
 import PremiumLoader from './PremiumLoader.jsx';
 import './styles/analytics-tab.css';
@@ -19,6 +19,49 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
   const [sortDirection, setSortDirection] = useState('desc');
 
   const now = new Date();
+  const analyticsContainerRef = useRef(null);
+
+  // Centralized, validated order amount calculation - must be defined before useMemo hooks
+  const getOrderAmount = (order) => {
+    if (!order) return 0;
+
+    let amount = null;
+
+    // Try totalAmount first
+    if (order.totalAmount !== undefined && order.totalAmount !== null) {
+      const parsed = parseFloat(String(order.totalAmount));
+      if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) {
+        amount = parsed;
+      }
+    }
+
+    // Fallback to total
+    if (amount === null && order.total !== undefined && order.total !== null) {
+      const parsed = parseFloat(String(order.total));
+      if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) {
+        amount = parsed;
+      }
+    }
+
+    // Calculate from quantity and price if needed
+    if (amount === null) {
+      const qty = parseFloat(String(order.quantity || 1));
+      const price = parseFloat(String(order.unitPrice || 0));
+      if (
+        !isNaN(qty) &&
+        !isNaN(price) &&
+        isFinite(qty) &&
+        isFinite(price) &&
+        qty >= 0 &&
+        price >= 0
+      ) {
+        amount = qty * price;
+      }
+    }
+
+    // Return validated amount or 0
+    return amount !== null && !isNaN(amount) && isFinite(amount) && amount >= 0 ? amount : 0;
+  };
 
   const periodOrders = useMemo(() => {
     switch (period) {
@@ -79,30 +122,19 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
       });
     }
     const previousRevenue = getTotalRevenue(previousPeriodOrders);
+    // Cap growth rate at 999% to prevent Infinity breaking UI
     const growthRate =
       previousRevenue > 0
-        ? ((totalRevenue - previousRevenue) / previousRevenue) * 100
+        ? Math.min(((totalRevenue - previousRevenue) / previousRevenue) * 100, 999)
         : totalRevenue > 0
-        ? Infinity
+        ? 999
         : 0;
 
     const pendingOrders = periodOrders.filter((o) => isPendingStatus(o.status));
     const pendingAmount = pendingOrders.reduce((sum, o) => {
-      let amount = null;
-
-      if (o.totalAmount !== undefined && o.totalAmount !== null) {
-        amount = parseFloat(o.totalAmount);
-      } else if (o.total !== undefined && o.total !== null) {
-        amount = parseFloat(o.total);
-      }
-
-      if (amount === null || isNaN(amount)) {
-        const qty = parseFloat(o.quantity || 1);
-        const price = parseFloat(o.unitPrice || 0);
-        amount = qty * price;
-      }
-
-      return sum + (isNaN(amount) ? 0 : amount);
+      // Use centralized getOrderAmount function
+      const amount = getOrderAmount(o);
+      return sum + amount;
     }, 0);
 
     const uniqueAddresses = new Set(
@@ -187,20 +219,9 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         }
         areaStats[addr].orders++;
 
-        let amount = null;
-        if (o.totalAmount !== undefined && o.totalAmount !== null) {
-          amount = parseFloat(o.totalAmount);
-        } else if (o.total !== undefined && o.total !== null) {
-          amount = parseFloat(o.total);
-        }
-
-        if (amount === null || isNaN(amount)) {
-          const qty = parseFloat(o.quantity || 1);
-          const price = parseFloat(o.unitPrice || 0);
-          amount = qty * price;
-        }
-
-        areaStats[addr].revenue += isNaN(amount) ? 0 : amount;
+        // Use centralized getOrderAmount function
+        const amount = getOrderAmount(o);
+        areaStats[addr].revenue += amount;
       }
     });
     return Object.values(areaStats)
@@ -236,20 +257,9 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         }
         customerData[addr].orders++;
 
-        let amount = null;
-        if (o.totalAmount !== undefined && o.totalAmount !== null) {
-          amount = parseFloat(o.totalAmount);
-        } else if (o.total !== undefined && o.total !== null) {
-          amount = parseFloat(o.total);
-        }
-
-        if (amount === null || isNaN(amount)) {
-          const qty = parseFloat(o.quantity || 1);
-          const price = parseFloat(o.unitPrice || 0);
-          amount = qty * price;
-        }
-
-        customerData[addr].spent += isNaN(amount) ? 0 : amount;
+        // Use centralized getOrderAmount function
+        const amount = getOrderAmount(o);
+        customerData[addr].spent += amount;
       }
     });
 
@@ -295,94 +305,10 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
 
   const totalPaymentAmount = paymentTrends.reduce((sum, t) => sum + t.amount, 0);
 
-  const top20Days = useMemo(() => {
-    const dayStats = {};
-
-    orders.forEach((o) => {
-      try {
-        const orderDate = parseOrderDate(o.date || o.order_date || null);
-        if (!orderDate) return;
-
-        const dateKey = orderDate.toISOString().split('T')[0];
-
-        if (!dayStats[dateKey]) {
-          dayStats[dateKey] = {
-            date: dateKey,
-            dateObj: orderDate,
-            revenue: 0,
-            orders: 0,
-            orderIds: [],
-          };
-        }
-
-        let amount = null;
-        if (o.totalAmount !== undefined && o.totalAmount !== null) {
-          amount = parseFloat(o.totalAmount);
-        } else if (o.total !== undefined && o.total !== null) {
-          amount = parseFloat(o.total);
-        }
-
-        if (amount === null || isNaN(amount)) {
-          const qty = parseFloat(o.quantity || 1);
-          const price = parseFloat(o.unitPrice || 0);
-          amount = qty * price;
-        }
-
-        dayStats[dateKey].revenue += isNaN(amount) ? 0 : amount;
-        dayStats[dateKey].orders += 1;
-
-        if (o.orderId || o._id) {
-          dayStats[dateKey].orderIds.push(o.orderId || o._id);
-        }
-      } catch (e) {}
-    });
-
-    return Object.values(dayStats)
-      .sort((a, b) => b.revenue - a.revenue)
-      .slice(0, 7)
-      .map((day) => ({
-        ...day,
-        formattedDate: day.dateObj.toLocaleDateString('en-IN', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-        }),
-        shortDate: day.dateObj.toLocaleDateString('en-IN', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-        }),
-      }));
-  }, [orders]);
-
-  const maxDayRevenue = Math.max(...top20Days.map((d) => d.revenue), 1);
-
-  const getOrderAmount = (order) => {
-    let amount = null;
-
-    if (order.totalAmount !== undefined && order.totalAmount !== null) {
-      amount = parseFloat(order.totalAmount);
-    } else if (order.total !== undefined && order.total !== null) {
-      amount = parseFloat(order.total);
-    }
-
-    if (amount === null || isNaN(amount)) {
-      const qty = parseFloat(order.quantity || 1);
-      const price = parseFloat(order.unitPrice || 0);
-      amount = qty * price;
-    }
-
-    return isNaN(amount) ? 0 : amount;
-  };
-
   const deliveryAddressAnalytics = useMemo(() => {
     const addressData = {};
-    const currentYear = now.getFullYear();
-    const year1 = currentYear - 2;
-    const year2 = currentYear - 1;
-    const year3 = currentYear;
-    const years = [year1, year2, year3];
 
+    // Derive years from actual order dates instead of hardcoding
     const allYears = new Set();
     orders.forEach((o) => {
       try {
@@ -390,8 +316,20 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         if (orderDate) {
           allYears.add(orderDate.getFullYear());
         }
-      } catch (e) {}
+      } catch (e) {
+        // Log error but continue processing
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('[Analytics] Error parsing order date:', e, o);
+        }
+      }
     });
+
+    // Get the 3 most recent years with data
+    const sortedYears = Array.from(allYears).sort((a, b) => b - a);
+    const year3 = sortedYears[0] || now.getFullYear();
+    const year2 = sortedYears[1] || year3 - 1;
+    const year1 = sortedYears[2] || year2 - 1;
+    const years = [year1, year2, year3];
 
     let processedCount = 0;
     orders.forEach((o) => {
@@ -423,7 +361,14 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           addressData[addr].monthly[year] = Array(12).fill(0);
         }
 
-        let amount = getOrderAmount(o);
+        // Use validated getOrderAmount function
+        const amount = getOrderAmount(o);
+        if (isNaN(amount) || amount < 0) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('[Analytics] Invalid amount for order:', o, 'amount:', amount);
+          }
+          return; // Skip invalid orders
+        }
 
         addressData[addr].yearly[year] += amount;
 
@@ -431,7 +376,17 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
 
         addressData[addr].grandTotal += amount;
       } catch (e) {
-        console.warn('[Analytics] Error processing order:', e, o);
+        // Improved error handling: log with context and continue processing
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('[Analytics] Error processing order:', {
+            error: e,
+            orderId: o._id || o.id,
+            orderDate: o.date || o.order_date,
+            address: o.deliveryAddress || o.customerAddress || o.address,
+          });
+        }
+        // Don't add invalid data - skip this order
+        return;
       }
     });
 
@@ -445,22 +400,24 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
       const y2 = data.yearly[year2] || 0;
       const y3 = data.yearly[year3] || 0;
 
-      const trendY1toY2 = y1 > 0 ? ((y2 - y1) / y1) * 100 : y2 > 0 ? Infinity : 0;
-      const trendY2toY3 = y2 > 0 ? ((y3 - y2) / y2) * 100 : y3 > 0 ? Infinity : 0;
+      // Cap trend calculations at 999% to prevent Infinity
+      const trendY1toY2 = y1 > 0 ? Math.min(((y2 - y1) / y1) * 100, 999) : y2 > 0 ? 999 : 0;
+      const trendY2toY3 = y2 > 0 ? Math.min(((y3 - y2) / y2) * 100, 999) : y3 > 0 ? 999 : 0;
 
+      // Fix gap calculation: Compare year3 months with same month in year2 (not Dec year2)
       const monthlyGaps = [];
-      const dec2025Value =
-        data.monthly[year2] && data.monthly[year2][dec2025] ? data.monthly[year2][dec2025] : 0;
-
       if (data.monthly[year3]) {
         for (let month = 0; month <= currentMonth; month++) {
           const currentMonthValue = data.monthly[year3][month] || 0;
-          const gap = currentMonthValue - dec2025Value;
+          // Compare with same month in previous year (year2), not December
+          const previousYearSameMonth =
+            data.monthly[year2] && data.monthly[year2][month] ? data.monthly[year2][month] : 0;
+          const gap = currentMonthValue - previousYearSameMonth;
           monthlyGaps.push({
             month,
             value: currentMonthValue,
             gap: gap,
-            dec2025Value: dec2025Value,
+            previousYearValue: previousYearSameMonth,
           });
         }
       }
@@ -483,28 +440,31 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
       };
     });
 
-    const sortedData = result.sort((a, b) => {
-      let valueA, valueB;
+    // Memoize sort to prevent creating new arrays on every render
+    const sortedData = [...result].sort((a, b) => {
+      let valueA = 0;
+      let valueB = 0;
 
       if (sortColumn === 'year1') {
-        valueA = a.yearly[year1] || 0;
-        valueB = b.yearly[year1] || 0;
+        valueA = Number(a.yearly[year1]) || 0;
+        valueB = Number(b.yearly[year1]) || 0;
       } else if (sortColumn === 'year2') {
-        valueA = a.yearly[year2] || 0;
-        valueB = b.yearly[year2] || 0;
+        valueA = Number(a.yearly[year2]) || 0;
+        valueB = Number(b.yearly[year2]) || 0;
       } else if (sortColumn === 'year3') {
-        valueA = a.yearly[year3] || 0;
-        valueB = b.yearly[year3] || 0;
+        valueA = Number(a.yearly[year3]) || 0;
+        valueB = Number(b.yearly[year3]) || 0;
       } else if (sortColumn === 'grandTotal') {
-        valueA = a.grandTotal || 0;
-        valueB = b.grandTotal || 0;
+        valueA = Number(a.grandTotal) || 0;
+        valueB = Number(b.grandTotal) || 0;
       } else {
-        const year3A = a.yearly[year3] || 0;
-        const year3B = b.yearly[year3] || 0;
+        // Default sort by year3, then grandTotal
+        const year3A = Number(a.yearly[year3]) || 0;
+        const year3B = Number(b.yearly[year3]) || 0;
         if (year3B !== year3A) {
           return year3B - year3A;
         }
-        return b.grandTotal - a.grandTotal;
+        return (Number(b.grandTotal) || 0) - (Number(a.grandTotal) || 0);
       }
 
       if (sortDirection === 'asc') {
@@ -649,6 +609,87 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     link.click();
   };
 
+  // Optimized: Single MutationObserver watching only analytics containers
+  useEffect(() => {
+    const updateChartElements = () => {
+      const container = analyticsContainerRef.current;
+      if (!container) return;
+
+      // Update chart bars
+      container.querySelectorAll('.chart-bar[data-height]').forEach((bar) => {
+        const heightPercent = parseFloat(bar.getAttribute('data-height'));
+        if (isNaN(heightPercent)) return;
+        const barContainer = bar.closest('.chart-container, .chart-bars-container');
+        if (barContainer) {
+          const containerHeight = barContainer.offsetHeight || 180;
+          const height = (heightPercent / 100) * containerHeight;
+          bar.style.setProperty('--bar-height', `${height}px`);
+          bar.style.height = 'var(--bar-height)';
+        }
+      });
+
+      // Update progress bars
+      container.querySelectorAll('.progress-bar-fill[data-width]').forEach((bar) => {
+        const widthPercent = bar.getAttribute('data-width');
+        if (widthPercent && !isNaN(parseFloat(widthPercent))) {
+          bar.style.setProperty('--bar-width', `${widthPercent}%`);
+          bar.style.width = 'var(--bar-width)';
+        }
+      });
+    };
+
+    // Wait for ref to be attached and DOM to be ready
+    let observer = null;
+    let timeoutId = null;
+    let retryId = null;
+
+    const setupObserver = () => {
+      const container = analyticsContainerRef.current;
+      if (!container) {
+        // Retry if container not ready yet
+        retryId = setTimeout(setupObserver, 50);
+        return;
+      }
+
+      // Initial update
+      updateChartElements();
+
+      observer = new MutationObserver((mutations) => {
+        // Only process if relevant elements changed
+        const hasRelevantChanges = mutations.some((mutation) => {
+          const target = mutation.target;
+          return (
+            target.classList?.contains('chart-bar') ||
+            target.classList?.contains('progress-bar-fill') ||
+            target.closest('.chart-container, .chart-bars-container, .progress-bar-container')
+          );
+        });
+
+        if (hasRelevantChanges) {
+          updateChartElements();
+        }
+      });
+
+      observer.observe(container, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['data-height', 'data-width'],
+      });
+    };
+
+    // Start setup after DOM is ready
+    timeoutId = setTimeout(setupObserver, 100);
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (retryId) clearTimeout(retryId);
+      if (observer) {
+        observer.disconnect();
+      }
+    };
+  }, [monthlyRevenueTrend, periodOrders, paymentTrends, topAreas]);
+
   if (loading) {
     return (
       <div className='admin-content'>
@@ -658,7 +699,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
   }
 
   return (
-    <div className='admin-content'>
+    <div className='admin-content' ref={analyticsContainerRef}>
       <div className='dashboard-with-sidebar'>
         <div className='dashboard-main-content'>
           {}
@@ -670,7 +711,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                 <p>Total Revenue</p>
                 {keyMetrics.growthRate !== 0 && (
                   <p className='stat-card-subtitle'>
-                    {keyMetrics.growthRate === Infinity
+                    {keyMetrics.growthRate >= 999
                       ? 'New ↑'
                       : `${keyMetrics.growthRate >= 0 ? '+' : ''}${keyMetrics.growthRate.toFixed(
                           1
@@ -746,25 +787,30 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                 <div className='chart-container-padding'>
                   <div className='chart-container mb-16'>
                     {monthlyRevenueTrend && monthlyRevenueTrend.length > 0 ? (
-                      monthlyRevenueTrend.map((month, idx) => (
-                        <div key={idx} className='bar-chart-item'>
-                          <div
-                            className={`chart-bar chart-bar-small ${
-                              month.revenue > 0 ? '' : 'chart-bar-empty'
-                            }`}
-                            title={`${month.month}: ₹${formatCurrency(month.revenue)} (${
-                              month.orders
-                            } orders)`}
-                          >
-                            {month.revenue > 0 && (
-                              <span className='chart-bar-label-small'>
-                                ₹{formatNumberIndian(month.revenue)}
-                              </span>
-                            )}
+                      monthlyRevenueTrend.map((month, idx) => {
+                        const barHeightPercent =
+                          maxMonthlyRevenue > 0 ? (month.revenue / maxMonthlyRevenue) * 100 : 0;
+                        return (
+                          <div key={idx} className='bar-chart-item'>
+                            <div
+                              className={`chart-bar chart-bar-small ${
+                                month.revenue > 0 ? '' : 'chart-bar-empty'
+                              }`}
+                              data-height={barHeightPercent.toFixed(2)}
+                              title={`${month.month}: ₹${formatCurrency(month.revenue)} (${
+                                month.orders
+                              } orders)`}
+                            >
+                              {month.revenue > 0 && (
+                                <span className='chart-bar-label-small'>
+                                  ₹{formatNumberIndian(month.revenue)}
+                                </span>
+                              )}
+                            </div>
+                            <span className='chart-bar-label'>{month.month}</span>
                           </div>
-                          <span className='chart-bar-label'>{month.month}</span>
-                        </div>
-                      ))
+                        );
+                      })
                     ) : (
                       <div className='analytics-empty-state-center'>No revenue data available</div>
                     )}
@@ -810,7 +856,14 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                             </span>
                           </div>
                           <div className='progress-bar-container analytics-progress-bar-container'>
-                            <div className='progress-bar-fill rounded-xl' />
+                            <div
+                              className='progress-bar-fill rounded-xl'
+                              data-width={
+                                maxAreaRevenue > 0
+                                  ? ((area.revenue / maxAreaRevenue) * 100).toFixed(2)
+                                  : '0'
+                              }
+                            />
                           </div>
                         </div>
                       ))}
@@ -846,11 +899,12 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                             </span>
                           </div>
                           <div className='progress-bar-container progress-bar-container-alt analytics-progress-bar-container-alt'>
-                            <div>
-                              {percentage > 15 && (
+                            <div className='progress-bar-fill' data-width={percentage.toFixed(2)} />
+                            {percentage > 15 && (
+                              <div className='progress-bar-label-container'>
                                 <span className='progress-bar-label'>{percentage.toFixed(0)}%</span>
-                              )}
-                            </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
@@ -882,7 +936,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                           <tr>
                             <th className='analytics-th-sticky'>Delivery Address</th>
                             <th
-                              className='analytics-th-right analytics-th-sortable'
+                              className='analytics-th-right analytics-th-year analytics-th-sortable'
                               onClick={() => {
                                 if (sortColumn === 'year1') {
                                   setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -900,7 +954,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                               )}
                             </th>
                             <th
-                              className='analytics-th-right analytics-th-sortable'
+                              className='analytics-th-right analytics-th-year analytics-th-sortable'
                               onClick={() => {
                                 if (sortColumn === 'year2') {
                                   setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -918,7 +972,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                               )}
                             </th>
                             <th
-                              className='analytics-th-right analytics-th-year analytics-th-sortable cursor-pointer'
+                              className='analytics-th-right analytics-th-year analytics-th-sortable'
                               onClick={() => {
                                 if (sortColumn === 'year3') {
                                   setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -952,9 +1006,9 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                             const trendY2toY3 = data.trends[trendKey2];
 
                             const totalGap = data.totalGap || 0;
-                            const dec2025Value =
+                            const previousYearValue =
                               data.monthlyGaps && data.monthlyGaps.length > 0
-                                ? data.monthlyGaps[0].dec2025Value
+                                ? data.monthlyGaps[0].previousYearValue || 0
                                 : 0;
 
                             let trendIcon = '—';
@@ -1090,10 +1144,13 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                                             {year3}:
                                           </span>
                                           {data.monthly[year3].map((monthVal, mIdx) => {
+                                            // Calculate gap: current month vs same month previous year
                                             const monthGap =
                                               data.monthlyGaps && data.monthlyGaps[mIdx]
                                                 ? data.monthlyGaps[mIdx].gap
-                                                : monthVal - dec2025Value;
+                                                : monthVal -
+                                                  (data.monthlyGaps?.[mIdx]?.previousYearValue ||
+                                                    0);
                                             const isPositiveGap = monthGap >= 0;
 
                                             return (
@@ -1139,76 +1196,6 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
             </div>
 
             {}
-            <div className='dashboard-grid-item full-width'>
-              <div className='dashboard-card'>
-                <h3 className='dashboard-section-title'>
-                  <i className='fa-solid fa-trophy icon-opacity'></i>
-                  Top 7 Days All Time (By Revenue)
-                </h3>
-                <div>
-                  {top20Days.length === 0 ? (
-                    <div className='analytics-empty-state-center-text'>
-                      <i className='fa-solid fa-inbox empty-state-icon-large'></i>
-                      <p className='text-margin-top'>No orders data available</p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className='analytics-chart-container'>
-                        {top20Days.map((day, idx) => (
-                          <div key={idx}>
-                            <div
-                              className={`analytics-day-card ${
-                                idx < 3 ? 'analytics-day-card-top3' : 'analytics-day-card-regular'
-                              }`}
-                              onClick={() => {
-                                if (onViewDayDetails) {
-                                  onViewDayDetails(day.date);
-                                }
-                              }}
-                              title={`Click to view orders for ${
-                                day.formattedDate
-                              }: ₹${formatCurrency(day.revenue)} (${day.orders} ${
-                                day.orders === 1 ? 'order' : 'orders'
-                              })`}
-                            >
-                              {idx < 3 && (
-                                <span className='rank-badge analytics-rank-badge'>{idx + 1}</span>
-                              )}
-                              <span className='chart-bar-value'>
-                                ₹{formatNumberIndian(day.revenue)}
-                              </span>
-                            </div>
-                            <div className='chart-bar-date'>
-                              <span className='chart-bar-date-label'>{day.shortDate}</span>
-                              <span className='chart-bar-date-sublabel'>
-                                {day.orders} {day.orders === 1 ? 'order' : 'orders'}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className='analytics-day-summary'>
-                        <div>
-                          <span className='analytics-day-summary-label'>
-                            Total Revenue (Top 7 Days):
-                          </span>
-                          <span className='analytics-day-summary-value'>
-                            ₹{formatCurrency(top20Days.reduce((sum, d) => sum + d.revenue, 0))}
-                          </span>
-                        </div>
-                        <div>
-                          <span className='analytics-day-summary-label'>Peak Day:</span>
-                          <span className='analytics-day-summary-text'>
-                            {top20Days[0]?.formattedDate} (₹
-                            {formatCurrency(top20Days[0]?.revenue || 0)})
-                          </span>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

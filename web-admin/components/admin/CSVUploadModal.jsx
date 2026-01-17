@@ -811,9 +811,8 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                 <li>First row should contain column headers</li>
               </ul>
               <button
-                className='btn btn-secondary btn-small'
+                className='btn btn-secondary btn-small csv-margin-top-16'
                 onClick={handleDownloadTemplate}
-                className='csv-margin-top-16'
               >
                 <i className='fa-solid fa-download'></i> Download Sample CSV Template
               </button>

@@ -25,6 +25,42 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Use raw orders array directly for all-time calculations to ensure no orders are excluded
+  const allTimeOrders = Array.isArray(orders) ? orders : [];
+
+  useEffect(() => {
+    const setChartBarHeights = () => {
+      document.querySelectorAll('.chart-bar[data-height]').forEach((bar) => {
+        const heightPercent = parseFloat(bar.getAttribute('data-height'));
+        const container = bar.closest('.chart-bars-container');
+        if (container) {
+          const containerHeight = container.offsetHeight || 200;
+          const height = (heightPercent / 100) * containerHeight;
+          bar.style.setProperty('--bar-height', `${height}px`);
+          bar.style.height = 'var(--bar-height)';
+        }
+      });
+    };
+    setChartBarHeights();
+    const observer = new MutationObserver(setChartBarHeights);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [allTimeOrders]);
+
+  useEffect(() => {
+    const setProgressBarWidths = () => {
+      document.querySelectorAll('.progress-bar-fill[data-width]').forEach((bar) => {
+        const widthPercent = bar.getAttribute('data-width');
+        bar.style.setProperty('--bar-width', `${widthPercent}%`);
+        bar.style.width = 'var(--bar-width)';
+      });
+    };
+    setProgressBarWidths();
+    const observer = new MutationObserver(setProgressBarWidths);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
   // Chart height: 120px on mobile, 180px on desktop
   const chartHeight = isMobile ? 120 : 180;
   // Early return if loading to avoid unnecessary calculations
@@ -43,7 +79,6 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   // Use raw orders array directly for all-time calculations to ensure no orders are excluded
-  const allTimeOrders = Array.isArray(orders) ? orders : [];
   const allTimeTotal = allTimeOrders.length;
 
   // Simple direct calculation: Sum totalAmount field from all orders, one by one
@@ -469,6 +504,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     return (
       <div className='admin-content'>
         <div className='dashboard-empty-state'>
+          <i className='fa-solid fa-chart-line dashboard-empty-state-icon'></i>
           <h2>No Orders Found</h2>
           <p className='dashboard-empty-text'>No orders are currently loaded. Please check:</p>
           <ul className='dashboard-empty-list'>
@@ -496,14 +532,42 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
             className='admin-stats'
             key={`stats-${allTimeTotal}-${allTimeRevenue}-${allTimeUnpaidAmount}`}
           >
-            <div className='stat-card'>
+            <div
+              className='stat-card stat-card-primary stat-card-clickable'
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (setActiveTab) {
+                  setActiveTab('analytics');
+                }
+              }}
+              title='Click to view detailed analytics'
+              role='button'
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  if (setActiveTab) {
+                    setActiveTab('analytics');
+                  }
+                }
+              }}
+            >
               <i className='fa-solid fa-rupee-sign'></i>
               <div>
                 <h3 data-revenue={allTimeRevenue} data-expected='374345'>
                   ₹{formatCurrency(allTimeRevenue)}
                 </h3>
                 <p>Total Revenue</p>
-                <p className='stat-card-subtitle'>
+                <p
+                  className={`stat-card-subtitle ${
+                    isNewGrowth
+                      ? 'stat-card-subtitle-success'
+                      : yearOverYearGrowth >= 0
+                      ? 'stat-card-subtitle-success'
+                      : 'stat-card-subtitle-danger'
+                  }`}
+                >
                   {isNewGrowth
                     ? 'New ↑'
                     : `${yearOverYearGrowth >= 0 ? '+' : ''}${yearOverYearGrowth.toFixed(1)}% ${
@@ -512,7 +576,27 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 </p>
               </div>
             </div>
-            <div className='stat-card'>
+            <div
+              className='stat-card stat-card-clickable'
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (setActiveTab) {
+                  setActiveTab('allOrdersData');
+                }
+              }}
+              title='Click to view all orders'
+              role='button'
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  if (setActiveTab) {
+                    setActiveTab('allOrdersData');
+                  }
+                }
+              }}
+            >
               <i className='fa-solid fa-shopping-cart icon-color-accent'></i>
               <div>
                 <h3>{allTimeTotal}</h3>
@@ -520,7 +604,27 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 <p className='stat-card-subtitle'>All time</p>
               </div>
             </div>
-            <div className='stat-card'>
+            <div
+              className='stat-card stat-card-clickable'
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (setActiveTab) {
+                  setActiveTab('pendingAmounts');
+                }
+              }}
+              title='Click to view pending payments'
+              role='button'
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  if (setActiveTab) {
+                    setActiveTab('pendingAmounts');
+                  }
+                }
+              }}
+            >
               <i className='fa-solid fa-exclamation-triangle stat-card-icon-warning'></i>
               <div>
                 <h3 data-pending={allTimeUnpaidAmount} data-expected='7858'>
@@ -532,7 +636,27 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 </p>
               </div>
             </div>
-            <div className='stat-card'>
+            <div
+              className='stat-card stat-card-clickable'
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (setActiveTab) {
+                  setActiveTab('customers');
+                }
+              }}
+              title='Click to view all customers'
+              role='button'
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  if (setActiveTab) {
+                    setActiveTab('customers');
+                  }
+                }
+              }}
+            >
               <i className='fa-solid fa-users icon-color-accent'></i>
               <div>
                 <h3>{allUniqueAddresses}</h3>
@@ -603,8 +727,8 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                           >
                             <div className='chart-bars-container'>
                               {yearEntries.map(([year, data]) => {
-                                const barHeight =
-                                  maxRevenue > 0 ? (data.revenue / maxRevenue) * chartHeight : 0;
+                                const barHeightPercent =
+                                  maxRevenue > 0 ? (data.revenue / maxRevenue) * 100 : 0;
                                 const isCurrentYear = parseInt(year) === now.getFullYear();
                                 const isLastYear = parseInt(year) === now.getFullYear() - 1;
 
@@ -627,6 +751,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                           ? 'chart-bar-last-year'
                                           : 'chart-bar-other-year'
                                       }`}
+                                      data-height={barHeightPercent.toFixed(2)}
                                       title={`${monthData.monthName} ${year}: ₹${formatCurrency(
                                         data.revenue
                                       )} (${data.orders} orders)`}
@@ -648,7 +773,11 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                       });
                     })()
                   ) : (
-                    <div className='empty-state-text'>No revenue data available</div>
+                    <div className='dashboard-empty-state'>
+                      <i className='fa-solid fa-chart-line dashboard-empty-state-icon'></i>
+                      <p className='empty-state-text'>No revenue data available</p>
+                      <p className='dashboard-empty-text'>Start adding orders to see your revenue trends</p>
+                    </div>
                   )}
                 </div>
                 {sortedYears.length > 1 && (
@@ -710,12 +839,10 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                           >
                             <div className='chart-bars-container'>
                               {yearEntries.map(([year, data]) => {
-                                const cashHeight =
-                                  maxAmount > 0 ? ((data.cash || 0) / maxAmount) * chartHeight : 0;
-                                const onlineHeight =
-                                  maxAmount > 0
-                                    ? ((data.online || 0) / maxAmount) * chartHeight
-                                    : 0;
+                                const cashHeightPercent =
+                                  maxAmount > 0 ? ((data.cash || 0) / maxAmount) * 100 : 0;
+                                const onlineHeightPercent =
+                                  maxAmount > 0 ? ((data.online || 0) / maxAmount) * 100 : 0;
                                 const isCurrentYear = parseInt(year) === now.getFullYear();
                                 const isLastYear = parseInt(year) === now.getFullYear() - 1;
 
@@ -739,6 +866,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                             ? 'chart-bar-last-year'
                                             : 'chart-bar-other-year'
                                         }`}
+                                        data-height={cashHeightPercent.toFixed(2)}
                                         title={`${
                                           monthData.monthName
                                         } ${year} - Cash: ₹${formatCurrency(data.cash || 0)}`}
@@ -753,6 +881,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                             ? 'chart-bar-last-year'
                                             : 'chart-bar-other-year'
                                         }`}
+                                        data-height={onlineHeightPercent.toFixed(2)}
                                         title={`${
                                           monthData.monthName
                                         } ${year} - Online: ₹${formatCurrency(data.online || 0)}`}
@@ -775,7 +904,11 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                       });
                     })()
                   ) : (
-                    <div className='empty-state-text'>No payment mode data available</div>
+                    <div className='dashboard-empty-state'>
+                      <i className='fa-solid fa-chart-bar dashboard-empty-state-icon'></i>
+                      <p className='empty-state-text'>No payment mode data available</p>
+                      <p className='dashboard-empty-text'>Payment data will appear here once orders are added</p>
+                    </div>
                   )}
                 </div>
                 {sortedYears.length > 1 && (
@@ -824,7 +957,13 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 </h3>
                 <button
                   className='btn btn-ghost btn-small'
-                  onClick={() => setActiveTab('allOrdersData')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (setActiveTab) {
+                      setActiveTab('allOrdersData');
+                    }
+                  }}
                 >
                   View All Orders →
                 </button>

@@ -28,9 +28,6 @@ const Sidebar = ({
             }}
             onClick={() => setActiveTab('dashboard')}
           />
-          <div className='sidebar-logo-fallback' onClick={() => setActiveTab('dashboard')}>
-            <i className='fa-solid fa-shield-halved'></i>
-          </div>
         </div>
       </div>
 

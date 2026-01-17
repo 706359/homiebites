@@ -1,25 +1,55 @@
 .dashboard-empty-state {
-  padding: 2rem;
+  padding: var(--admin-spacing-8xl, 48px) var(--admin-spacing-4xl, 24px);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.dashboard-empty-state-icon {
+  font-size: var(--admin-icon-size-4xl, 42px);
+  color: var(--admin-text-light, #9ca3af);
+  margin-bottom: var(--admin-spacing-xl, 16px);
+  opacity: 0.5;
+}
+
+.dashboard-empty-state h2 {
+  font-size: var(--admin-font-size-h2, 22px);
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+  margin: 0 0 var(--admin-spacing-base-size, 12px) 0;
 }
 
 .dashboard-empty-text {
-  margin-top: 1rem;
-  color: #666;
+  margin-top: var(--admin-spacing-base-size, 12px);
+  color: var(--admin-text-secondary, #6b7280);
+  font-size: var(--admin-font-size-body, 14px);
+  margin-bottom: var(--admin-spacing-xl, 16px);
 }
 
 .dashboard-empty-list {
-  margin-top: 1rem;
+  margin-top: var(--admin-spacing-base-size, 12px);
   text-align: left;
   display: inline-block;
+  list-style: disc;
+  padding-left: var(--admin-spacing-2xl, 20px);
 }
 
-.dashboard-empty-button {
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
+.dashboard-empty-list li {
+  margin-bottom: var(--admin-spacing-xs, 6px);
+  color: var(--admin-text-secondary, #6b7280);
 }
 
 .dashboard-chart-legend {
   margin-top: 8px;
+}
+
+.dashboard-empty-button {
+  margin-top: var(--admin-spacing-xl, 16px);
+}
+
+.widget {
+  /* Widget class for dashboard cards - ensures consistent styling */
 }

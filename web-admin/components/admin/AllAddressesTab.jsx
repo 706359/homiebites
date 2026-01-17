@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
-import './styles/all-addresses-tab.css';
+
 import { formatDate, formatDateShort, parseOrderDate } from './utils/dateUtils.js';
 import { formatCurrency, sortOrdersByOrderId } from './utils/orderUtils.js';
 

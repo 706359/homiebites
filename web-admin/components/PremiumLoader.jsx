@@ -17,14 +17,14 @@ const PremiumLoader = ({ message = 'Loading...', size = 'large', showText = true
         <div className='premium-loader-logo-container'>
           <img
             src='/logo.png'
-            alt='HomieBites'
+            alt='Logo'
             className='premium-loader-logo'
             onError={(e) => {
               e.target.style.display = 'none';
               e.target.nextSibling.style.display = 'flex';
             }}
           />
-          <div className='premium-loader-logo-fallback'>HomieBites</div>
+          <div className='premium-loader-logo-fallback'></div>
         </div>
       </div>
 

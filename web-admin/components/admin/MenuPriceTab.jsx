@@ -57,16 +57,16 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
   const loadMenuItems = async () => {
     setLoadingMenu(true);
     try {
+      console.log('[Menu Load] Starting to load menu items...');
       const response = await api.getMenu();
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Menu Load] Backend response:', {
-          success: response?.success,
-          hasData: !!response?.data,
-          isArray: Array.isArray(response?.data),
-          dataLength: response?.data?.length || 0,
-        });
-      }
+      console.log('[Menu Load] Backend response:', {
+        success: response?.success,
+        hasData: !!response?.data,
+        isArray: Array.isArray(response?.data),
+        dataLength: response?.data?.length || 0,
+        responseData: response?.data,
+      });
 
       if (response.success && response.data && Array.isArray(response.data)) {
         const totalItems = response.data.reduce((sum, cat) => sum + (cat.items?.length || 0), 0);
@@ -102,37 +102,64 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           });
         }
 
+        console.log('[Menu Load] Setting menu items:', {
+          itemsCount: flattenedItems.length,
+          items: flattenedItems.map((item) => ({ name: item.name, category: item.category })),
+        });
+
         setMenuItems(flattenedItems);
 
         const defaultCategories = ['Breakfast', 'Lunch', 'Dinner'];
 
         const uniqueCategories = [...new Set(flattenedItems.map((item) => item.category))];
 
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[Menu Load] Category processing:', {
-            defaultCategories,
-            uniqueCategoriesFromItems: uniqueCategories,
-          });
-        }
+        console.log('[Menu Load] Category processing:', {
+          defaultCategories,
+          uniqueCategoriesFromItems: uniqueCategories,
+        });
 
         const allCategories = [...new Set([...defaultCategories, ...uniqueCategories])];
         setCategories(allCategories);
+        
+        console.log('[Menu Load] Menu loaded successfully:', {
+          totalItems: flattenedItems.length,
+          categories: allCategories,
+        });
       } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('[Menu Load] Invalid response structure:', response);
-        }
+        console.warn('[Menu Load] Invalid response structure:', response);
+        console.warn('[Menu Load] Response details:', {
+          response: response,
+          success: response?.success,
+          data: response?.data,
+          dataType: typeof response?.data,
+        });
         setMenuItems([]);
         setOriginalCategories([]);
-
         setCategories(['Breakfast', 'Lunch', 'Dinner']);
+        
+        if (showNotification) {
+          showNotification(
+            'No menu items found. Click "Import Menu Items" to add sample items, or add items manually.',
+            'info'
+          );
+        }
       }
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('[Menu Load] Error loading menu items:', error);
-      }
+      console.error('[Menu Load] Error loading menu items:', error);
+      console.error('[Menu Load] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      });
       setMenuItems([]);
-
       setCategories(['Breakfast', 'Lunch', 'Dinner']);
+      
+      if (showNotification) {
+        showNotification(
+          'Error loading menu items: ' + (error.message || 'Unknown error') + '. Please try refreshing the page.',
+          'error'
+        );
+      }
     } finally {
       setLoadingMenu(false);
     }
@@ -981,6 +1008,17 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       </div>
     );
   }
+
+  // Debug logging
+  console.log('[MenuPriceTab Render] Current state:', {
+    menuItemsCount: menuItems.length,
+    filteredMenuItemsCount: filteredMenuItems.length,
+    loading,
+    loadingMenu,
+    searchQuery,
+    filterCategory,
+    categoriesCount: categories.length,
+  });
 
   return (
     <div className='admin-content'>

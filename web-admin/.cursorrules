@@ -8,6 +8,10 @@
 
 **To ensure compliance, you MUST use the `read_file` tool to read `.cursorrules` as the FIRST action:**
 
+**CRITICAL RULE**: Never use inline style, only use classes.
+**CRITICAL RULE**: Always check duplicate for class before creating new.
+dont create new css file witout conformation extra from current ones.
+
 1. **MANDATORY FIRST STEP - Before ANY task:**
 
    ```javascript

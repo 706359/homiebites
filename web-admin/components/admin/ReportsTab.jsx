@@ -828,7 +828,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           <div className='dashboard-card text-center'>
             <i className='fa-solid fa-chart-bar icon-32 stat-card-icon-accent icon-mb-12'></i>
             <button
-              className='btn btn-primary width-full mt-8'
+              className='btn btn-primary '
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedReportType('Sales Report');
@@ -844,7 +844,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           <div className='dashboard-card text-center'>
             <i className='fa-solid fa-money-bill-wave icon-32 stat-card-icon-success icon-mb-12'></i>
             <button
-              className='btn btn-primary width-full mt-8'
+              className='btn btn-primary'
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedReportType('Payment Report');
@@ -860,7 +860,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           <div className='dashboard-card text-center'>
             <i className='fa-solid fa-calendar-alt icon-32 stat-card-icon-secondary icon-mb-12'></i>
             <button
-              className='btn btn-primary width-full mt-8'
+              className='btn btn-primary'
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedReportType('Monthly Statement');
@@ -876,7 +876,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           <div className='dashboard-card text-center'>
             <i className='fa-solid fa-map-marker-alt icon-32 stat-card-icon-accent icon-mb-12'></i>
             <button
-              className='btn btn-primary width-full mt-8'
+              className='btn btn-primary'
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedReportType('Area-wise Report');
@@ -893,7 +893,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           <div className='dashboard-card text-center'>
             <i className='fa-solid fa-users icon-32 stat-card-icon-accent icon-mb-12'></i>
             <button
-              className='btn btn-primary width-full mt-8'
+              className='btn btn-primary'
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedReportType('Customer Report');
@@ -909,7 +909,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
           <div className='dashboard-card text-center'>
             <i className='fa-solid fa-chart-line icon-32 stat-card-icon-success icon-mb-12'></i>
             <button
-              className='btn btn-primary width-full mt-8'
+              className='btn btn-primary'
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedReportType('Growth Report');
@@ -936,7 +936,7 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
               </button>
             </div>
             <div className='modal-body'>
-              <div className='form-grid'>
+              <div className='form-grid report-generator-grid'>
                 <div className='form-group'>
                   <label>Report Type</label>
                   <select
@@ -956,27 +956,18 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
 
                 <div className='form-group'>
                   <label>Date Range</label>
-                  <div className='flex-start gap-12'>
-                    <input
-                      type='date'
-                      className='input-field'
-                      value={reportDateFrom}
-                      onChange={(e) => setReportDateFrom(e.target.value)}
-                      placeholder='From'
-                    />
-                    <input
-                      type='date'
-                      className='input-field'
-                      value={reportDateTo}
-                      onChange={(e) => setReportDateTo(e.target.value)}
-                      placeholder='To'
-                    />
-                  </div>
+                  <input
+                    type='date'
+                    className='input-field'
+                    value={reportDateFrom}
+                    onChange={(e) => setReportDateFrom(e.target.value)}
+                    placeholder='mm/dd/y'
+                  />
                 </div>
 
-                <div className='form-group grid-col-full'>
+                <div className='form-group'>
                   <label>Filters</label>
-                  <div className='flex-column-gap-12'>
+                  <div className='report-filters-group'>
                     <label className='form-label-inline'>
                       <input
                         type='checkbox'
@@ -1018,9 +1009,9 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
                   </div>
                 </div>
 
-                <div className='form-group grid-col-full'>
+                <div className='form-group'>
                   <label>Format</label>
-                  <div className='flex-start gap-16 mt-8'>
+                  <div className='report-format-group'>
                     <label className='form-label-inline'>
                       <input
                         type='radio'

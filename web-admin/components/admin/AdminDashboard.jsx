@@ -99,6 +99,18 @@ const AdminDashboard = () => {
     cancelAll,
   } = useFastDataSync();
 
+  // Helper function for color conversion
+  const hexToRgb = (hex) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : null;
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('homiebites_token');
     const adminFlag = localStorage.getItem('homiebites_admin');
@@ -174,9 +186,38 @@ const AdminDashboard = () => {
 
     const defaultFontSize = savedFontSize || 'medium';
     const fontSize = fontSizeMap[defaultFontSize] || '16px';
+    
+    // Set base font size on both :root and .admin-dashboard
     root.style.setProperty('--admin-base-font-size', fontSize);
+    if (adminDashboard) {
+      adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
+      adminDashboard.style.fontSize = fontSize;
+    }
     document.body.style.fontSize = fontSize;
-    // CSS variables are now set on :root, so sidebar will inherit them automatically
+
+    // Calculate and set all derived font sizes on :root and .admin-dashboard
+    const baseSize = parseFloat(fontSize);
+    if (!isNaN(baseSize)) {
+      const derivedSizes = {
+        '--admin-font-size-h1': `${baseSize * 1.75}px`,
+        '--admin-font-size-h2': `${baseSize * 1.375}px`,
+        '--admin-font-size-h3': `${baseSize * 1.125}px`,
+        '--admin-font-size-h4': `${baseSize}px`,
+        '--admin-font-size-body-lg': `${baseSize * 0.9375}px`,
+        '--admin-font-size-body': `${baseSize * 0.875}px`,
+        '--admin-font-size-body-sm': `${baseSize * 0.8125}px`,
+        '--admin-font-size-body-xs': `${baseSize * 0.75}px`,
+        '--admin-font-size-body-xxs': `${baseSize * 0.6875}px`,
+        '--admin-font-size-caption': `${baseSize * 0.625}px`,
+      };
+
+      Object.entries(derivedSizes).forEach(([key, value]) => {
+        root.style.setProperty(key, value);
+        if (adminDashboard) {
+          adminDashboard.style.setProperty(key, value);
+        }
+      });
+    }
 
     if (savedTheme === 'dark') {
       document.documentElement.classList.add('dark-theme');
@@ -243,24 +284,174 @@ const AdminDashboard = () => {
   }, [isMounted]);
 
   useEffect(() => {
-    if (settings) {
-      if (settings.theme !== undefined) {
-        localStorage.setItem('homiebites_theme', settings.theme);
+    if (!isMounted || typeof window === 'undefined' || !settings) return;
+
+    const root = document.documentElement;
+    const adminDashboard = document.querySelector('.admin-dashboard');
+
+    if (settings.theme !== undefined) {
+      localStorage.setItem('homiebites_theme', settings.theme);
+    }
+    // Get current theme to determine appropriate alpha values
+    const savedTheme = settings.theme !== undefined ? settings.theme : localStorage.getItem('homiebites_theme') || 'light';
+    const isDarkTheme = savedTheme === 'dark' || 
+                       (savedTheme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) ||
+                       document.documentElement.classList.contains('dark-theme');
+
+    if (settings.primaryColor !== undefined) {
+      localStorage.setItem('homiebites_primary_color', settings.primaryColor);
+      const primaryColor = settings.primaryColor;
+      const rgb = hexToRgb(primaryColor);
+      
+      // Set on both :root and .admin-dashboard
+      root.style.setProperty('--admin-accent', primaryColor);
+      if (adminDashboard) {
+        adminDashboard.style.setProperty('--admin-accent', primaryColor);
       }
-      if (settings.primaryColor !== undefined) {
-        localStorage.setItem('homiebites_primary_color', settings.primaryColor);
-      }
-      if (settings.secondaryColor !== undefined) {
-        localStorage.setItem('homiebites_secondary_color', settings.secondaryColor);
-      }
-      if (settings.fontSize !== undefined) {
-        localStorage.setItem('homiebites_font_size', settings.fontSize);
-      }
-      if (settings.fontFamily !== undefined) {
-        localStorage.setItem('homiebites_font_family', settings.fontFamily);
+      
+      if (rgb) {
+        // Use appropriate alpha for light/dark theme
+        const accentLightAlpha = isDarkTheme ? 0.15 : 0.1;
+        const accentLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${accentLightAlpha})`;
+        root.style.setProperty('--admin-accent-light', accentLight);
+        if (adminDashboard) {
+          adminDashboard.style.setProperty('--admin-accent-light', accentLight);
+        }
       }
     }
-  }, [settings]);
+    if (settings.secondaryColor !== undefined) {
+      localStorage.setItem('homiebites_secondary_color', settings.secondaryColor);
+      const secondaryColor = settings.secondaryColor;
+      const rgb = hexToRgb(secondaryColor);
+      
+      // Set on both :root and .admin-dashboard
+      root.style.setProperty('--admin-secondary', secondaryColor);
+      if (adminDashboard) {
+        adminDashboard.style.setProperty('--admin-secondary', secondaryColor);
+      }
+      
+      if (rgb) {
+        // Use appropriate alpha for light/dark theme
+        const secondaryLightAlpha = isDarkTheme ? 0.15 : 0.12;
+        const secondaryLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${secondaryLightAlpha})`;
+        root.style.setProperty('--admin-secondary-light', secondaryLight);
+        if (adminDashboard) {
+          adminDashboard.style.setProperty('--admin-secondary-light', secondaryLight);
+        }
+      }
+    }
+    if (settings.theme !== undefined) {
+      // Apply theme classes when theme changes
+      const isDark = settings.theme === 'dark' || 
+                     (settings.theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      
+      // Remove all theme classes first
+      root.classList.remove('dark-theme', 'light-theme');
+      if (adminDashboard) {
+        adminDashboard.classList.remove('dark-theme', 'light-theme');
+      }
+      
+      // Add appropriate theme class
+      if (isDark) {
+        root.classList.add('dark-theme');
+        root.classList.remove('light-theme');
+        if (adminDashboard) {
+          adminDashboard.classList.add('dark-theme');
+          adminDashboard.classList.remove('light-theme');
+        }
+      } else {
+        root.classList.add('light-theme');
+        root.classList.remove('dark-theme');
+        if (adminDashboard) {
+          adminDashboard.classList.add('light-theme');
+          adminDashboard.classList.remove('dark-theme');
+        }
+      }
+      
+      // Force reflow to ensure CSS variables update
+      void root.offsetHeight;
+      if (adminDashboard) {
+        void adminDashboard.offsetHeight;
+      }
+      
+      // Re-apply colors with correct alpha values after theme change
+      if (settings.primaryColor) {
+        const rgb = hexToRgb(settings.primaryColor);
+        if (rgb) {
+          const accentLightAlpha = isDark ? 0.15 : 0.1;
+          const accentLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${accentLightAlpha})`;
+          root.style.setProperty('--admin-accent-light', accentLight);
+          if (adminDashboard) {
+            adminDashboard.style.setProperty('--admin-accent-light', accentLight);
+          }
+        }
+      }
+      
+      if (settings.secondaryColor) {
+        const rgb = hexToRgb(settings.secondaryColor);
+        if (rgb) {
+          const secondaryLightAlpha = isDark ? 0.15 : 0.12;
+          const secondaryLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${secondaryLightAlpha})`;
+          root.style.setProperty('--admin-secondary-light', secondaryLight);
+          if (adminDashboard) {
+            adminDashboard.style.setProperty('--admin-secondary-light', secondaryLight);
+          }
+        }
+      }
+    }
+    if (settings.fontSize !== undefined) {
+      localStorage.setItem('homiebites_font_size', settings.fontSize);
+      
+      // Apply font size immediately
+      const fontSizeMap = {
+        small: '14px',
+        medium: '16px',
+        large: '18px',
+        'extra-large': '20px',
+      };
+      const fontSize = fontSizeMap[settings.fontSize] || '16px';
+      
+      root.style.setProperty('--admin-base-font-size', fontSize);
+      if (adminDashboard) {
+        adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
+        adminDashboard.style.fontSize = fontSize;
+      }
+      document.body.style.fontSize = fontSize;
+
+      // Calculate and set all derived font sizes
+      const baseSize = parseFloat(fontSize);
+      if (!isNaN(baseSize)) {
+        const derivedSizes = {
+          '--admin-font-size-h1': `${baseSize * 1.75}px`,
+          '--admin-font-size-h2': `${baseSize * 1.375}px`,
+          '--admin-font-size-h3': `${baseSize * 1.125}px`,
+          '--admin-font-size-h4': `${baseSize}px`,
+          '--admin-font-size-body-lg': `${baseSize * 0.9375}px`,
+          '--admin-font-size-body': `${baseSize * 0.875}px`,
+          '--admin-font-size-body-sm': `${baseSize * 0.8125}px`,
+          '--admin-font-size-body-xs': `${baseSize * 0.75}px`,
+          '--admin-font-size-body-xxs': `${baseSize * 0.6875}px`,
+          '--admin-font-size-caption': `${baseSize * 0.625}px`,
+        };
+
+        Object.entries(derivedSizes).forEach(([key, value]) => {
+          root.style.setProperty(key, value);
+          if (adminDashboard) {
+            adminDashboard.style.setProperty(key, value);
+          }
+        });
+      }
+    }
+    if (settings.fontFamily !== undefined) {
+      localStorage.setItem('homiebites_font_family', settings.fontFamily);
+      const fontFamily = `'${settings.fontFamily}', sans-serif`;
+      root.style.setProperty('--font-primary', fontFamily);
+      document.body.style.fontFamily = fontFamily;
+      if (adminDashboard) {
+        adminDashboard.style.fontFamily = fontFamily;
+      }
+    }
+  }, [settings, isMounted]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && activeTab) {
@@ -328,17 +519,6 @@ const AdminDashboard = () => {
     };
   }, [isMounted]);
 
-  const hexToRgb = (hex) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
-        }
-      : null;
-  };
-
   const handleLogout = async () => {
     showConfirmation({
       title: 'Logout',
@@ -351,24 +531,24 @@ const AdminDashboard = () => {
         try {
           // Perform logout cleanup
           await logout();
-          
+
           // Show success message
           showNotification({
             type: 'success',
             message: 'Logged out successfully',
             duration: getNotificationDuration('success'),
           });
-          
+
           // Add small delay to show success message before redirect
           await new Promise((resolve) => setTimeout(resolve, 500));
-          
+
           // Redirect to admin login page consistently
           window.location.href = '/admin';
         } catch (error) {
           if (process.env.NODE_ENV === 'development') {
             if (process.env.NODE_ENV === 'development') {
-            console.error('[AdminDashboard] Error during logout:', error);
-          }
+              console.error('[AdminDashboard] Error during logout:', error);
+            }
           }
           // Still redirect even if there's an error
           await logout();
@@ -420,8 +600,8 @@ const AdminDashboard = () => {
         (error) => {
           if (process.env.NODE_ENV === 'development') {
             if (process.env.NODE_ENV === 'development') {
-          console.error('Error adding order:', error);
-        }
+              console.error('Error adding order:', error);
+            }
           }
           if (showNotification) {
             const errorMessage = error?.message || getNotificationMessage('orders', 'addError');

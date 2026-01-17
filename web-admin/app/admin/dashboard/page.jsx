@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import AdminDashboard from '../../../components/admin/AdminDashboard';
 import { NotificationProvider } from '../../../components/admin/contexts/NotificationContext.jsx';
 import NotificationWrapper from '../../../components/admin/NotificationWrapper.jsx';
+import '../../../styles/globals.css';
 import '../../../components/admin/styles/index.css';
 import ErrorBoundary from '../../../components/ErrorBoundary';
 import FontSettingsLoader from '../../../components/FontSettingsLoader';

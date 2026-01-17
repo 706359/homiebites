@@ -169,7 +169,6 @@ const Header = ({ onOrderClick }) => {
                 e.target.nextSibling.style.display = 'block';
               }}
             />
-            <span className='brand-name-fallback'>HOMIEBITES</span>
           </Link>
         </div>
 

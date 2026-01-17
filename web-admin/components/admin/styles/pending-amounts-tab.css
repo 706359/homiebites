@@ -130,8 +130,10 @@
 .pending-timeline-bar {
   width: 100%;
   min-height: 4px;
+  height: var(--bar-height, 4px);
   background: var(--admin-success, #16a34a);
   border-radius: 4px 4px 0 0;
+  transition: height 0.3s ease;
 }
 
 .pending-timeline-label {
@@ -189,17 +191,52 @@
   overflow: hidden;
 }
 
-.pending-payment-mode-bar-fill {
-  height: 100%;
-  background: var(--admin-accent, #449031);
-  border-radius: 4px;
-  transition: width 0.5s ease;
-}
-
 .pending-payment-mode-bar-container {
   width: 100%;
   height: 20px;
-  background: var(--admin-glass-border);
+  background: var(--admin-bg-tertiary, #f1f5f9);
   border-radius: 10px;
   overflow: hidden;
+}
+
+.pending-payment-mode-bar-fill {
+  height: 100%;
+  width: var(--bar-width, 0%);
+  background: var(--admin-accent, #449031);
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+.pending-table-empty-message {
+  text-align: center;
+  padding: var(--admin-spacing-9xl, 64px) var(--admin-spacing-6xl, 32px);
+  vertical-align: middle;
+}
+
+.pending-table-empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--admin-spacing-lg, 12px);
+}
+
+.pending-table-empty-icon {
+  font-size: var(--admin-icon-size-4xl, 40px);
+  color: var(--admin-text-light, #94a3b8);
+  opacity: 0.5;
+  margin-bottom: var(--admin-spacing-sm, 8px);
+}
+
+.pending-table-empty-text {
+  font-size: var(--admin-font-size-h4, 16px);
+  font-weight: 600;
+  color: var(--admin-text, #1e293b);
+  margin: 0;
+}
+
+.pending-table-empty-subtext {
+  font-size: var(--admin-font-size-body, 14px);
+  color: var(--admin-text-secondary, #64748b);
+  margin: 0;
 }

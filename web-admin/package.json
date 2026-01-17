@@ -12,7 +12,10 @@
     "vite:dev": "vite",
     "vite:build": "vite build",
     "vite:preview": "vite preview",
-    "push": "git add . && git commit -m \"$(./scripts/generate-commit-message.sh)\" && git push"
+    "push": "git add . && git commit -m \"$(./scripts/generate-commit-message.sh)\" && git push",
+    "validate-css": "node scripts/validate-css.js",
+    "validate-css:all": "node scripts/validate-css.js",
+    "prebuild": "npm run validate-css:all"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.6",
@@ -37,6 +40,7 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.37.5",
     "postcss": "^8.5.6",
+    "postcss-import": "^16.1.1",
     "tailwindcss": "^4.1.18",
     "vite": "^7.3.1"
   }

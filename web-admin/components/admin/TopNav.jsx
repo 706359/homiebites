@@ -177,12 +177,16 @@ const TopNav = ({
           {onRefresh && (
             <button
               className={`top-nav-search-btn tooltip-wrapper ${refreshing ? 'opacity-70' : ''}`}
+              onClick={handleRefresh}
+              title='Refresh'
+              aria-label='Refresh'
             >
               {refreshing ? (
                 <i className='fa-solid fa-spinner fa-spin'></i>
               ) : (
                 <i className='fa-solid fa-rotate'></i>
               )}
+              <span className='tooltip'>Refresh</span>
             </button>
           )}
           {onNewOrder && (

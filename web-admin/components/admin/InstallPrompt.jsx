@@ -71,16 +71,6 @@ const InstallPrompt = () => {
     };
   }, [isAdminPage]);
 
-  const handleInstallClick = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setDeferredPrompt(null);
-      }
-    }
-  };
-
   const handleIOSDismiss = () => {
     setShowIOSPrompt(false);
     localStorage.setItem('pwa-ios-prompt-seen', 'true');
@@ -121,19 +111,6 @@ const InstallPrompt = () => {
             Got it!
           </button>
         </div>
-      </div>
-    );
-  }
-
-  if (deferredPrompt) {
-    return (
-      <div className='install-prompt-button-container install-prompt-fixed'>
-        <button
-          onClick={handleInstallClick}
-          className='btn btn-primary install-prompt-button install-prompt-btn-style'
-        >
-          <i className='fa-solid fa-download'></i>
-        </button>
       </div>
     );
   }

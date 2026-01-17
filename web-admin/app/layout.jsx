@@ -4,8 +4,8 @@ import ClientLayout from './ClientLayout';
 
 export const metadata = {
   title: {
-    default: 'HomieBites - Premium Tiffin Service',
-    template: '%s | HomieBites',
+    default: 'Premium Tiffin Service',
+    template: '%s',
   },
   description:
     'Delicious home-cooked vegetarian meals delivered to your doorstep. Daily and monthly tiffin subscriptions available in Panchsheel Greens and nearby areas.',
@@ -76,7 +76,10 @@ export default function RootLayout({ children }) {
         <link rel='apple-touch-icon' href='/logo.png' />
         <link rel='manifest' href='/manifest.json' />
         <meta name='theme-color' content='#FF6B35' />
-        <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover, shrink-to-fit=no' />
+        <meta
+          name='viewport'
+          content='width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover, shrink-to-fit=no'
+        />
         <link
           href='https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&display=swap'
           rel='stylesheet'

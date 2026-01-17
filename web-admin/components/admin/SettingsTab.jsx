@@ -16,7 +16,7 @@ const SettingsTab = ({
   const [activeTab, setActiveTab] = useState('general');
 
   useAutoKeyboardAvoidance({
-    containerSelector: '.settings-tab-content-enhanced',
+    containerSelector: '.admin-content',
     inputSelector: 'input, textarea, select',
   });
 
@@ -89,44 +89,88 @@ const SettingsTab = ({
   const applyTheme = (theme) => {
     try {
       const adminDashboard = document.querySelector('.admin-dashboard');
+      const root = document.documentElement;
+      
       if (!adminDashboard) {
         return;
       }
 
-      const preservedBgSecondary =
-        getComputedStyle(adminDashboard).getPropertyValue('--admin-bg-secondary') || '#f5f5f7';
-      const preservedBg =
-        getComputedStyle(adminDashboard).getPropertyValue('--admin-bg') || '#ffffff';
-      const preservedBgTertiary =
-        getComputedStyle(adminDashboard).getPropertyValue('--admin-bg-tertiary') || '#fafafa';
+      // Get current theme to determine appropriate alpha values
+      const isDarkTheme = theme?.theme === 'dark' || 
+                         (theme?.theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) ||
+                         document.documentElement.classList.contains('dark-theme');
 
+      // Apply primary color to both :root and .admin-dashboard
       if (theme && theme.primaryColor) {
-        adminDashboard.style.setProperty('--admin-accent', theme.primaryColor);
-
-        const rgb = hexToRgb(theme.primaryColor);
+        const primaryColor = theme.primaryColor;
+        const rgb = hexToRgb(primaryColor);
+        
+        // Set on :root for global access
+        root.style.setProperty('--admin-accent', primaryColor);
+        adminDashboard.style.setProperty('--admin-accent', primaryColor);
+        
         if (rgb) {
-          adminDashboard.style.setProperty(
-            '--admin-accent-light',
-            `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`
-          );
+          // Use appropriate alpha for light/dark theme
+          const accentLightAlpha = isDarkTheme ? 0.15 : 0.1;
+          const accentLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${accentLightAlpha})`;
+          
+          root.style.setProperty('--admin-accent-light', accentLight);
+          adminDashboard.style.setProperty('--admin-accent-light', accentLight);
+          
+          // Calculate hover color (darker for light theme, lighter for dark theme)
+          if (isDarkTheme) {
+            const hoverR = Math.min(255, Math.round(rgb.r * 1.15));
+            const hoverG = Math.min(255, Math.round(rgb.g * 1.15));
+            const hoverB = Math.min(255, Math.round(rgb.b * 1.15));
+            const accentHover = `rgb(${hoverR}, ${hoverG}, ${hoverB})`;
+            root.style.setProperty('--admin-accent-hover', accentHover);
+            adminDashboard.style.setProperty('--admin-accent-hover', accentHover);
+          } else {
+            const hoverR = Math.max(0, Math.round(rgb.r * 0.85));
+            const hoverG = Math.max(0, Math.round(rgb.g * 0.85));
+            const hoverB = Math.max(0, Math.round(rgb.b * 0.85));
+            const accentHover = `rgb(${hoverR}, ${hoverG}, ${hoverB})`;
+            root.style.setProperty('--admin-accent-hover', accentHover);
+            adminDashboard.style.setProperty('--admin-accent-hover', accentHover);
+          }
         }
       }
 
+      // Apply secondary color to both :root and .admin-dashboard
       if (theme && theme.secondaryColor) {
-        adminDashboard.style.setProperty('--admin-secondary', theme.secondaryColor);
-
-        const rgb = hexToRgb(theme.secondaryColor);
+        const secondaryColor = theme.secondaryColor;
+        const rgb = hexToRgb(secondaryColor);
+        
+        // Set on :root for global access
+        root.style.setProperty('--admin-secondary', secondaryColor);
+        adminDashboard.style.setProperty('--admin-secondary', secondaryColor);
+        
         if (rgb) {
-          adminDashboard.style.setProperty(
-            '--admin-secondary-light',
-            `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.12)`
-          );
+          // Use appropriate alpha for light/dark theme
+          const secondaryLightAlpha = isDarkTheme ? 0.15 : 0.12;
+          const secondaryLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${secondaryLightAlpha})`;
+          
+          root.style.setProperty('--admin-secondary-light', secondaryLight);
+          adminDashboard.style.setProperty('--admin-secondary-light', secondaryLight);
+          
+          // Calculate hover colors
+          if (isDarkTheme) {
+            const hoverR = Math.min(255, Math.round(rgb.r * 1.15));
+            const hoverG = Math.min(255, Math.round(rgb.g * 1.15));
+            const hoverB = Math.min(255, Math.round(rgb.b * 1.15));
+            const secondaryHover = `rgb(${hoverR}, ${hoverG}, ${hoverB})`;
+            root.style.setProperty('--admin-secondary-hover', secondaryHover);
+            adminDashboard.style.setProperty('--admin-secondary-hover', secondaryHover);
+          } else {
+            const hoverR = Math.max(0, Math.round(rgb.r * 0.85));
+            const hoverG = Math.max(0, Math.round(rgb.g * 0.85));
+            const hoverB = Math.max(0, Math.round(rgb.b * 0.85));
+            const secondaryHover = `rgb(${hoverR}, ${hoverG}, ${hoverB})`;
+            root.style.setProperty('--admin-secondary-hover', secondaryHover);
+            adminDashboard.style.setProperty('--admin-secondary-hover', secondaryHover);
+          }
         }
       }
-
-      adminDashboard.style.setProperty('--admin-bg-secondary', preservedBgSecondary);
-      adminDashboard.style.setProperty('--admin-bg', preservedBg);
-      adminDashboard.style.setProperty('--admin-bg-tertiary', preservedBgTertiary);
 
       const fontSizeMap = {
         small: '14px',
@@ -138,41 +182,31 @@ const SettingsTab = ({
       const fontSize = fontSizeMap[selectedFontSize] || '16px';
 
       // Set CSS variables on :root so they cascade to all elements (including sidebar)
-      document.documentElement.style.setProperty('--admin-base-font-size', fontSize);
+      root.style.setProperty('--admin-base-font-size', fontSize);
       adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
       adminDashboard.style.fontSize = fontSize;
+      document.body.style.fontSize = fontSize;
 
-      // Calculate and set all derived font sizes on :root
+      // Calculate and set all derived font sizes on :root and .admin-dashboard
       const baseSize = parseFloat(fontSize);
       if (!isNaN(baseSize)) {
-        document.documentElement.style.setProperty('--admin-font-size-h1', `${baseSize * 1.75}px`);
-        document.documentElement.style.setProperty('--admin-font-size-h2', `${baseSize * 1.375}px`);
-        document.documentElement.style.setProperty('--admin-font-size-h3', `${baseSize * 1.125}px`);
-        document.documentElement.style.setProperty('--admin-font-size-h4', `${baseSize}px`);
-        document.documentElement.style.setProperty(
-          '--admin-font-size-body-lg',
-          `${baseSize * 0.9375}px`
-        );
-        document.documentElement.style.setProperty(
-          '--admin-font-size-body',
-          `${baseSize * 0.875}px`
-        );
-        document.documentElement.style.setProperty(
-          '--admin-font-size-body-sm',
-          `${baseSize * 0.8125}px`
-        );
-        document.documentElement.style.setProperty(
-          '--admin-font-size-body-xs',
-          `${baseSize * 0.75}px`
-        );
-        document.documentElement.style.setProperty(
-          '--admin-font-size-body-xxs',
-          `${baseSize * 0.6875}px`
-        );
-        document.documentElement.style.setProperty(
-          '--admin-font-size-caption',
-          `${baseSize * 0.625}px`
-        );
+        const derivedSizes = {
+          '--admin-font-size-h1': `${baseSize * 1.75}px`,
+          '--admin-font-size-h2': `${baseSize * 1.375}px`,
+          '--admin-font-size-h3': `${baseSize * 1.125}px`,
+          '--admin-font-size-h4': `${baseSize}px`,
+          '--admin-font-size-body-lg': `${baseSize * 0.9375}px`,
+          '--admin-font-size-body': `${baseSize * 0.875}px`,
+          '--admin-font-size-body-sm': `${baseSize * 0.8125}px`,
+          '--admin-font-size-body-xs': `${baseSize * 0.75}px`,
+          '--admin-font-size-body-xxs': `${baseSize * 0.6875}px`,
+          '--admin-font-size-caption': `${baseSize * 0.625}px`,
+        };
+
+        Object.entries(derivedSizes).forEach(([key, value]) => {
+          root.style.setProperty(key, value);
+          adminDashboard.style.setProperty(key, value);
+        });
       }
 
       void adminDashboard.offsetHeight;
@@ -181,7 +215,6 @@ const SettingsTab = ({
 
       if (theme && theme.fontFamily) {
         const fontFamily = `'${theme.fontFamily}', sans-serif`;
-        const root = document.documentElement;
         root.style.setProperty('--font-primary', fontFamily);
         document.body.style.fontFamily = fontFamily;
 
@@ -190,48 +223,88 @@ const SettingsTab = ({
         }
       }
 
-      if (theme && theme.theme === 'dark') {
-        document.documentElement.classList.add('dark-theme');
-        document.documentElement.classList.remove('light-theme');
-        adminDashboard.classList.add('dark-theme');
-        adminDashboard.classList.remove('light-theme');
-
-        const allElements = adminDashboard.querySelectorAll('*');
-        allElements.forEach((el) => {
-          el.classList.add('dark-theme-applied');
-        });
-      } else if (theme && theme.theme === 'light') {
-        document.documentElement.classList.add('light-theme');
-        document.documentElement.classList.remove('dark-theme');
-        adminDashboard.classList.add('light-theme');
-        adminDashboard.classList.remove('dark-theme');
-
-        const allElements = adminDashboard.querySelectorAll('*');
-        allElements.forEach((el) => {
-          el.classList.remove('dark-theme-applied');
-        });
-      } else if (theme && theme.theme === 'auto') {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (prefersDark) {
-          document.documentElement.classList.add('dark-theme');
-          document.documentElement.classList.remove('light-theme');
+      // Apply theme classes to both :root and .admin-dashboard
+      const applyThemeClasses = (isDark) => {
+        const root = document.documentElement;
+        
+        // Remove all theme classes first
+        root.classList.remove('dark-theme', 'light-theme');
+        adminDashboard.classList.remove('dark-theme', 'light-theme');
+        
+        // Add appropriate theme class
+        if (isDark) {
+          root.classList.add('dark-theme');
+          root.classList.remove('light-theme');
           adminDashboard.classList.add('dark-theme');
           adminDashboard.classList.remove('light-theme');
-          const allElements = adminDashboard.querySelectorAll('*');
-          allElements.forEach((el) => {
-            el.classList.add('dark-theme-applied');
-          });
         } else {
-          document.documentElement.classList.add('light-theme');
-          document.documentElement.classList.remove('dark-theme');
+          root.classList.add('light-theme');
+          root.classList.remove('dark-theme');
           adminDashboard.classList.add('light-theme');
           adminDashboard.classList.remove('dark-theme');
-          const allElements = adminDashboard.querySelectorAll('*');
-          allElements.forEach((el) => {
-            el.classList.remove('dark-theme-applied');
-          });
+        }
+        
+        // Force reflow to ensure CSS variables update
+        void root.offsetHeight;
+        void adminDashboard.offsetHeight;
+        
+        // Re-apply colors with correct alpha values after theme change
+        if (theme && theme.primaryColor) {
+          const primaryColor = theme.primaryColor;
+          const rgb = hexToRgb(primaryColor);
+          if (rgb) {
+            const accentLightAlpha = isDark ? 0.15 : 0.1;
+            const accentLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${accentLightAlpha})`;
+            root.style.setProperty('--admin-accent-light', accentLight);
+            adminDashboard.style.setProperty('--admin-accent-light', accentLight);
+          }
+        }
+        
+        if (theme && theme.secondaryColor) {
+          const secondaryColor = theme.secondaryColor;
+          const rgb = hexToRgb(secondaryColor);
+          if (rgb) {
+            const secondaryLightAlpha = isDark ? 0.15 : 0.12;
+            const secondaryLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${secondaryLightAlpha})`;
+            root.style.setProperty('--admin-secondary-light', secondaryLight);
+            adminDashboard.style.setProperty('--admin-secondary-light', secondaryLight);
+          }
+        }
+      };
+
+      if (theme && theme.theme === 'dark') {
+        applyThemeClasses(true);
+      } else if (theme && theme.theme === 'light') {
+        applyThemeClasses(false);
+      } else if (theme && theme.theme === 'auto') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyThemeClasses(prefersDark);
+        
+        // Listen for system theme changes when using auto mode
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleSystemThemeChange = (e) => {
+          applyThemeClasses(e.matches);
+        };
+        
+        // Remove old listener if exists
+        if (mediaQuery.removeEventListener) {
+          mediaQuery.removeEventListener('change', handleSystemThemeChange);
+        } else {
+          mediaQuery.removeListener(handleSystemThemeChange);
+        }
+        
+        // Add new listener
+        if (mediaQuery.addEventListener) {
+          mediaQuery.addEventListener('change', handleSystemThemeChange);
+        } else {
+          mediaQuery.addListener(handleSystemThemeChange);
         }
       }
+      
+      // Dispatch theme change event
+      window.dispatchEvent(new CustomEvent('themeChanged', { 
+        detail: { theme: theme?.theme || 'light' } 
+      }));
     } catch (error) {
       console.error('Error applying theme:', error);
     }
@@ -551,34 +624,27 @@ const SettingsTab = ({
   ];
 
   return (
-    <div className='admin-content settings-tab-container'>
-      <div className='settings-tab-nav-enhanced'>
-        {settingsTabs.map((tab) => (
-          <button
-            key={tab.id}
-            className={`settings-tab-item-enhanced ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            <div className='settings-tab-item-icon'>
+    <div className='admin-content'>
+      <div className='dashboard-card filter-bar-card filter-bar-compact margin-bottom-24'>
+        <div className='filter-bar-container-compact'>
+          {settingsTabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`btn btn-ghost ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+              title={tab.description}
+            >
               <i className={`fa-solid ${tab.icon}`}></i>
-            </div>
-            <div className='settings-tab-item-content'>
-              <span className='settings-tab-item-label'>{tab.label}</span>
-              <span className='settings-tab-item-description'>{tab.description}</span>
-            </div>
-            {activeTab === tab.id && (
-              <div className='settings-tab-item-indicator'>
-                <i className='fa-solid fa-check'></i>
-              </div>
-            )}
-          </button>
-        ))}
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className='settings-tab-content-enhanced'>
+      <div className='settings-tab-content-wrapper'>
         {activeTab === 'general' && (
-          <div className='settings-content-grid'>
-            <div className='settings-section-card'>
+          <div className='admin-stats'>
+            <div className='dashboard-card'>
               <div className='settings-section-header'>
                 <div className='settings-section-icon-wrapper'>
                   <i className='fa-solid fa-building'></i>
@@ -660,7 +726,7 @@ const SettingsTab = ({
               </div>
             </div>
 
-            <div className='settings-section-card'>
+            <div className='dashboard-card'>
               <div className='settings-section-header'>
                 <div className='settings-section-icon-wrapper'>
                   <i className='fa-solid fa-indian-rupee-sign'></i>
@@ -763,14 +829,14 @@ const SettingsTab = ({
         )}
 
         {activeTab === 'orders' && (
-          <div className='settings-section-card'>
-            <div className='settings-section-header'>
-              <div className='settings-section-icon-wrapper'>
+          <div className='dashboard-card'>
+            <div className='dashboard-section-header'>
+              <div className='dashboard-section-icon-wrapper'>
                 <i className='fa-solid fa-shopping-cart'></i>
               </div>
-              <div className='settings-section-title-wrapper'>
-                <h3 className='settings-section-title'>Order Configuration</h3>
-                <p className='settings-section-subtitle'>
+              <div className='dashboard-section-title-wrapper'>
+                <h3 className='dashboard-section-title'>Order Configuration</h3>
+                <p className='dashboard-section-subtitle'>
                   Configure how orders are created and managed
                 </p>
               </div>
@@ -912,7 +978,7 @@ const SettingsTab = ({
         )}
 
         {activeTab === 'notifications' && (
-          <div className='settings-section-card'>
+          <div className='dashboard-card'>
             <div className='settings-section-header'>
               <div className='settings-section-icon-wrapper'>
                 <i className='fa-solid fa-bell'></i>
@@ -1115,8 +1181,8 @@ const SettingsTab = ({
         )}
 
         {activeTab === 'data' && (
-          <div className='settings-content-grid'>
-            <div className='settings-section-card'>
+          <div className='admin-stats'>
+            <div className='dashboard-card'>
               <div className='settings-section-header'>
                 <div className='settings-section-icon-wrapper'>
                   <i className='fa-solid fa-database'></i>
@@ -1213,7 +1279,7 @@ const SettingsTab = ({
               </div>
             </div>
 
-            <div className='settings-section-card settings-danger-zone'>
+            <div className='dashboard-card settings-danger-zone'>
               <div className='settings-section-header'>
                 <div className='settings-section-icon-wrapper danger-zone-icon-wrapper'>
                   <i className='fa-solid fa-triangle-exclamation'></i>
@@ -1264,8 +1330,8 @@ const SettingsTab = ({
         )}
 
         {activeTab === 'profile' && (
-          <div className='settings-content-grid'>
-            <div className='settings-section-card'>
+          <div className='admin-stats'>
+            <div className='dashboard-card'>
               <div className='settings-section-header'>
                 <div className='settings-section-icon-wrapper'>
                   <i className='fa-solid fa-user'></i>
@@ -1326,7 +1392,7 @@ const SettingsTab = ({
               </div>
             </div>
 
-            <div className='settings-section-card'>
+            <div className='dashboard-card'>
               <div className='settings-section-header'>
                 <div className='settings-section-icon-wrapper'>
                   <i className='fa-solid fa-lock'></i>
@@ -1398,8 +1464,7 @@ const SettingsTab = ({
         )}
 
         {activeTab === 'theme' && (
-          <div className='settings-content-grid'>
-            <div className='settings-section-card'>
+          <div className='dashboard-card'>
               <div className='settings-section-header'>
                 <div className='settings-section-icon-wrapper'>
                   <i className='fa-solid fa-palette'></i>
@@ -1477,7 +1542,15 @@ const SettingsTab = ({
                     <i className='fa-solid fa-paintbrush'></i>
                     <span>Color Theme</span>
                   </label>
-                  <button className='settings-logo-theme-btn' onClick={handleLogoTheme}>
+                  <button
+                    className={`settings-logo-theme-btn ${
+                      themeSettings.primaryColor === '#449031' &&
+                      themeSettings.secondaryColor === '#c45c2d'
+                        ? 'logo-theme-active'
+                        : ''
+                    }`}
+                    onClick={handleLogoTheme}
+                  >
                     <i className='fa-solid fa-image'></i>
                     <span>Apply Logo Theme</span>
                     {themeSettings.primaryColor === '#449031' &&
@@ -1525,6 +1598,7 @@ const SettingsTab = ({
                           className={`settings-color-preset ${
                             themeSettings.primaryColor === color ? 'active' : ''
                           }`}
+                          data-color={color}
                           onClick={() => handleThemeChange({ primaryColor: color })}
                           title={color}
                         >
@@ -1712,11 +1786,8 @@ const SettingsTab = ({
                 </button>
               </div>
             </div>
-          </div>
         )}
       </div>
-
-      {}
     </div>
   );
 };
