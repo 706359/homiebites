@@ -110,12 +110,16 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   }
 
   if (process.env.NODE_ENV === 'development') {
+    const sampleOrder = allTimeOrders.length > 0 ? allTimeOrders[0] : null;
+    let sampleAmount = null;
+    if (sampleOrder) {
+      if (sampleOrder.totalAmount !== undefined && sampleOrder.totalAmount !== null) {
+        sampleAmount = parseFloat(sampleOrder.totalAmount);
+      }
+    }
     console.log('📊 DashboardTab Calculations:', {
       ordersCount: allTimeTotal,
       totalRevenue: allTimeRevenue,
-      expectedRevenue: 374345,
-      revenueMatch: allTimeRevenue === 374345,
-      revenueDiff: 374345 - allTimeRevenue,
       sampleOrder: sampleOrder
         ? {
             orderId: sampleOrder.orderId,
@@ -151,33 +155,12 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   }
   const unpaidOrdersCount = pendingOrders.length;
 
-  // Log pending calculations
-  console.log('💰 DashboardTab Pending:', {
-    pendingOrdersCount: unpaidOrdersCount,
-    pendingAmount: allTimeUnpaidAmount,
-    expectedPending: 7858,
-    pendingMatch: allTimeUnpaidAmount === 7858,
-    pendingDiff: 7858 - allTimeUnpaidAmount,
-  });
-
-  // Critical validation - log only if values don't match expected (after calculations complete)
-  if (allTimeOrders.length > 0) {
-    if (Math.abs(allTimeRevenue - 374345) > 10) {
-      console.warn('⚠️ Revenue mismatch!', {
-        calculated: allTimeRevenue,
-        expected: 374345,
-        difference: 374345 - allTimeRevenue,
-        ordersCount: allTimeTotal,
-      });
-    }
-    if (Math.abs(allTimeUnpaidAmount - 7858) > 10) {
-      console.warn('⚠️ Pending amount mismatch!', {
-        calculated: allTimeUnpaidAmount,
-        expected: 7858,
-        difference: 7858 - allTimeUnpaidAmount,
-        pendingOrdersCount: unpaidOrdersCount,
-      });
-    }
+  // Log pending calculations (development only)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('💰 DashboardTab Pending:', {
+      pendingOrdersCount: unpaidOrdersCount,
+      pendingAmount: allTimeUnpaidAmount,
+    });
   }
 
   const allUniqueAddresses = new Set(

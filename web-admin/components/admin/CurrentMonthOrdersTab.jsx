@@ -16,6 +16,7 @@ const CurrentMonthOrdersTab = ({
   orders = [],
   onAddOrder,
   onEditOrder,
+  onUpdateOrder,
   onDeleteOrder,
   onUpdateOrderStatus,
   currentPage = 1,
@@ -638,14 +639,19 @@ const CurrentMonthOrdersTab = ({
           }}
           onSave={
             editingOrder
-              ? async () => {
-                  if (onEditOrder) {
-                    await onEditOrder(editingOrder._id || editingOrder.orderId, editingOrder);
-                    if (showNotification) showNotification('Order updated successfully', 'success');
+              ? async (orderId, cleanOrderData) => {
+                  if (onUpdateOrder) {
+                    try {
+                      await onUpdateOrder(orderId, cleanOrderData, true);
+                      setShowAddOrderModal(false);
+                      setEditingOrder(null);
+                      if (loadOrders) loadOrders();
+                    } catch (error) {
+                      if (process.env.NODE_ENV === 'development') {
+                        console.error('Error updating order:', error);
+                      }
+                    }
                   }
-                  setShowAddOrderModal(false);
-                  setEditingOrder(null);
-                  if (loadOrders) loadOrders();
                 }
               : handleSaveOrder
           }

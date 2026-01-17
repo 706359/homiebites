@@ -1,5 +1,6 @@
 export const syncSidebarFontSize = () => {
   const adminDashboard = document.querySelector('.admin-dashboard');
+  const adminSidebar = document.querySelector('.admin-sidebar');
   const root = document.documentElement;
 
   if (!adminDashboard) {
@@ -12,22 +13,34 @@ export const syncSidebarFontSize = () => {
     getComputedStyle(root).getPropertyValue('--admin-base-font-size').trim() ||
     '16px';
 
-  // Set CSS variables on :root instead of directly on sidebar to avoid inline styles
+  // Set CSS variables on :root and .admin-sidebar
   root.style.setProperty('--admin-base-font-size', baseFontSize);
+  if (adminSidebar) {
+    adminSidebar.style.setProperty('--admin-base-font-size', baseFontSize);
+  }
 
-  // Calculate and set all derived font sizes on :root
+  // Calculate and set all derived font sizes on :root and .admin-sidebar
   const baseSize = parseFloat(baseFontSize);
   if (!isNaN(baseSize)) {
-    root.style.setProperty('--admin-font-size-h1', `${baseSize * 1.75}px`);
-    root.style.setProperty('--admin-font-size-h2', `${baseSize * 1.375}px`);
-    root.style.setProperty('--admin-font-size-h3', `${baseSize * 1.125}px`);
-    root.style.setProperty('--admin-font-size-h4', `${baseSize}px`);
-    root.style.setProperty('--admin-font-size-body-lg', `${baseSize * 0.9375}px`);
-    root.style.setProperty('--admin-font-size-body', `${baseSize * 0.875}px`);
-    root.style.setProperty('--admin-font-size-body-sm', `${baseSize * 0.8125}px`);
-    root.style.setProperty('--admin-font-size-body-xs', `${baseSize * 0.75}px`);
-    root.style.setProperty('--admin-font-size-body-xxs', `${baseSize * 0.6875}px`);
-    root.style.setProperty('--admin-font-size-caption', `${baseSize * 0.625}px`);
+    const derivedSizes = {
+      '--admin-font-size-h1': `${baseSize * 1.75}px`,
+      '--admin-font-size-h2': `${baseSize * 1.375}px`,
+      '--admin-font-size-h3': `${baseSize * 1.125}px`,
+      '--admin-font-size-h4': `${baseSize}px`,
+      '--admin-font-size-body-lg': `${baseSize * 0.9375}px`,
+      '--admin-font-size-body': `${baseSize * 0.875}px`,
+      '--admin-font-size-body-sm': `${baseSize * 0.8125}px`,
+      '--admin-font-size-body-xs': `${baseSize * 0.75}px`,
+      '--admin-font-size-body-xxs': `${baseSize * 0.6875}px`,
+      '--admin-font-size-caption': `${baseSize * 0.625}px`,
+    };
+
+    Object.entries(derivedSizes).forEach(([key, value]) => {
+      root.style.setProperty(key, value);
+      if (adminSidebar) {
+        adminSidebar.style.setProperty(key, value);
+      }
+    });
   }
 };
 

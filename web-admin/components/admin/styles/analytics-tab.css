@@ -6,7 +6,7 @@
 }
 
 .analytics-empty-icon-large {
-  font-size: 48px;
+  font-size: var(--admin-icon-size-5xl, 48px);
   opacity: 0.3;
 }
 
@@ -143,7 +143,7 @@
 }
 
 .analytics-day-summary-label {
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-body-sm, 13px);
   color: var(--admin-text-secondary);
   font-weight: 500;
 }

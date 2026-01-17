@@ -390,7 +390,9 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
       }
     });
 
-    console.log('[Analytics] Processed orders:', processedCount, 'out of', orders.length);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Analytics] Processed orders:', processedCount, 'out of', orders.length);
+    }
 
     const currentMonth = now.getMonth();
     const dec2025 = 11;
@@ -473,11 +475,13 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         return valueB - valueA;
       }
     });
-    console.log('[Analytics] Delivery Address Analytics:', {
-      totalAddresses: sortedData.length,
-      sampleData: sortedData.slice(0, 3),
-      years: { year1, year2, year3 },
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Analytics] Delivery Address Analytics:', {
+        totalAddresses: sortedData.length,
+        sampleData: sortedData.slice(0, 3),
+        years: { year1, year2, year3 },
+      });
+    }
     return { data: sortedData, year1, year2, year3 };
   }, [orders, now, sortColumn, sortDirection]);
 

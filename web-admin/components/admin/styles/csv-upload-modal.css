@@ -11,7 +11,7 @@
 
 .csv-file-size {
   color: var(--admin-text-secondary);
-  font-size: 0.9rem;
+  font-size: var(--admin-font-size-body, 14px);
 }
 
 .csv-preview-title {
@@ -25,7 +25,7 @@
 
 .csv-preview-note {
   color: var(--admin-text-secondary);
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-body-sm, 13px);
   margin-top: 8px;
 }
 
@@ -42,7 +42,7 @@
 .csv-success-list {
   margin: 8px 0 0 0;
   padding-left: 20px;
-  font-size: 0.9rem;
+  font-size: var(--admin-font-size-body, 14px);
 }
 
 .csv-upload-options {
@@ -69,7 +69,7 @@
 }
 
 .csv-upload-option-hint {
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-body-sm, 13px);
   color: var(--admin-text-secondary);
   margin-left: 24px;
 }
@@ -101,13 +101,13 @@
 }
 
 .csv-upload-progress-label {
-  font-size: 14px;
+  font-size: var(--admin-font-size-body, 14px);
   color: var(--admin-text-secondary);
   font-weight: 500;
 }
 
 .csv-upload-progress-count {
-  font-size: 14px;
+  font-size: var(--admin-font-size-body, 14px);
   color: var(--admin-text);
   font-weight: 600;
 }
@@ -155,7 +155,7 @@
 .csv-upload-progress-avatar {
   background: var(--admin-accent, #449031);
   color: white;
-  font-size: 18px;
+  font-size: var(--admin-font-size-h3, 18px);
   flex-shrink: 0;
 }
 
@@ -167,11 +167,11 @@
 .csv-upload-progress-label-text {
   font-weight: 600;
   color: var(--admin-text);
-  font-size: 14px;
+  font-size: var(--admin-font-size-body, 14px);
 }
 
 .csv-upload-progress-percentage {
-  font-size: 12px;
+  font-size: var(--admin-font-size-body-xs, 12px);
   color: var(--admin-text-secondary);
 }
 
@@ -187,7 +187,7 @@
   cursor: pointer;
   padding: 8px;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: var(--admin-font-size-h4, 16px);
   transition: all 0.2s ease;
 }
 
@@ -229,7 +229,7 @@
   padding: 8px;
   border-radius: 8px;
   transition: all 0.2s ease;
-  font-size: 18px;
+  font-size: var(--admin-font-size-h3, 18px);
 }
 
 .csv-upload-minimize-btn:hover {
@@ -249,7 +249,7 @@
 }
 
 .csv-upload-success-icon {
-  font-size: 64px;
+  font-size: var(--admin-icon-size-5xl, 48px);
   color: var(--admin-success);
   margin-bottom: 16px;
 }

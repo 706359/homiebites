@@ -180,7 +180,7 @@
 }
 
 .login-title {
-  font-size: 2rem;
+  font-size: var(--admin-font-size-h1, 28px);
   font-weight: 700;
   color: var(--admin-text-primary, #1e293b);
   margin: 0 0 0.5rem 0;
@@ -324,7 +324,7 @@
 }
 
 .admin-login-forgot-link i {
-  font-size: 0.75rem;
+  font-size: var(--admin-font-size-body-xs, 12px);
 }
 
 .alert {
@@ -409,7 +409,7 @@
   padding: 1rem;
   background: var(--admin-light-gray, #f3f4f6);
   border-radius: 8px;
-  font-size: 0.75rem;
+  font-size: var(--admin-font-size-body-xs, 12px);
 }
 
 .admin-login-dev-summary {

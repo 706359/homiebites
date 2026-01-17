@@ -23,6 +23,7 @@ const OrderModal = ({
   onEditingOrderChange,
   setAddressSuggestions,
   setShowAddressSuggestions,
+  showConfirmation,
 }) => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState(null);
@@ -32,8 +33,10 @@ const OrderModal = ({
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [autoPopulatedAddress, setAutoPopulatedAddress] = useState(null);
   const [isClickingSuggestion, setIsClickingSuggestion] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const dropdownRef = useRef(null);
-  const selectedAddressRef = useRef(null); 
+  const selectedAddressRef = useRef(null);
+  const suggestionButtonRefs = useRef([]); 
   const addressDebounceTimerRef = useRef(null);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
@@ -340,21 +343,40 @@ const OrderModal = ({
 
   const handleClose = () => {
     if (hasUnsavedChanges && !editingOrder) {
-      if (window.confirm('You have unsaved changes. Are you sure you want to close?')) {
-        setHasUnsavedChanges(false);
-        setFormErrors({});
-        setTouchedFields({});
-        setDuplicateWarning(null);
-        setAutoPopulatedAddress(null);
-        persistedDateRef.current = null; 
-        onClose();
+      if (showConfirmation) {
+        showConfirmation({
+          title: 'Unsaved Changes',
+          message: 'You have unsaved changes. Are you sure you want to close?',
+          type: 'warning',
+          confirmText: 'Close',
+          cancelText: 'Cancel',
+          onConfirm: () => {
+            setHasUnsavedChanges(false);
+            setFormErrors({});
+            setTouchedFields({});
+            setDuplicateWarning(null);
+            setAutoPopulatedAddress(null);
+            persistedDateRef.current = null;
+            onClose();
+          },
+        });
+      } else {
+        if (window.confirm('You have unsaved changes. Are you sure you want to close?')) {
+          setHasUnsavedChanges(false);
+          setFormErrors({});
+          setTouchedFields({});
+          setDuplicateWarning(null);
+          setAutoPopulatedAddress(null);
+          persistedDateRef.current = null;
+          onClose();
+        }
       }
     } else {
       setHasUnsavedChanges(false);
       setFormErrors({});
       setDuplicateWarning(null);
       setAutoPopulatedAddress(null);
-      persistedDateRef.current = null; 
+      persistedDateRef.current = null;
       onClose();
     }
   };
@@ -425,32 +447,6 @@ const OrderModal = ({
     }
 
     
-    if (
-      normalizedOrder.status !== orderToValidate.status ||
-      normalizedOrder.paymentMode !== orderToValidate.paymentMode
-    ) {
-      if (editingOrder) {
-        
-        if (normalizedOrder.status !== orderToValidate.status) {
-          onEditingOrderChange('status', normalizedOrder.status);
-        }
-        if (normalizedOrder.paymentMode !== orderToValidate.paymentMode) {
-          onEditingOrderChange('paymentMode', normalizedOrder.paymentMode);
-        }
-        if (normalizedOrder.paymentStatus !== orderToValidate.paymentStatus) {
-          onEditingOrderChange('paymentStatus', normalizedOrder.paymentStatus);
-        }
-      } else {
-        Object.keys(normalizedOrder).forEach((key) => {
-          if (normalizedOrder[key] !== orderToValidate[key]) {
-            onNewOrderChange(key, normalizedOrder[key]);
-          }
-        });
-      }
-    }
-
-    
-    
     let finalDate = normalizedOrder.date;
     if (
       normalizedOrder.date &&
@@ -461,14 +457,8 @@ const OrderModal = ({
       if (backendDate) {
         finalDate = backendDate;
         normalizedOrder.date = backendDate;
-        if (editingOrder) {
-          onEditingOrderChange('date', backendDate);
-        } else {
-          onNewOrderChange('date', backendDate);
-        }
       }
     } else if (normalizedOrder.date && typeof normalizedOrder.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(normalizedOrder.date)) {
-      
       finalDate = normalizedOrder.date;
     }
     
@@ -530,16 +520,34 @@ const OrderModal = ({
     if (!validateForm(normalizedOrder)) {
       return;
     }
-    if (
-      duplicateWarning &&
-      !window.confirm(
-        `⚠️ Warning: ${duplicateWarning.address} already has an order today (${duplicateWarning.mode})\nDo you want to add another order?`
-      )
-    ) {
-      return;
+    if (duplicateWarning) {
+      if (showConfirmation) {
+        showConfirmation({
+          title: 'Duplicate Order Warning',
+          message: `${duplicateWarning.address} already has an order today (${duplicateWarning.mode}). Do you want to add another order?`,
+          type: 'warning',
+          confirmText: 'Add Order',
+          cancelText: 'Cancel',
+          onConfirm: async () => {
+            await proceedWithSave(normalizedOrder);
+          },
+        });
+        return;
+      } else {
+        if (
+          !window.confirm(
+            `⚠️ Warning: ${duplicateWarning.address} already has an order today (${duplicateWarning.mode})\nDo you want to add another order?`
+          )
+        ) {
+          return;
+        }
+      }
     }
 
-    
+    await proceedWithSave(normalizedOrder);
+  };
+
+  const proceedWithSave = async (normalizedOrder) => {
     if (isSaving) {
       return;
     }
@@ -609,6 +617,12 @@ const OrderModal = ({
         if (normalizedOrder.billingYear !== undefined && !editOrderDate) {
           cleanOrderData.billingYear = normalizedOrder.billingYear;
         }
+
+        const calculatedTotal = calculateTotalAmount(
+          normalizedOrder.quantity || 1,
+          normalizedOrder.unitPrice || 0
+        );
+        cleanOrderData.totalAmount = calculatedTotal;
 
         await onSave(editingOrder.orderId || editingOrder._id, cleanOrderData);
         
@@ -755,6 +769,7 @@ const OrderModal = ({
       setAddressSuggestions(suggestions);
       
       setShowAddressSuggestions(suggestions.length > 0);
+      setHighlightedIndex(-1);
 
       
       
@@ -808,6 +823,7 @@ const OrderModal = ({
       const suggestions = getAddressSuggestions(query);
       setAddressSuggestions(suggestions);
       setShowAddressSuggestions(suggestions.length > 0);
+      setHighlightedIndex(-1);
     }
   };
 
@@ -819,6 +835,7 @@ const OrderModal = ({
     setTimeout(() => {
       if (!isClickingSuggestion) {
         setShowAddressSuggestions(false);
+        setHighlightedIndex(-1);
 
         
         if (!editingOrder && newOrder.deliveryAddress) {
@@ -845,7 +862,7 @@ const OrderModal = ({
     }, 300);
   };
 
-  const handleSuggestionClick = (addr) => {
+  const selectSuggestion = (addr) => {
     const normalizedAddr = addr.trim().toLowerCase();
     const trimmedAddr = addr.trim();
 
@@ -857,6 +874,7 @@ const OrderModal = ({
     onNewOrderChange('deliveryAddress', trimmedAddr);
 
     setAutoPopulatedAddress(normalizedAddr);
+    setHighlightedIndex(-1);
 
     
     const input = document.getElementById('delivery-address-input');
@@ -891,9 +909,10 @@ const OrderModal = ({
     setTimeout(() => {
       setIsClickingSuggestion(false);
     }, 500);
+  };
 
-    
-    
+  const handleSuggestionClick = (addr) => {
+    selectSuggestion(addr);
   };
 
   
@@ -910,6 +929,23 @@ const OrderModal = ({
       
       lastDate: lastOrder ? lastOrder.date || lastOrder.order_date || null : null,
     };
+  };
+
+  const scrollIntoView = (index) => {
+    if (suggestionButtonRefs.current[index] && dropdownRef.current) {
+      const button = suggestionButtonRefs.current[index];
+      const dropdown = dropdownRef.current;
+      const buttonTop = button.offsetTop;
+      const buttonBottom = buttonTop + button.offsetHeight;
+      const dropdownTop = dropdown.scrollTop;
+      const dropdownBottom = dropdownTop + dropdown.clientHeight;
+
+      if (buttonTop < dropdownTop) {
+        dropdown.scrollTop = buttonTop;
+      } else if (buttonBottom > dropdownBottom) {
+        dropdown.scrollTop = buttonBottom - dropdown.clientHeight;
+      }
+    }
   };
 
   
@@ -1290,43 +1326,147 @@ const OrderModal = ({
                 }}
                 onFocus={handleAddressFocus}
                 onBlur={handleAddressBlur}
+                onKeyDown={(e) => {
+                  if (!showAddressSuggestions || addressSuggestions.length === 0 || editingOrder) {
+                    if (e.key === 'Escape' && showAddressSuggestions) {
+                      e.preventDefault();
+                      setShowAddressSuggestions(false);
+                      setHighlightedIndex(-1);
+                    }
+                    return;
+                  }
+
+                  switch (e.key) {
+                    case 'ArrowDown':
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setHighlightedIndex((prev) => {
+                        const nextIndex = prev < addressSuggestions.length - 1 ? prev + 1 : 0;
+                        scrollIntoView(nextIndex);
+                        return nextIndex;
+                      });
+                      break;
+                    case 'ArrowUp':
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setHighlightedIndex((prev) => {
+                        if (prev <= 0) {
+                          const nextIndex = addressSuggestions.length - 1;
+                          scrollIntoView(nextIndex);
+                          return nextIndex;
+                        }
+                        const nextIndex = prev - 1;
+                        scrollIntoView(nextIndex);
+                        return nextIndex;
+                      });
+                      break;
+                    case 'Enter':
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (highlightedIndex >= 0 && highlightedIndex < addressSuggestions.length) {
+                        const selectedAddr = addressSuggestions[highlightedIndex];
+                        if (selectedAddr) {
+                          selectSuggestion(selectedAddr);
+                        }
+                      } else if (addressSuggestions.length > 0) {
+                        const firstAddr = addressSuggestions[0];
+                        if (firstAddr) {
+                          selectSuggestion(firstAddr);
+                        }
+                      }
+                      break;
+                    case 'Escape':
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowAddressSuggestions(false);
+                      setHighlightedIndex(-1);
+                      break;
+                    case 'Tab':
+                      if (highlightedIndex >= 0 && highlightedIndex < addressSuggestions.length) {
+                        const selectedAddr = addressSuggestions[highlightedIndex];
+                        if (selectedAddr) {
+                          selectSuggestion(selectedAddr);
+                        }
+                      }
+                      break;
+                    default:
+                      break;
+                  }
+                }}
                 placeholder='Start typing address (e.g., A3-1206)'
                 required
                 autoComplete='off'
                 id='delivery-address-input'
+                aria-autocomplete='list'
+                aria-expanded={showAddressSuggestions}
+                aria-controls='address-suggestions-list'
+                aria-activedescendant={
+                  highlightedIndex >= 0 ? `address-suggestion-${highlightedIndex}` : undefined
+                }
+                aria-label='Delivery Address'
+                aria-describedby={formErrors.deliveryAddress ? 'delivery-address-error' : undefined}
+                role='combobox'
               />
               {showAddressSuggestions && addressSuggestions.length > 0 && !editingOrder && (
                 <div
                   ref={dropdownRef}
+                  id='address-suggestions-list'
                   className='address-suggestions-dropdown positioned'
+                  role='listbox'
+                  aria-label='Address suggestions'
+                  aria-live='polite'
+                  aria-atomic='false'
                   onMouseDown={(e) => {
-                    
                     e.preventDefault();
                   }}
                 >
-                  <div className='address-suggestions-header'>
-                    <i className='fa-solid fa-lightbulb mr-2'></i>
-                    {addressSuggestions.length} suggestion{addressSuggestions.length !== 1 ? 's' : ''}{' '}
-                    found
+                  <div className='address-suggestions-header' role='status' aria-live='polite'>
+                    <i className='fa-solid fa-lightbulb mr-2' aria-hidden='true'></i>
+                    <span>
+                      {addressSuggestions.length} suggestion{addressSuggestions.length !== 1 ? 's' : ''}{' '}
+                      found
+                    </span>
                   </div>
                   {addressSuggestions.map((addr, idx) => {
                     const info = getAddressOrderInfo(addr);
+                    const isHighlighted = idx === highlightedIndex;
                     return (
                       <button
-                        key={idx}
+                        key={`${addr}-${idx}`}
+                        id={`address-suggestion-${idx}`}
+                        ref={(el) => {
+                          suggestionButtonRefs.current[idx] = el;
+                        }}
                         type='button'
-                        className='address-suggestion-item'
+                        role='option'
+                        aria-selected={isHighlighted}
+                        aria-label={`${addr}, ${info.count} previous orders, last order ₹${info.lastPrice || 0}`}
+                        tabIndex={-1}
                         onMouseDown={(e) => {
-                          
                           setIsClickingSuggestion(true);
-                          e.preventDefault(); 
+                          e.preventDefault();
+                        }}
+                        onMouseEnter={() => {
+                          setHighlightedIndex(idx);
+                        }}
+                        onMouseLeave={() => {
+                          setHighlightedIndex((prev) => (prev === idx ? -1 : prev));
                         }}
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
                           handleSuggestionClick(addr);
                         }}
-                        className="address-suggestion-item button-style order-modal-address-suggestion"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleSuggestionClick(addr);
+                          }
+                        }}
+                        className={`address-suggestion-item button-style order-modal-address-suggestion ${
+                          isHighlighted ? 'address-suggestion-highlighted' : ''
+                        }`}
                       >
                         <div className='address-suggestion-content'>
                           <i className='fa-solid fa-map-marker-alt address-suggestion-icon'></i>
@@ -1341,16 +1481,17 @@ const OrderModal = ({
                                   {info.count} order{info.count !== 1 ? 's' : ''}
                                 </span>
                               )}
-                              {info.lastPrice && (
-                                <span>
-                                  <i className='fa-solid fa-rupee-sign'></i>
-                                  Last: ₹{info.lastPrice}
-                                </span>
-                              )}
                             </div>
                           </div>
                         </div>
-                        <i className='fa-solid fa-chevron-right address-suggestion-chevron'></i>
+                        <div className='address-suggestion-right'>
+                          {info.lastPrice && (
+                            <span className='address-suggestion-last-price'>
+                              Rs Last: ₹{info.lastPrice}
+                            </span>
+                          )}
+                          <i className='fa-solid fa-chevron-right address-suggestion-chevron'></i>
+                        </div>
                       </button>
                     );
                   })}

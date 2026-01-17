@@ -212,7 +212,7 @@
      ============================================ */
 
 .analytics-trend-icon {
-  font-size: 14px;
+  font-size: var(--admin-font-size-body, 14px);
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -265,7 +265,7 @@
 }
 
 .analytics-monthly-year-label {
-  font-size: 10px;
+  font-size: var(--admin-font-size-caption, 10px);
   font-weight: 700;
   color: var(--admin-text-primary);
   text-align: left;
@@ -410,13 +410,13 @@
   }
 
   .analytics-monthly-value {
-    font-size: 10px;
+    font-size: var(--admin-font-size-caption, 10px);
     padding: 3px 4px;
     min-height: 20px;
   }
 
   .analytics-monthly-year-label {
-    font-size: 11px;
+    font-size: var(--admin-font-size-body-xxs, 11px);
   }
 
   .analytics-delivery-table thead th,
@@ -443,7 +443,7 @@
   }
 
   .analytics-monthly-year-label {
-    font-size: 10px;
+    font-size: var(--admin-font-size-caption, 10px);
   }
 }
 
@@ -477,7 +477,7 @@
   .analytics-trend-icon {
     width: 20px;
     height: 20px;
-    font-size: 12px;
+    font-size: var(--admin-font-size-body-xs, 12px);
   }
 }
 
@@ -509,7 +509,7 @@
   }
 
   .analytics-monthly-year-label {
-    font-size: 8px;
+    font-size: var(--admin-font-size-caption, 10px);
   }
 
   .analytics-chart-container {

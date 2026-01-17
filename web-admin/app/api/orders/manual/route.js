@@ -13,10 +13,11 @@ const normalizePaymentMode = (pm) => {
 };
 
 export async function POST(request) {
+  let orderData;
   try {
     await connectDB();
     await isAdmin(request);
-    const orderData = await request.json();
+    orderData = await request.json();
 
     if (!orderData.date || !orderData.deliveryAddress) {
       return Response.json(

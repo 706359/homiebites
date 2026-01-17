@@ -195,6 +195,12 @@ const AdminDashboard = () => {
     }
     document.body.style.fontSize = fontSize;
 
+    // Also set on .admin-sidebar to ensure sidebar menu font size updates
+    const adminSidebar = document.querySelector('.admin-sidebar');
+    if (adminSidebar) {
+      adminSidebar.style.setProperty('--admin-base-font-size', fontSize);
+    }
+
     // Calculate and set all derived font sizes on :root and .admin-dashboard
     const baseSize = parseFloat(fontSize);
     if (!isNaN(baseSize)) {
@@ -215,6 +221,9 @@ const AdminDashboard = () => {
         root.style.setProperty(key, value);
         if (adminDashboard) {
           adminDashboard.style.setProperty(key, value);
+        }
+        if (adminSidebar) {
+          adminSidebar.style.setProperty(key, value);
         }
       });
     }
@@ -418,6 +427,12 @@ const AdminDashboard = () => {
       }
       document.body.style.fontSize = fontSize;
 
+      // Also set on .admin-sidebar to ensure sidebar menu font size updates
+      const adminSidebar = document.querySelector('.admin-sidebar');
+      if (adminSidebar) {
+        adminSidebar.style.setProperty('--admin-base-font-size', fontSize);
+      }
+
       // Calculate and set all derived font sizes
       const baseSize = parseFloat(fontSize);
       if (!isNaN(baseSize)) {
@@ -438,6 +453,9 @@ const AdminDashboard = () => {
           root.style.setProperty(key, value);
           if (adminDashboard) {
             adminDashboard.style.setProperty(key, value);
+          }
+          if (adminSidebar) {
+            adminSidebar.style.setProperty(key, value);
           }
         });
       }
@@ -464,6 +482,7 @@ const AdminDashboard = () => {
 
     const syncSidebarFontSize = () => {
       const adminDashboard = document.querySelector('.admin-dashboard');
+      const adminSidebar = document.querySelector('.admin-sidebar');
       const root = document.documentElement;
 
       if (!adminDashboard) return;
@@ -473,21 +492,33 @@ const AdminDashboard = () => {
         getComputedStyle(root).getPropertyValue('--admin-base-font-size').trim() ||
         '16px';
 
-      // Set CSS variables on :root instead of directly on sidebar to avoid inline styles
+      // Set CSS variables on :root, .admin-dashboard, and .admin-sidebar
       root.style.setProperty('--admin-base-font-size', baseFontSize);
+      if (adminSidebar) {
+        adminSidebar.style.setProperty('--admin-base-font-size', baseFontSize);
+      }
 
       const baseSize = parseFloat(baseFontSize);
       if (!isNaN(baseSize)) {
-        root.style.setProperty('--admin-font-size-h1', `${baseSize * 1.75}px`);
-        root.style.setProperty('--admin-font-size-h2', `${baseSize * 1.375}px`);
-        root.style.setProperty('--admin-font-size-h3', `${baseSize * 1.125}px`);
-        root.style.setProperty('--admin-font-size-h4', `${baseSize}px`);
-        root.style.setProperty('--admin-font-size-body-lg', `${baseSize * 0.9375}px`);
-        root.style.setProperty('--admin-font-size-body', `${baseSize * 0.875}px`);
-        root.style.setProperty('--admin-font-size-body-sm', `${baseSize * 0.8125}px`);
-        root.style.setProperty('--admin-font-size-body-xs', `${baseSize * 0.75}px`);
-        root.style.setProperty('--admin-font-size-body-xxs', `${baseSize * 0.6875}px`);
-        root.style.setProperty('--admin-font-size-caption', `${baseSize * 0.625}px`);
+        const derivedSizes = {
+          '--admin-font-size-h1': `${baseSize * 1.75}px`,
+          '--admin-font-size-h2': `${baseSize * 1.375}px`,
+          '--admin-font-size-h3': `${baseSize * 1.125}px`,
+          '--admin-font-size-h4': `${baseSize}px`,
+          '--admin-font-size-body-lg': `${baseSize * 0.9375}px`,
+          '--admin-font-size-body': `${baseSize * 0.875}px`,
+          '--admin-font-size-body-sm': `${baseSize * 0.8125}px`,
+          '--admin-font-size-body-xs': `${baseSize * 0.75}px`,
+          '--admin-font-size-body-xxs': `${baseSize * 0.6875}px`,
+          '--admin-font-size-caption': `${baseSize * 0.625}px`,
+        };
+
+        Object.entries(derivedSizes).forEach(([key, value]) => {
+          root.style.setProperty(key, value);
+          if (adminSidebar) {
+            adminSidebar.style.setProperty(key, value);
+          }
+        });
       }
     };
 
@@ -500,6 +531,11 @@ const AdminDashboard = () => {
         adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
         adminDashboard.style.fontSize = fontSize;
         void adminDashboard.offsetHeight;
+      }
+
+      if (adminSidebar) {
+        adminSidebar.style.setProperty('--admin-base-font-size', fontSize);
+        void adminSidebar.offsetHeight;
       }
 
       syncSidebarFontSize();
@@ -581,10 +617,15 @@ const AdminDashboard = () => {
             }
           }
 
-          const today = new Date();
-          const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(
-            today.getMonth() + 1
-          ).padStart(2, '0')}/${today.getFullYear()}`;
+          const lastSubmittedDate = orderData.date || '';
+          let formattedDate = lastSubmittedDate;
+          
+          if (!formattedDate || !/^\d{2}\/\d{2}\/\d{4}$/.test(formattedDate)) {
+            const today = new Date();
+            formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(
+              today.getMonth() + 1
+            ).padStart(2, '0')}/${today.getFullYear()}`;
+          }
 
           setNewOrder({
             date: formattedDate,
@@ -622,6 +663,102 @@ const AdminDashboard = () => {
     }
   };
 
+  const performOrderUpdate = async (orderId, orderData, skipModalClose = false) => {
+    try {
+      const order = (orders || []).find(
+        (o) => o.orderId === orderId || o._id === orderId || o.id === orderId
+      );
+      const apiOrderId = order?._id || order?.id || order?.orderId || orderId;
+
+      const updateData = {};
+      const allowedFields = [
+        'orderId',
+        'date',
+        'deliveryAddress',
+        'quantity',
+        'unitPrice',
+        'totalAmount',
+        'mode',
+        'status',
+        'paymentStatus',
+        'paymentMode',
+        'notes',
+        'customerName',
+        'billingMonth',
+        'billingYear',
+        'addressId',
+      ];
+
+      allowedFields.forEach((key) => {
+        if (orderData[key] !== undefined) {
+          if (key === 'paymentMode' || key === 'notes' || key === 'customerName') {
+            updateData[key] = orderData[key] === '' ? '' : orderData[key] || '';
+          } else if (orderData[key] !== null) {
+            updateData[key] = orderData[key];
+          }
+        }
+      });
+
+      if (updateData.status && !updateData.paymentStatus) {
+        const statusLower = String(updateData.status).toLowerCase().trim();
+        if (statusLower === 'paid' || statusLower === 'delivered') {
+          updateData.paymentStatus = 'Paid';
+        } else {
+          updateData.paymentStatus = 'Pending';
+        }
+      } else if (updateData.paymentStatus && !updateData.status) {
+        if (updateData.paymentStatus === 'Paid') {
+          updateData.status = 'Paid';
+        } else if (updateData.paymentStatus === 'Pending') {
+          updateData.status = order?.status || 'Unpaid';
+        }
+      }
+
+      await fastUpdate(
+        apiOrderId,
+        updateData,
+        () => {
+          if (showNotification) {
+            showNotification(
+              getNotificationMessage('orders', 'updateSuccess'),
+              'success',
+              getNotificationDuration('success')
+            );
+          }
+          if (!skipModalClose) {
+            setShowOrderModal(false);
+            setEditingOrder(null);
+          }
+
+          if (loadOrders) {
+            setTimeout(() => {
+              loadOrders();
+            }, 200);
+          }
+        },
+        (error) => {
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Error updating order:', error);
+          }
+          if (showNotification) {
+            const errorMessage =
+              error?.message || getNotificationMessage('orders', 'updateError');
+            showNotification(errorMessage, 'error', getNotificationDuration('error'));
+          }
+        }
+      );
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error updating order:', error);
+      }
+      if (showNotification) {
+        const errorMessage = error?.message || getNotificationMessage('orders', 'updateError');
+        showNotification(errorMessage, 'error', getNotificationDuration('error'));
+      }
+      throw error;
+    }
+  };
+
   const handleEditOrder = async (orderId, orderData) => {
     const order = (orders || []).find(
       (o) => o.orderId === orderId || o._id === orderId || o.id === orderId
@@ -632,103 +769,14 @@ const AdminDashboard = () => {
         }`
       : `Order ${orderId}`;
 
-    const performUpdate = async () => {
-      try {
-        const apiOrderId = order?._id || order?.id || order?.orderId || orderId;
-
-        const updateData = {};
-        const allowedFields = [
-          'orderId',
-          'date',
-          'deliveryAddress',
-          'quantity',
-          'unitPrice',
-          'mode',
-          'status',
-          'paymentStatus',
-          'paymentMode',
-          'notes',
-          'customerName',
-          'billingMonth',
-          'billingYear',
-          'addressId',
-        ];
-
-        allowedFields.forEach((key) => {
-          if (orderData[key] !== undefined) {
-            if (key === 'paymentMode' || key === 'notes' || key === 'customerName') {
-              updateData[key] = orderData[key] === '' ? '' : orderData[key] || '';
-            } else if (orderData[key] !== null) {
-              updateData[key] = orderData[key];
-            }
-          }
-        });
-
-        if (updateData.status && !updateData.paymentStatus) {
-          const statusLower = String(updateData.status).toLowerCase().trim();
-          if (statusLower === 'paid' || statusLower === 'delivered') {
-            updateData.paymentStatus = 'Paid';
-          } else {
-            updateData.paymentStatus = 'Pending';
-          }
-        } else if (updateData.paymentStatus && !updateData.status) {
-          if (updateData.paymentStatus === 'Paid') {
-            updateData.status = 'Paid';
-          } else if (updateData.paymentStatus === 'Pending') {
-            updateData.status = order.status || 'Unpaid';
-          }
-        }
-
-        await fastUpdate(
-          apiOrderId,
-          updateData,
-          () => {
-            if (showNotification) {
-              showNotification(
-                getNotificationMessage('orders', 'updateSuccess'),
-                'success',
-                getNotificationDuration('success')
-              );
-            }
-            setShowOrderModal(false);
-            setEditingOrder(null);
-
-            if (loadOrders) {
-              setTimeout(() => {
-                loadOrders();
-              }, 200);
-            }
-          },
-          (error) => {
-            if (process.env.NODE_ENV === 'development') {
-              if (process.env.NODE_ENV === 'development') {
-                console.error('Error updating order:', error);
-              }
-            }
-            if (showNotification) {
-              const errorMessage =
-                error?.message || getNotificationMessage('orders', 'updateError');
-              showNotification(errorMessage, 'error', getNotificationDuration('error'));
-            }
-          }
-        );
-      } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error updating order:', error);
-        }
-        if (showNotification) {
-          const errorMessage = error?.message || getNotificationMessage('orders', 'updateError');
-          showNotification(errorMessage, 'error', getNotificationDuration('error'));
-        }
-      }
-    };
-
     showConfirmation({
       title: 'Update Order',
       message: `Are you sure you want to save changes to ${orderInfo}?`,
       type: 'info',
       confirmText: 'Save Changes',
-      onConfirm: performUpdate,
+      onConfirm: async () => {
+        await performOrderUpdate(orderId, orderData);
+      },
     });
   };
 
@@ -1416,6 +1464,7 @@ const AdminDashboard = () => {
               setEditingOrder(order);
               setShowOrderModal(true);
             }}
+            onUpdateOrder={performOrderUpdate}
             onDeleteOrder={handleDeleteOrder}
             onUpdateOrderStatus={handleUpdateOrderStatus}
             currentPage={currentPage}
@@ -1631,6 +1680,7 @@ const AdminDashboard = () => {
             }}
             setAddressSuggestions={setAddressSuggestions}
             setShowAddressSuggestions={setShowAddressSuggestions}
+            showConfirmation={showConfirmation}
           />
         )}
 

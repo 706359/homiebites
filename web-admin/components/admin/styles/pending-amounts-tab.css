@@ -17,7 +17,7 @@
 }
 
 .pending-clear-filter-btn {
-  font-size: 13px;
+  font-size: var(--admin-font-size-body-sm, 13px);
   padding: 10px 16px;
   white-space: nowrap;
   height: fit-content;
@@ -63,7 +63,7 @@
 
 .pending-chart-label {
   min-width: 120px;
-  font-size: 0.9rem;
+  font-size: var(--admin-font-size-body, 14px);
   color: var(--admin-text);
   font-weight: 500;
 }
@@ -89,7 +89,7 @@
 }
 
 .pending-chart-value {
-  font-size: 0.9rem;
+  font-size: var(--admin-font-size-body, 14px);
   color: var(--admin-text);
   font-weight: 600;
   min-width: 100px;
@@ -145,7 +145,7 @@
 .pending-timeline-summary {
   text-align: center;
   color: var(--admin-text-secondary);
-  font-size: 0.9rem;
+  font-size: var(--admin-font-size-body, 14px);
 }
 
 .pending-payment-mode-section {
@@ -179,7 +179,7 @@
 }
 
 .pending-payment-mode-details {
-  font-size: 0.9rem;
+  font-size: var(--admin-font-size-body, 14px);
   color: var(--admin-text-secondary);
   margin-bottom: 4px;
 }

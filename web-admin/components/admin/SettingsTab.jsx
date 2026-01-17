@@ -187,6 +187,12 @@ const SettingsTab = ({
       adminDashboard.style.fontSize = fontSize;
       document.body.style.fontSize = fontSize;
 
+      // Also set on .admin-sidebar to ensure sidebar menu font size updates
+      const adminSidebar = document.querySelector('.admin-sidebar');
+      if (adminSidebar) {
+        adminSidebar.style.setProperty('--admin-base-font-size', fontSize);
+      }
+
       // Calculate and set all derived font sizes on :root and .admin-dashboard
       const baseSize = parseFloat(fontSize);
       if (!isNaN(baseSize)) {
@@ -206,6 +212,9 @@ const SettingsTab = ({
         Object.entries(derivedSizes).forEach(([key, value]) => {
           root.style.setProperty(key, value);
           adminDashboard.style.setProperty(key, value);
+          if (adminSidebar) {
+            adminSidebar.style.setProperty(key, value);
+          }
         });
       }
 
@@ -1644,49 +1653,34 @@ const SettingsTab = ({
                           adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
                           adminDashboard.style.fontSize = fontSize;
 
-                          // Calculate and set all derived font sizes on :root
+                          // Also set on .admin-sidebar to ensure sidebar menu font size updates
+                          if (adminSidebar) {
+                            adminSidebar.style.setProperty('--admin-base-font-size', fontSize);
+                          }
+
+                          // Calculate and set all derived font sizes on :root and .admin-sidebar
                           const baseSize = parseFloat(fontSize);
                           if (!isNaN(baseSize)) {
-                            document.documentElement.style.setProperty(
-                              '--admin-font-size-h1',
-                              `${baseSize * 1.75}px`
-                            );
-                            document.documentElement.style.setProperty(
-                              '--admin-font-size-h2',
-                              `${baseSize * 1.375}px`
-                            );
-                            document.documentElement.style.setProperty(
-                              '--admin-font-size-h3',
-                              `${baseSize * 1.125}px`
-                            );
-                            document.documentElement.style.setProperty(
-                              '--admin-font-size-h4',
-                              `${baseSize}px`
-                            );
-                            document.documentElement.style.setProperty(
-                              '--admin-font-size-body-lg',
-                              `${baseSize * 0.9375}px`
-                            );
-                            document.documentElement.style.setProperty(
-                              '--admin-font-size-body',
-                              `${baseSize * 0.875}px`
-                            );
-                            document.documentElement.style.setProperty(
-                              '--admin-font-size-body-sm',
-                              `${baseSize * 0.8125}px`
-                            );
-                            document.documentElement.style.setProperty(
-                              '--admin-font-size-body-xs',
-                              `${baseSize * 0.75}px`
-                            );
-                            document.documentElement.style.setProperty(
-                              '--admin-font-size-body-xxs',
-                              `${baseSize * 0.6875}px`
-                            );
-                            document.documentElement.style.setProperty(
-                              '--admin-font-size-caption',
-                              `${baseSize * 0.625}px`
-                            );
+                            const derivedSizes = {
+                              '--admin-font-size-h1': `${baseSize * 1.75}px`,
+                              '--admin-font-size-h2': `${baseSize * 1.375}px`,
+                              '--admin-font-size-h3': `${baseSize * 1.125}px`,
+                              '--admin-font-size-h4': `${baseSize}px`,
+                              '--admin-font-size-body-lg': `${baseSize * 0.9375}px`,
+                              '--admin-font-size-body': `${baseSize * 0.875}px`,
+                              '--admin-font-size-body-sm': `${baseSize * 0.8125}px`,
+                              '--admin-font-size-body-xs': `${baseSize * 0.75}px`,
+                              '--admin-font-size-body-xxs': `${baseSize * 0.6875}px`,
+                              '--admin-font-size-caption': `${baseSize * 0.625}px`,
+                            };
+
+                            Object.entries(derivedSizes).forEach(([key, value]) => {
+                              document.documentElement.style.setProperty(key, value);
+                              adminDashboard.style.setProperty(key, value);
+                              if (adminSidebar) {
+                                adminSidebar.style.setProperty(key, value);
+                              }
+                            });
                           }
 
                           void adminDashboard.offsetHeight;

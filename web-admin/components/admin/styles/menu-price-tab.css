@@ -1,22 +1,22 @@
 .menu-form-input {
   padding: 10px 12px;
-  font-size: 14px;
+  font-size: var(--admin-font-size-body, 14px);
 }
 
 .menu-form-label {
-  font-size: 13px;
+  font-size: var(--admin-font-size-body-sm, 13px);
   margin-bottom: 6px;
 }
 
 .menu-form-label-optional {
   color: var(--admin-text-light);
   font-weight: 400;
-  font-size: 11px;
+  font-size: var(--admin-font-size-body-xxs, 11px);
 }
 
 .menu-form-helper-text {
   color: var(--admin-text-light);
-  font-size: 11px;
+  font-size: var(--admin-font-size-body-xxs, 11px);
   margin-top: 4px;
   display: block;
   line-height: 1.4;
@@ -46,7 +46,7 @@
 
 .menu-modal-btn {
   padding: 10px 18px;
-  font-size: 14px;
+  font-size: var(--admin-font-size-body, 14px);
 }
 
 
@@ -55,7 +55,7 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--admin-font-size-body-sm, 13px);
   margin-bottom: 0;
 }
 
@@ -92,7 +92,7 @@
 }
 
 .menu-edit-modal-header h2 {
-  font-size: 20px;
+  font-size: var(--admin-font-size-h3, 18px);
   margin: 0;
 }
 

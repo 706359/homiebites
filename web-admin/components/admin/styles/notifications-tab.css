@@ -4,14 +4,14 @@
 }
 
 .notifications-empty-icon {
-  font-size: 64px;
+  font-size: var(--admin-icon-size-5xl, 48px);
   color: var(--admin-text-light);
   margin-bottom: 16px;
 }
 
 .notifications-empty-text {
   color: var(--admin-text-light);
-  font-size: 0.9rem;
+  font-size: var(--admin-font-size-body, 14px);
 }
 
 .notification-icon-order {
@@ -66,11 +66,11 @@
 .notifications-settings-item-title {
   font-weight: 600;
   color: var(--admin-text);
-  font-size: 0.9rem;
+  font-size: var(--admin-font-size-body, 14px);
 }
 
 .notifications-settings-item-description {
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-body-sm, 13px);
   color: var(--admin-text-secondary);
 }
 

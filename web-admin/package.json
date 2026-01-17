@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev -p 5050",
+    "dev": "rm -rf .next && next build && next dev -p 5050",
     "build": "next build",
     "start": "next start -p 5050",
     "stop": "lsof -ti:5050 | xargs kill -9 2>/dev/null || echo 'No process found on port 5050'",
@@ -15,7 +15,8 @@
     "push": "git add . && git commit -m \"$(./scripts/generate-commit-message.sh)\" && git push",
     "validate-css": "node scripts/validate-css.js",
     "validate-css:all": "node scripts/validate-css.js",
-    "prebuild": "npm run validate-css:all"
+    "prebuild": "npm run validate-css:all",
+    "clean": "rm -rf .next"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.6",
