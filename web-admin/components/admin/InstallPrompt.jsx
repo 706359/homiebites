@@ -8,11 +8,28 @@ const InstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showIOSPrompt, setShowIOSPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const isAdminPage = pathname && (pathname === '/admin' || pathname.startsWith('/admin/'));
 
+  // Check if mobile device
   useEffect(() => {
-    if (!isAdminPage) {
+    if (typeof window !== 'undefined') {
+      const checkMobile = () => {
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        ) || window.innerWidth < 768;
+        setIsMobile(isMobileDevice);
+      };
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      return () => window.removeEventListener('resize', checkMobile);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Only show on admin pages and mobile devices
+    if (!isAdminPage || !isMobile) {
       return;
     }
 
@@ -41,14 +58,13 @@ const InstallPrompt = () => {
 
     const detectedIOS = isIOS();
 
-    const isMobile = window.innerWidth < 1024;
     const shouldShow =
       detectedIOS ||
       (isMobile &&
         /Safari/.test(navigator.userAgent) &&
         !/Chrome|CriOS|FxiOS/.test(navigator.userAgent));
 
-    if (shouldShow || detectedIOS) {
+    if (shouldShow) {
       const timer = setTimeout(() => {
         const hasSeenPrompt = localStorage.getItem('pwa-ios-prompt-seen');
         if (!hasSeenPrompt) {
@@ -69,14 +85,15 @@ const InstallPrompt = () => {
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
-  }, [isAdminPage]);
+  }, [isAdminPage, isMobile]);
 
   const handleIOSDismiss = () => {
     setShowIOSPrompt(false);
     localStorage.setItem('pwa-ios-prompt-seen', 'true');
   };
 
-  if (!isAdminPage || isInstalled) {
+  // Only show on admin pages, mobile devices, and if not already installed
+  if (!isAdminPage || !isMobile || isInstalled) {
     return null;
   }
 

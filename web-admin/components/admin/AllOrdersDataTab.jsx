@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
+import SkeletonLoader from './SkeletonLoader.jsx';
 import { formatDate, parseOrderDate } from './utils/dateUtils.js';
 import {
   extractOrderIdSequence,
@@ -9,6 +10,7 @@ import {
   isPendingStatus,
   sortOrdersByOrderId,
 } from './utils/orderUtils.js';
+import { useDebounce } from './utils/useDebounce.js';
 
 const AllOrdersDataTab = ({
   orders = [],
@@ -60,7 +62,32 @@ const AllOrdersDataTab = ({
   const [filterYear, setFilterYear] = useState('');
   const [filterAddress, setFilterAddress] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
+  // Load filters from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedFilters = localStorage.getItem('admin_all_orders_filters');
+      if (savedFilters) {
+        const filters = JSON.parse(savedFilters);
+        if (filters.allOrdersFilterMonth) setAllOrdersFilterMonth(filters.allOrdersFilterMonth);
+        if (filters.allOrdersFilterAddress) setAllOrdersFilterAddress(filters.allOrdersFilterAddress);
+        if (filters.allOrdersFilterPaymentStatus) setAllOrdersFilterPaymentStatus(filters.allOrdersFilterPaymentStatus);
+        if (filters.dateRangeFrom) setDateRangeFrom(filters.dateRangeFrom);
+        if (filters.dateRangeTo) setDateRangeTo(filters.dateRangeTo);
+        if (filters.filterStatus) setFilterStatus(filters.filterStatus);
+        if (filters.filterMode) setFilterMode(filters.filterMode);
+        if (filters.filterPayment) setFilterPayment(filters.filterPayment);
+        if (filters.filterYear) setFilterYear(filters.filterYear);
+        if (filters.filterAddress) setFilterAddress(filters.filterAddress);
+        if (filters.searchQuery) setSearchQuery(filters.searchQuery);
+      }
+    } catch (error) {
+      console.warn('Failed to load filters from localStorage:', error);
+    }
+  }, []);
+
+  // Override with initialDateFilter if provided
   useEffect(() => {
     if (initialDateFilter) {
       setDateRangeFrom(initialDateFilter);
@@ -68,6 +95,40 @@ const AllOrdersDataTab = ({
       setFiltersExpanded(true);
     }
   }, [initialDateFilter]);
+
+  // Save filters to localStorage whenever they change
+  useEffect(() => {
+    const filters = {
+      allOrdersFilterMonth,
+      allOrdersFilterAddress,
+      allOrdersFilterPaymentStatus,
+      dateRangeFrom,
+      dateRangeTo,
+      filterStatus,
+      filterMode,
+      filterPayment,
+      filterYear,
+      filterAddress,
+      searchQuery,
+    };
+    try {
+      localStorage.setItem('admin_all_orders_filters', JSON.stringify(filters));
+    } catch (error) {
+      console.warn('Failed to save filters to localStorage:', error);
+    }
+  }, [
+    allOrdersFilterMonth,
+    allOrdersFilterAddress,
+    allOrdersFilterPaymentStatus,
+    dateRangeFrom,
+    dateRangeTo,
+    filterStatus,
+    filterMode,
+    filterPayment,
+    filterYear,
+    filterAddress,
+    searchQuery,
+  ]);
 
   const [selectedRows, setSelectedRows] = useState(new Set());
   const [selectAll, setSelectAll] = useState(false);
@@ -78,8 +139,8 @@ const AllOrdersDataTab = ({
   const filteredOrders = useMemo(() => {
     let filtered = [...orders];
 
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.toLowerCase();
       filtered = filtered.filter((order) => {
         const address = (
           order.deliveryAddress ||
@@ -314,7 +375,7 @@ const AllOrdersDataTab = ({
     return filtered;
   }, [
     orders,
-    searchQuery,
+    debouncedSearchQuery,
     allOrdersFilterMonth,
     allOrdersFilterAddress,
     allOrdersFilterPaymentStatus,
@@ -632,7 +693,17 @@ const AllOrdersDataTab = ({
   if (loading) {
     return (
       <div className='admin-content'>
-        <PremiumLoader message='Loading orders...' size='large' />
+        <div className='dashboard-card table-container-card'>
+          <div className='skeleton-action-bar'>
+            <div className='skeleton-search-input'></div>
+            <div className='skeleton-action-buttons'>
+              <div className='skeleton-button'></div>
+              <div className='skeleton-button'></div>
+              <div className='skeleton-button'></div>
+            </div>
+          </div>
+          <SkeletonLoader type='table' rows={15} cols={10} />
+        </div>
       </div>
     );
   }
@@ -910,9 +981,16 @@ const AllOrdersDataTab = ({
                   setAllOrdersFilterMonth('');
                   setAllOrdersFilterAddress('');
                   setAllOrdersFilterPaymentStatus('');
+                  setSearchQuery('');
                   if (setAllOrdersFilterMonth) setAllOrdersFilterMonth('');
                   if (setAllOrdersFilterAddress) setAllOrdersFilterAddress('');
                   if (setAllOrdersFilterPaymentStatus) setAllOrdersFilterPaymentStatus('');
+                  // Clear localStorage filters
+                  try {
+                    localStorage.removeItem('admin_all_orders_filters');
+                  } catch (error) {
+                    console.warn('Failed to clear filters from localStorage:', error);
+                  }
                 }}
               >
                 <i className='fa-solid fa-xmark'></i> Clear All

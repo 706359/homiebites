@@ -74,7 +74,8 @@ export default function RootLayout({ children }) {
       <head>
         <link rel='icon' type='image/png' href='/logo.png' />
         <link rel='apple-touch-icon' href='/logo.png' />
-        <link rel='manifest' href='/manifest.json' />
+        {/* Manifest will be dynamically loaded by admin layout for admin pages */}
+        <link rel='manifest' href='/manifest.json' id='app-manifest' />
         <meta name='theme-color' content='#FF6B35' />
         <meta
           name='viewport'
