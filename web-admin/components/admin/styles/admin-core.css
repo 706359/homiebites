@@ -37,6 +37,52 @@
   --admin-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
   --admin-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
   --admin-shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.16);
+
+  /* ====== STANDARDIZED SPACING SCALE ====== */
+  --spacing-xs: 4px;
+  --spacing-sm: 6px;
+  --spacing-md: 8px;
+  --spacing-base: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+
+  /* ====== STANDARDIZED TYPOGRAPHY ====== */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-body: 14px;
+  --text-body-lg: 15px;
+  --text-h4: 16px;
+  --text-h3: 18px;
+  --text-h2: 20px;
+  --text-h1: 24px;
+  --line-height-tight: 1.2;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+
+  /* ====== STANDARDIZED BORDER RADIUS ====== */
+  --rounded-xs: 2px;
+  --rounded-sm: 4px;
+  --rounded-md: 6px;
+  --rounded-lg: 8px;
+  --rounded-xl: 12px;
+  --rounded-2xl: 16px;
+  --rounded-full: 9999px;
+
+  /* ====== STANDARDIZED SHADOWS ====== */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.16);
+
+  /* ====== STANDARDIZED TRANSITIONS ====== */
+  --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .dark-theme {
   --admin-bg: #111827;
@@ -133,6 +179,441 @@
   --admin-accent-light: rgba(225, 29, 72, 0.15);
   --admin-accent-hover: #fb7185;
 }
+
+/* ========================================================================
+   UTILITY CLASSES - SPACING
+   ======================================================================== */
+.admin-dashboard .m-xs,
+.m-xs {
+  margin: 4px;
+}
+.admin-dashboard .m-sm,
+.m-sm {
+  margin: 6px;
+}
+.admin-dashboard .m-md,
+.m-md {
+  margin: 8px;
+}
+.admin-dashboard .m-base,
+.m-base {
+  margin: 12px;
+}
+.admin-dashboard .m-lg,
+.m-lg {
+  margin: 16px;
+}
+.admin-dashboard .m-xl,
+.m-xl {
+  margin: 20px;
+}
+.admin-dashboard .m-2xl,
+.m-2xl {
+  margin: 24px;
+}
+
+.admin-dashboard .p-xs,
+.p-xs {
+  padding: 4px;
+}
+.admin-dashboard .p-sm,
+.p-sm {
+  padding: 6px;
+}
+.admin-dashboard .p-md,
+.p-md {
+  padding: 8px;
+}
+.admin-dashboard .p-base,
+.p-base {
+  padding: 12px;
+}
+.admin-dashboard .p-lg,
+.p-lg {
+  padding: 16px;
+}
+.admin-dashboard .p-xl,
+.p-xl {
+  padding: 20px;
+}
+.admin-dashboard .p-2xl,
+.p-2xl {
+  padding: 24px;
+}
+
+.admin-dashboard .gap-xs,
+.gap-xs {
+  gap: 4px;
+}
+.admin-dashboard .gap-sm,
+.gap-sm {
+  gap: 6px;
+}
+.admin-dashboard .gap-md,
+.gap-md {
+  gap: 8px;
+}
+.admin-dashboard .gap-base,
+.gap-base {
+  gap: 12px;
+}
+.admin-dashboard .gap-lg,
+.gap-lg {
+  gap: 16px;
+}
+.admin-dashboard .gap-xl,
+.gap-xl {
+  gap: 20px;
+}
+.admin-dashboard .gap-2xl,
+.gap-2xl {
+  gap: 24px;
+}
+
+/* ========================================================================
+   UTILITY CLASSES - TYPOGRAPHY
+   ======================================================================== */
+.admin-dashboard .text-xs,
+.text-xs {
+  font-size: 11px;
+  line-height: 16px;
+}
+.admin-dashboard .text-sm,
+.text-sm {
+  font-size: 12px;
+  line-height: 16px;
+}
+.admin-dashboard .text-base,
+.text-base {
+  font-size: 13px;
+  line-height: 18px;
+}
+.admin-dashboard .text-body,
+.text-body {
+  font-size: 14px;
+  line-height: 20px;
+}
+.admin-dashboard .text-body-lg,
+.text-body-lg {
+  font-size: 15px;
+  line-height: 22px;
+}
+.admin-dashboard .text-h4,
+.text-h4 {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.admin-dashboard .text-h3,
+.text-h3 {
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 600;
+}
+.admin-dashboard .text-h2,
+.text-h2 {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 700;
+}
+.admin-dashboard .text-h1,
+.text-h1 {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 700;
+}
+
+.admin-dashboard .font-thin,
+.font-thin {
+  font-weight: 100;
+}
+.admin-dashboard .font-extralight,
+.font-extralight {
+  font-weight: 200;
+}
+.admin-dashboard .font-light,
+.font-light {
+  font-weight: 300;
+}
+.admin-dashboard .font-normal,
+.font-normal {
+  font-weight: 400;
+}
+.admin-dashboard .font-medium,
+.font-medium {
+  font-weight: 500;
+}
+.admin-dashboard .font-semibold,
+.font-semibold {
+  font-weight: 600;
+}
+.admin-dashboard .font-bold,
+.font-bold {
+  font-weight: 700;
+}
+.admin-dashboard .font-extrabold,
+.font-extrabold {
+  font-weight: 800;
+}
+
+.admin-dashboard .leading-tight,
+.leading-tight {
+  line-height: 1.2;
+}
+.admin-dashboard .leading-snug,
+.leading-snug {
+  line-height: 1.375;
+}
+.admin-dashboard .leading-normal,
+.leading-normal {
+  line-height: 1.5;
+}
+.admin-dashboard .leading-relaxed,
+.leading-relaxed {
+  line-height: 1.625;
+}
+.admin-dashboard .leading-loose,
+.leading-loose {
+  line-height: 2;
+}
+
+/* ========================================================================
+   UTILITY CLASSES - BORDER & RADIUS
+   ======================================================================== */
+.admin-dashboard .rounded-none,
+.rounded-none {
+  border-radius: 0;
+}
+.admin-dashboard .rounded-xs,
+.rounded-xs {
+  border-radius: 2px;
+}
+.admin-dashboard .rounded-sm,
+.rounded-sm {
+  border-radius: 4px;
+}
+.admin-dashboard .rounded-md,
+.rounded-md {
+  border-radius: 6px;
+}
+.admin-dashboard .rounded-lg,
+.rounded-lg {
+  border-radius: 8px;
+}
+.admin-dashboard .rounded-xl,
+.rounded-xl {
+  border-radius: 12px;
+}
+.admin-dashboard .rounded-2xl,
+.rounded-2xl {
+  border-radius: 16px;
+}
+.admin-dashboard .rounded-full,
+.rounded-full {
+  border-radius: 9999px;
+}
+
+.admin-dashboard .border-0,
+.border-0 {
+  border-width: 0;
+}
+.admin-dashboard .border-1,
+.border-1 {
+  border-width: 1px;
+}
+.admin-dashboard .border-2,
+.border-2 {
+  border-width: 2px;
+}
+
+.admin-dashboard .border-solid,
+.border-solid {
+  border-style: solid;
+}
+.admin-dashboard .border-dashed,
+.border-dashed {
+  border-style: dashed;
+}
+.admin-dashboard .border-dotted,
+.border-dotted {
+  border-style: dotted;
+}
+
+/* ========================================================================
+   UTILITY CLASSES - SHADOWS
+   ======================================================================== */
+.admin-dashboard .shadow-none,
+.shadow-none {
+  box-shadow: none;
+}
+.admin-dashboard .shadow-sm,
+.shadow-sm {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.admin-dashboard .shadow-md,
+.shadow-md {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.admin-dashboard .shadow-lg,
+.shadow-lg {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+.admin-dashboard .shadow-xl,
+.shadow-xl {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
+}
+
+/* ========================================================================
+   UTILITY CLASSES - TRANSITIONS
+   ======================================================================== */
+.admin-dashboard .transition-fast,
+.transition-fast {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.admin-dashboard .transition-base,
+.transition-base {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.admin-dashboard .transition-slow,
+.transition-slow {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-dashboard .transition-colors,
+.transition-colors {
+  transition: background-color, border-color, color, fill, stroke;
+  transition-duration: 0.2s;
+}
+.admin-dashboard .transition-opacity,
+.transition-opacity {
+  transition-property: opacity;
+  transition-duration: 0.2s;
+}
+.admin-dashboard .transition-transform,
+.transition-transform {
+  transition-property: transform;
+  transition-duration: 0.2s;
+}
+
+/* ========================================================================
+   UTILITY CLASSES - DISPLAY & LAYOUT
+   ======================================================================== */
+.admin-dashboard .block,
+.block {
+  display: block;
+}
+.admin-dashboard .inline,
+.inline {
+  display: inline;
+}
+.admin-dashboard .inline-block,
+.inline-block {
+  display: inline-block;
+}
+.admin-dashboard .flex,
+.flex {
+  display: flex;
+}
+.admin-dashboard .inline-flex,
+.inline-flex {
+  display: inline-flex;
+}
+.admin-dashboard .grid,
+.grid {
+  display: grid;
+}
+.admin-dashboard .hidden,
+.hidden {
+  display: none;
+}
+
+.admin-dashboard .flex-row,
+.flex-row {
+  flex-direction: row;
+}
+.admin-dashboard .flex-col,
+.flex-col {
+  flex-direction: column;
+}
+.admin-dashboard .flex-wrap,
+.flex-wrap {
+  flex-wrap: wrap;
+}
+.admin-dashboard .flex-nowrap,
+.flex-nowrap {
+  flex-wrap: nowrap;
+}
+
+.admin-dashboard .items-start,
+.items-start {
+  align-items: flex-start;
+}
+.admin-dashboard .items-center,
+.items-center {
+  align-items: center;
+}
+.admin-dashboard .items-end,
+.items-end {
+  align-items: flex-end;
+}
+.admin-dashboard .items-stretch,
+.items-stretch {
+  align-items: stretch;
+}
+
+.admin-dashboard .justify-start,
+.justify-start {
+  justify-content: flex-start;
+}
+.admin-dashboard .justify-center,
+.justify-center {
+  justify-content: center;
+}
+.admin-dashboard .justify-end,
+.justify-end {
+  justify-content: flex-end;
+}
+.admin-dashboard .justify-between,
+.justify-between {
+  justify-content: space-between;
+}
+
+.admin-dashboard .flex-1,
+.flex-1 {
+  flex: 1 1 0%;
+}
+.admin-dashboard .flex-auto,
+.flex-auto {
+  flex: 1 1 auto;
+}
+.admin-dashboard .flex-none,
+.flex-none {
+  flex: none;
+}
+
+.justify-start {
+  justify-content: flex-start;
+}
+.justify-center {
+  justify-content: center;
+}
+.justify-end {
+  justify-content: flex-end;
+}
+.justify-between {
+  justify-content: space-between;
+}
+
+.flex-1 {
+  flex: 1 1 0%;
+}
+.flex-auto {
+  flex: 1 1 auto;
+}
+.flex-none {
+  flex: none;
+}
+
 .dark-theme input,
 .dark-theme textarea,
 .dark-theme select {
@@ -421,7 +902,7 @@ body.theme-loading * {
 .admin-dashboard .h1,
 .top-nav-title,
 .dashboard-header h1 {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
@@ -433,7 +914,7 @@ body.theme-loading * {
 .dashboard-header h2,
 .modal-header h2,
 .settings-section-title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
   line-height: 1.3;
   margin: 0;
@@ -545,7 +1026,7 @@ button:not(.btn-small):not(.btn-large) {
 }
 
 .admin-sidebar.collapsed .sidebar-item i {
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .sidebar-collapse-btn {
@@ -577,7 +1058,7 @@ button:not(.btn-small):not(.btn-large) {
 }
 
 .stat-card .stat-value {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 1.2;
 }
@@ -591,7 +1072,7 @@ button:not(.btn-small):not(.btn-large) {
 }
 
 .stat-card i {
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .btn,
@@ -660,7 +1141,7 @@ textarea {
 }
 
 .menu-item-price-amount {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 1.2;
 }
@@ -674,7 +1155,7 @@ textarea {
 }
 
 .modal-header h2 {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
   line-height: 1.3;
 }
@@ -747,7 +1228,7 @@ textarea {
 }
 
 .top-nav-title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   line-height: 1.2;
 }
@@ -936,7 +1417,7 @@ textarea {
 .empty-state-text {
   width: 100%;
   text-align: center;
-  padding: 2rem;
+  padding: 32px;
   color: #9ca3af;
   font-size: 13px;
 }
@@ -1051,7 +1532,7 @@ textarea {
 }
 
 .icon-40 {
-  font-size: 40px;
+  font-size: 32px;
 }
 
 .opacity-70 {
@@ -1181,11 +1662,11 @@ textarea {
 }
 
 .text-2xl {
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .text-3xl {
-  font-size: 28px;
+  font-size: 24px;
 }
 
 .text-4xl {
@@ -1408,7 +1889,7 @@ textarea {
   align-items: flex-end;
   height: 200px;
   min-height: 200px;
-  padding-top: 10px;
+  padding-top: 12px;
   box-sizing: border-box;
 }
 
@@ -1447,11 +1928,7 @@ textarea {
 }
 
 .chart-bar-current-year {
-  background: linear-gradient(
-    to top,
-    #449031,
-    #3a7a29
-  );
+  background: linear-gradient(to top, #449031, #3a7a29);
   box-shadow: 0 2px 4px rgba(68, 144, 49, 0.2);
 }
 
@@ -1537,11 +2014,7 @@ textarea {
 
 .chart-bar-cash.chart-bar-current-year,
 .chart-bar-online.chart-bar-current-year {
-  background: linear-gradient(
-    to top,
-    #449031,
-    #3a7a29
-  );
+  background: linear-gradient(to top, #449031, #3a7a29);
   box-shadow: 0 2px 4px rgba(68, 144, 49, 0.2);
 }
 
@@ -1591,7 +2064,6 @@ textarea {
 .table-wrapper-min-height {
   min-height: 400px;
 }
-
 
 .pagination-controls {
   margin-top: 24px;
@@ -1697,7 +2169,7 @@ textarea {
   text-align: center;
   background: var(--light-gray, #f5f5f5);
   border-radius: 12px;
-  margin-top: 2rem;
+  margin-top: 32px;
   border: 1px dashed var(--gray-light, #ddd);
 }
 
@@ -1709,7 +2181,7 @@ textarea {
 }
 
 .no-offers-title {
-  font-size: 22px;
+  font-size: 20px;
   color: var(--text-primary, #333);
   margin-bottom: 1rem;
   font-weight: 600;
@@ -1718,7 +2190,7 @@ textarea {
 .no-offers-text {
   font-size: 18px;
   color: var(--text-secondary, #666);
-  margin-bottom: 2rem;
+  margin-bottom: 32px;
   line-height: 1.6;
 }
 
@@ -1758,7 +2230,9 @@ textarea {
   border-radius: 2px 2px 0 0;
   display: block;
   position: relative;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .chart-bar[data-height] {
@@ -1959,23 +2433,52 @@ textarea {
 }
 
 .form-input-small {
-  padding: 10px 12px;
+  padding: 12px 12px;
   font-size: 14px;
 }
 
 .form-input-medium {
-  padding: 10px 18px;
+  padding: 12px 16px;
   font-size: 14px;
 }
 
+/* ====== STANDARDIZED INPUT SIZES ====== */
+.admin-dashboard .input-xs,
+.input-xs {
+  height: 28px;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.admin-dashboard .input-sm,
+.input-sm {
+  height: 32px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.admin-dashboard .input-md,
+.input-md {
+  height: 40px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.admin-dashboard .input-lg,
+.input-lg {
+  height: 48px;
+  padding: 12px 16px;
+  font-size: 15px;
+}
+
 .form-textarea {
-  padding: 10px 12px;
+  padding: 12px 16px;
   font-size: 14px;
   resize: vertical;
 }
 
 .modal-header-compact {
-  padding: 18px 24px;
+  padding: 16px 24px;
 }
 
 .modal-header-title {
@@ -2093,11 +2596,11 @@ textarea {
 }
 
 .p-sm {
-  padding: 10px 12px;
+  padding: 12px 12px;
 }
 
 .p-md {
-  padding: 10px 18px;
+  padding: 12px 16px;
 }
 
 .p-lg {
@@ -2114,8 +2617,8 @@ textarea {
 }
 
 .px-md {
-  padding-left: 18px;
-  padding-right: 18px;
+  padding-left: 16px;
+  padding-right: 16px;
 }
 
 .px-lg {
@@ -2560,19 +3063,19 @@ textarea {
   margin: 8px;
 }
 .admin-dashboard .m-md {
-  margin: 10px;
+  margin: 12px;
 }
 .admin-dashboard .m-base {
   margin: 12px;
 }
 .admin-dashboard .m-lg {
-  margin: 14px;
+  margin: 16px;
 }
 .admin-dashboard .m-xl {
   margin: 16px;
 }
 .admin-dashboard .m-2xl {
-  margin: 18px;
+  margin: 20px;
 }
 .admin-dashboard .m-3xl {
   margin: 20px;
@@ -2591,19 +3094,19 @@ textarea {
   padding: 8px;
 }
 .admin-dashboard .p-md {
-  padding: 10px;
+  padding: 12px;
 }
 .admin-dashboard .p-base {
   padding: 12px;
 }
 .admin-dashboard .p-lg {
-  padding: 14px;
+  padding: 16px;
 }
 .admin-dashboard .p-xl {
   padding: 16px;
 }
 .admin-dashboard .p-2xl {
-  padding: 18px;
+  padding: 20px;
 }
 .admin-dashboard .p-3xl {
   padding: 20px;

@@ -1,5 +1,5 @@
 .menu-form-input {
-  padding: 10px 12px;
+  padding: 12px 12px;
   font-size: 14px;
 }
 
@@ -22,7 +22,6 @@
   line-height: 1.4;
 }
 
-
 .menu-form-group-full {
   grid-column: 1 / -1;
   margin-bottom: 0;
@@ -34,7 +33,6 @@
   margin-top: 4px;
 }
 
-
 .menu-modal-footer {
   display: flex;
   align-items: center;
@@ -43,12 +41,10 @@
   gap: 10px;
 }
 
-
 .menu-modal-btn {
-  padding: 10px 18px;
+  padding: 12px 16px;
   font-size: 14px;
 }
-
 
 .menu-checkbox-label {
   display: flex;
@@ -63,7 +59,6 @@
   margin: 0;
 }
 
-
 .menu-item-image-wrapper {
   position: relative;
   width: 100%;
@@ -73,11 +68,9 @@
   background: linear-gradient(135deg, rgba(68, 144, 49, 0.03) 0%, #f9fafb 100%);
 }
 
-
 .menu-form-grid {
   gap: 16px;
 }
-
 
 .menu-form-textarea {
   resize: vertical;
@@ -88,7 +81,7 @@
 }
 
 .menu-edit-modal-header {
-  padding: 18px 24px;
+  padding: 16px 24px;
 }
 
 .menu-edit-modal-header h2 {
