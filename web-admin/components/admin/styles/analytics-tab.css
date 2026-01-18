@@ -1,12 +1,12 @@
 .analytics-empty-state-center {
   text-align: center;
   padding: 48px;
-  color: var(--admin-text-light);
+  color: #94a3b8;
   width: 100%;
 }
 
 .analytics-empty-icon-large {
-  font-size: var(--admin-icon-size-5xl, 48px);
+  font-size: 48px;
   opacity: 0.3;
 }
 
@@ -15,25 +15,25 @@
 }
 
 .analytics-chart-section {
-  padding: var(--admin-spacing-xl, 16px) 0;
-  border-top: 1px solid var(--admin-border);
-  margin-top: var(--admin-spacing-base-size, 12px);
+  padding: 16px 0;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 12px;
 }
 
 .analytics-empty-state-inline {
   text-align: center;
   padding: 48px;
-  color: var(--admin-text-light);
+  color: #94a3b8;
 }
 
 .analytics-progress-bar-container {
   width: 100%;
   height: 20px;
-  background: var(--admin-bg-secondary, rgba(0, 0, 0, 0.05));
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 10px;
   overflow: hidden;
   position: relative;
-  border: 1px solid var(--admin-border, rgba(0, 0, 0, 0.1));
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .analytics-progress-bar-container .progress-bar-fill {
@@ -45,11 +45,11 @@
 .progress-bar-container-alt {
   width: 100%;
   height: 24px;
-  background: var(--admin-bg-secondary, rgba(0, 0, 0, 0.05));
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 12px;
   overflow: hidden;
   position: relative;
-  border: 1px solid var(--admin-border, rgba(0, 0, 0, 0.1));
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .progress-bar-container-alt .progress-bar-fill {
@@ -65,11 +65,11 @@
 .analytics-progress-bar-container-alt {
   width: 100%;
   height: 24px;
-  background: var(--admin-bg-secondary, rgba(0, 0, 0, 0.05));
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 12px;
   overflow: hidden;
   position: relative;
-  border: 1px solid var(--admin-border, rgba(0, 0, 0, 0.1));
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .analytics-progress-bar-container-alt .progress-bar-fill {
@@ -92,14 +92,14 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 0 var(--admin-spacing-sm, 8px);
+  padding: 0 8px;
   pointer-events: none;
 }
 
 .analytics-progress-bar-container-alt .progress-bar-label {
-  font-size: var(--admin-font-size-body-xs, 12px);
+  font-size: 12px;
   font-weight: 600;
-  color: var(--admin-text-primary);
+  color: #1e293b;
   white-space: nowrap;
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
@@ -137,27 +137,27 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  background: var(--admin-glass-border);
+  background: rgba(68, 144, 49, 0.03);
   border-radius: 8px;
   margin-top: 16px;
 }
 
 .analytics-day-summary-label {
-  font-size: var(--admin-font-size-body-sm, 13px);
-  color: var(--admin-text-secondary);
+  font-size: 13px;
+  color: #64748b;
   font-weight: 500;
 }
 
 .analytics-day-summary-value {
   font-size: 1.1rem;
-  color: var(--admin-accent);
+  color: #449031;
   font-weight: 700;
   margin-left: 8px;
 }
 
 .analytics-day-summary-text {
   font-size: 1rem;
-  color: var(--admin-text);
+  color: #1e293b;
   font-weight: 600;
   margin-left: 8px;
 }
@@ -166,5 +166,5 @@
   position: absolute;
   top: -8px;
   right: -8px;
-  background: var(--admin-warning, #f59e0b);
+  background: #f59e0b;
 }

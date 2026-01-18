@@ -51,6 +51,7 @@ const AllOrdersDataTab = ({
   }, []);
 
   const [filtersExpanded, setFiltersExpanded] = useState(!!initialDateFilter);
+  const [showFilterWrapper, setShowFilterWrapper] = useState(false);
   const [dateRangeFrom, setDateRangeFrom] = useState(initialDateFilter || '');
   const [dateRangeTo, setDateRangeTo] = useState(initialDateFilter || '');
   const [filterStatus, setFilterStatus] = useState('');
@@ -639,305 +640,310 @@ const AllOrdersDataTab = ({
   return (
     <div className='admin-content'>
       {}
-      <div className='action-bar'>
-        <div className='search-input-wrapper'>
-          <i className='fa-solid fa-search search-input-icon'></i>
-          <input
-            type='text'
-            className='input-field search-input-with-icon'
-            placeholder='Search orders...'
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className='action-buttons-group'>
-          <button
-            className='btn btn-secondary btn-small'
-            onClick={onLoadExcelFile}
-            title='Upload CSV'
-          >
-            <i className='fa-solid fa-upload'></i> Upload CSV
-          </button>
-          <button
-            className='btn btn-primary btn-small'
-            onClick={() => onEditOrder && onEditOrder(null)}
-            title='Add Order'
-          >
-            <i className='fa-solid fa-plus'></i> Add Order
-          </button>
-          <button className='btn btn-secondary btn-small' onClick={handleExport} title='Export'>
-            <i className='fa-solid fa-download'></i> Export
-          </button>
-          {onClearAllData && (
-            <button
-              className='btn btn-special danger btn-small'
-              onClick={() => {
-                if (showConfirmation) {
-                  showConfirmation({
-                    title: 'Clear All Data',
-                    message:
-                      'Are you sure you want to clear ALL orders data? This action cannot be undone and will permanently delete all orders.',
-                    type: 'danger',
-                    confirmText: 'Clear All Data',
-                    onConfirm: async () => {
-                      await onClearAllData(true);
-                    },
-                  });
-                } else if (onClearAllData) {
-                  onClearAllData(true);
-                }
-              }}
-              title='Delete All Orders'
-            >
-              <i className='fa-solid fa-trash'></i> Delete All
-            </button>
-          )}
-        </div>
-      </div>
-
-      {}
-      <div className='dashboard-card filter-bar-card'>
-        <div className='filter-bar-container'>
-          <div className='filter-bar-quick-filters'>
-            <div className='premium-select-wrapper'>
-              <i className='fa-solid fa-credit-card select-icon'></i>
-              <select
-                className='input-field filter-select premium-select'
-                value={allOrdersFilterPaymentStatus}
-                onChange={(e) => {
-                  setAllOrdersFilterPaymentStatus(e.target.value);
-                  if (setAllOrdersFilterPaymentStatus)
-                    setAllOrdersFilterPaymentStatus(e.target.value);
-
-                  if (e.target.value) {
-                    setFilterStatus('');
-                  }
-                }}
-                title='Filter by Payment Status'
+      <div className='dashboard-card table-container-card'>
+        {}
+        <div className='action-bar'>
+          <div className='search-input-wrapper'>
+            <i className='fa-solid fa-search search-input-icon'></i>
+            <input
+              type='text'
+              className='input-field search-input-with-icon'
+              placeholder='Search orders...'
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          {selectedRows.size > 0 && (
+            <div className='bulk-actions-inline'>
+              <span className='bulk-actions-label'>{selectedRows.size} selected</span>
+              <button
+                className='btn btn-special btn-small'
+                onClick={() => handleBulkAction('paid')}
               >
-                <option value=''>All Payment Status</option>
-                <option value='paid'>Paid</option>
-                <option value='unpaid'>Unpaid</option>
-                <option value='pending'>Pending</option>
-              </select>
-              <i className='fa-solid fa-chevron-down dropdown-icon'></i>
+                Mark as Paid
+              </button>
+            </div>
+          )}
+          <div className='action-buttons-group'>
+            <button
+              className='btn btn-ghost btn-small filter-icon-btn'
+              onClick={() => setShowFilterWrapper(!showFilterWrapper)}
+              title='Filters'
+            >
+              <i className='fa-solid fa-filter'></i>
+              {(allOrdersFilterPaymentStatus ||
+                filterStatus ||
+                filterMode ||
+                filterPayment ||
+                filterAddress ||
+                dateRangeFrom ||
+                dateRangeTo ||
+                allOrdersFilterMonth ||
+                filterYear) && (
+                <span className='filter-badge'>{[
+                  allOrdersFilterPaymentStatus,
+                  filterStatus,
+                  filterMode,
+                  filterPayment,
+                  filterAddress,
+                  dateRangeFrom,
+                  dateRangeTo,
+                  allOrdersFilterMonth,
+                  filterYear,
+                ].filter(Boolean).length}</span>
+              )}
+            </button>
+            <button
+              className='btn btn-primary btn-small'
+              onClick={() => onEditOrder && onEditOrder(null)}
+              title='Add Order'
+            >
+              <i className='fa-solid fa-plus'></i> Add Order
+            </button>
+            <button className='btn btn-secondary btn-small' onClick={handleExport} title='Export'>
+              <i className='fa-solid fa-download'></i> Export
+            </button>
+          </div>
+        </div>
+
+        {}
+        {showFilterWrapper && (
+        <div className='filter-wrapper-dropdown'>
+          <div className='filter-wrapper-header'>
+            <h3>Filters</h3>
+            <button
+              className='btn btn-ghost btn-icon'
+              onClick={() => setShowFilterWrapper(false)}
+              title='Close'
+            >
+              <i className='fa-solid fa-times'></i>
+            </button>
+          </div>
+          <div className='filter-wrapper-content'>
+            <div className='filter-wrapper-section'>
+              <label className='filter-label'>Payment Status</label>
+              <div className='premium-select-wrapper'>
+                <i className='fa-solid fa-credit-card select-icon'></i>
+                <select
+                  className='input-field filter-select premium-select'
+                  value={allOrdersFilterPaymentStatus}
+                  onChange={(e) => {
+                    setAllOrdersFilterPaymentStatus(e.target.value);
+                    if (setAllOrdersFilterPaymentStatus)
+                      setAllOrdersFilterPaymentStatus(e.target.value);
+
+                    if (e.target.value) {
+                      setFilterStatus('');
+                    }
+                  }}
+                  title='Filter by Payment Status'
+                >
+                  <option value=''>All Payment Status</option>
+                  <option value='paid'>Paid</option>
+                  <option value='unpaid'>Unpaid</option>
+                  <option value='pending'>Pending</option>
+                </select>
+                <i className='fa-solid fa-chevron-down dropdown-icon'></i>
+              </div>
             </div>
 
-            <div className='premium-select-wrapper'>
-              <i className='fa-solid fa-filter select-icon'></i>
-              <select
-                className='input-field filter-select premium-select'
-                value={filterStatus}
-                onChange={(e) => {
-                  setFilterStatus(e.target.value);
+            <div className='filter-wrapper-section'>
+              <label className='filter-label'>Status</label>
+              <div className='premium-select-wrapper'>
+                <i className='fa-solid fa-filter select-icon'></i>
+                <select
+                  className='input-field filter-select premium-select'
+                  value={filterStatus}
+                  onChange={(e) => {
+                    setFilterStatus(e.target.value);
 
-                  if (e.target.value) {
-                    setAllOrdersFilterPaymentStatus('');
-                    if (setAllOrdersFilterPaymentStatus) setAllOrdersFilterPaymentStatus('');
-                  }
-                }}
-                title='Filter by Exact Status'
+                    if (e.target.value) {
+                      setAllOrdersFilterPaymentStatus('');
+                      if (setAllOrdersFilterPaymentStatus) setAllOrdersFilterPaymentStatus('');
+                    }
+                  }}
+                  title='Filter by Exact Status'
+                >
+                  <option value=''>All Status</option>
+                  {uniqueStatuses.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+                <i className='fa-solid fa-chevron-down dropdown-icon'></i>
+              </div>
+            </div>
+
+            <div className='filter-wrapper-section'>
+              <label className='filter-label'>Mode</label>
+              <select
+                className='input-field filter-select'
+                value={filterMode}
+                onChange={(e) => setFilterMode(e.target.value)}
+                title='Filter by Mode'
               >
-                <option value=''>All Status</option>
-                {uniqueStatuses.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
+                <option value=''>All Modes</option>
+                {uniqueModes.map((mode) => (
+                  <option key={mode} value={mode}>
+                    {mode}
                   </option>
                 ))}
               </select>
-              <i className='fa-solid fa-chevron-down dropdown-icon'></i>
             </div>
 
-            <select
-              className='input-field filter-select'
-              value={filterMode}
-              onChange={(e) => setFilterMode(e.target.value)}
-              title='Filter by Mode'
-            >
-              <option value=''>All Modes</option>
-              {uniqueModes.map((mode) => (
-                <option key={mode} value={mode}>
-                  {mode}
-                </option>
-              ))}
-            </select>
-
-            <select
-              className='input-field filter-select'
-              value={filterPayment}
-              onChange={(e) => setFilterPayment(e.target.value)}
-              title='Filter by Payment Mode'
-            >
-              <option value=''>All Payment Modes</option>
-              {uniquePaymentModes.map((pm) => (
-                <option key={pm} value={pm}>
-                  {pm}
-                </option>
-              ))}
-            </select>
-
-            <button
-              onClick={() => setFiltersExpanded(!filtersExpanded)}
-              className={`btn btn-ghost btn-small filter-toggle-btn ${
-                filtersExpanded ? 'active' : ''
-              }`}
-            >
-              <i className='fa-solid fa-sliders filter-toggle-icon'></i>
-              Advanced Filters
-              <i
-                className={`fa-solid fa-chevron-${
-                  filtersExpanded ? 'up' : 'down'
-                } filter-toggle-chevron`}
-              ></i>
-            </button>
-
-            {(allOrdersFilterPaymentStatus ||
-              filterStatus ||
-              filterMode ||
-              filterPayment ||
-              filterAddress ||
-              dateRangeFrom ||
-              dateRangeTo ||
-              allOrdersFilterMonth ||
-              filterYear) && (
-              <button
-                className='btn btn-ghost btn-small filter-clear-btn'
-                onClick={clearAllFilters}
+            <div className='filter-wrapper-section'>
+              <label className='filter-label'>Payment Mode</label>
+              <select
+                className='input-field filter-select'
+                value={filterPayment}
+                onChange={(e) => setFilterPayment(e.target.value)}
+                title='Filter by Payment Mode'
               >
-                <i className='fa-solid fa-xmark filter-clear-icon'></i>
-                Clear
+                <option value=''>All Payment Modes</option>
+                {uniquePaymentModes.map((pm) => (
+                  <option key={pm} value={pm}>
+                    {pm}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className='filter-wrapper-section'>
+              <label className='filter-label'>Date Range</label>
+              <div className='filter-input-group'>
+                <input
+                  type='date'
+                  className='input-field filter-input'
+                  value={dateRangeFrom}
+                  onChange={(e) => setDateRangeFrom(e.target.value)}
+                  placeholder='From'
+                />
+                <span className='filter-date-separator'>to</span>
+                <input
+                  type='date'
+                  className='input-field filter-input'
+                  value={dateRangeTo}
+                  onChange={(e) => setDateRangeTo(e.target.value)}
+                  placeholder='To'
+                />
+              </div>
+            </div>
+
+            <div className='filter-wrapper-section'>
+              <label className='filter-label'>Month</label>
+              <select
+                className='input-field filter-input'
+                value={allOrdersFilterMonth || ''}
+                onChange={(e) => {
+                  setAllOrdersFilterMonth(e.target.value);
+                  if (setAllOrdersFilterMonth) setAllOrdersFilterMonth(e.target.value);
+                }}
+              >
+                <option value=''>All Months</option>
+                {uniqueYears.flatMap((year) => {
+                  const yearStr = String(year).slice(-2);
+                  const monthNames = [
+                    'Jan',
+                    'Feb',
+                    'Mar',
+                    'Apr',
+                    'May',
+                    'Jun',
+                    'Jul',
+                    'Aug',
+                    'Sep',
+                    'Oct',
+                    'Nov',
+                    'Dec',
+                  ];
+                  return monthNames.map((month) => (
+                    <option key={`${month}'${yearStr}`} value={`${month}'${yearStr}`}>
+                      {month}&apos;{yearStr}
+                    </option>
+                  ));
+                })}
+              </select>
+            </div>
+
+            <div className='filter-wrapper-section'>
+              <label className='filter-label'>Year</label>
+              <select
+                className='input-field filter-input'
+                value={filterYear}
+                onChange={(e) => setFilterYear(e.target.value)}
+              >
+                <option value=''>All Years</option>
+                {uniqueYears.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className='filter-wrapper-section'>
+              <label className='filter-label'>Address Search</label>
+              <div className='search-input-wrapper'>
+                <i className='fa-solid fa-map-marker-alt search-input-icon'></i>
+                <input
+                  type='text'
+                  className='input-field search-input-with-icon'
+                  value={filterAddress}
+                  onChange={(e) => setFilterAddress(e.target.value)}
+                  placeholder='Search by address...'
+                />
+              </div>
+            </div>
+
+            <div className='filter-wrapper-actions'>
+              <button
+                className='btn btn-ghost btn-small'
+                onClick={() => {
+                  setFilterStatus('');
+                  setFilterMode('');
+                  setFilterPayment('');
+                  setFilterAddress('');
+                  setDateRangeFrom('');
+                  setDateRangeTo('');
+                  setFilterYear('');
+                  setAllOrdersFilterMonth('');
+                  setAllOrdersFilterAddress('');
+                  setAllOrdersFilterPaymentStatus('');
+                  if (setAllOrdersFilterMonth) setAllOrdersFilterMonth('');
+                  if (setAllOrdersFilterAddress) setAllOrdersFilterAddress('');
+                  if (setAllOrdersFilterPaymentStatus) setAllOrdersFilterPaymentStatus('');
+                }}
+              >
+                <i className='fa-solid fa-xmark'></i> Clear All
               </button>
-            )}
+              <button
+                className='btn btn-primary btn-small'
+                onClick={() => setShowFilterWrapper(false)}
+              >
+                Apply Filters
+              </button>
+            </div>
           </div>
-
-          {filtersExpanded && (
-            <div className='advanced-filters-container'>
-              <div className='advanced-filters-grid'>
-                <div className='filter-field-group'>
-                  <label className='filter-label'>Date Range</label>
-                  <div className='filter-input-group'>
-                    <input
-                      type='date'
-                      className='input-field filter-input'
-                      value={dateRangeFrom}
-                      onChange={(e) => setDateRangeFrom(e.target.value)}
-                      placeholder='From'
-                    />
-                    <span className='filter-date-separator'>to</span>
-                    <input
-                      type='date'
-                      className='input-field filter-input'
-                      value={dateRangeTo}
-                      onChange={(e) => setDateRangeTo(e.target.value)}
-                      placeholder='To'
-                    />
-                  </div>
-                </div>
-
-                <div className='filter-field-group'>
-                  <label className='filter-label'>Month</label>
-                  <select
-                    className='input-field filter-input'
-                    value={allOrdersFilterMonth || ''}
-                    onChange={(e) => {
-                      setAllOrdersFilterMonth(e.target.value);
-                      if (setAllOrdersFilterMonth) setAllOrdersFilterMonth(e.target.value);
-                    }}
-                  >
-                    <option value=''>All Months</option>
-                    {uniqueYears.flatMap((year) => {
-                      const yearStr = String(year).slice(-2);
-                      const monthNames = [
-                        'Jan',
-                        'Feb',
-                        'Mar',
-                        'Apr',
-                        'May',
-                        'Jun',
-                        'Jul',
-                        'Aug',
-                        'Sep',
-                        'Oct',
-                        'Nov',
-                        'Dec',
-                      ];
-                      return monthNames.map((month) => (
-                        <option key={`${month}'${yearStr}`} value={`${month}'${yearStr}`}>
-                          {month}&apos;{yearStr}
-                        </option>
-                      ));
-                    })}
-                  </select>
-                </div>
-
-                <div className='filter-field-group'>
-                  <label className='filter-label'>Year</label>
-                  <select
-                    className='input-field filter-input'
-                    value={filterYear}
-                    onChange={(e) => setFilterYear(e.target.value)}
-                  >
-                    <option value=''>All Years</option>
-                    {uniqueYears.map((year) => (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className='filter-field-group'>
-                  <label className='filter-label'>Address Search</label>
-                  <div className='search-input-wrapper'>
-                    <i className='fa-solid fa-map-marker-alt search-input-icon'></i>
-                    <input
-                      type='text'
-                      className='input-field search-input-with-icon'
-                      value={filterAddress}
-                      onChange={(e) => setFilterAddress(e.target.value)}
-                      placeholder='Search by address...'
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {selectedRows.size > 0 && (
-            <div className='bulk-actions-bar-inline'>
-              <span className='bulk-actions-label'>{selectedRows.size} selected</span>
-              <div className='action-buttons-group'>
-                <button
-                  className='btn btn-special btn-small'
-                  onClick={() => handleBulkAction('paid')}
-                >
-                  Mark as Paid
-                </button>
-              </div>
-            </div>
-          )}
         </div>
-      </div>
+        )}
 
-      {}
-      {activeFilters.length > 0 && (
-        <div className='active-filters-container'>
-          <span className='active-filters-label'>Applied:</span>
-          {activeFilters.map((filter, idx) => (
-            <span
-              key={idx}
-              className='badge badge-info active-filter-badge'
-              onClick={() => removeFilter(filter)}
-            >
-              {filter.label}
-              <i className='fa-solid fa-times'></i>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {}
-      <div className='dashboard-card table-container-card'>
+        {}
+        {activeFilters.length > 0 && (
+          <div className='active-filters-container'>
+            <span className='active-filters-label'>Applied:</span>
+            {activeFilters.map((filter, idx) => (
+              <span
+                key={idx}
+                className='badge badge-info active-filter-badge'
+                onClick={() => removeFilter(filter)}
+              >
+                {filter.label}
+                <i className='fa-solid fa-times'></i>
+              </span>
+            ))}
+          </div>
+        )}
         <div className='table-header-container'>
           <div>
             <label className='select-all-container'>

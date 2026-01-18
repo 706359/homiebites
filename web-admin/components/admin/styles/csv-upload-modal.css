@@ -10,8 +10,8 @@
 }
 
 .csv-file-size {
-  color: var(--admin-text-secondary);
-  font-size: var(--admin-font-size-body, 14px);
+  color: #64748b;
+  font-size: 14px;
 }
 
 .csv-preview-title {
@@ -24,8 +24,8 @@
 }
 
 .csv-preview-note {
-  color: var(--admin-text-secondary);
-  font-size: var(--admin-font-size-body-sm, 13px);
+  color: #64748b;
+  font-size: 13px;
   margin-top: 8px;
 }
 
@@ -35,20 +35,20 @@
 }
 
 .csv-error-item {
-  color: var(--admin-text);
+  color: #1e293b;
   margin-bottom: 4px;
 }
 
 .csv-success-list {
   margin: 8px 0 0 0;
   padding-left: 20px;
-  font-size: var(--admin-font-size-body, 14px);
+  font-size: 14px;
 }
 
 .csv-upload-options {
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid var(--admin-border);
+  border-top: 1px solid #e2e8f0;
 }
 
 .csv-upload-options-title {
@@ -69,8 +69,8 @@
 }
 
 .csv-upload-option-hint {
-  font-size: var(--admin-font-size-body-sm, 13px);
-  color: var(--admin-text-secondary);
+  font-size: 13px;
+  color: #64748b;
   margin-left: 24px;
 }
 
@@ -101,14 +101,14 @@
 }
 
 .csv-upload-progress-label {
-  font-size: var(--admin-font-size-body, 14px);
-  color: var(--admin-text-secondary);
+  font-size: 14px;
+  color: #64748b;
   font-weight: 500;
 }
 
 .csv-upload-progress-count {
-  font-size: var(--admin-font-size-body, 14px);
-  color: var(--admin-text);
+  font-size: 14px;
+  color: #1e293b;
   font-weight: 600;
 }
 
@@ -116,12 +116,12 @@
   height: 8px;
   border-radius: 4px;
   overflow: hidden;
-  background: var(--admin-bg-tertiary);
+  background: #f3f4f6;
 }
 
 .csv-upload-progress-bar-fill {
   height: 100%;
-  background: var(--admin-accent);
+  background: #449031;
   transition: width 0.3s ease;
   border-radius: 4px;
 }
@@ -138,8 +138,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
-  border: 1px solid var(--admin-accent, #449031);
+  background: rgba(68, 144, 49, 0.1);
+  border: 1px solid #449031;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -153,9 +153,9 @@
 }
 
 .csv-upload-progress-avatar {
-  background: var(--admin-accent, #449031);
+  background: #449031;
   color: white;
-  font-size: var(--admin-font-size-h3, 18px);
+  font-size: 18px;
   flex-shrink: 0;
 }
 
@@ -166,13 +166,13 @@
 
 .csv-upload-progress-label-text {
   font-weight: 600;
-  color: var(--admin-text);
-  font-size: var(--admin-font-size-body, 14px);
+  color: #1e293b;
+  font-size: 14px;
 }
 
 .csv-upload-progress-percentage {
-  font-size: var(--admin-font-size-body-xs, 12px);
-  color: var(--admin-text-secondary);
+  font-size: 12px;
+  color: #64748b;
 }
 
 .csv-upload-progress-actions-mini {
@@ -183,17 +183,17 @@
 .csv-upload-maximize-btn {
   background: transparent;
   border: none;
-  color: var(--admin-text-secondary);
+  color: #64748b;
   cursor: pointer;
   padding: 8px;
   border-radius: 8px;
-  font-size: var(--admin-font-size-h4, 16px);
+  font-size: 16px;
   transition: all 0.2s ease;
 }
 
 .csv-upload-maximize-btn:hover {
-  background: var(--admin-bg-secondary);
-  color: var(--admin-text);
+  background: #f9fafb;
+  color: #1e293b;
 }
 
 .csv-format-requirements {
@@ -207,11 +207,11 @@
 .csv-format-requirements-list {
   margin: 0;
   padding-left: 20px;
-  color: var(--admin-text-secondary);
+  color: #64748b;
 }
 
 .csv-text-primary {
-  color: var(--admin-text);
+  color: #1e293b;
 }
 
 .csv-margin-top-16 {
@@ -224,17 +224,17 @@
   right: 16px;
   background: transparent;
   border: none;
-  color: var(--admin-text-secondary);
+  color: #64748b;
   cursor: pointer;
   padding: 8px;
   border-radius: 8px;
   transition: all 0.2s ease;
-  font-size: var(--admin-font-size-h3, 18px);
+  font-size: 18px;
 }
 
 .csv-upload-minimize-btn:hover {
-  background: var(--admin-bg-secondary);
-  color: var(--admin-text);
+  background: #f9fafb;
+  color: #1e293b;
 }
 
 .csv-file-input-hidden {
@@ -242,19 +242,19 @@
 }
 
 .csv-upload-success {
-  background: var(--admin-success-light);
-  border: 1px solid var(--admin-success);
+  background: rgba(22, 163, 74, 0.1);
+  border: 1px solid #16a34a;
   text-align: center;
   padding: 48px;
 }
 
 .csv-upload-success-icon {
-  font-size: var(--admin-icon-size-5xl, 48px);
-  color: var(--admin-success);
+  font-size: 48px;
+  color: #16a34a;
   margin-bottom: 16px;
 }
 
 .csv-upload-success-title {
-  color: var(--admin-success);
+  color: #16a34a;
   margin-bottom: 16px;
 }

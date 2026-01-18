@@ -4,30 +4,30 @@
 }
 
 .notifications-empty-icon {
-  font-size: var(--admin-icon-size-5xl, 48px);
-  color: var(--admin-text-light);
+  font-size: 48px;
+  color: #94a3b8;
   margin-bottom: 16px;
 }
 
 .notifications-empty-text {
-  color: var(--admin-text-light);
-  font-size: var(--admin-font-size-body, 14px);
+  color: #94a3b8;
+  font-size: 14px;
 }
 
 .notification-icon-order {
-  color: var(--admin-accent);
+  color: #449031;
 }
 
 .notification-icon-payment {
-  color: var(--admin-warning);
+  color: #f59e0b;
 }
 
 .notification-icon-system {
-  color: var(--admin-info);
+  color: #3b82f6;
 }
 
 .notification-icon-default {
-  color: var(--admin-text-secondary);
+  color: #64748b;
 }
 
 .notifications-settings-form-group {
@@ -51,9 +51,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px;
-  background: var(--admin-bg-secondary);
+  background: #f9fafb;
   border-radius: 8px;
-  border: 1px solid var(--admin-border);
+  border: 1px solid #e2e8f0;
 }
 
 .notifications-settings-item-label {
@@ -65,13 +65,13 @@
 
 .notifications-settings-item-title {
   font-weight: 600;
-  color: var(--admin-text);
-  font-size: var(--admin-font-size-body, 14px);
+  color: #1e293b;
+  font-size: 14px;
 }
 
 .notifications-settings-item-description {
-  font-size: var(--admin-font-size-body-sm, 13px);
-  color: var(--admin-text-secondary);
+  font-size: 13px;
+  color: #64748b;
 }
 
 .notifications-settings-item-toggle {

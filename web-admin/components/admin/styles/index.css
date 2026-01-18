@@ -2,8 +2,8 @@
 @import './admin-components.css';
 
 .admin-dashboard {
-  --primary-green: var(--admin-accent, #449031);
-  --primary-orange: var(--admin-secondary, #c45c2d);
+  --primary-green: #449031;
+  --primary-orange: #c45c2d;
   --text-white: #ffffff;
   --text-primary: #1a202c;
   --gray-lighter: #f3f4f6;
@@ -18,9 +18,9 @@
   --error-red-hover: #dc2626;
   --whatsapp-green: #25d366;
   --whatsapp-green-hover: #20ba5a;
-  --shadow-green-light: var(--admin-accent-light, rgba(68, 144, 49, 0.15));
-  --shadow-green-medium: var(--admin-accent-light, rgba(68, 144, 49, 0.3));
-  --shadow-green: var(--admin-accent-light, rgba(68, 144, 49, 0.2));
-  --shadow-orange-light: var(--admin-secondary-light, rgba(196, 92, 45, 0.15));
-  --shadow-orange-medium: var(--admin-secondary-light, rgba(196, 92, 45, 0.3));
+  --shadow-green-light: rgba(68, 144, 49, 0.15);
+  --shadow-green-medium: rgba(68, 144, 49, 0.3);
+  --shadow-green: rgba(68, 144, 49, 0.2);
+  --shadow-orange-light: rgba(196, 92, 45, 0.15);
+  --shadow-orange-medium: rgba(196, 92, 45, 0.3);
 }

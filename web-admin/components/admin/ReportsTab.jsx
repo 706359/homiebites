@@ -3,7 +3,14 @@ import { useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
 import { formatDate, formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
 
-const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
+const ReportsTab = ({
+  orders = [],
+  loading = false,
+  showNotification,
+  onLoadExcelFile,
+  onClearAllData,
+  showConfirmation,
+}) => {
   const [selectedReportType, setSelectedReportType] = useState('');
   const [reportDateFrom, setReportDateFrom] = useState('');
   const [reportDateTo, setReportDateTo] = useState('');
@@ -786,6 +793,45 @@ const ReportsTab = ({ orders = [], loading = false, showNotification }) => {
 
   return (
     <div className='admin-content'>
+      {}
+      <div className='action-bar'>
+        <div className='action-buttons-group'>
+          {onLoadExcelFile && (
+            <button
+              className='btn btn-secondary btn-small'
+              onClick={onLoadExcelFile}
+              title='Upload CSV'
+            >
+              <i className='fa-solid fa-upload'></i> Upload CSV
+            </button>
+          )}
+          {onClearAllData && (
+            <button
+              className='btn btn-special danger btn-small'
+              onClick={() => {
+                if (showConfirmation) {
+                  showConfirmation({
+                    title: 'Clear All Data',
+                    message:
+                      'Are you sure you want to clear ALL orders data? This action cannot be undone and will permanently delete all orders.',
+                    type: 'danger',
+                    confirmText: 'Clear All Data',
+                    onConfirm: async () => {
+                      await onClearAllData(true);
+                    },
+                  });
+                } else if (onClearAllData) {
+                  onClearAllData(true);
+                }
+              }}
+              title='Delete All Orders'
+            >
+              <i className='fa-solid fa-trash'></i> Delete All
+            </button>
+          )}
+        </div>
+      </div>
+
       {}
       <div className='flex-start gap-12 mb-24 flex-wrap'>
         <button className='btn btn-primary btn-icon-inline' onClick={() => setShowGenerator(true)}>

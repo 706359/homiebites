@@ -6,9 +6,9 @@
   width: 100%;
   overflow-x: auto;
   overflow-y: visible;
-  border-radius: var(--admin-border-radius-lg, 12px);
-  background: var(--admin-bg);
-  border: 1px solid var(--admin-border, #e2e8f0);
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
 }
@@ -17,8 +17,8 @@
   width: 100%;
   min-width: 800px;
   border-collapse: collapse;
-  background: var(--admin-bg);
-  color: var(--admin-text);
+  background: #ffffff;
+  color: #1e293b;
   table-layout: fixed;
 }
 
@@ -27,26 +27,26 @@
      ============================================ */
 
 .analytics-delivery-table thead {
-  background: var(--admin-bg-secondary, rgba(0, 0, 0, 0.03));
+  background: rgba(0, 0, 0, 0.03);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
 .analytics-delivery-table thead th {
-  padding: var(--admin-spacing-base-size, 12px) var(--admin-spacing-sm, 8px);
+  padding: 12px 8px;
   text-align: left;
-  font-size: var(--admin-font-size-body-xs, 12px);
+  font-size: 12px;
   font-weight: 700;
-  color: var(--admin-text-primary);
+  color: #1e293b;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 2px solid var(--admin-border, #e2e8f0);
+  border-bottom: 2px solid #e2e8f0;
   white-space: nowrap;
   vertical-align: middle;
   overflow: hidden;
   text-overflow: ellipsis;
-  background: var(--admin-bg);
+  background: #ffffff;
 }
 
 /* Column Widths - Fixed Layout */
@@ -87,23 +87,23 @@
   cursor: pointer;
   user-select: none;
   transition: background-color 0.2s ease;
-  padding-right: var(--admin-spacing-lg, 14px);
+  padding-right: 14px;
   position: relative;
 }
 
 .analytics-delivery-table thead th.analytics-th-sortable:hover {
-  background-color: var(--admin-accent-light, rgba(68, 144, 49, 0.08));
+  background-color: rgba(68, 144, 49, 0.08);
 }
 
 .analytics-delivery-table thead th.analytics-th-sortable:active {
-  background-color: var(--admin-accent-light, rgba(68, 144, 49, 0.12));
+  background-color: rgba(68, 144, 49, 0.12);
 }
 
 .analytics-delivery-table thead th.analytics-th-sortable span {
   display: inline-block;
-  margin-left: var(--admin-spacing-xs, 6px);
-  font-size: var(--admin-font-size-body-xs, 12px);
-  color: var(--admin-accent, #449031);
+  margin-left: 6px;
+  font-size: 12px;
+  color: #449031;
   font-weight: 700;
   vertical-align: middle;
 }
@@ -113,10 +113,10 @@
      ============================================ */
 
 .analytics-delivery-table tbody td {
-  padding: var(--admin-spacing-base-size, 12px) var(--admin-spacing-sm, 8px);
-  font-size: var(--admin-font-size-body-sm, 13px);
-  color: var(--admin-text);
-  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  padding: 12px 8px;
+  font-size: 13px;
+  color: #1e293b;
+  border-bottom: 1px solid #e2e8f0;
   vertical-align: middle;
   white-space: nowrap;
   overflow: hidden;
@@ -128,7 +128,7 @@
 }
 
 .analytics-delivery-table tbody tr:hover {
-  background-color: var(--admin-accent-light, rgba(68, 144, 49, 0.04));
+  background-color: rgba(68, 144, 49, 0.04);
 }
 
 .analytics-delivery-table tbody tr:last-child td {
@@ -136,11 +136,11 @@
 }
 
 .analytics-delivery-table tbody tr:nth-child(even) {
-  background: var(--admin-bg-secondary, rgba(0, 0, 0, 0.015));
+  background: rgba(0, 0, 0, 0.015);
 }
 
 .analytics-delivery-table tbody tr:nth-child(even):hover {
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.05));
+  background: rgba(68, 144, 49, 0.05);
 }
 
 /* Cell Types */
@@ -148,7 +148,7 @@
   width: 180px;
   min-width: 150px;
   font-weight: 600;
-  color: var(--admin-text-primary);
+  color: #1e293b;
   white-space: normal;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -166,7 +166,7 @@
 .analytics-delivery-table tbody td.analytics-td-year {
   width: 80px;
   white-space: nowrap;
-  color: var(--admin-text-primary);
+  color: #1e293b;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-align: right;
@@ -176,7 +176,7 @@
 .analytics-delivery-table tbody td.analytics-td-year-empty {
   width: 80px;
   white-space: nowrap;
-  color: var(--admin-text-light, #9ca3af);
+  color: #9ca3af;
   font-weight: 400;
   text-align: right;
   font-style: italic;
@@ -187,8 +187,8 @@
   white-space: nowrap;
   text-align: right;
   font-weight: 700;
-  color: var(--admin-accent, #449031);
-  font-size: var(--admin-font-size-body, 14px);
+  color: #449031;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -201,7 +201,7 @@
 .analytics-delivery-table tbody td.analytics-td-monthly {
   width: auto;
   min-width: 350px;
-  padding: var(--admin-spacing-sm, 8px) var(--admin-spacing-xs, 6px);
+  padding: 8px 6px;
   white-space: normal;
   vertical-align: top;
   overflow: visible;
@@ -212,7 +212,7 @@
      ============================================ */
 
 .analytics-trend-icon {
-  font-size: var(--admin-font-size-body, 14px);
+  font-size: 14px;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -229,18 +229,18 @@
 }
 
 .analytics-trend-icon-up {
-  color: var(--admin-success, #16a34a);
+  color: #16a34a;
   background: rgba(22, 163, 74, 0.12);
 }
 
 .analytics-trend-icon-down {
-  color: var(--admin-danger, #dc2626);
+  color: #dc2626;
   background: rgba(220, 38, 38, 0.12);
 }
 
 .analytics-trend-icon-neutral {
-  color: var(--admin-text-secondary, #6b7280);
-  background: var(--admin-bg-secondary, rgba(0, 0, 0, 0.06));
+  color: #6b7280;
+  background: rgba(0, 0, 0, 0.06);
 }
 
 /* ============================================
@@ -250,8 +250,8 @@
 .analytics-monthly-breakdown {
   display: flex;
   flex-direction: column;
-  gap: var(--admin-spacing-xs, 6px);
-  padding: var(--admin-spacing-xs, 6px) 0;
+  gap: 6px;
+  padding: 6px 0;
   width: 100%;
 }
 
@@ -261,15 +261,15 @@
   gap: 2px;
   align-items: center;
   width: 100%;
-  padding: var(--admin-spacing-xxs, 4px) 0;
+  padding: 4px 0;
 }
 
 .analytics-monthly-year-label {
-  font-size: var(--admin-font-size-caption, 10px);
+  font-size: 10px;
   font-weight: 700;
-  color: var(--admin-text-primary);
+  color: #1e293b;
   text-align: left;
-  padding-right: var(--admin-spacing-xs, 6px);
+  padding-right: 6px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -304,18 +304,18 @@
 
 .analytics-monthly-value-positive {
   background: rgba(68, 144, 49, 0.15);
-  color: var(--admin-accent, #449031);
+  color: #449031;
   border-color: rgba(68, 144, 49, 0.3);
 }
 
 .analytics-monthly-value-positive:hover {
   background: rgba(68, 144, 49, 0.25);
-  border-color: var(--admin-accent, #449031);
+  border-color: #449031;
 }
 
 .analytics-monthly-value-empty {
   background: transparent;
-  color: var(--admin-text-light, #9ca3af);
+  color: #9ca3af;
   border-color: transparent;
   cursor: default;
 }
@@ -328,14 +328,14 @@
 .analytics-monthly-year3-container {
   display: flex;
   flex-direction: column;
-  gap: var(--admin-spacing-xs, 6px);
+  gap: 6px;
   width: 100%;
 }
 
 .analytics-monthly-value-year3-positive {
   background: rgba(22, 163, 74, 0.18);
-  color: var(--admin-success, #16a34a);
-  border-color: var(--admin-success, #16a34a);
+  color: #16a34a;
+  border-color: #16a34a;
   font-weight: 700;
 }
 
@@ -346,8 +346,8 @@
 
 .analytics-monthly-value-year3-negative {
   background: rgba(220, 38, 38, 0.18);
-  color: var(--admin-danger, #dc2626);
-  border-color: var(--admin-danger, #dc2626);
+  color: #dc2626;
+  border-color: #dc2626;
   font-weight: 700;
 }
 
@@ -361,10 +361,10 @@
      ============================================ */
 
 .analytics-chart-container {
-  padding: var(--admin-spacing-2xl, 20px);
-  border-top: 2px solid var(--admin-border, #e2e8f0);
-  margin-top: var(--admin-spacing-xl, 16px);
-  background: var(--admin-bg);
+  padding: 20px;
+  border-top: 2px solid #e2e8f0;
+  margin-top: 16px;
+  background: #ffffff;
   box-sizing: border-box;
 }
 
@@ -374,27 +374,27 @@
 
 .analytics-empty-state {
   text-align: center;
-  padding: var(--admin-spacing-8xl, 64px) var(--admin-spacing-4xl, 24px);
-  color: var(--admin-text-light);
+  padding: 64px 24px;
+  color: #94a3b8;
 }
 
 .analytics-empty-icon {
-  font-size: var(--admin-icon-size-4xl, 48px);
+  font-size: 48px;
   opacity: 0.25;
-  margin-bottom: var(--admin-spacing-xl, 16px);
-  color: var(--admin-text-light, #9ca3af);
+  margin-bottom: 16px;
+  color: #9ca3af;
 }
 
 .analytics-empty-title {
-  font-size: var(--admin-font-size-h3, 18px);
+  font-size: 18px;
   font-weight: 600;
-  color: var(--admin-text-secondary, #64748b);
-  margin: 0 0 var(--admin-spacing-sm, 8px) 0;
+  color: #64748b;
+  margin: 0 0 8px 0;
 }
 
 .analytics-empty-message {
-  font-size: var(--admin-font-size-body, 14px);
-  color: var(--admin-text-light, #9ca3af);
+  font-size: 14px;
+  color: #9ca3af;
   margin: 0;
 }
 
@@ -410,18 +410,18 @@
   }
 
   .analytics-monthly-value {
-    font-size: var(--admin-font-size-caption, 10px);
+    font-size: 10px;
     padding: 3px 4px;
     min-height: 20px;
   }
 
   .analytics-monthly-year-label {
-    font-size: var(--admin-font-size-body-xxs, 11px);
+    font-size: 11px;
   }
 
   .analytics-delivery-table thead th,
   .analytics-delivery-table tbody td {
-    padding: var(--admin-spacing-lg, 14px) var(--admin-spacing-md, 10px);
+    padding: 14px 10px;
   }
 }
 
@@ -429,7 +429,7 @@
 @media (min-width: 1024px) and (max-width: 1399px) {
   .analytics-delivery-table thead th,
   .analytics-delivery-table tbody td {
-    padding: var(--admin-spacing-base-size, 12px) var(--admin-spacing-sm, 8px);
+    padding: 12px 8px;
   }
 
   .analytics-monthly-year-row {
@@ -443,7 +443,7 @@
   }
 
   .analytics-monthly-year-label {
-    font-size: var(--admin-font-size-caption, 10px);
+    font-size: 10px;
   }
 }
 
@@ -455,8 +455,8 @@
 
   .analytics-delivery-table thead th,
   .analytics-delivery-table tbody td {
-    padding: var(--admin-spacing-sm, 8px) var(--admin-spacing-xs, 6px);
-    font-size: var(--admin-font-size-body-xs, 12px);
+    padding: 8px 6px;
+    font-size: 12px;
   }
 
   .analytics-monthly-year-row {
@@ -477,14 +477,14 @@
   .analytics-trend-icon {
     width: 20px;
     height: 20px;
-    font-size: var(--admin-font-size-body-xs, 12px);
+    font-size: 12px;
   }
 }
 
 /* Mobile (< 768px) */
 @media (max-width: 767px) {
   .analytics-delivery-table-wrapper {
-    border-radius: var(--admin-border-radius-md, 8px);
+    border-radius: 8px;
   }
 
   .analytics-delivery-table {
@@ -493,8 +493,8 @@
 
   .analytics-delivery-table thead th,
   .analytics-delivery-table tbody td {
-    padding: var(--admin-spacing-xs, 6px) var(--admin-spacing-xxs, 4px);
-    font-size: var(--admin-font-size-body-xxs, 11px);
+    padding: 6px 4px;
+    font-size: 11px;
   }
 
   .analytics-monthly-year-row {
@@ -509,11 +509,11 @@
   }
 
   .analytics-monthly-year-label {
-    font-size: var(--admin-font-size-caption, 10px);
+    font-size: 10px;
   }
 
   .analytics-chart-container {
-    padding: var(--admin-spacing-xl, 16px);
+    padding: 16px;
   }
 }
 
@@ -578,7 +578,7 @@
   }
 
   .analytics-monthly-value-positive {
-    border: 2px solid var(--admin-accent);
+    border: 2px solid #449031;
   }
 
   .analytics-trend-icon {

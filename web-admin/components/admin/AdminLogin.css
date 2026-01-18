@@ -30,7 +30,7 @@
     'Helvetica Neue',
     sans-serif
   );
-  font-size: var(--admin-base-font-size, 16px);
+  font-size: 16px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -42,7 +42,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.05));
+  background: rgba(68, 144, 49, 0.05);
   pointer-events: none;
   z-index: 0;
 }
@@ -52,10 +52,10 @@
   grid-template-columns: 1fr 1fr;
   max-width: 1200px;
   width: 100%;
-  background: var(--admin-bg, #ffffff);
+  background: #ffffff;
   border-radius: 20px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05),
-    0 0 40px var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+    0 0 40px rgba(68, 144, 49, 0.1);
   overflow: hidden;
   position: relative;
   z-index: 1;
@@ -77,7 +77,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--admin-accent, #449031);
+  background: #449031;
   opacity: 0.4;
   z-index: 1;
   pointer-events: none;
@@ -151,7 +151,7 @@
   align-items: center;
   justify-content: center;
   padding: 3rem;
-  background: var(--admin-bg, #ffffff);
+  background: #ffffff;
 }
 
 .login-content {
@@ -171,25 +171,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--admin-accent, #449031);
+  background: #449031;
   border-radius: 16px;
-  box-shadow: 0 8px 16px var(--admin-accent-light, rgba(68, 144, 49, 0.3)),
-    0 0 0 4px var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  box-shadow: 0 8px 16px rgba(68, 144, 49, 0.3),
+    0 0 0 4px rgba(68, 144, 49, 0.1);
   color: white;
   font-size: 1.75rem;
 }
 
 .login-title {
-  font-size: var(--admin-font-size-h1, 28px);
+  font-size: 28px;
   font-weight: 700;
-  color: var(--admin-text-primary, #1e293b);
+  color: #1e293b;
   margin: 0 0 0.5rem 0;
   letter-spacing: -0.5px;
 }
 
 .login-subtitle {
   font-size: 0.9375rem;
-  color: var(--admin-text-secondary, #6b7280);
+  color: #6b7280;
   margin: 0;
   font-weight: 400;
 }
@@ -209,14 +209,14 @@
 .form-field label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--admin-text-primary, #1e293b);
+  color: #1e293b;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .form-field label i {
-  color: var(--admin-accent, #449031);
+  color: #449031;
   font-size: 0.875rem;
   width: 16px;
   transition: color 0.2s ease;
@@ -224,25 +224,25 @@
 
 .login-input {
   padding: 0.875rem 1.125rem;
-  border: 1px solid var(--admin-border, #e5e7eb);
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   font-size: 1rem;
   transition: all 0.2s ease;
-  background: var(--admin-bg, #ffffff);
-  color: var(--admin-text-primary, #1e293b);
+  background: #ffffff;
+  color: #1e293b;
   font-family: inherit;
 }
 
 .login-input::placeholder {
-  color: var(--admin-text-light, #9ca3af);
+  color: #9ca3af;
 }
 
 .login-input:focus {
   outline: none;
-  border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 4px var(--admin-accent-light, rgba(68, 144, 49, 0.1)),
-    0 2px 8px var(--admin-accent-light, rgba(68, 144, 49, 0.15));
-  background: var(--admin-bg, #ffffff);
+  border-color: #449031;
+  box-shadow: 0 0 0 4px rgba(68, 144, 49, 0.1),
+    0 2px 8px rgba(68, 144, 49, 0.15);
+  background: #ffffff;
 }
 
 .login-submit-btn {
@@ -256,8 +256,8 @@
   gap: 0.75rem;
   border-radius: 12px;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px var(--admin-accent-light, rgba(68, 144, 49, 0.3)),
-    0 0 0 1px var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  box-shadow: 0 4px 12px rgba(68, 144, 49, 0.3),
+    0 0 0 1px rgba(68, 144, 49, 0.1);
 }
 
 .login-submit-btn:active:not(:disabled) {
@@ -273,9 +273,9 @@
   margin-top: 2.5rem;
   padding: 1.5rem;
   text-align: center;
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.08));
+  background: rgba(68, 144, 49, 0.08);
   border-radius: 12px;
-  border: 1px solid var(--admin-accent-light, rgba(68, 144, 49, 0.2));
+  border: 1px solid rgba(68, 144, 49, 0.2);
 }
 
 .login-info-icon {
@@ -285,23 +285,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--admin-accent, #449031);
+  background: #449031;
   border-radius: 12px;
   color: white;
   font-size: 1.25rem;
-  box-shadow: 0 4px 12px var(--admin-accent-light, rgba(68, 144, 49, 0.25));
+  box-shadow: 0 4px 12px rgba(68, 144, 49, 0.25);
 }
 
 .login-info-title {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--admin-text-primary, #1e293b);
+  color: #1e293b;
   margin: 0 0 0.375rem 0;
 }
 
 .admin-login-info-text {
   font-size: 0.8125rem;
-  color: var(--admin-text-secondary, #6b7280);
+  color: #6b7280;
   margin: 0;
 }
 
@@ -311,7 +311,7 @@
 }
 
 .admin-login-forgot-link {
-  color: var(--admin-accent, #449031);
+  color: #449031;
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
@@ -324,7 +324,7 @@
 }
 
 .admin-login-forgot-link i {
-  font-size: var(--admin-font-size-body-xs, 12px);
+  font-size: 12px;
 }
 
 .alert {
@@ -376,8 +376,8 @@
 
 .btn-secondary {
   background: #f3f4f6;
-  color: var(--admin-text-primary, #1e293b);
-  border: 1px solid var(--admin-border, #e5e7eb);
+  color: #1e293b;
+  border: 1px solid #e5e7eb;
   padding: 0.875rem 1.5rem;
   font-size: 1rem;
   font-weight: 600;
@@ -407,15 +407,15 @@
 .admin-login-dev-details {
   margin-top: 1rem;
   padding: 1rem;
-  background: var(--admin-light-gray, #f3f4f6);
+  background: #f3f4f6;
   border-radius: 8px;
-  font-size: var(--admin-font-size-body-xs, 12px);
+  font-size: 12px;
 }
 
 .admin-login-dev-summary {
   cursor: pointer;
   font-weight: 600;
-  color: var(--admin-text-primary, #1e293b);
+  color: #1e293b;
   list-style: none;
 }
 
@@ -426,12 +426,12 @@
 .admin-login-dev-content {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px solid var(--admin-border, #e2e8f0);
+  border-top: 1px solid #e2e8f0;
 }
 
 .admin-login-dev-item {
   margin: 0.5rem 0;
-  color: var(--admin-text-secondary, #64748b);
+  color: #64748b;
 }
 
 .admin-login-dev-item-last {
@@ -444,15 +444,15 @@
   border-radius: 4px;
   font-family: 'Courier New', monospace;
   font-size: 0.875rem;
-  color: var(--admin-accent, #449031);
+  color: #449031;
 }
 
 .admin-login-dev-note {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px solid var(--admin-border, #e2e8f0);
+  border-top: 1px solid #e2e8f0;
   font-size: 0.7rem;
-  color: var(--admin-text-light, #64748b);
+  color: #64748b;
 }
 
 .admin-login-dev-note code {
@@ -461,7 +461,7 @@
   border-radius: 4px;
   font-family: 'Courier New', monospace;
   font-size: 0.7rem;
-  color: var(--admin-secondary, #c45c2d);
+  color: #c45c2d;
 }
 
 

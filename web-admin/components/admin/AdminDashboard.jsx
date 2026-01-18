@@ -1503,7 +1503,13 @@ const AdminDashboard = () => {
         );
 
       case 'reports':
-        return <ReportsTab {...commonProps} />;
+        return (
+          <ReportsTab
+            {...commonProps}
+            onLoadExcelFile={() => setShowCSVUploadModal(true)}
+            onClearAllData={handleClearAllData}
+          />
+        );
 
       case 'pendingAmounts':
         return (

@@ -2,7 +2,7 @@
   display: flex;
   justify-content: flex-end;
   align-items: flex-start;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
   gap: 16px;
 }
@@ -17,7 +17,7 @@
 }
 
 .pending-clear-filter-btn {
-  font-size: var(--admin-font-size-body-sm, 13px);
+  font-size: 13px;
   padding: 10px 16px;
   white-space: nowrap;
   height: fit-content;
@@ -33,7 +33,7 @@
 
 .pending-chart-section {
   padding: 16px;
-  border-top: 1px solid var(--admin-border);
+  border-top: 1px solid #e2e8f0;
   margin-top: 0.5rem;
 }
 
@@ -63,15 +63,15 @@
 
 .pending-chart-label {
   min-width: 120px;
-  font-size: var(--admin-font-size-body, 14px);
-  color: var(--admin-text);
+  font-size: 14px;
+  color: #1e293b;
   font-weight: 500;
 }
 
 .pending-chart-bar-container {
   flex: 1;
   height: 24px;
-  background: var(--admin-bg-tertiary);
+  background: #f3f4f6;
   border-radius: 12px;
   overflow: hidden;
   position: relative;
@@ -79,7 +79,7 @@
 
 .pending-chart-bar-fill {
   height: 100%;
-  background: var(--admin-accent, #449031);
+  background: #449031;
   border-radius: 12px;
   transition: width 0.5s ease;
   display: flex;
@@ -89,15 +89,15 @@
 }
 
 .pending-chart-value {
-  font-size: var(--admin-font-size-body, 14px);
-  color: var(--admin-text);
+  font-size: 14px;
+  color: #1e293b;
   font-weight: 600;
   min-width: 100px;
   text-align: right;
 }
 
 .pending-warning-text {
-  color: var(--admin-warning);
+  color: #f59e0b;
 }
 
 .pending-chart-icon {
@@ -107,7 +107,7 @@
 
 .pending-timeline-section {
   padding: 16px;
-  border-top: 1px solid var(--admin-border);
+  border-top: 1px solid #e2e8f0;
   margin-top: 0.5rem;
 }
 
@@ -131,26 +131,26 @@
   width: 100%;
   min-height: 4px;
   height: var(--bar-height, 4px);
-  background: var(--admin-success, #16a34a);
+  background: #16a34a;
   border-radius: 4px 4px 0 0;
   transition: height 0.3s ease;
 }
 
 .pending-timeline-label {
   font-size: 0.7rem;
-  color: var(--admin-text-light);
+  color: #94a3b8;
   font-weight: 500;
 }
 
 .pending-timeline-summary {
   text-align: center;
-  color: var(--admin-text-secondary);
-  font-size: var(--admin-font-size-body, 14px);
+  color: #64748b;
+  font-size: 14px;
 }
 
 .pending-payment-mode-section {
   padding: 16px;
-  border-top: 1px solid var(--admin-border);
+  border-top: 1px solid #e2e8f0;
   margin-top: 0.5rem;
 }
 
@@ -169,24 +169,24 @@
 
 .pending-payment-mode-label {
   font-weight: 600;
-  color: var(--admin-text);
+  color: #1e293b;
 }
 
 .pending-payment-mode-percentage {
   font-weight: 700;
-  color: var(--admin-accent);
+  color: #449031;
   font-size: 1rem;
 }
 
 .pending-payment-mode-details {
-  font-size: var(--admin-font-size-body, 14px);
-  color: var(--admin-text-secondary);
+  font-size: 14px;
+  color: #64748b;
   margin-bottom: 4px;
 }
 
 .pending-payment-mode-bar-container {
   height: 8px;
-  background: var(--admin-bg-tertiary);
+  background: #f3f4f6;
   border-radius: 4px;
   overflow: hidden;
 }
@@ -194,7 +194,7 @@
 .pending-payment-mode-bar-container {
   width: 100%;
   height: 20px;
-  background: var(--admin-bg-tertiary, #f1f5f9);
+  background: #f1f5f9;
   border-radius: 10px;
   overflow: hidden;
 }
@@ -202,14 +202,14 @@
 .pending-payment-mode-bar-fill {
   height: 100%;
   width: var(--bar-width, 0%);
-  background: var(--admin-accent, #449031);
+  background: #449031;
   border-radius: 10px;
   transition: width 0.5s ease;
 }
 
 .pending-table-empty-message {
   text-align: center;
-  padding: var(--admin-spacing-9xl, 64px) var(--admin-spacing-6xl, 32px);
+  padding: 64px 32px;
   vertical-align: middle;
 }
 
@@ -218,25 +218,25 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--admin-spacing-lg, 12px);
+  gap: 12px;
 }
 
 .pending-table-empty-icon {
-  font-size: var(--admin-icon-size-4xl, 40px);
-  color: var(--admin-text-light, #94a3b8);
+  font-size: 40px;
+  color: #94a3b8;
   opacity: 0.5;
-  margin-bottom: var(--admin-spacing-sm, 8px);
+  margin-bottom: 8px;
 }
 
 .pending-table-empty-text {
-  font-size: var(--admin-font-size-h4, 16px);
+  font-size: 16px;
   font-weight: 600;
-  color: var(--admin-text, #1e293b);
+  color: #1e293b;
   margin: 0;
 }
 
 .pending-table-empty-subtext {
-  font-size: var(--admin-font-size-body, 14px);
-  color: var(--admin-text-secondary, #64748b);
+  font-size: 14px;
+  color: #64748b;
   margin: 0;
 }
