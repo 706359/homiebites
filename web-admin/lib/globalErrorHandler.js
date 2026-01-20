@@ -64,7 +64,7 @@ const formatErrorMessage = (error) => {
 };
 
 
-const handleError = (event) => {
+const handleError = async (event) => {
   
   event.preventDefault?.();
 
@@ -140,14 +140,17 @@ const handleError = (event) => {
   }
 
   
-  if (typeof window !== 'undefined' && window.errorTracker) {
+  // Track error with monitoring service
+  if (typeof window !== 'undefined') {
     try {
-      window.errorTracker.captureError(error, {
+      const { default: monitoringService } = await import('./monitoring.js');
+      monitoringService.trackError(error, {
         type: 'unhandled_error',
         source: 'global_error_handler',
       });
     } catch (trackError) {
-      
+      // Fallback to console if monitoring fails
+      console.error('Error tracking failed:', trackError);
     }
   }
 
@@ -234,9 +237,7 @@ const handleUnhandledRejection = (event) => {
         type: 'unhandled_promise_rejection',
         source: 'global_error_handler',
       });
-    } catch (trackError) {
-      
-    }
+    } catch (_) {}
   }
 };
 

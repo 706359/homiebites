@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const TopNav = ({
   sidebarOpen,
@@ -8,8 +8,6 @@ const TopNav = ({
   sidebarCollapsed,
   setSidebarCollapsed,
   unreadNotifications,
-  currentUser,
-  onLogout,
   setActiveTab,
   tabTitle,
   tabSubtitle,
@@ -18,11 +16,9 @@ const TopNav = ({
   onRefresh,
 }) => {
   const [showSearchModal, setShowSearchModal] = useState(false);
-  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [recentSearches, setRecentSearches] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-  const profileDropdownRef = useRef(null);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -46,21 +42,6 @@ const TopNav = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [showSearchModal, onNewOrder]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
-        setShowProfileDropdown(false);
-      }
-    };
-
-    if (showProfileDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
-  }, [showProfileDropdown]);
 
   useEffect(() => {
     const stored = localStorage.getItem('homiebites_recent_searches');
@@ -197,6 +178,7 @@ const TopNav = ({
               aria-label='Add New Order'
             >
               <i className='fa-solid fa-plus'></i>
+              <span className='tooltip'>Add New Order</span>
             </button>
           )}
           <button
@@ -206,6 +188,7 @@ const TopNav = ({
             aria-label='Search'
           >
             <i className='fa-solid fa-search'></i>
+            <span className='tooltip'>Search</span>
           </button>
           <button
             className='top-nav-notification-btn tooltip-wrapper'
@@ -225,87 +208,14 @@ const TopNav = ({
               Notifications{unreadNotifications > 0 ? ` (${unreadNotifications} unread)` : ''}
             </span>
           </button>
-
-          {}
-          <div className='top-nav-profile-section' ref={profileDropdownRef}>
-            <button
-              className='top-nav-profile-btn tooltip-wrapper'
-              onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-              title='Profile'
-              aria-label='Profile'
-            >
-              <div className='top-nav-profile-avatar'>
-                {currentUser?.name ? (
-                  <span>
-                    {currentUser.name
-                      .split(' ')
-                      .map((n) => n[0])
-                      .join('')
-                      .toUpperCase()
-                      .slice(0, 2)}
-                  </span>
-                ) : (
-                  <i className='fa-solid fa-user'></i>
-                )}
-              </div>
-              {currentUser?.name && (
-                <span className='top-nav-profile-name'>{currentUser.name}</span>
-              )}
-              <i
-                className={`fa-solid fa-chevron-${
-                  showProfileDropdown ? 'up' : 'down'
-                } profile-chevron-icon`}
-              ></i>
-              <span className='tooltip'>Profile</span>
-            </button>
-
-            {}
-            {showProfileDropdown && (
-              <div className='top-nav-profile-dropdown'>
-                <button
-                  className='top-nav-profile-dropdown-item'
-                  onClick={() => {
-                    setActiveTab('settings');
-                    setShowProfileDropdown(false);
-                  }}
-                >
-                  <i className='fa-solid fa-user-gear'></i>
-                  <span>Profile Settings</span>
-                </button>
-                <button
-                  className='top-nav-profile-dropdown-item'
-                  onClick={() => {
-                    setActiveTab('settings');
-                    setShowProfileDropdown(false);
-                  }}
-                >
-                  <i className='fa-solid fa-cog'></i>
-                  <span>Settings</span>
-                </button>
-                <div className='top-nav-profile-divider'></div>
-                <button
-                  className='top-nav-profile-dropdown-item top-nav-profile-dropdown-item-danger'
-                  onClick={() => {
-                    setShowProfileDropdown(false);
-                    onLogout();
-                  }}
-                >
-                  <i className='fa-solid fa-sign-out-alt'></i>
-                  <span>Logout</span>
-                </button>
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
-      {}
       {showSearchModal && (
         <div className='modal-overlay' onClick={() => setShowSearchModal(false)}>
           <div className='modal-container global-search-modal' onClick={(e) => e.stopPropagation()}>
             <div className='global-search-header'>
               <div className='global-search-input-wrapper'>
-                <i className='fa-solid fa-search global-search-icon'></i>
                 <input
                   type='text'
                   placeholder='Search everywhere...'

@@ -65,7 +65,8 @@ const Features = () => {
     <section className="features-section">
       <div className="section-container">
         <div className="features-header">
-          <h2 className="section-heading">
+          <span className="features-kicker">{t("features.kicker") || "Why choose us"}</span>
+          <h2 className="features-title">
             {t("features.title") || "Our Features"}
           </h2>
           <p className="features-subtitle">
@@ -75,25 +76,21 @@ const Features = () => {
         </div>
         <div className="features-grid">
           {features.map((feature, index) => (
-            <div
-              key={index}
-              className="feature-card"
-            >
-              <div className="feature-badge">{feature.badge}</div>
-              <div className="feature-icon-wrapper" data-color={feature.color}>
-                <i className={`fa-solid ${feature.icon}`}></i>
+            <div key={index} className="feature-item" data-color={feature.color}>
+              <div className="feature-icon">
+                <i className={`fa-solid ${feature.icon}`} aria-hidden />
               </div>
-              <h3 className="feature-title">{feature.title}</h3>
-              <p className="feature-description">{feature.description}</p>
+              <div className="feature-body">
+                <h3 className="feature-title">{feature.title}</h3>
+                <p className="feature-desc">{feature.description}</p>
+              </div>
             </div>
           ))}
         </div>
-        <div className="features-cta">
-          <p className="features-cta-text">
-            {t("features.ctaText") ||
-              "Ready to experience the difference? Order your first meal today!"}
-          </p>
-        </div>
+        <p className="features-cta">
+          {t("features.ctaText") ||
+            "Ready to experience the difference? Order your first meal today!"}
+        </p>
       </div>
     </section>
   );

@@ -14,7 +14,7 @@
   align-items: center;
   justify-content: center;
   z-index: 10001;
-  padding: var(--space-8);
+  padding: 32px;
   overflow-y: auto;
 }
 
@@ -24,7 +24,7 @@
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  border-radius: var(--border-radius-md);
+  border-radius: 8px;
   box-shadow: 0 4px 20px var(--shadow-dark);
 }
 
@@ -33,20 +33,20 @@
 }
 
 .review-form {
-  padding: var(--space-8);
+  padding: 32px;
 }
 
 .review-form-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-8);
-  padding-bottom: var(--space-4);
+  margin-bottom: 32px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--border-color);
 }
 
 .review-form-header h3 {
-  font-size: var(--font-size-2xl);
+  font-size: 24px;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
@@ -55,19 +55,19 @@
 .review-form-close {
   background: transparent;
   border: none;
-  font-size: var(--font-size-2xl);
+  font-size: 24px;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: var(--space-2);
+  padding: 8px;
   transition: color 0.2s;
 }
 
 
 .review-success,
 .review-error {
-  padding: var(--space-4);
-  border-radius: var(--border-radius-sm);
-  margin-bottom: var(--space-6);
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 24px;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -85,55 +85,32 @@
 
 .review-success i,
 .review-error i {
-  font-size: var(--font-size-xl);
+  font-size: 20px;
 }
 
 .review-form .form-field {
-  margin-bottom: var(--space-6);
+  margin-bottom: 24px;
 }
 
 .review-form .form-field label {
   display: block;
   font-weight: 500;
-  margin-bottom: var(--space-2);
+  margin-bottom: 8px;
   color: var(--text-primary);
-}
-
-.review-form .form-field input,
-.review-form .form-field textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  font-family: var(--font-primary);
-  font-size: var(--font-size-base);
-  transition: border-color 0.2s;
-}
-
-.review-form .form-field input:focus,
-.review-form .form-field textarea:focus {
-  outline: 2px solid var(--primary-orange);
-  outline-offset: 2px;
-  border-color: var(--primary-green);
-}
-
-.review-form .form-field input:disabled {
-  background: var(--light-gray);
-  cursor: not-allowed;
 }
 
 .rating-input {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 8px;
 }
 
 .rating-star {
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: var(--space-1);
-  font-size: var(--font-size-2xl);
+  padding: 4px;
+  font-size: 24px;
   color: var(--gray-lighter);
   transition: color 0.2s;
 }
@@ -143,7 +120,7 @@
 }
 
 .rating-value {
-  margin-left: var(--space-4);
+  margin-left: 16px;
   font-weight: 600;
   color: var(--text-primary);
 }

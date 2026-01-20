@@ -28,34 +28,61 @@ export const formatNumberIndian = (amount) => {
 };
 
 
+/**
+ * Get the amount for a single order. Prefers totalAmount/total; falls back to quantity * unitPrice.
+ * @param {object} order
+ * @returns {number}
+ */
+export const getOrderAmount = (order) => {
+  if (!order) return 0;
+  let amount = null;
+  if (order.totalAmount !== undefined && order.totalAmount !== null) {
+    const parsed = parseFloat(String(order.totalAmount));
+    if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) amount = parsed;
+  }
+  if (amount === null && order.total !== undefined && order.total !== null) {
+    const parsed = parseFloat(String(order.total));
+    if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) amount = parsed;
+  }
+  if (amount === null) {
+    const qty = parseFloat(String(order.quantity || 1));
+    const price = parseFloat(String(order.unitPrice || 0));
+    if (!isNaN(qty) && !isNaN(price) && isFinite(qty) && isFinite(price) && qty >= 0 && price >= 0) {
+      amount = Math.round(qty * price);
+    }
+  }
+  return amount !== null && !isNaN(amount) && isFinite(amount) && amount >= 0 ? amount : 0;
+};
+
+/**
+ * Pending orders with orderDate strictly before (today - 45 days). Used for overdue counts and badges.
+ * @param {Array} ordersList
+ * @returns {Array}
+ */
+export const getOverdueOrders = (ordersList = []) => {
+  if (!Array.isArray(ordersList)) return [];
+  try {
+    const now = new Date();
+    const fortyFiveDaysAgo = new Date(now);
+    fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
+    fortyFiveDaysAgo.setHours(0, 0, 0, 0);
+    return ordersList.filter((o) => {
+      if (!o || !isPendingStatus(o.status, o.paymentStatus)) return false;
+      const orderDate = parseOrderDate(o.date || o.order_date || null);
+      if (!orderDate) return false;
+      const orderDateMidnight = new Date(orderDate);
+      orderDateMidnight.setHours(0, 0, 0, 0);
+      return orderDateMidnight < fortyFiveDaysAgo;
+    });
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') console.error('Error in getOverdueOrders:', error);
+    return [];
+  }
+};
+
 export const getTotalRevenue = (ordersList = []) => {
   try {
-    return ordersList.reduce((sum, order) => {
-      if (!order) return sum;
-      
-      let amount = null;
-      
-      // Always use stored totalAmount/total if it exists - don't recalculate from qty * price
-      if (order.totalAmount !== undefined && order.totalAmount !== null) {
-        // Use exact totalAmount value as stored (even if 0)
-        amount = parseFloat(order.totalAmount);
-      } else if (order.total !== undefined && order.total !== null) {
-        // Use exact total value as stored (even if 0)
-        amount = parseFloat(order.total);
-      }
-      
-      // Only calculate from qty * price if totalAmount and total are both missing/null
-      if (amount === null || isNaN(amount)) {
-        const qty = parseFloat(order.quantity || 1);
-        const price = parseFloat(order.unitPrice || 0);
-        // Only round when calculating from qty * price to avoid floating-point precision issues (e.g., 33.33333333 * 3 = 99.99999999)
-        amount = Math.round(qty * price);
-      }
-      // If totalAmount/total exists, use it as-is (it's the source of truth)
-      // Only round when calculating from qty * price to avoid precision errors
-      
-      return sum + (isNaN(amount) ? 0 : amount);
-    }, 0);
+    return ordersList.reduce((sum, order) => sum + getOrderAmount(order), 0);
   } catch (error) {
     console.error('Error calculating total revenue:', error);
     return 0;
@@ -67,28 +94,7 @@ export const getDeliveredRevenue = (ordersList = []) => {
   try {
     return ordersList
       .filter((order) => order && order.status === 'delivered')
-      .reduce((sum, order) => {
-        let amount = null;
-        
-        // Always use stored totalAmount/total if it exists - don't recalculate from qty * price
-        if (order.totalAmount !== undefined && order.totalAmount !== null) {
-          // Use exact totalAmount value as stored (even if 0)
-          amount = parseFloat(order.totalAmount);
-        } else if (order.total !== undefined && order.total !== null) {
-          // Use exact total value as stored (even if 0)
-          amount = parseFloat(order.total);
-        }
-        
-        // Only calculate from qty * price if totalAmount and total are both missing/null
-        if (amount === null || isNaN(amount)) {
-          const qty = parseFloat(order.quantity || 1);
-          const price = parseFloat(order.unitPrice || 0);
-          // Only round when calculating from qty * price to avoid floating-point precision issues
-          amount = Math.round(qty * price);
-        }
-        
-        return sum + (isNaN(amount) ? 0 : amount);
-      }, 0);
+      .reduce((sum, order) => sum + getOrderAmount(order), 0);
   } catch (error) {
     console.error('Error calculating delivered revenue:', error);
     return 0;

@@ -49,7 +49,10 @@
     "select": "Select",
     "language": "Language",
     "loading": "Loading...",
-    "submitting": "Submitting..."
+    "submitting": "Submitting...",
+    "orderOnWhatsApp": "Order on WhatsApp",
+    "call": "Call",
+    "items": "items"
   },
 
   "header": {
@@ -72,6 +75,7 @@
   },
 
   "features": {
+    "kicker": "Why choose us",
     "title": "Our Features",
     "subtitle": "What makes HomieBites a trusted daily meal choice",
     "pureVeg": "100% Pure Vegetarian",
@@ -97,8 +101,11 @@
   },
 
   "gallery": {
+    "kicker": "From our kitchen",
     "title": "Food Gallery",
     "subtitle": "Fresh meals prepared daily",
+    "viewAll": "View All",
+    "showLess": "Show Less",
     "viewFullMenu": "View Full Menu",
     "fullTiffin": "Full Tiffin Meal",
     "rotiSabji": "Roti with Sabji",
@@ -109,6 +116,7 @@
   },
 
   "testimonials": {
+    "kicker": "What people say",
     "title": "Customer Reviews",
     "review1": "The food tastes just like home and delivery is reliable.",
     "review2": "Healthy food and perfect for working professionals.",
@@ -140,6 +148,7 @@
   },
 
   "about": {
+    "kicker": "Our story",
     "title": "About HomieBites",
     "description1": "We serve fresh, home-cooked vegetarian meals from",
     "location": "A1-405, Panchsheel Greens",
@@ -162,7 +171,9 @@
   },
 
   "contact": {
+    "kicker": "Get in touch",
     "title": "Contact",
+    "whatsapp": "WhatsApp",
     "phone": "Phone",
     "callWhatsApp": "Call or WhatsApp",
     "address": "Address",
@@ -175,6 +186,7 @@
   },
 
   "faq": {
+    "kicker": "Common questions",
     "title": "Frequently Asked Questions",
     "q1": "How do I place an order?",
     "a1": "You can place an order via WhatsApp (+91-9958983578) or call us directly.",

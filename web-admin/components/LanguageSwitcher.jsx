@@ -27,24 +27,34 @@ const LanguageSwitcher = () => {
     };
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      // Use capture phase to ensure we check before Header's handler
+      document.addEventListener("mousedown", handleClickOutside, true);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside, true);
     };
   }, [isOpen]);
 
-  const handleLanguageChange = (lang) => {
-    changeLanguage(lang);
+  const handleLanguageChange = (e, lang) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (lang !== language) {
+      changeLanguage(lang);
+    }
     setIsOpen(false);
   };
 
   return (
     <div className="language-switcher" ref={dropdownRef}>
       <button
+        type="button"
         className="language-switcher-button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
         aria-label="Select language"
         aria-expanded={isOpen}
       >
@@ -60,8 +70,10 @@ const LanguageSwitcher = () => {
           {languages.map((lang) => (
             <button
               key={lang}
+              type="button"
               className={`language-option ${lang === language ? "active" : ""}`}
-              onClick={() => handleLanguageChange(lang)}
+              onClick={(e) => handleLanguageChange(e, lang)}
+              onMouseDown={(e) => e.stopPropagation()}
             >
               <span className="language-flag">{languageFlags[lang]}</span>
               <span className="language-name">{getLanguageName(lang)}</span>

@@ -88,25 +88,6 @@
   color: var(--text-primary);
 }
 
-.form-group input,
-.form-group textarea {
-  width: 100%;
-  padding: 0.875rem 1.25rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 1rem;
-  font-family: inherit;
-  background: var(--bg-white);
-  transition: all 0.2s ease;
-}
-
-.form-group input:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: var(--primary-green);
-  box-shadow: 0 0 0 3px rgba(57, 184, 111, 0.1);
-}
-
 .order-items-list {
   max-height: 400px;
   overflow-y: auto;

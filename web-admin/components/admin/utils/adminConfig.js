@@ -30,7 +30,7 @@ export const adminFeatures = {
     icon: "fa-file-alt",
     enabled: true,
   },
-  users: {
+  pendingAmounts: {
     name: "Pending Amounts",
     icon: "fa-exclamation-triangle",
     enabled: true,

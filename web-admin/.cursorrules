@@ -9,13 +9,12 @@
 **To ensure compliance, you MUST use the `read_file` tool to read `.cursorrules` as the FIRST action:**
 
 **CRITICAL RULE**: Never use inline style, only use classes.
-**CRITICAL RULE**: Always check duplicate for class before creating new.
-dont create new css file witout conformation extra from current ones.
+**CRITICAL RULE**: Always check duplicate for class before creating new, dont create new css file witout conformation extra from current ones.
+**CRITICAL RULE**: create only very important .md file.
 
 1. **MANDATORY FIRST STEP - Before ANY task:**
 
    ```javascript
-   // REQUIRED: Always do this FIRST before any work
    read_file('.cursorrules');
    ```
 
@@ -131,6 +130,141 @@ Use `.btn-special` with CSS variables:
 - `shared/` - Shared styles and utilities
 - `docs/` - Documentation
 - `.backups/` - Backup files (automatically ignored by git)
+
+---
+
+## 🎨 CSS ARCHITECTURE RULES
+
+**CRITICAL RULE**: Module-based CSS structure with clear separation of concerns.
+
+### CSS Variables/Tokens Usage:
+
+**CRITICAL RULE**: Use CSS variables/tokens ONLY for colors and buttons. Use direct `px` values for everything else (spacing, sizing, borders, etc.).
+
+**Exception – font tokens:** `--font-primary` and `--font-display` in `shared/styles/variables.css` are allowed as the single global UI font (controlled via Settings → Appearance). No other `--font-*` or `--spacing-*` / `--text-*` for non-color.
+
+1. **Colors - MUST use variables:**
+   ```css
+   /* ✅ CORRECT - Use variables */
+   background: var(--admin-accent, #449031);
+   color: var(--admin-text-primary, #1e293b);
+   border-color: var(--admin-border, #e5e7eb);
+
+   /* ❌ FORBIDDEN - Hardcoded colors */
+   background: #449031;
+   color: #1e293b;
+   border-color: #e5e7eb;
+   ```
+
+2. **Buttons - MUST use variables:**
+   ```css
+   /* ✅ CORRECT - Use variables */
+   .btn-primary {
+     background: var(--primary-green, #449031);
+     color: var(--text-white, #ffffff);
+   }
+
+   /* ❌ FORBIDDEN - Hardcoded button colors */
+   .btn-primary {
+     background: #449031;
+     color: #ffffff;
+   }
+   ```
+
+3. **Everything Else - Use direct `px` values:**
+   ```css
+
+
+   /* ❌ FORBIDDEN - Variables for spacing/sizing */
+   padding: var(--spacing-base) var(--spacing-2xl);
+   margin: var(--spacing-lg);
+   font-size: var(--text-body);
+   ```
+
+4. **Exception - Border Width:**
+   - Always use `1px` (as per border width rule)
+   - Can use variable for color: `border: 1px solid var(--admin-border)`
+
+### CSS File Structure:
+
+1. **`styles/globals.css`** - ONLY shared classes used across both web and admin
+   - Button system (`.btn`, `.btn-primary`, etc.)
+   - Input fields (shared input styles)
+   - Modal base styles (if used in both web and admin)
+   - Premium loader base styles
+   - Any other truly shared components
+
+2. **`components/admin/styles/modules/`** - ALL admin dashboard module CSS files
+   - `sidebar.css` - Sidebar component
+   - `topnav.css` - Top navigation
+   - `modals.css` - Admin-specific modals
+   - `tables.css` - Tables and action bars
+   - `filters.css` - Filter components
+   - `forms.css` - Form styles
+   - `cards.css` - Stat cards
+   - `badges.css` - Badge styles
+   - `empty-states.css` - Empty state styles
+   - `notifications.css` - Notification styles
+   - `inputs.css` - Search inputs and selects
+   - `utilities.css` - Skeleton loaders, animations, utilities
+   - Component-specific modules (e.g., `csv-upload-modal.css`, `analytics-tab.css`)
+
+3. **`components/admin/styles/index.css`** - Admin base + layout
+   - Defines admin CSS variables (`:root`) and font-size scale
+   - Defines dashboard layout (`.admin-dashboard`, `.admin-main`, `.admin-content`, resets)
+   - Module CSS is loaded via `adminStyles.js` (JS import, not @import)
+
+4. **For App Components** - Create CSS files where needed
+   - Component-specific CSS files next to component files
+   - Use shared classes from `globals.css` where possible
+
+5. **For Web Components** - Use global shared classes + module-based CSS
+   - Use classes from `styles/globals.css` where possible
+   - Create module-based CSS files for web-specific components that can't use shared classes
+   - Keep web-specific styles separate from admin styles
+
+### FORBIDDEN:
+
+- ❌ `admin-core.css` - Remove, extract to modules
+- ❌ `admin-components.css` - Remove, extract to modules
+- ❌ Duplicate styles in multiple files
+- ❌ Admin-specific styles in `globals.css`
+- ❌ Web-specific styles in admin modules
+- ❌ Shared styles in admin modules
+
+### Rules:
+
+1. **Shared Styles Only in `globals.css`:**
+   - Only classes used in BOTH web and admin
+   - Button system (used everywhere)
+   - Input fields (used everywhere)
+   - Base modal styles (if shared)
+
+2. **Admin Modules Only:**
+   - All admin-specific styles go in `modules/`
+   - One module per component/feature
+   - Clear, descriptive file names
+
+3. **No Legacy Files:**
+   - Remove `admin-core.css` after extraction
+   - Remove `admin-components.css` after extraction
+   - Keep only module-based structure
+
+4. **Import Structure:** `adminStyles.js` imports `index.css` then each module (e.g. `sidebar.css`, `topnav.css`, …). No CSS `@import` (avoids Turbopack issues).
+
+5. **Web Components:**
+   - Use `globals.css` classes where possible
+   - Create component-specific CSS files for web-only styles
+   - Keep web and admin styles separate
+
+### Verification Checklist:
+
+- [ ] `globals.css` only has shared classes
+- [ ] All admin styles in `modules/` directory
+- [ ] No `admin-core.css` or `admin-components.css`
+- [ ] `index.css` has variables + layout; `adminStyles.js` imports index + modules
+- [ ] No duplicate styles across files
+- [ ] Web components use `globals.css` or have their own CSS files
 
 ---
 
@@ -340,6 +474,7 @@ mv components/admin/styles/theme.css.bak .backups/theme.css.bak
    - Fixing critical accessibility issues that cannot be resolved with specificity
    - Overriding inline styles (when necessary for user settings/theme changes)
    - Font size hierarchy enforcement (only in dedicated font-size-hierarchy.css file)
+   - **Button System Lock:** `.btn` and `.btn-*` in `styles/globals.css` may use `!important` to enforce the frozen 5-button design system and prevent overrides.
 
 2. **When is FORBIDDEN:**
 

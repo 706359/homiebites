@@ -1,0 +1,152 @@
+/* ========================================================================
+   ADMIN FORMS MODULE
+   ======================================================================== */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 24px;
+  margin: 0;
+  width: 100%;
+}
+
+.modal-body .form-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+.form-row .form-group {
+  margin: 0;
+}
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+  margin-bottom: 8px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+.form-group label.required {
+  font-weight: 600;
+}
+
+.form-group label.required::after {
+  content: ' *';
+  color: var(--admin-danger, #ef4444);
+  margin-left: 4px;
+}
+
+.form-group label i {
+  margin-right: 8px;
+  color: var(--admin-accent, #449031);
+  font-size: var(--admin-fs-base-mid);
+  width: 18px;
+  text-align: center;
+  opacity: 0.9;
+}
+
+.form-group.form-group-relative {
+  position: relative;
+}
+
+@media (max-width: 480px) {
+  .form-group {
+    margin-bottom: 12px;
+    gap: 6px;
+  }
+
+  .form-group label {
+    font-size: var(--admin-fs-sm-mid);
+    margin-bottom: 4px;
+  }
+
+  .form-group label i {
+    font-size: var(--admin-fs-base-mid);
+    width: 16px;
+    margin-right: 8px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .form-row .form-group {
+    width: 100%;
+    margin-bottom: 0;
+  }
+}
+
+.form-field {
+  margin-bottom: 16px;
+}
+
+.form-group-full {
+  width: 100%;
+}
+
+.form-label-small {
+  font-size: var(--admin-fs-sm-mid);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--admin-text-primary, #1e293b);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.form-input-small {
+  height: 36px;
+  padding: 8px 12px;
+  font-size: var(--admin-fs-sm-mid);
+}
+
+.form-textarea {
+  min-height: 80px;
+  padding: 8px 12px;
+  font-size: var(--admin-fs-sm-mid);
+  resize: vertical;
+}
+
+.menu-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.notifications-settings-form-group {
+  margin-bottom: 16px;
+}
+
+.notifications-settings-label {
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--admin-text-primary, #1e293b);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.notifications-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-form-group {
+  margin-bottom: 16px;
+}
+
+.settings-form-group-full {
+  width: 100%;
+}

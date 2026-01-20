@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLanguage } from '../contexts/LanguageContext';
+import { getFormattedPhone, getPhoneLink, getWhatsAppLink } from '../lib/businessConstants';
 import './Footer.css';
 
 const Footer = ({ onOrderClick }) => {
@@ -58,21 +59,21 @@ const Footer = ({ onOrderClick }) => {
                 e.target.nextSibling.style.display = 'block';
               }}
             />
-            <h2 className='footer-logo-text'>HOMIEBITES</h2>
+            
           </Link>
         </div>
 
         <div className='footer-actions'>
           <a
-            href='https://wa.me/919958983578'
+            href={getWhatsAppLink()}
             target='_blank'
             rel='noopener noreferrer'
             className='btn btn-primary btn-small'
           >
-            <i className='fa-brands fa-whatsapp'></i> Order on WhatsApp
+            <i className='fa-brands fa-whatsapp'></i> {t('common.orderOnWhatsApp')}
           </a>
-          <a href='tel:+919958983578' className='btn btn-secondary btn-small'>
-            <i className='fa-solid fa-phone'></i> Call +91-9958983578
+          <a href={getPhoneLink()} className='btn btn-secondary btn-small'>
+            <i className='fa-solid fa-phone'></i> {t('common.call')} {getFormattedPhone()}
           </a>
         </div>
       </div>

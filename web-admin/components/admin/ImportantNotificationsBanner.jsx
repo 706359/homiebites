@@ -1,6 +1,12 @@
 import { useMemo } from 'react';
 import { parseOrderDate } from './utils/dateUtils.js';
-import { formatCurrency, isPendingStatus } from './utils/orderUtils.js';
+import {
+  formatCurrency,
+  getOrderAmount,
+  getOverdueOrders,
+  getTotalRevenue,
+  isPendingStatus,
+} from './utils/orderUtils.js';
 
 const ImportantNotificationsBanner = ({
   orders = [],
@@ -12,36 +18,10 @@ const ImportantNotificationsBanner = ({
   const importantNotifications = useMemo(() => {
     const notifications = [];
     const now = new Date();
-    const fortyFiveDaysAgo = new Date(now);
-    fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
-    fortyFiveDaysAgo.setHours(0, 0, 0, 0);
 
-    const overdueOrders = orders.filter((order) => {
-      if (!isPendingStatus(order.status)) return false;
-
-      const orderDate = parseOrderDate(order.date || order.order_date || null);
-      if (!orderDate) return false;
-
-      const orderDateMidnight = new Date(orderDate);
-      orderDateMidnight.setHours(0, 0, 0, 0);
-      return orderDateMidnight < fortyFiveDaysAgo;
-    });
-
+    const overdueOrders = getOverdueOrders(orders);
     if (overdueOrders.length > 0) {
-      const totalOverdue = overdueOrders.reduce((sum, o) => {
-        let amount = null;
-        if (o.totalAmount !== undefined && o.totalAmount !== null) {
-          amount = parseFloat(o.totalAmount);
-        } else if (o.total !== undefined && o.total !== null) {
-          amount = parseFloat(o.total);
-        }
-        if (amount === null || isNaN(amount)) {
-          const qty = parseFloat(o.quantity || 1);
-          const price = parseFloat(o.unitPrice || 0);
-          amount = qty * price;
-        }
-        return sum + (isNaN(amount) ? 0 : amount);
-      }, 0);
+      const totalOverdue = getTotalRevenue(overdueOrders);
       notifications.push({
         id: 'overdue-payments',
         type: 'danger',
@@ -60,7 +40,7 @@ const ImportantNotificationsBanner = ({
     const sevenDaysAgo = new Date(now);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const urgentOrders = orders.filter((order) => {
-      if (!isPendingStatus(order.status)) return false;
+      if (!isPendingStatus(order.status, order.paymentStatus)) return false;
 
       const orderDate = parseOrderDate(order.date || order.order_date || null);
       if (!orderDate) return false;
@@ -68,20 +48,7 @@ const ImportantNotificationsBanner = ({
     });
 
     if (urgentOrders.length > 0) {
-      const totalUrgent = urgentOrders.reduce((sum, o) => {
-        let amount = null;
-        if (o.totalAmount !== undefined && o.totalAmount !== null) {
-          amount = parseFloat(o.totalAmount);
-        } else if (o.total !== undefined && o.total !== null) {
-          amount = parseFloat(o.total);
-        }
-        if (amount === null || isNaN(amount)) {
-          const qty = parseFloat(o.quantity || 1);
-          const price = parseFloat(o.unitPrice || 0);
-          amount = qty * price;
-        }
-        return sum + (isNaN(amount) ? 0 : amount);
-      }, 0);
+      const totalUrgent = getTotalRevenue(urgentOrders);
       notifications.push({
         id: 'urgent-payments',
         type: 'warning',
@@ -95,40 +62,11 @@ const ImportantNotificationsBanner = ({
       });
     }
 
-    const highValuePending = orders.filter((order) => {
-      if (!isPendingStatus(order.status)) return false;
-
-      let amount = null;
-      if (order.totalAmount !== undefined && order.totalAmount !== null) {
-        amount = parseFloat(order.totalAmount);
-      } else if (order.total !== undefined && order.total !== null) {
-        amount = parseFloat(order.total);
-      }
-
-      if (amount === null || isNaN(amount)) {
-        const qty = parseFloat(order.quantity || 1);
-        const price = parseFloat(order.unitPrice || 0);
-        amount = qty * price;
-      }
-
-      return amount > 500;
-    });
-
+    const highValuePending = orders.filter(
+      (order) => isPendingStatus(order.status, order.paymentStatus) && getOrderAmount(order) > 500
+    );
     if (highValuePending.length > 0) {
-      const totalHighValue = highValuePending.reduce((sum, o) => {
-        let amount = null;
-        if (o.totalAmount !== undefined && o.totalAmount !== null) {
-          amount = parseFloat(o.totalAmount);
-        } else if (o.total !== undefined && o.total !== null) {
-          amount = parseFloat(o.total);
-        }
-        if (amount === null || isNaN(amount)) {
-          const qty = parseFloat(o.quantity || 1);
-          const price = parseFloat(o.unitPrice || 0);
-          amount = qty * price;
-        }
-        return sum + (isNaN(amount) ? 0 : amount);
-      }, 0);
+      const totalHighValue = getTotalRevenue(highValuePending);
       notifications.push({
         id: 'high-value-pending',
         type: 'info',

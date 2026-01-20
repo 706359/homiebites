@@ -2,16 +2,22 @@
 import connectDB from '../../../../lib/db.js';
 import User from '../../../../lib/models/User.js';
 import jwt from 'jsonwebtoken';
-
+import { rateLimit } from '../../../../lib/middleware/security.js';
 
 function getAdminCredentials() {
-  return {
-    JWT_SECRET: process.env.JWT_SECRET || 'homiebites_secret',
-  };
+  if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET must be set in production');
+  }
+  return { JWT_SECRET: process.env.JWT_SECRET || 'homiebites_secret' };
 }
 
 export async function POST(request) {
   try {
+    const ok = rateLimit(15, 15 * 60 * 1000)(request);
+    if (!ok) {
+      return Response.json({ success: false, error: 'Too many requests. Please try again later.' }, { status: 429 });
+    }
+
     await connectDB();
     
     const body = await request.json();
@@ -98,8 +104,7 @@ export async function POST(request) {
       verificationToken,
     });
   } catch (error) {
-    console.error('[Verify OTP API] Error:', error);
-    
+    if (process.env.NODE_ENV === 'development') console.error('[Verify OTP API] Error:', error);
     if (error.message && error.message.includes('connect')) {
       return Response.json(
         { 

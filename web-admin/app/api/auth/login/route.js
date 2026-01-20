@@ -3,18 +3,26 @@ import connectDB from '../../../../lib/db.js';
 import User from '../../../../lib/models/User.js';
 import jwt from 'jsonwebtoken';
 import { verifyPassword } from '../../../../lib/utils/password.js';
+import { rateLimit } from '../../../../lib/middleware/security.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'homiebites_secret';
 const MAX_LOGIN_ATTEMPTS = 5;
-const LOCK_TIME = 15 * 60 * 1000; 
+const LOCK_TIME = 15 * 60 * 1000;
 
 export async function POST(request) {
   try {
-    
+    if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+      return Response.json({ success: false, error: 'Server misconfiguration.' }, { status: 503 });
+    }
+    const ok = rateLimit(20, 15 * 60 * 1000)(request);
+    if (!ok) {
+      return Response.json({ success: false, error: 'Too many requests. Please try again later.' }, { status: 429 });
+    }
+
     try {
       await connectDB();
     } catch (dbError) {
-      console.error('[Login API] Database connection error:', dbError.message);
+      if (process.env.NODE_ENV === 'development') console.error('[Login API] Database connection error:', dbError.message);
       return Response.json(
         { 
           success: false, 
@@ -26,46 +34,53 @@ export async function POST(request) {
     }
     
     const body = await request.json();
-    const { email, password } = body;
+    const { email, username, password } = body;
 
-    
-    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const emailOrUsername = String(email || username || '').trim();
     const trimmedPassword = String(password || '').trim();
 
-    console.log('[Login API] Login attempt:', { 
-      email: normalizedEmail, 
+    if (process.env.NODE_ENV === 'development') console.log('[Login API] Login attempt:', { 
+      emailOrUsername: emailOrUsername ? '(provided)' : '(empty)', 
       passwordLength: trimmedPassword.length,
       timestamp: new Date().toISOString()
     });
 
-    if (!normalizedEmail || !trimmedPassword) {
-      console.error('[Login API] Missing credentials:', { 
-        hasEmail: !!normalizedEmail, 
+    if (!emailOrUsername || !trimmedPassword) {
+      if (process.env.NODE_ENV === 'development') console.error('[Login API] Missing credentials:', { 
+        hasInput: !!emailOrUsername, 
         hasPassword: !!trimmedPassword 
       });
       return Response.json(
-        { success: false, error: 'Email and password are required' },
+        { success: false, error: 'Email/username and password are required' },
         { status: 400 }
       );
     }
 
-    
+    const esc = emailOrUsername.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const usernameRegex = new RegExp('^' + esc + '$', 'i');
+    const emailLower = emailOrUsername.toLowerCase();
+
     let user;
     try {
-      user = await User.findOne({ email: normalizedEmail });
-      console.log('[Login API] User lookup result:', { 
+      user = await User.findOne({
+        $or: [
+          { email: emailLower },
+          { username: usernameRegex },
+        ],
+      });
+      if (process.env.NODE_ENV === 'development') console.log('[Login API] User lookup result:', { 
         found: !!user, 
-        email: normalizedEmail,
+        input: emailOrUsername ? '(provided)' : '(empty)',
         userId: user?._id?.toString(),
         isActive: user?.isActive,
         loginAttempts: user?.loginAttempts,
         isLocked: !!(user?.lockUntil && user.lockUntil > Date.now())
       });
     } catch (dbQueryError) {
-      console.error('[Login API] Database query error:', {
+      if (process.env.NODE_ENV === 'development') console.error('[Login API] Database query error:', {
         error: dbQueryError.message,
         stack: dbQueryError.stack,
-        email: normalizedEmail
+        input: emailOrUsername ? '(provided)' : '(empty)'
       });
       return Response.json(
         { 
@@ -78,22 +93,22 @@ export async function POST(request) {
     }
 
     if (!user) {
-      console.error('[Login API] User not found:', { email: normalizedEmail });
+      if (process.env.NODE_ENV === 'development') console.error('[Login API] User not found:', { input: emailOrUsername ? '(provided)' : '(empty)' });
       const errorResponse = { 
         success: false, 
         error: 'Invalid email or password',
         code: 'USER_NOT_FOUND',
         timestamp: new Date().toISOString()
       };
-      console.log('[Login API] Returning error response:', errorResponse);
+      if (process.env.NODE_ENV === 'development') console.log('[Login API] Returning error response:', errorResponse);
       return Response.json(errorResponse, { status: 401 });
     }
 
     
     if (user.lockUntil && user.lockUntil > Date.now()) {
       const minutesLeft = Math.ceil((user.lockUntil.getTime() - Date.now()) / 60000);
-      console.error('[Login API] Account locked:', {
-        email: normalizedEmail,
+      if (process.env.NODE_ENV === 'development') console.error('[Login API] Account locked:', {
+        email: (user?.email || emailOrUsername),
         userId: user._id.toString(),
         lockUntil: user.lockUntil.toISOString(),
         minutesLeft,
@@ -113,24 +128,24 @@ export async function POST(request) {
     if (user.password) {
       try {
         isMatch = await verifyPassword(trimmedPassword, user.password);
-        console.log('[Login API] Password verification:', {
-          email: normalizedEmail,
+        if (process.env.NODE_ENV === 'development') console.log('[Login API] Password verification:', {
+          email: (user?.email || emailOrUsername),
           userId: user._id.toString(),
           isMatch,
           hasPassword: !!user.password
         });
       } catch (verifyError) {
-        console.error('[Login API] Password verification error:', {
+        if (process.env.NODE_ENV === 'development') console.error('[Login API] Password verification error:', {
           error: verifyError.message,
           stack: verifyError.stack,
-          email: normalizedEmail,
+          email: (user?.email || emailOrUsername),
           userId: user._id.toString()
         });
         isMatch = false;
       }
     } else {
-      console.error('[Login API] User has no password set:', {
-        email: normalizedEmail,
+      if (process.env.NODE_ENV === 'development') console.error('[Login API] User has no password set:', {
+        email: (user?.email || emailOrUsername),
         userId: user._id.toString()
       });
     }
@@ -140,8 +155,8 @@ export async function POST(request) {
       const previousAttempts = user.loginAttempts || 0;
       user.loginAttempts = previousAttempts + 1;
 
-      console.error('[Login API] Password mismatch:', {
-        email: normalizedEmail,
+      if (process.env.NODE_ENV === 'development') console.error('[Login API] Password mismatch:', {
+        email: (user?.email || emailOrUsername),
         userId: user._id.toString(),
         previousAttempts,
         currentAttempts: user.loginAttempts,
@@ -151,8 +166,8 @@ export async function POST(request) {
       if (user.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
         user.lockUntil = new Date(Date.now() + LOCK_TIME);
         await user.save();
-        console.error('[Login API] Account locked due to too many failed attempts:', {
-          email: normalizedEmail,
+        if (process.env.NODE_ENV === 'development') console.error('[Login API] Account locked due to too many failed attempts:', {
+          email: (user?.email || emailOrUsername),
           userId: user._id.toString(),
           loginAttempts: user.loginAttempts,
           lockUntil: user.lockUntil.toISOString(),
@@ -169,8 +184,8 @@ export async function POST(request) {
 
       await user.save();
       const attemptsRemaining = MAX_LOGIN_ATTEMPTS - user.loginAttempts;
-      console.warn('[Login API] Failed login attempt recorded:', {
-        email: normalizedEmail,
+      if (process.env.NODE_ENV === 'development') console.warn('[Login API] Failed login attempt recorded:', {
+        email: (user?.email || emailOrUsername),
         userId: user._id.toString(),
         attemptsRemaining,
         totalAttempts: user.loginAttempts
@@ -182,7 +197,7 @@ export async function POST(request) {
         attemptsRemaining,
         timestamp: new Date().toISOString()
       };
-      console.log('[Login API] Returning password mismatch error:', errorResponse);
+      if (process.env.NODE_ENV === 'development') console.log('[Login API] Returning password mismatch error:', errorResponse);
       return Response.json(errorResponse, { status: 401 });
     }
 
@@ -200,10 +215,10 @@ export async function POST(request) {
         { expiresIn: '7d' }
       );
     } catch (tokenError) {
-      console.error('[Login API] JWT token generation error:', {
+      if (process.env.NODE_ENV === 'development') console.error('[Login API] JWT token generation error:', {
         error: tokenError.message,
         stack: tokenError.stack,
-        email: normalizedEmail,
+        email: (user?.email || emailOrUsername),
         userId: user._id.toString()
       });
       return Response.json(
@@ -218,8 +233,8 @@ export async function POST(request) {
 
     
     if (user.isTemporaryPassword) {
-      console.log('[Login API] Successful login with temporary password:', {
-        email: normalizedEmail,
+      if (process.env.NODE_ENV === 'development') console.log('[Login API] Successful login with temporary password:', {
+        email: (user?.email || emailOrUsername),
         userId: user._id.toString(),
         name: user.name,
         role: user.role
@@ -235,15 +250,15 @@ export async function POST(request) {
           role: user.role || 'user',
         }
       };
-      console.log('[Login API] Returning success response (temp password):', {
+      if (process.env.NODE_ENV === 'development') console.log('[Login API] Returning success response (temp password):', {
         ...successResponse,
         token: '***REDACTED***'
       });
       return Response.json(successResponse);
     }
 
-    console.log('[Login API] Successful login:', {
-      email: normalizedEmail,
+    if (process.env.NODE_ENV === 'development') console.log('[Login API] Successful login:', {
+      email: (user?.email || emailOrUsername),
       userId: user._id.toString(),
       name: user.name,
       role: user.role,
@@ -260,7 +275,7 @@ export async function POST(request) {
         role: user.role || 'user',
       }
     };
-    console.log('[Login API] Returning success response:', {
+    if (process.env.NODE_ENV === 'development') console.log('[Login API] Returning success response:', {
       ...successResponse,
       token: '***REDACTED***'
     });
@@ -268,7 +283,7 @@ export async function POST(request) {
     return Response.json(successResponse);
 
   } catch (error) {
-    console.error('[Login API] Unexpected error:', {
+    if (process.env.NODE_ENV === 'development') console.error('[Login API] Unexpected error:', {
       error: error.message,
       stack: error.stack,
       name: error.name,
@@ -278,7 +293,7 @@ export async function POST(request) {
     
     
     if (error.name === 'ValidationError') {
-      console.error('[Login API] Validation error:', {
+      if (process.env.NODE_ENV === 'development') console.error('[Login API] Validation error:', {
         errors: Object.values(error.errors || {}).map(e => e.message),
         fields: Object.keys(error.errors || {})
       });
@@ -298,7 +313,7 @@ export async function POST(request) {
         errorMessage.includes('ECONNREFUSED') || 
         errorMessage.includes('Database connection') ||
         errorMessage.includes('MONGOURI')) {
-      console.error('[Login API] Database connection error:', {
+      if (process.env.NODE_ENV === 'development') console.error('[Login API] Database connection error:', {
         error: errorMessage,
         code: error.code,
         mongoUri: process.env.MONGODB_URI ? '***configured***' : 'missing'
@@ -315,7 +330,7 @@ export async function POST(request) {
     
     
     if (error instanceof SyntaxError || errorMessage.includes('JSON')) {
-      console.error('[Login API] JSON parsing error:', {
+      if (process.env.NODE_ENV === 'development') console.error('[Login API] JSON parsing error:', {
         error: errorMessage,
         body: typeof body !== 'undefined' ? 'received' : 'missing'
       });
@@ -328,7 +343,7 @@ export async function POST(request) {
       );
     }
     
-    console.error('[Login API] Unhandled error response:', {
+    if (process.env.NODE_ENV === 'development') console.error('[Login API] Unhandled error response:', {
       status: error.status || 500,
       message: errorMessage || 'Login failed. Please try again.',
       type: typeof error

@@ -103,11 +103,15 @@ export async function POST(request) {
           normalized.dateNeedsReview = true;
           normalized.originalDateString = String(normalized.date);
           normalized.date = String(normalized.date);
+          normalized.billingYear = orderData.billingYear ?? orderData.Year ?? orderData.year;
+          normalized.billingMonth = orderData.billingMonth ?? orderData['Billing Month'];
         } else {
           const year = parsedDate.getFullYear();
-          const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+          const month = parsedDate.getMonth() + 1;
           const day = String(parsedDate.getDate()).padStart(2, '0');
-          normalized.date = `${year}-${month}-${day}`;
+          normalized.date = `${year}-${String(month).padStart(2, '0')}-${day}`;
+          normalized.billingYear = orderData.billingYear ?? orderData.Year ?? orderData.year ?? year;
+          normalized.billingMonth = orderData.billingMonth ?? orderData['Billing Month'] ?? month;
         }
 
         normalized.totalAmount = normalized.unitPrice * normalized.quantity;
@@ -132,10 +136,17 @@ export async function POST(request) {
 
     if (imported.length > 0) {
       const bulkOps = imported.map((order) => {
-        const { _id, ...orderData } = order;
-        if (orderData.date && typeof orderData.date === 'string' && orderData.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-          const [year, month, day] = orderData.date.split('-').map(Number);
-          orderData.date = new Date(year, month - 1, day);
+        const { _id, year, ...orderData } = order;
+        if (orderData.date) {
+          if (typeof orderData.date === 'string') {
+            if (orderData.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+              const [y, m, d] = orderData.date.split('-').map(Number);
+              orderData.date = new Date(y, m - 1, d);
+            } else {
+              const d = new Date(orderData.date);
+              if (!isNaN(d.getTime())) orderData.date = d;
+            }
+          }
         }
         return {
           updateOne: {

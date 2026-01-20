@@ -72,11 +72,11 @@ export async function sendOTPEmail(email, otp, serviceName = 'HomieBites') {
     <head>
       <meta charset="UTF-8">
       <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        body { font-family: 'Baloo 2', sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
         .header { background-color: #449031; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
         .content { padding: 20px; background-color: #f9f9f9; }
-        .otp-box { background-color: #fff; border: 2px solid #449031; padding: 15px; text-align: center; margin: 20px 0; font-size: 24px; font-weight: bold; letter-spacing: 5px; border-radius: 8px; }
+        .otp-box { background-color: #fff; border: 1px solid #449031; padding: 15px; text-align: center; margin: 20px 0; font-size: 24px; font-weight: bold; letter-spacing: 5px; border-radius: 8px; }
         .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
         .warning { color: #d32f2f; font-weight: bold; }
       </style>
@@ -114,7 +114,7 @@ export async function sendPasswordResetEmail(to, resetUrl, userName = 'User') {
     <head>
       <meta charset="UTF-8">
       <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        body { font-family: 'Baloo 2', sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
         .header { background-color: #3B82F6; color: white; padding: 20px; text-align: center; }
         .content { background-color: #f9f9f9; padding: 30px; }
@@ -128,6 +128,7 @@ export async function sendPasswordResetEmail(to, resetUrl, userName = 'User') {
           margin: 20px 0;
         }
         .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+        .reset-link { word-break: break-all; color: #3B82F6; }
       </style>
     </head>
     <body>
@@ -141,7 +142,7 @@ export async function sendPasswordResetEmail(to, resetUrl, userName = 'User') {
           <p>Click the button below to reset your password:</p>
           <a href="${resetUrl}" class="button">Reset Password</a>
           <p>Or copy this link to your browser:</p>
-          <p style="word-break: break-all; color: #3B82F6;">${resetUrl}</p>
+          <p class="reset-link">${resetUrl}</p>
           <p><strong>⚠️ This link will expire in 1 hour.</strong></p>
           <p>If you didn't request this, please ignore this email. Your password will remain unchanged.</p>
         </div>

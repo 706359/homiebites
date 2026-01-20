@@ -15,11 +15,21 @@
   z-index: 0;
 }
 
+@media (max-width: 768px) {
+  .hero-section {
+    background-attachment: scroll;
+  }
+  .hero-content {
+    padding: 16px;
+  }
+}
+
 @media (min-width: 768px) {
   .hero-section {
     padding-top: 100px;
   }
 }
+
 
 @media (min-width: 1200px) {
   .hero-section {
@@ -42,14 +52,14 @@
   position: relative;
   z-index: 1;
   max-width: 1200px;
-  padding: var(--space-6);
+  padding: 24px;
 }
 
 .hero-content h1 {
   font-size: clamp(2rem, 6vw, 4.5rem);
   font-weight: 800;
   line-height: 1.2;
-  margin-bottom: var(--space-4);
+  margin-bottom: 16px;
   color: var(--text-white);
   letter-spacing: -0.02em;
   text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.5);
@@ -60,7 +70,7 @@
   font-size: clamp(1.25rem, 3vw, 2rem);
   font-weight: 600;
   color: rgba(255, 255, 255, 0.98);
-  margin-bottom: var(--space-4);
+  margin-bottom: 16px;
   text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
   animation: fadeInUp 0.8s ease 0.2s both;
   font-style: italic;
@@ -69,7 +79,7 @@
 .hero-description {
   font-size: clamp(1rem, 2vw, 1.25rem);
   color: rgba(255, 255, 255, 0.95);
-  margin-bottom: var(--space-6);
+  margin-bottom: 24px;
   line-height: 1.6;
   max-width: 750px;
   margin-left: auto;
@@ -95,12 +105,12 @@
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: var(--space-2) 1.25rem;
+  padding: 8px 1.25rem;
   border-radius: 50px;
   font-size: clamp(0.9rem, 1.5vw, 1.1rem);
   font-weight: 600;
   color: var(--text-white);
-  margin-bottom: var(--space-6);
+  margin-bottom: 24px;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
   animation: fadeInUp 0.8s ease 0.1s both;
   letter-spacing: 0.5px;
@@ -111,14 +121,14 @@
   justify-content: center;
   gap: 1.25rem;
   flex-wrap: wrap;
-  margin-bottom: var(--space-6);
+  margin-bottom: 24px;
   animation: fadeInUp 0.8s ease 0.6s both;
 }
 
 .hero-feature-item {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 8px;
   font-size: clamp(0.95rem, 1.8vw, 1.1rem);
   color: rgba(255, 255, 255, 0.95);
   font-weight: 500;
@@ -138,24 +148,24 @@
 .hero-actions {
   display: flex;
   justify-content: center;
-  gap: var(--space-4);
+  gap: 16px;
   flex-wrap: wrap;
   animation: fadeInUp 0.8s ease 0.8s both;
   margin-bottom: 1.5rem;
-  margin-top: var(--space-6);
+  margin-top: 24px;
 }
 
 @media (min-width: 768px) {
   .hero-actions {
-    gap: var(--space-6);
-    margin-top: var(--space-8);
+    gap: 24px;
+    margin-top: 32px;
   }
 }
 
 @media (min-width: 1200px) {
   .hero-actions {
-    gap: var(--space-8);
-    margin-top: var(--space-10);
+    gap: 32px;
+    margin-top: 40px;
   }
 }
 

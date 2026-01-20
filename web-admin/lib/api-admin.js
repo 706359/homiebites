@@ -1,7 +1,7 @@
-let resolvedApiUrl = '';
-
-if (typeof window !== 'undefined') {
-}
+// Use NEXT_PUBLIC_API_URL when backend is on another origin. Empty = same-origin /api.
+const resolvedApiUrl = typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL
+  ? String(process.env.NEXT_PUBLIC_API_URL).replace(/\/$/, '')
+  : '';
 
 export const retryAsync = async (fn, maxAttempts = 3, initialDelayMs = 1000) => {
   let lastError;
@@ -64,6 +64,8 @@ export const api = {
 
     delete config.abortController;
 
+    const startTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    
     try {
       const response = await fetch(url, config);
 
@@ -131,8 +133,30 @@ export const api = {
         throw new Error(data.error || `HTTP error! status: ${response.status}`);
       }
 
+      // Track API performance
+      if (typeof window !== 'undefined') {
+        const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - startTime;
+        try {
+          const { default: monitoringService } = await import('../lib/monitoring.js');
+          monitoringService.trackAPI(endpoint, options.method || 'GET', duration, response.status);
+        } catch (trackError) {
+          // Silently fail if monitoring not available
+        }
+      }
+
       return data;
     } catch (error) {
+      // Track API error performance
+      if (typeof window !== 'undefined') {
+        const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - startTime;
+        try {
+          const { default: monitoringService } = await import('../lib/monitoring.js');
+          monitoringService.trackAPI(endpoint, options.method || 'GET', duration, 0, error);
+        } catch (trackError) {
+          // Silently fail if monitoring not available
+        }
+      }
+
       const isOptionalEndpoint = endpoint.includes('/auth/users');
       if (!isOptionalEndpoint) {
         console.error(`[API] Request failed for ${url}:`, error.message);
@@ -171,21 +195,23 @@ export const api = {
   },
 
   async getMenu() {
-    const result = await this.request('/api/menu');
-    return result;
+    return retryAsync(() => this.request('/api/menu'), 3, 1000);
   },
 
   async updateMenu(menuData) {
-    return this.request('/api/menu', {
-      method: 'PUT',
-      body: JSON.stringify(menuData),
-    });
+    return retryAsync(
+      () =>
+        this.request('/api/menu', {
+          method: 'PUT',
+          body: JSON.stringify(menuData),
+        }),
+      3,
+      1000
+    );
   },
 
   async deleteMenu() {
-    return this.request('/api/menu', {
-      method: 'DELETE',
-    });
+    return retryAsync(() => this.request('/api/menu', { method: 'DELETE' }), 3, 1000);
   },
 
   async createOrder(orderData) {
@@ -201,10 +227,15 @@ export const api = {
   },
 
   async createManualOrder(orderData) {
-    return this.request('/api/orders/manual', {
-      method: 'POST',
-      body: JSON.stringify(orderData),
-    });
+    return retryAsync(
+      () =>
+        this.request('/api/orders/manual', {
+          method: 'POST',
+          body: JSON.stringify(orderData),
+        }),
+      3,
+      1000
+    );
   },
 
   async getAllOrders(filters = {}, options = {}) {
@@ -256,10 +287,15 @@ export const api = {
     if (!Array.isArray(orders)) {
       throw new Error('Orders must be an array');
     }
-    return this.request('/api/orders/bulk-import', {
-      method: 'POST',
-      body: JSON.stringify(orders),
-    });
+    return retryAsync(
+      () =>
+        this.request('/api/orders/bulk-import', {
+          method: 'POST',
+          body: JSON.stringify(orders),
+        }),
+      3,
+      1000
+    );
   },
 
   async cleanupDuplicates() {
@@ -274,16 +310,26 @@ export const api = {
   async uploadExcelFile(file) {
     const formData = new FormData();
     formData.append('file', file);
-    return this.request('/api/orders/upload-excel', {
-      method: 'POST',
-      body: formData,
-    });
+    return retryAsync(
+      () =>
+        this.request('/api/orders/upload-excel', {
+          method: 'POST',
+          body: formData,
+        }),
+      3,
+      1000
+    );
   },
 
   async clearAllOrders() {
-    return this.request('/api/orders/clear-all', {
-      method: 'DELETE',
-    });
+    return retryAsync(
+      () =>
+        this.request('/api/orders/clear-all', {
+          method: 'DELETE',
+        }),
+      3,
+      1000
+    );
   },
 
   async createReview(reviewData) {
@@ -301,14 +347,19 @@ export const api = {
   },
 
   async getOffers() {
-    return this.request('/api/offers');
+    return retryAsync(() => this.request('/api/offers'), 3, 1000);
   },
 
   async updateOffers(offersData) {
-    return this.request('/api/offers', {
-      method: 'PUT',
-      body: JSON.stringify({ offers: offersData }),
-    });
+    return retryAsync(
+      () =>
+        this.request('/api/offers', {
+          method: 'PUT',
+          body: JSON.stringify({ offers: offersData }),
+        }),
+      3,
+      1000
+    );
   },
 
   async forgotPassword(email) {
@@ -344,42 +395,59 @@ export const api = {
   },
 
   async getGallery() {
-    return this.request('/api/gallery');
+    return retryAsync(() => this.request('/api/gallery'), 3, 1000);
   },
 
   async createGalleryItem(itemData) {
-    return this.request('/api/gallery', {
-      method: 'POST',
-      body: JSON.stringify(itemData),
-    });
+    return retryAsync(
+      () =>
+        this.request('/api/gallery', {
+          method: 'POST',
+          body: JSON.stringify(itemData),
+        }),
+      3,
+      1000
+    );
   },
 
   async updateGalleryItem(id, itemData) {
-    return this.request(`/api/gallery/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(itemData),
-    });
+    return retryAsync(
+      () =>
+        this.request(`/api/gallery/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify(itemData),
+        }),
+      3,
+      1000
+    );
   },
 
   async deleteGalleryItem(id) {
-    return this.request(`/api/gallery/${id}`, {
-      method: 'DELETE',
-    });
+    return retryAsync(
+      () => this.request(`/api/gallery/${id}`, { method: 'DELETE' }),
+      3,
+      1000
+    );
   },
 
   async getSettings() {
-    return this.request('/api/settings');
+    return retryAsync(() => this.request('/api/settings'), 3, 1000);
   },
 
   async getFullSettings() {
-    return this.request('/api/settings/full');
+    return retryAsync(() => this.request('/api/settings/full'), 3, 1000);
   },
 
   async updateSettings(settingsData) {
-    return this.request('/api/settings', {
-      method: 'PUT',
-      body: JSON.stringify(settingsData),
-    });
+    return retryAsync(
+      () =>
+        this.request('/api/settings', {
+          method: 'PUT',
+          body: JSON.stringify(settingsData),
+        }),
+      3,
+      1000
+    );
   },
 };
 

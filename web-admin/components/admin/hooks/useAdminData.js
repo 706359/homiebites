@@ -21,30 +21,35 @@ export const useAdminData = () => {
   const [notifications, setNotifications] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
   const loadMenuData = useCallback(async () => {
     try {
       const data = await getMenuData();
-      setMenuData(data);
+      setMenuData(Array.isArray(data) ? data : []);
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error loading menu:', error);
+      console.error('Error loading menu:', error);
+      try {
+        const fallback = getMenuDataSync();
+        setMenuData(Array.isArray(fallback) ? fallback : []);
+      } catch {
+        setMenuData([]);
       }
-      const data = getMenuDataSync();
-      setMenuData(data);
     }
   }, []);
 
   const loadOffersData = useCallback(async () => {
     try {
       const data = await getOffersData();
-      setOffersData(data);
+      setOffersData(Array.isArray(data) ? data : []);
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error loading offers:', error);
+      console.error('Error loading offers:', error);
+      try {
+        const fallback = getOffersDataSync();
+        setOffersData(Array.isArray(fallback) ? fallback : []);
+      } catch {
+        setOffersData([]);
       }
-      const data = getOffersDataSync();
-      setOffersData(data);
     }
   }, []);
 
@@ -88,6 +93,7 @@ export const useAdminData = () => {
         }
 
         if (response.success && response.data) {
+          setLoadError(null);
           let nextOrders = Array.isArray(response.data) ? response.data : [];
           if (process.env.NODE_ENV === 'development') {
             console.log('[useAdminData] Orders received:', nextOrders.length);
@@ -124,14 +130,14 @@ export const useAdminData = () => {
           }
         }
       } catch (apiError) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[useAdminData] Failed to load orders from API:', apiError.message);
-        }
+        setLoadError(apiError?.message || 'Failed to load orders');
+        console.error('[useAdminData] Failed to load orders from API:', apiError);
 
         if (apiError.message && apiError.message.includes('Authentication failed')) {
           if (process.env.NODE_ENV === 'development') {
             console.warn('[useAdminData] Authentication failed. Stopping data load.');
           }
+          setLoadError(null);
           setOrders([]);
           return;
         }
@@ -142,20 +148,13 @@ export const useAdminData = () => {
             apiError.message.includes('not available') ||
             apiError.message.includes('connect'))
         ) {
-          if (process.env.NODE_ENV === 'development') {
-            console.error(
-              '[useAdminData] Backend server appears to be offline. Please ensure the backend server is running on',
-              api.baseURL
-            );
-          }
+          console.error('[useAdminData] Backend server appears to be offline. Ensure backend is running on', api.baseURL, apiError);
         }
 
         throw apiError;
       }
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('[useAdminData] Error loading orders:', error);
-      }
+      console.error('[useAdminData] Error loading orders:', error);
 
       throw error;
     }
@@ -167,92 +166,95 @@ export const useAdminData = () => {
       if (token) {
         try {
           const response = await api.getAllUsers();
-          if (response.success && response.data) {
+          if (response?.success && Array.isArray(response.data)) {
             setUsers(response.data);
-            localStorage.setItem('homiebites_users', JSON.stringify(response.data));
+            try {
+              localStorage.setItem('homiebites_users', JSON.stringify(response.data));
+            } catch (e) { /* quota or disabled */ }
             return;
           }
-
-          if (response.error && response.error.includes('Route not found')) {
-          }
         } catch (apiError) {
-          if (!apiError.message.includes('Route not found') && !apiError.message.includes('404')) {
+          const msg = apiError?.message || '';
+          if (!msg.includes('Route not found') && !msg.includes('404')) {
             if (process.env.NODE_ENV === 'development') {
-              console.warn('Failed to load users from API, using cached data:', apiError.message);
+              console.warn('Failed to load users from API, using cached data:', msg);
             }
           }
         }
       }
       const stored =
         localStorage.getItem('homiebites_users') || localStorage.getItem('homiebites_users_data');
-      if (stored) {
+      if (stored && typeof stored === 'string') {
         try {
-          setUsers(JSON.parse(stored));
-        } catch (parseError) {
-          if (process.env.NODE_ENV === 'development') {
-            console.error('Error parsing stored users:', parseError);
-          }
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) setUsers(parsed);
+        } catch {
+          /* ignore corrupt */
         }
       }
     } catch (error) {
-      if (!error.message.includes('Route not found') && !error.message.includes('404')) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error loading users:', error);
-        }
+      if (!error.message?.includes('Route not found') && !error.message?.includes('404')) {
+        console.error('Error loading users:', error);
       }
     }
   }, []);
 
-  const loadSettings = useCallback(() => {
+  const loadSettings = useCallback(async () => {
     try {
-      const stored = localStorage.getItem('homiebites_settings');
-      if (stored) {
-        setSettings(JSON.parse(stored));
+      const res = await api.getFullSettings();
+      if (res?.success && res.data && typeof res.data === 'object' && !Array.isArray(res.data)) {
+        setSettings(res.data);
+        return;
       }
     } catch (e) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error loading settings:', e);
+      console.error('Error loading settings from API:', e);
+    }
+    try {
+      const stored = localStorage.getItem('homiebites_settings');
+      if (stored && typeof stored === 'string') {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          setSettings(parsed);
+        }
       }
+    } catch {
+      /* ignore corrupt or non-JSON */
     }
   }, []);
 
   const loadNotifications = useCallback(() => {
     try {
       const stored = localStorage.getItem('homiebites_notifications');
-      if (stored) {
-        setNotifications(JSON.parse(stored));
+      if (stored && typeof stored === 'string') {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) setNotifications(parsed);
       }
-    } catch (e) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error loading notifications:', e);
-      }
+    } catch {
+      /* ignore corrupt */
     }
   }, []);
 
   const loadNewsletterSubscriptions = useCallback(() => {
     try {
       const stored = localStorage.getItem('homiebites_newsletter');
-      if (stored) {
-        setNewsletterSubscriptions(JSON.parse(stored));
+      if (stored && typeof stored === 'string') {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) setNewsletterSubscriptions(parsed);
       }
-    } catch (e) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error loading newsletter subscriptions:', e);
-      }
+    } catch {
+      /* ignore corrupt */
     }
   }, []);
 
   const loadCurrentUser = useCallback(() => {
     try {
       const userStr = localStorage.getItem('homiebites_user');
-      if (userStr) {
-        const user = JSON.parse(userStr);
-        setCurrentUser(user);
+      if (userStr && typeof userStr === 'string') {
+        const parsed = JSON.parse(userStr);
+        if (parsed && typeof parsed === 'object') setCurrentUser(parsed);
       }
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error loading current user:', error);
-      }
+    } catch {
+      /* ignore corrupt */
     }
   }, []);
 
@@ -353,9 +355,7 @@ export const useAdminData = () => {
         setLoading(false);
       } catch (error) {
         errorTracker.failOperation(loadOpId, error);
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Critical error loading dashboard data:', error);
-        }
+        console.error('Critical error loading dashboard data:', error);
         setLoading(false);
       }
     };
@@ -396,6 +396,7 @@ export const useAdminData = () => {
     notifications,
     currentUser,
     loading,
+    loadError,
 
     setMenuData,
     setOffersData,

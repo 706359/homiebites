@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
 import api from '../../lib/api-admin.js';
-import './AdminLogin.css';
+import { getSessionExpiresAt } from '../../lib/auth-admin.js';
 import { useNotification } from './contexts/NotificationContext.jsx';
 import InstallPrompt from './InstallPrompt.jsx';
-import './styles/index.css';
+import { parseFontSize, applyAdminFontSize } from './utils/fontSize.js';
 
 const AdminLogin = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
@@ -22,8 +22,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
       try {
         const primaryColor = localStorage.getItem('homiebites_primary_color') || '#449031';
         const fontFamily = localStorage.getItem('homiebites_font_family') || 'Baloo 2';
-        const fontSize = localStorage.getItem('homiebites_font_size') || 'medium';
-        const theme = localStorage.getItem('homiebites_theme') || 'light';
+        const fontSize = localStorage.getItem('homiebites_font_size') || '16';
 
         const root = document.documentElement;
         const loginWrapper = document.querySelector('.login-page-wrapper');
@@ -60,48 +59,16 @@ const AdminLogin = ({ onLoginSuccess }) => {
         }
 
         if (fontFamily) {
-          const fontFamilyValue = `'${fontFamily}', sans-serif`;
-          root.style.setProperty('--font-primary', fontFamilyValue);
-          if (loginWrapper) {
-            loginWrapper.style.fontFamily = fontFamilyValue;
-          }
+          root.style.setProperty('--font-primary', `'${fontFamily}', sans-serif`);
         }
 
-        if (fontSize) {
-          const fontSizeMap = {
-            small: '14px',
-            medium: '16px',
-            large: '18px',
-            'extra-large': '20px',
-          };
-          const fontSizeValue = fontSizeMap[fontSize] || '16px';
-          root.style.setProperty('--admin-base-font-size', fontSizeValue);
-          if (loginWrapper) {
-            loginWrapper.style.fontSize = fontSizeValue;
-          }
-        }
+        const fs = parseFontSize(fontSize);
+        if (fs != null) applyAdminFontSize(fs);
 
-        if (theme === 'dark') {
-          if (loginWrapper) {
-            loginWrapper.classList.add('dark-theme');
-            loginWrapper.classList.remove('light-theme');
-          }
-        } else if (theme === 'light') {
-          if (loginWrapper) {
-            loginWrapper.classList.add('light-theme');
-            loginWrapper.classList.remove('dark-theme');
-          }
-        } else if (theme === 'auto') {
-          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (loginWrapper) {
-            if (prefersDark) {
-              loginWrapper.classList.add('dark-theme');
-              loginWrapper.classList.remove('light-theme');
-            } else {
-              loginWrapper.classList.add('light-theme');
-              loginWrapper.classList.remove('dark-theme');
-            }
-          }
+        // Always apply light theme (dark theme removed)
+        if (loginWrapper) {
+          loginWrapper.classList.add('light-theme');
+          loginWrapper.classList.remove('dark-theme');
         }
       } catch (error) {}
     };
@@ -112,8 +79,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
       if (
         e.key === 'homiebites_primary_color' ||
         e.key === 'homiebites_font_family' ||
-        e.key === 'homiebites_font_size' ||
-        e.key === 'homiebites_theme'
+        e.key === 'homiebites_font_size'
       ) {
         applyThemeSettings();
       }
@@ -149,6 +115,10 @@ const AdminLogin = ({ onLoginSuccess }) => {
           localStorage.setItem('homiebites_token', data.token);
           localStorage.setItem('homiebites_user', JSON.stringify(data.user));
           localStorage.setItem('homiebites_admin', 'true');
+          localStorage.setItem(
+            'homiebites_token_meta',
+            JSON.stringify({ expiresAt: getSessionExpiresAt() })
+          );
 
           if (data.requirePasswordChange) {
             // Show success message before redirect for password change
@@ -162,7 +132,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
           showSuccess('Login successful! Redirecting to dashboard...');
           
           if (process.env.NODE_ENV === 'development') {
-            console.log('[AdminLogin] Login successful, redirecting to dashboard');
+            if (process.env.NODE_ENV === 'development') console.log('[AdminLogin] Login successful, redirecting to dashboard');
           }
           
           // Add delay for user to see success message
@@ -311,7 +281,6 @@ const AdminLogin = ({ onLoginSuccess }) => {
         </div>
       </div>
 
-      {}
       <InstallPrompt />
     </div>
   );

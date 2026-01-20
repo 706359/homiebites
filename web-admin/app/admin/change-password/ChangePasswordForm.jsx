@@ -187,7 +187,6 @@ export default function ChangePasswordForm({ isTemporary }) {
             />
           </div>
 
-          {}
           <div className='password-requirements'>
             <p className='requirements-title'>Password Requirements:</p>
             <div className='requirements-list'>

@@ -8,7 +8,10 @@ const Contact = () => {
   return (
     <section id='contact' className='contact-section'>
       <div className='section-container'>
-        <h2 className='section-heading'>{t('contact.title')}</h2>
+        <div className='contact-header'>
+          <span className='contact-kicker'>{t('contact.kicker') || 'Get in touch'}</span>
+          <h2 className='contact-title'>{t('contact.title')}</h2>
+        </div>
 
         <div className='contact-primary-actions'>
           <a
@@ -17,17 +20,17 @@ const Contact = () => {
             rel='noopener noreferrer'
             className='btn btn-primary btn-large contact-action-btn'
           >
-            <i className='fa-brands fa-whatsapp'></i> Order on WhatsApp
+            <i className='fa-brands fa-whatsapp'></i> {t('common.orderOnWhatsApp')}
           </a>
           <a href={getPhoneLink()} className='btn btn-secondary btn-large contact-action-btn'>
-            <i className='fa-solid fa-phone'></i> Call {getFormattedPhone()}
+            <i className='fa-solid fa-phone'></i> {t('common.call')} {getFormattedPhone()}
           </a>
         </div>
 
         <div className='contact-grid'>
           <div className='contact-item'>
             <h3>
-              <i className='fa-brands fa-whatsapp'></i> WhatsApp
+              <i className='fa-brands fa-whatsapp'></i> {t('contact.whatsapp')}
             </h3>
             <p>
               <a href={getWhatsAppLink()} target='_blank' rel='noopener noreferrer'>
@@ -37,7 +40,7 @@ const Contact = () => {
           </div>
           <div className='contact-item'>
             <h3>
-              <i className='fa-solid fa-phone'></i> Phone
+              <i className='fa-solid fa-phone'></i> {t('contact.phone')}
             </h3>
             <p>
               <a href={getPhoneLink()}>{getFormattedPhone()}</a>
@@ -45,7 +48,7 @@ const Contact = () => {
           </div>
           <div className='contact-item'>
             <h3>
-              <i className='fa-solid fa-map-marker-alt'></i> Address
+              <i className='fa-solid fa-map-marker-alt'></i> {t('contact.address')}
             </h3>
             <p>{t('contact.addressValue')}</p>
           </div>

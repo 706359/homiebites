@@ -7,7 +7,10 @@ const About = () => {
   return (
     <section id="about" className="about-section">
       <div className="section-container">
-        <h2 className="section-heading">{t("about.title")}</h2>
+        <div className="about-header">
+          <span className="about-kicker">{t("about.kicker") || "Our story"}</span>
+          <h2 className="about-title">{t("about.title")}</h2>
+        </div>
         <div className="about-content">
           <p>
             {t("about.description1")} <strong>{t("about.location")}</strong>{" "}
@@ -24,10 +27,6 @@ const About = () => {
           <h3 className="why-choose-heading">
             {t("about.whyChoose") || "Why Choose HomieBites"}
           </h3>
-          <p className="why-choose-subtitle">
-            {t("about.whyChooseSubtitle") ||
-              "Experience the difference with our commitment to quality and freshness"}
-          </p>
           <p className="why-choose-intro">
             {t("about.whyChooseIntro") ||
               "At HomieBites, we understand that your daily meals should be more than just food—they should be a source of comfort, nutrition, and joy. Our commitment goes beyond cooking; we create experiences that bring the warmth of home to your table every single day."}

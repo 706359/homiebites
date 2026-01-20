@@ -1,6 +1,8 @@
+/* --- Our Features: compact, distinct dark strip --- */
+
 .features-section {
-  padding: 6rem 2rem;
-  background: var(--bg-white);
+  padding: 2.5rem 1.5rem;
+  background: linear-gradient(165deg, #1a2220 0%, #0f1412 50%, #121a17 100%);
   position: relative;
   overflow: hidden;
 }
@@ -11,130 +13,211 @@
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 20% 50%, rgba(0, 0, 0, 0.02) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.02) 0%, transparent 50%);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(68, 144, 49, 0.4), transparent);
   pointer-events: none;
   z-index: 0;
+}
+
+/* Override section-container glass so the dark bg shows */
+.features-section .section-container::before {
+  display: none;
 }
 
 .features-section .section-container {
   position: relative;
   z-index: 1;
+  padding: 0;
+  max-width: 960px;
+  margin: 0 auto;
 }
 
 .features-header {
   text-align: center;
-  margin-bottom: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+.features-kicker {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--primary-green);
+  margin-bottom: 0.5rem;
+}
+
+.features-title {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.4rem 0;
+  letter-spacing: -0.02em;
 }
 
 .features-subtitle {
-  font-size: clamp(1rem, 2vw, 1.25rem);
-  color: var(--text-secondary);
-  max-width: 700px;
-  margin: 1.5rem auto 0;
-  line-height: 1.7;
-  font-weight: 400;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.5;
 }
 
+/* 3×2 grid of horizontal strips */
 .features-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  margin-top: 3rem;
+  gap: 0 1.5rem;
+  row-gap: 0.1rem;
+  margin-top: 1.25rem;
 }
 
-.feature-card {
-  background: var(--bg-white);
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  padding: 2.5rem 2rem;
-  text-align: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: border-color 0.2s, background 0.2s;
 }
 
-.feature-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--primary-green);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.feature-item:last-child {
+  border-bottom: none;
 }
 
-.feature-badge {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  padding: 0.4rem 0.9rem;
-  background: var(--primary-green);
-  color: var(--text-white);
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  border-radius: 20px;
-  letter-spacing: 0.08em;
-  box-shadow: 0 2px 8px rgba(68, 144, 49, 0.25);
-  z-index: 2;
+.feature-item:hover {
+  border-bottom-color: rgba(68, 144, 49, 0.35);
 }
 
-.feature-icon-wrapper {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 1.5rem;
-  background: rgba(68, 144, 49, 0.08);
-  border-radius: 20px;
+.feature-icon {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  flex-shrink: 0;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(68, 144, 49, 0.15);
-  position: relative;
+  font-size: 1rem;
 }
 
-.feature-icon-wrapper i {
-  font-size: 1.75rem;
-  transition: color 0.3s ease;
-  color: var(--primary-green);
+.feature-item[data-color='green'] .feature-icon {
+  background: rgba(68, 144, 49, 0.2);
+  color: #6bc94c;
+}
+
+.feature-item[data-color='orange'] .feature-icon {
+  background: rgba(196, 92, 45, 0.2);
+  color: #e87a4a;
+}
+
+.feature-item[data-color='blue'] .feature-icon {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.feature-item[data-color='yellow'] .feature-icon {
+  background: rgba(234, 179, 8, 0.2);
+  color: #facc15;
+}
+
+.feature-item[data-color='red'] .feature-icon {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.feature-item[data-color='purple'] .feature-icon {
+  background: rgba(147, 51, 234, 0.2);
+  color: #c084fc;
+}
+
+.feature-body {
+  flex: 1;
+  min-width: 0;
 }
 
 .feature-title {
-  font-size: clamp(1.125rem, 1.5vw, 1.375rem);
+  font-size: 1rem;
   font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 1rem;
+  color: #fff;
+  margin: 0 0 0.2rem 0;
   line-height: 1.3;
-  letter-spacing: -0.01em;
 }
 
-.feature-description {
-  font-size: clamp(0.9375rem, 1.2vw, 1rem);
-  line-height: 1.7;
-  color: var(--text-secondary);
+.feature-desc {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.4;
   margin: 0;
-  font-weight: 400;
 }
 
 .features-cta {
-  margin-top: 4rem;
+  margin-top: 1.25rem;
   text-align: center;
-  padding: 2.5rem;
-  background: var(--bg-white);
-  border-radius: 20px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+  margin-bottom: 0;
 }
 
-.features-cta-text {
-  font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
-  color: var(--text-primary);
-  font-weight: 600;
-  line-height: 1.6;
-  margin: 0;
+/* --- Responsive --- */
+
+@media (max-width: 768px) {
+  .features-section {
+    padding: 2rem 1rem;
+  }
+
+  .features-section .section-container {
+    padding: 0;
+  }
+
+  .features-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0 1rem;
+    row-gap: 0;
+    margin-top: 1rem;
+  }
+
+  .feature-item {
+    padding: 0.7rem 0;
+  }
+
+  .feature-icon {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    font-size: 0.9rem;
+  }
+
+  .feature-title {
+    font-size: 0.9rem;
+  }
+
+  .feature-desc {
+    font-size: 0.75rem;
+  }
+
+  .features-cta {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .features-section {
+    padding: 1.75rem 1rem;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .feature-item {
+    padding: 0.65rem 0;
+  }
 }

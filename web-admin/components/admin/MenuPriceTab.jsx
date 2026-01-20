@@ -2,9 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance.js';
 import api from '../../lib/api-admin.js';
 import { convertMenuItemsToCategories } from '../../lib/menuData.js';
-import ConfirmModal from './ConfirmationModal.jsx';
+import ConfirmationModal from './ConfirmationModal.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
-import './styles/menu-price-tab.css';
 import { formatCurrency } from './utils/orderUtils.js';
 
 const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = false }) => {
@@ -46,9 +45,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       !categories.includes('Breakfast') ||
       !categories.includes('Dinner')
     ) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Categories] Ensuring default categories are present. Current:', categories);
-      }
+      if (process.env.NODE_ENV === 'development') console.log('[Categories] Ensuring default categories are present. Current:', categories);
       const merged = [...new Set([...defaultCategories, ...categories])];
       setCategories(merged);
     }
@@ -57,10 +54,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
   const loadMenuItems = async () => {
     setLoadingMenu(true);
     try {
-      console.log('[Menu Load] Starting to load menu items...');
+      if (process.env.NODE_ENV === 'development') console.log('[Menu Load] Starting to load menu items...');
       const response = await api.getMenu();
 
-      console.log('[Menu Load] Backend response:', {
+      if (process.env.NODE_ENV === 'development') console.log('[Menu Load] Backend response:', {
         success: response?.success,
         hasData: !!response?.data,
         isArray: Array.isArray(response?.data),
@@ -70,12 +67,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
       if (response.success && response.data && Array.isArray(response.data)) {
         const totalItems = response.data.reduce((sum, cat) => sum + (cat.items?.length || 0), 0);
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[Menu Load] Loaded categories:', {
-            categoriesCount: response.data.length,
-            totalItems: totalItems,
-          });
-        }
+        if (process.env.NODE_ENV === 'development') console.log('[Menu Load] Loaded categories:', {
+          categoriesCount: response.data.length,
+          totalItems: totalItems,
+        });
 
         setOriginalCategories(response.data);
 
@@ -95,14 +90,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           }
         });
 
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[Menu Load] Flattened items:', {
-            itemsCount: flattenedItems.length,
-            categories: [...new Set(flattenedItems.map((item) => item.category))],
-          });
-        }
+        if (process.env.NODE_ENV === 'development') console.log('[Menu Load] Flattened items:', {
+          itemsCount: flattenedItems.length,
+          categories: [...new Set(flattenedItems.map((item) => item.category))],
+        });
 
-        console.log('[Menu Load] Setting menu items:', {
+        if (process.env.NODE_ENV === 'development') console.log('[Menu Load] Setting menu items:', {
           itemsCount: flattenedItems.length,
           items: flattenedItems.map((item) => ({ name: item.name, category: item.category })),
         });
@@ -113,7 +106,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
         const uniqueCategories = [...new Set(flattenedItems.map((item) => item.category))];
 
-        console.log('[Menu Load] Category processing:', {
+        if (process.env.NODE_ENV === 'development') console.log('[Menu Load] Category processing:', {
           defaultCategories,
           uniqueCategoriesFromItems: uniqueCategories,
         });
@@ -121,13 +114,13 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         const allCategories = [...new Set([...defaultCategories, ...uniqueCategories])];
         setCategories(allCategories);
         
-        console.log('[Menu Load] Menu loaded successfully:', {
+        if (process.env.NODE_ENV === 'development') console.log('[Menu Load] Menu loaded successfully:', {
           totalItems: flattenedItems.length,
           categories: allCategories,
         });
       } else {
-        console.warn('[Menu Load] Invalid response structure:', response);
-        console.warn('[Menu Load] Response details:', {
+        if (process.env.NODE_ENV === 'development') console.warn('[Menu Load] Invalid response structure:', response);
+        if (process.env.NODE_ENV === 'development') console.warn('[Menu Load] Response details:', {
           response: response,
           success: response?.success,
           data: response?.data,
@@ -146,11 +139,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       }
     } catch (error) {
       console.error('[Menu Load] Error loading menu items:', error);
-      console.error('[Menu Load] Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-      });
+      if (process.env.NODE_ENV === 'development') console.error('[Menu Load] Error details:', { message: error.message, stack: error.stack });
       setMenuItems([]);
       setCategories(['Breakfast', 'Lunch', 'Dinner']);
       
@@ -195,12 +184,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         } else {
           categoryName = 'Lunch';
         }
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[Convert Categories] Assigned category to item:', {
-            itemName: item.name,
-            assignedCategory: categoryName,
-          });
-        }
+        if (process.env.NODE_ENV === 'development') console.log('[Convert Categories] Assigned category to item:', { itemName: item.name, assignedCategory: categoryName });
       }
 
       if (!categoriesMap[categoryName]) {
@@ -227,21 +211,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     const result = Object.values(categoriesMap);
     const totalItems = result.reduce((sum, cat) => sum + (cat.items?.length || 0), 0);
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Convert Categories] Converted to categories:', {
-        categoriesCount: result.length,
-        totalItems: totalItems,
-      });
-    }
+    if (process.env.NODE_ENV === 'development') console.log('[Convert Categories] Converted to categories:', { categoriesCount: result.length, totalItems });
 
     const categoriesWithItems = result.filter((cat) => cat.items && cat.items.length > 0);
 
     if (categoriesWithItems.length === 0) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error(
-          '[Convert Categories] Error: No categories with items found after conversion'
-        );
-      }
+      if (process.env.NODE_ENV === 'development') console.error('[Convert Categories] Error: No categories with items found after conversion');
       throw new Error('No menu items found. Please add at least one menu item.');
     }
 
@@ -336,24 +311,14 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
   const syncMenuItemsToGallery = async (items, showNotification = null) => {
     try {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Gallery Sync] Starting sync for', items.length, 'menu items');
-      }
+      if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Starting sync for', items.length, 'menu items');
 
       let galleryResponse;
       try {
         galleryResponse = await api.getGallery();
-        if (process.env.NODE_ENV === 'development') {
-          console.log(
-            '[Gallery Sync] Fetched',
-            galleryResponse?.data?.length || 0,
-            'existing gallery items'
-          );
-        }
+        if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Fetched', galleryResponse?.data?.length || 0, 'existing gallery items');
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[Gallery Sync] Error fetching gallery:', error);
-        }
+        console.error('[Gallery Sync] Error fetching gallery:', error);
         throw new Error('Failed to fetch gallery: ' + (error.message || 'Unknown error'));
       }
 
@@ -388,18 +353,9 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           return hasImage && hasPrice && isAvailable;
         });
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Gallery Sync] Filtering items for gallery:', {
-          totalItems: items.length,
-          itemsWithImageAndPrice: itemsToSync.length,
-        });
-      }
+      if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Filtering items for gallery:', { totalItems: items.length, itemsWithImageAndPrice: itemsToSync.length });
 
-      if (itemsToSync.length === 0 && process.env.NODE_ENV === 'development') {
-        console.warn(
-          '[Gallery Sync] No items to sync - items need imageUrl and price to appear in gallery'
-        );
-      }
+      if (itemsToSync.length === 0 && process.env.NODE_ENV === 'development') console.warn('[Gallery Sync] No items to sync - items need imageUrl and price to appear in gallery');
 
       let created = 0;
       let updated = 0;
@@ -407,11 +363,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       for (const item of itemsToSync) {
         const finalImageUrl = item.imageUrl;
 
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[Gallery Sync] Syncing item:', {
-            name: item.name,
-          });
-        }
+        if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Syncing item:', { name: item.name });
 
         const galleryItemData = {
           name: item.name,
@@ -432,35 +384,20 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
         if (existingItem) {
           try {
-            const updateResponse = await api.updateGalleryItem(
-              existingItem._id || existingItem.id,
-              galleryItemData
-            );
+            await api.updateGalleryItem(existingItem._id || existingItem.id, galleryItemData);
             updated++;
-            if (process.env.NODE_ENV === 'development') {
-              console.log('[Gallery Sync] Updated gallery item:', item.name);
-            }
+            if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Updated gallery item:', item.name);
           } catch (error) {
-            if (process.env.NODE_ENV === 'development') {
-              console.error('[Gallery Sync] Error updating gallery item', item.name, ':', error);
-            }
+            console.error('[Gallery Sync] Error updating gallery item', item.name, ':', error);
             throw error;
           }
         } else {
           try {
-            const createResponse = await api.createGalleryItem(galleryItemData);
+            await api.createGalleryItem(galleryItemData);
             created++;
-            if (process.env.NODE_ENV === 'development') {
-              console.log(
-                '[Gallery Sync] Created gallery item:',
-                item.name,
-                '- Now visible on website gallery'
-              );
-            }
+            if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Created gallery item:', item.name, '- Now visible on website gallery');
           } catch (error) {
-            if (process.env.NODE_ENV === 'development') {
-              console.error('[Gallery Sync] Error creating gallery item', item.name, ':', error);
-            }
+            console.error('[Gallery Sync] Error creating gallery item', item.name, ':', error);
             throw error;
           }
         }
@@ -476,14 +413,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         }
       }
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Gallery Sync] Sync complete:', {
-          created,
-          updated,
-          deactivated,
-          totalActive: created + updated,
-        });
-      }
+      if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Sync complete:', { created, updated, deactivated, totalActive: created + updated });
 
       try {
         if (typeof window !== 'undefined') {
@@ -491,10 +421,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
           localStorage.setItem('gallery-last-update', Date.now().toString());
 
-          console.log('[Gallery Sync] Triggered gallery refresh event');
+          if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Triggered gallery refresh event');
         }
       } catch (e) {
-        console.warn('[Gallery Sync] Could not trigger refresh event:', e);
+        if (process.env.NODE_ENV === 'development') console.warn('[Gallery Sync] Could not trigger refresh event:', e);
       }
 
       if (showNotification && (created > 0 || updated > 0)) {
@@ -521,7 +451,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       }
 
       if (items.length === 0) {
-        console.warn('[Menu Save] Attempting to save empty menu items array');
+        if (process.env.NODE_ENV === 'development') console.warn('[Menu Save] Attempting to save empty menu items array');
         if (showNotification) {
           showNotification('Cannot save empty menu. Please add at least one menu item.', 'error');
         }
@@ -535,64 +465,36 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         0
       );
       if (totalItemsInCategories === 0) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('[Menu Save] Warning: No items to save after conversion');
-        }
+        if (process.env.NODE_ENV === 'development') console.warn('[Menu Save] Warning: No items to save after conversion');
         throw new Error('No menu items to save. Please add at least one menu item.');
       }
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Menu Save] Sending categories to backend:', {
-          categoriesCount: categories.length,
-          itemsCount: items.length,
-        });
-      }
+      if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Sending categories to backend:', { categoriesCount: categories.length, itemsCount: items.length });
 
       const response = await api.updateMenu(categories);
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Menu Save] Backend response:', {
-          success: response?.success,
-          dataLength: response?.data?.length || 0,
-        });
-      }
+      if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Backend response:', { success: response?.success, dataLength: response?.data?.length || 0 });
 
       if (!response) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[Menu Save] No response from server');
-        }
+        console.error('[Menu Save] No response from server');
         throw new Error('No response from server');
       }
 
       if (response.success !== true) {
         const errorMsg = response?.error || 'Failed to save menu';
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[Menu Save] Backend returned error:', errorMsg);
-        }
+        console.error('[Menu Save] Backend returned error:', errorMsg);
         throw new Error(errorMsg);
       }
 
       if (!response.data || !Array.isArray(response.data)) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('[Menu Save] Backend response missing valid data:', response);
-        }
-      } else if (process.env.NODE_ENV === 'development') {
-        console.log('[Menu Save] Successfully saved menu with', response.data.length, 'categories');
-      }
+        if (process.env.NODE_ENV === 'development') console.warn('[Menu Save] Backend response missing valid data:', response);
+      } else if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Successfully saved menu with', response.data.length, 'categories');
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Menu Save] Starting gallery sync for', items.length, 'items...');
-      }
+      if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Starting gallery sync for', items.length, 'items...');
       try {
         await syncMenuItemsToGallery(items, null);
-        if (process.env.NODE_ENV === 'development') {
-          console.log(
-            '[Menu Save] Gallery sync completed - items should now be visible on website'
-          );
-        }
+        if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Gallery sync completed - items should now be visible on website');
       } catch (syncError) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[Menu Save] Gallery sync failed:', syncError);
-        }
+        console.error('[Menu Save] Gallery sync failed:', syncError);
 
         showNotification(
           'Menu saved, but gallery sync failed: ' + (syncError.message || 'Unknown error'),
@@ -600,22 +502,15 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         );
       }
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Menu Save] Reloading menu items after save...');
-      }
+      if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Reloading menu items after save...');
       try {
         await loadMenuItems();
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[Menu Save] Menu items reloaded successfully');
-        }
+        if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Menu items reloaded successfully');
 
         const reloadedResponse = await api.getMenu();
         if (reloadedResponse.success && reloadedResponse.data) {
-          const totalLoadedItems = reloadedResponse.data.reduce(
-            (sum, cat) => sum + (cat.items?.length || 0),
-            0
-          );
-          console.log('[Menu Save] Verification - Total items in database:', totalLoadedItems);
+          const totalLoadedItems = reloadedResponse.data.reduce((sum, cat) => sum + (cat.items?.length || 0), 0);
+          if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Verification - Total items in database:', totalLoadedItems);
 
           if (totalLoadedItems === 0) {
             console.error('[Menu Save] WARNING: Items were saved but database shows 0 items!');
@@ -638,14 +533,8 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       return true;
     } catch (error) {
       console.error('[Menu Save] Error saving menu to backend:', error);
-      console.error('[Menu Save] Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-      });
-      if (showNotification) {
-        showNotification('Error saving menu: ' + (error.message || 'Unknown error'), 'error');
-      }
+      if (process.env.NODE_ENV === 'development') console.error('[Menu Save] Error details:', { message: error.message, stack: error.stack });
+      if (showNotification) showNotification('Error saving menu: ' + (error.message || 'Unknown error'), 'error');
       throw error;
     }
   };
@@ -721,7 +610,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           category: formData.category || itemCategory,
         };
 
-        console.log('[Add Item] New item created:', {
+        if (process.env.NODE_ENV === 'development') console.log('[Add Item] New item created:', {
           name: newItem.name,
           category: newItem.category,
           price: newItem.price,
@@ -729,7 +618,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
         const updatedItems = [...menuItems, newItem];
 
-        console.log('[Add Item] Saving new item to backend:', {
+        if (process.env.NODE_ENV === 'development') console.log('[Add Item] Saving new item to backend:', {
           itemName: newItem.name,
           category: newItem.category,
           price: newItem.price,
@@ -741,13 +630,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
         try {
           await saveMenuItemsToBackend(updatedItems);
-          console.log('[Add Item] Successfully saved to backend, now reloading from backend...');
+          if (process.env.NODE_ENV === 'development') console.log('[Add Item] Successfully saved to backend, now reloading from backend...');
 
           await loadMenuItems();
-          console.log('[Add Item] Reloaded menu items from backend - should now be in sync');
+          if (process.env.NODE_ENV === 'development') console.log('[Add Item] Reloaded menu items from backend - should now be in sync');
         } catch (error) {
           console.error('[Add Item] Failed to save to backend:', error);
-
           try {
             await loadMenuItems();
           } catch (reloadError) {
@@ -767,9 +655,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         });
       } catch (error) {
         console.error('Error adding menu item:', error);
-        if (showNotification) {
-          showNotification('Error adding menu item', 'error');
-        }
+        if (showNotification) showNotification('Error adding menu item', 'error');
       }
     };
 
@@ -861,12 +747,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
             }
           } catch (error) {
             console.error('Error importing menu items:', error);
-            if (showNotification) {
-              showNotification(
-                'Error importing menu items: ' + (error.message || 'Unknown error'),
-                'error'
-              );
-            }
+            if (showNotification) showNotification('Error importing menu items: ' + (error.message || 'Unknown error'), 'error');
           } finally {
             setLoadingMenu(false);
           }
@@ -899,7 +780,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           item.id === selectedItem.id ? updatedItem : item
         );
 
-        console.log('[Edit Item] Updating item:', {
+        if (process.env.NODE_ENV === 'development') console.log('[Edit Item] Updating item:', {
           itemId: selectedItem.id,
           itemName: updatedItem.name,
           totalItems: updatedItems.length,
@@ -922,9 +803,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         });
       } catch (error) {
         console.error('Error updating menu item:', error);
-        if (showNotification) {
-          showNotification('Error updating menu item', 'error');
-        }
+        if (showNotification) showNotification('Error updating menu item', 'error');
       }
     };
 
@@ -945,7 +824,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     try {
       const updatedItems = menuItems.filter((item) => item.id !== selectedItem.id);
 
-      console.log('[Delete Item] Deleting item:', {
+      if (process.env.NODE_ENV === 'development') console.log('[Delete Item] Deleting item:', {
         itemId: selectedItem.id,
         itemName: selectedItem.name,
         totalItemsBefore: menuItems.length,
@@ -961,9 +840,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       setSelectedItem(null);
     } catch (error) {
       console.error('Error deleting menu item:', error);
-      if (showNotification) {
-        showNotification('Error deleting menu item', 'error');
-      }
+      if (showNotification) showNotification('Error deleting menu item', 'error');
     }
   };
 
@@ -977,9 +854,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       await loadMenuItems();
     } catch (error) {
       console.error('Error toggling availability:', error);
-      if (showNotification) {
-        showNotification('Error updating item', 'error');
-      }
+      if (showNotification) showNotification('Error updating item', 'error');
     }
   };
 
@@ -1009,20 +884,8 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     );
   }
 
-  // Debug logging
-  console.log('[MenuPriceTab Render] Current state:', {
-    menuItemsCount: menuItems.length,
-    filteredMenuItemsCount: filteredMenuItems.length,
-    loading,
-    loadingMenu,
-    searchQuery,
-    filterCategory,
-    categoriesCount: categories.length,
-  });
-
   return (
     <div className='admin-content'>
-      {}
       <div className='dashboard-header'>
         <div className='action-buttons-group'>
           <button
@@ -1066,12 +929,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                         }
                       } catch (error) {
                         console.error('Error deleting menu:', error);
-                        if (showNotification) {
-                          showNotification(
-                            'Error deleting menu: ' + (error.message || 'Unknown error'),
-                            'error'
-                          );
-                        }
+                        if (showNotification) showNotification('Error deleting menu: ' + (error.message || 'Unknown error'), 'error');
                       }
                     },
                   });
@@ -1090,10 +948,7 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                 await syncMenuItemsToGallery(menuItems, showNotification);
               } catch (error) {
                 console.error('[Manual Sync] Error:', error);
-                showNotification(
-                  'Gallery sync failed: ' + (error.message || 'Unknown error'),
-                  'error'
-                );
+                showNotification('Gallery sync failed: ' + (error.message || 'Unknown error'), 'error');
               }
             }}
             title='Sync all menu items with images to website gallery'
@@ -1110,11 +965,9 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         </div>
       </div>
 
-      {}
       <div className='dashboard-card dashboard-card-spaced'>
         <div className='filter-container'>
           <div className='search-input-wrapper search-input-wrapper-flex'>
-            <i className='fa-solid fa-search search-input-icon'></i>
             <input
               type='text'
               className='input-field search-input-with-icon'
@@ -1173,7 +1026,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         </div>
       </div>
 
-      {}
       {filteredMenuItems.length === 0 ? (
         <div className='empty-state-container'>
           <i className='fa-solid fa-utensils empty-state-icon'></i>
@@ -1396,7 +1248,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         </div>
       )}
 
-      {}
       {showAddModal && (
         <div className='modal-overlay'>
           <div className='modal-container max-width-540'>
@@ -1517,7 +1368,6 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         </div>
       )}
 
-      {}
       {showEditModal && selectedItem && (
         <div className='modal-overlay'>
           <div className='modal-container menu-edit-modal-container'>
@@ -1645,9 +1495,8 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         </div>
       )}
 
-      {}
       {showDeleteModal && selectedItem && (
-        <ConfirmModal
+        <ConfirmationModal
           show={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDeleteItem}

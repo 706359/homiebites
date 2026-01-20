@@ -91,6 +91,16 @@ export async function PUT(request) {
     const updates = await request.json();
     const settings = await Settings.getSettings();
 
+    /* Restore from backup: flat object, merge all keys into the settings doc */
+    if (updates && updates._restore === true) {
+      const { _restore, _id, __v, createdAt, updatedAt, ...flat } = updates;
+      for (const k of Object.keys(flat)) {
+        if (flat[k] !== undefined) settings[k] = flat[k];
+      }
+      await settings.save();
+      return Response.json({ success: true, data: settings });
+    }
+
     if (updates.businessInfo) {
       if (updates.businessInfo.businessName !== undefined)
         settings.businessName = updates.businessInfo.businessName;

@@ -1,7 +1,39 @@
 import { useEffect, useState } from 'react';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
 import PremiumLoader from './PremiumLoader.jsx';
-import './styles/settings-tab.css';
+import {
+  parseFontSize,
+  applyAdminFontSize,
+  roundToStep,
+  ADMIN_FONT_SIZE_MIN,
+  ADMIN_FONT_SIZE_MAX,
+  ADMIN_FONT_SIZE_STEP,
+  ADMIN_FONT_SIZE_DEFAULT,
+} from './utils/fontSize.js';
+
+// Google Fonts available for admin UI – names must match fonts.googleapis.com
+const FONT_OPTIONS = [
+  { value: 'Baloo 2', label: 'Baloo 2' },
+  { value: 'Inter', label: 'Inter' },
+  { value: 'Poppins', label: 'Poppins' },
+  { value: 'Roboto', label: 'Roboto' },
+  { value: 'Open Sans', label: 'Open Sans' },
+  { value: 'Lato', label: 'Lato' },
+  { value: 'Nunito', label: 'Nunito' },
+  { value: 'Montserrat', label: 'Montserrat' },
+  { value: 'Source Sans 3', label: 'Source Sans 3' },
+  { value: 'Work Sans', label: 'Work Sans' },
+  { value: 'DM Sans', label: 'DM Sans' },
+  { value: 'Figtree', label: 'Figtree' },
+  { value: 'Plus Jakarta Sans', label: 'Plus Jakarta Sans' },
+  { value: 'Outfit', label: 'Outfit' },
+  { value: 'Manrope', label: 'Manrope' },
+  { value: 'Lexend', label: 'Lexend' },
+  { value: 'Rubik', label: 'Rubik' },
+  { value: 'Quicksand', label: 'Quicksand' },
+  { value: 'Karla', label: 'Karla' },
+  { value: 'Raleway', label: 'Raleway' },
+];
 
 const SettingsTab = ({
   settings,
@@ -65,7 +97,60 @@ const SettingsTab = ({
     confirmPassword: '',
   });
 
-  // Theme and font size settings removed - not available in Settings tab
+  const [appearanceSettings, setAppearanceSettings] = useState({
+    fontFamily: settings?.fontFamily || 'Baloo 2',
+    fontSize: ADMIN_FONT_SIZE_DEFAULT,
+  });
+
+  useEffect(() => {
+    const fromSettings = settings?.fontFamily;
+    const fromStorage =
+      typeof localStorage !== 'undefined' ? localStorage.getItem('homiebites_font_family') : null;
+    const fs = parseFontSize(settings?.fontSize ?? (typeof localStorage !== 'undefined' ? localStorage.getItem('homiebites_font_size') : null)) ?? ADMIN_FONT_SIZE_DEFAULT;
+    setAppearanceSettings((prev) => ({
+      ...prev,
+      fontFamily: fromSettings || fromStorage || 'Baloo 2',
+      fontSize: fs,
+    }));
+  }, [settings?.fontFamily, settings?.fontSize]);
+
+  const handleSaveAppearance = () => {
+    if (showConfirmation) {
+      showConfirmation({
+        title: 'Save appearance',
+        message: 'Apply this font style and size to your admin dashboard?',
+        type: 'info',
+        confirmText: 'Save',
+        onConfirm: () => {
+          if (onUpdateSettings) {
+            onUpdateSettings({
+              themeSettings: {
+                fontFamily: appearanceSettings.fontFamily,
+                fontSize: appearanceSettings.fontSize,
+              },
+            });
+          }
+        },
+      });
+    } else {
+      if (onUpdateSettings) {
+        onUpdateSettings({
+          themeSettings: {
+            fontFamily: appearanceSettings.fontFamily,
+            fontSize: appearanceSettings.fontSize,
+          },
+        });
+      }
+    }
+  };
+
+  const applyFontSize = (v) => {
+    const px = roundToStep(Number(v));
+    setAppearanceSettings((p) => ({ ...p, fontSize: px }));
+    if (typeof localStorage !== 'undefined') localStorage.setItem('homiebites_font_size', String(px));
+    applyAdminFontSize(px);
+    window.dispatchEvent(new CustomEvent('adminFontSizeChanged', { detail: { fontSize: px } }));
+  };
 
   const handleSaveBusinessInfo = () => {
     if (showConfirmation) {
@@ -257,6 +342,7 @@ const SettingsTab = ({
     },
     { id: 'data', label: 'Data', icon: 'fa-database', description: 'Backup & Restore' },
     { id: 'profile', label: 'Profile', icon: 'fa-user', description: 'User Account' },
+    { id: 'appearance', label: 'Appearance', icon: 'fa-palette', description: 'Font & display' },
   ];
 
   return (
@@ -848,7 +934,7 @@ const SettingsTab = ({
                     <i className='fa-solid fa-save'></i>
                     <span>Create Backup Now</span>
                   </button>
-                  <button className='btn btn-secondary btn-large' onClick={() => {}}>
+                  <button className='btn btn-secondary btn-large' onClick={handleBackup}>
                     <i className='fa-solid fa-download'></i>
                     <span>Download Backup</span>
                   </button>
@@ -1099,7 +1185,106 @@ const SettingsTab = ({
           </div>
         )}
 
-        {/* Theme tab removed - appearance settings moved to Reports tab */}
+        {activeTab === 'appearance' && (
+          <div className='admin-stats'>
+            <div className='dashboard-card'>
+              <div className='settings-section-header'>
+                <div className='settings-section-icon-wrapper'>
+                  <i className='fa-solid fa-font'></i>
+                </div>
+                <div className='settings-section-title-wrapper'>
+                  <h3 className='settings-section-title'>Font style</h3>
+                  <p className='settings-section-subtitle'>
+                    Choose a font for the full platform—main website, admin dashboard, and admin
+                    login. Changes apply after saving.
+                  </p>
+                </div>
+              </div>
+              <div className='settings-section-body'>
+                <div className='settings-form-grid'>
+                  <div className='settings-form-group settings-form-group-full'>
+                    <label className='settings-form-label'>
+                      <i className='fa-solid fa-palette'></i>
+                      <span>My font style</span>
+                    </label>
+                    <select
+                      className='settings-input-field'
+                      value={appearanceSettings.fontFamily}
+                      onChange={(e) =>
+                        setAppearanceSettings({
+                          ...appearanceSettings,
+                          fontFamily: e.target.value,
+                        })
+                      }
+                      aria-label='Select font style'
+                    >
+                      {FONT_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    <p className='settings-form-hint'>
+                      Applies everywhere: customer site, admin, and login. Font loads from Google
+                      Fonts when you save.
+                    </p>
+                  </div>
+                  <div className='settings-form-group settings-form-group-full'>
+                    <label className='settings-form-label' htmlFor='admin-font-size-input'>
+                      <i className='fa-solid fa-text-height'></i>
+                      <span>Font size (admin dashboard only)</span>
+                    </label>
+                    <div className='settings-font-size-control' role='group' aria-label={`Font size ${ADMIN_FONT_SIZE_MIN}–${ADMIN_FONT_SIZE_MAX} px`}>
+                      <button
+                        type='button'
+                        className='btn btn-ghost settings-font-size-btn'
+                        onClick={() => applyFontSize((appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT) - ADMIN_FONT_SIZE_STEP)}
+                        disabled={(appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT) <= ADMIN_FONT_SIZE_MIN}
+                        aria-label='Decrease by 0.25 px'
+                      >
+                        <i className='fa-solid fa-minus' aria-hidden />
+                      </button>
+                      <input
+                        id='admin-font-size-input'
+                        type='number'
+                        min={ADMIN_FONT_SIZE_MIN}
+                        max={ADMIN_FONT_SIZE_MAX}
+                        step={ADMIN_FONT_SIZE_STEP}
+                        value={appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT}
+                        onChange={(e) => applyFontSize(e.target.value)}
+                        onBlur={(e) => applyFontSize(e.target.value)}
+                        className='settings-font-size-input'
+                        aria-label={`Font size in px, ${ADMIN_FONT_SIZE_MIN} to ${ADMIN_FONT_SIZE_MAX}`}
+                        aria-valuemin={ADMIN_FONT_SIZE_MIN}
+                        aria-valuemax={ADMIN_FONT_SIZE_MAX}
+                        aria-valuenow={appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT}
+                      />
+                      <span className='settings-font-size-unit' aria-hidden>px</span>
+                      <button
+                        type='button'
+                        className='btn btn-ghost settings-font-size-btn'
+                        onClick={() => applyFontSize((appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT) + ADMIN_FONT_SIZE_STEP)}
+                        disabled={(appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT) >= ADMIN_FONT_SIZE_MAX}
+                        aria-label='Increase by 0.25 px'
+                      >
+                        <i className='fa-solid fa-plus' aria-hidden />
+                      </button>
+                    </div>
+                    <p className='settings-form-hint'>
+                      {ADMIN_FONT_SIZE_MIN}–{ADMIN_FONT_SIZE_MAX} px in {ADMIN_FONT_SIZE_STEP} px steps. Applies immediately; save to persist.
+                    </p>
+                  </div>
+                </div>
+                <div className='settings-section-actions'>
+                  <button className='btn btn-primary btn-large' onClick={handleSaveAppearance}>
+                    <i className='fa-solid fa-save'></i>
+                    <span>Save font style</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

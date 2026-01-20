@@ -4,6 +4,7 @@ import {
   getDeliveredRevenue,
   getOrderDateOnly,
   getTotalRevenue,
+  isPendingStatus,
 } from './orderUtils.js';
 import { parseOrderDate } from './dateUtils.js';
 
@@ -28,9 +29,7 @@ export const getTodayStats = (ordersList = []) => {
 
     const todayRevenue = getDeliveredRevenue(todayOrders);
     const todayTotalRevenue = getTotalRevenue(todayOrders);
-    const pending = todayOrders.filter((o) =>
-      ['pending', 'confirmed', 'preparing'].includes(o.status)
-    ).length;
+    const pending = todayOrders.filter((o) => isPendingStatus(o.status, o.paymentStatus)).length;
 
     return {
       orders: todayOrders.length,
@@ -103,8 +102,7 @@ export const getWeeklyStats = (ordersList = []) => {
 
 export const getPendingOrders = (ordersList = []) => {
   try {
-    return ordersList.filter((o) => ['pending', 'confirmed', 'preparing'].includes(o.status))
-      .length;
+    return ordersList.filter((o) => isPendingStatus(o.status, o.paymentStatus)).length;
   } catch (error) {
     console.error('Error calculating pending orders:', error);
     return 0;

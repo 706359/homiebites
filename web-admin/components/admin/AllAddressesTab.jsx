@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
 
 import { formatDate, formatDateShort, parseOrderDate } from './utils/dateUtils.js';
-import { formatCurrency, sortOrdersByOrderId } from './utils/orderUtils.js';
+import { formatCurrency, getOrderAmount, sortOrdersByOrderId } from './utils/orderUtils.js';
 
 const AllAddressesTab = ({
   orders = [],
@@ -66,21 +66,7 @@ const AllAddressesTab = ({
 
       customerMap[address].orders.push(order);
       customerMap[address].totalOrders++;
-
-      let orderTotal = null;
-      if (order.totalAmount !== undefined && order.totalAmount !== null) {
-        orderTotal = parseFloat(order.totalAmount);
-      } else if (order.total !== undefined && order.total !== null) {
-        orderTotal = parseFloat(order.total);
-      }
-
-      if (orderTotal === null || isNaN(orderTotal)) {
-        const qty = parseFloat(order.quantity || 1);
-        const price = parseFloat(order.unitPrice || 0);
-        orderTotal = qty * price;
-      }
-
-      customerMap[address].totalSpent += isNaN(orderTotal) ? 0 : orderTotal;
+      customerMap[address].totalSpent += getOrderAmount(order);
 
       const orderDate = parseOrderDate(order.date || order.order_date || null);
 
@@ -296,16 +282,13 @@ const AllAddressesTab = ({
 
   return (
     <div className='admin-content'>
-      {}
       <div className='admin-stats customer-stats-row'>
-        {}
         <div className='stat-card stat-card-gradient-accent customer-stat-card'>
           <div className='customer-stat-content'>
             <h3 className='customer-stat-number'>{segments.total}</h3>
             <p className='customer-stat-label'>Total Customers</p>
           </div>
         </div>
-        {}
         <div className='stat-card stat-card-gradient-warning customer-stat-card'>
           <i className='fa-solid fa-crown customer-stat-icon customer-stat-icon-green'></i>
           <div className='customer-stat-content'>
@@ -313,7 +296,6 @@ const AllAddressesTab = ({
             <p className='customer-stat-label'>Super VIP (≥₹15k)</p>
           </div>
         </div>
-        {}
         <div className='stat-card stat-card-gradient-warning customer-stat-card'>
           <i className='fa-solid fa-star customer-stat-icon customer-stat-icon-green'></i>
           <div className='customer-stat-content'>
@@ -321,7 +303,6 @@ const AllAddressesTab = ({
             <p className='customer-stat-label'>VIP (₹8k-₹15k)</p>
           </div>
         </div>
-        {}
         <div className='stat-card stat-card-gradient-secondary customer-stat-card'>
           <i className='fa-solid fa-user customer-stat-icon customer-stat-icon-light'></i>
           <div className='customer-stat-content'>
@@ -329,7 +310,6 @@ const AllAddressesTab = ({
             <p className='customer-stat-label'>Regular Customers</p>
           </div>
         </div>
-        {}
         <div className='stat-card stat-card-gradient-success customer-stat-card'>
           <div className='customer-stat-content'>
             <h3 className='customer-stat-number'>₹{formatCurrency(segments.totalRevenue)}</h3>
@@ -338,89 +318,81 @@ const AllAddressesTab = ({
         </div>
       </div>
 
-      {}
       <div className='dashboard-card filter-bar-card filter-bar-compact'>
-        <div className='filter-bar-container-compact'>
-          {}
-          <div className='search-input-wrapper search-input-compact search-input-flex'>
-            <i className='fa-solid fa-search search-input-icon'></i>
-            <input
-              type='text'
-              className='input-field search-input-with-icon'
-              placeholder='Search by address...'
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+        <div className='filter-bar-container-compact filter-bar-layout-by-rows'>
+          <div className='filter-bar-row'>
+            <div className='search-input-wrapper search-input-compact search-input-flex'>
+              <input
+                type='text'
+                className='input-field search-input-with-icon'
+                placeholder='Search by address...'
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <select
+              className='input-field filter-select-compact'
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value='all'>All Status</option>
+              <option value='active'>Active</option>
+              <option value='inactive'>Inactive</option>
+            </select>
+            <select
+              className='input-field filter-select-compact'
+              value={filterSegment}
+              onChange={(e) => setFilterSegment(e.target.value)}
+            >
+              <option value='all'>All Segments</option>
+              <option value='Super VIP'>Super VIP</option>
+              <option value='VIP'>VIP</option>
+              <option value='Regular'>Regular</option>
+              <option value='New'>New</option>
+            </select>
           </div>
 
-          {}
-          <select
-            className='input-field filter-select-compact'
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value='all'>All Status</option>
-            <option value='active'>Active</option>
-            <option value='inactive'>Inactive</option>
-          </select>
-
-          {}
-          <select
-            className='input-field filter-select-compact'
-            value={filterSegment}
-            onChange={(e) => setFilterSegment(e.target.value)}
-          >
-            <option value='all'>All Segments</option>
-            <option value='VIP'>VIP</option>
-            <option value='Regular'>Regular</option>
-            <option value='New'>New</option>
-          </select>
-
-          {}
-          <div className='view-toggle-compact'>
+          <div className='filter-bar-row'>
+            <div className='view-toggle-compact'>
+              <button
+                className={`btn btn-ghost btn-icon ${viewMode === 'table' ? 'active' : ''}`}
+                onClick={() => setViewMode('table')}
+                title='Table View'
+              >
+                <i className='fa-solid fa-table'></i>
+              </button>
+              <button
+                className={`btn btn-ghost btn-icon ${viewMode === 'cards' ? 'active' : ''}`}
+                onClick={() => setViewMode('cards')}
+                title='Card View'
+              >
+                <i className='fa-solid fa-th'></i>
+              </button>
+            </div>
             <button
-              className={`btn btn-ghost btn-icon-compact ${viewMode === 'table' ? 'active' : ''}`}
-              onClick={() => setViewMode('table')}
-              title='Table View'
+              className='btn btn-secondary btn-small'
+              onClick={handleExport}
+              title='Export'
             >
-              <i className='fa-solid fa-table'></i>
+              <i className='fa-solid fa-download'></i> Export
             </button>
-            <button
-              className={`btn btn-ghost btn-icon-compact ${viewMode === 'cards' ? 'active' : ''}`}
-              onClick={() => setViewMode('cards')}
-              title='Card View'
-            >
-              <i className='fa-solid fa-th'></i>
-            </button>
+            {(searchQuery || filterStatus !== 'all' || filterSegment !== 'all') && (
+              <button
+                className='btn btn-ghost btn-small'
+                onClick={() => {
+                  setSearchQuery('');
+                  setFilterStatus('all');
+                  setFilterSegment('all');
+                }}
+                title='Clear Filters'
+              >
+                <i className='fa-solid fa-xmark'></i> Clear
+              </button>
+            )}
           </div>
-
-          {}
-          <button
-            className='btn btn-secondary btn-small btn-compact'
-            onClick={handleExport}
-            title='Export'
-          >
-            <i className='fa-solid fa-download'></i> Export
-          </button>
-
-          {}
-          {(searchQuery || filterStatus !== 'all' || filterSegment !== 'all') && (
-            <button
-              className='btn btn-ghost btn-small btn-compact'
-              onClick={() => {
-                setSearchQuery('');
-                setFilterStatus('all');
-                setFilterSegment('all');
-              }}
-              title='Clear Filters'
-            >
-              <i className='fa-solid fa-xmark'></i> Clear
-            </button>
-          )}
         </div>
       </div>
 
-      {}
       {inactiveCustomers.length > 0 && (
         <div className='dashboard-card margin-bottom-24'>
           <div className='flex justify-between items-center'>
@@ -444,7 +416,6 @@ const AllAddressesTab = ({
         </div>
       )}
 
-      {}
       {viewMode === 'table' ? (
         <div className='dashboard-card table-container-card table-container-no-padding'>
           <div className='orders-table-container table-wrapper table-wrapper-min-height'>
@@ -614,7 +585,6 @@ const AllAddressesTab = ({
                   </tbody>
                 </table>
 
-                {}
                 {totalPages > 1 && (
                   <div className='pagination-controls'>
                     <div>
@@ -639,7 +609,7 @@ const AllAddressesTab = ({
                     <div className='pagination-container'>
                       <span>Show:</span>
                       <select
-                        className='input-field pagination-select'
+                        className='pagination-select'
                         value={itemsPerPage}
                         onChange={(e) => {
                           setItemsPerPage(Number(e.target.value));
@@ -822,7 +792,6 @@ const AllAddressesTab = ({
         </div>
       )}
 
-      {}
       {viewMode === 'cards' && totalPages > 1 && (
         <div className='pagination-controls'>
           <div>
@@ -847,7 +816,6 @@ const AllAddressesTab = ({
         </div>
       )}
 
-      {}
       {showCustomerModal && selectedCustomer && (
         <div className='modal-overlay' onClick={() => setShowCustomerModal(false)}>
           <div className='modal-container' onClick={(e) => e.stopPropagation()}>
@@ -862,7 +830,6 @@ const AllAddressesTab = ({
             </div>
             <div className='modal-body'>
               <div className='filter-bar-flex-col'>
-                {}
                 <div>
                   <h3 className='section-title-mb'>Customer Information</h3>
                   <div className='customer-detail-grid'>
@@ -919,7 +886,6 @@ const AllAddressesTab = ({
                   </div>
                 </div>
 
-                {}
                 <div>
                   <h3 className='section-title-mb'>Order History (Last 10)</h3>
                   <div className='orders-table-container'>

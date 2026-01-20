@@ -85,7 +85,7 @@ const CurrentMonthOrdersTab = ({
   const currentMonthStats = useMemo(() => {
     const revenue = getTotalRevenue(currentMonthOrders);
     const total = currentMonthOrders.length;
-    const pending = currentMonthOrders.filter((o) => isPendingStatus(o.status));
+    const pending = currentMonthOrders.filter((o) => isPendingStatus(o.status, o.paymentStatus));
     const pendingAmount = pending.reduce((sum, o) => {
       let amount = null;
 
@@ -187,10 +187,10 @@ const CurrentMonthOrdersTab = ({
         });
         break;
       case 'pending':
-        filtered = filtered.filter((o) => isPendingStatus(o.status));
+        filtered = filtered.filter((o) => isPendingStatus(o.status, o.paymentStatus));
         break;
       case 'paid':
-        filtered = filtered.filter((o) => isPaidStatus(o.status));
+        filtered = filtered.filter((o) => isPaidStatus(o.status, o.paymentStatus));
         break;
       default:
         
@@ -248,8 +248,8 @@ const CurrentMonthOrdersTab = ({
       }
     });
 
-    const pendingOrders = currentMonthOrders.filter((o) => isPendingStatus(o.status));
-    const paidOrders = currentMonthOrders.filter((o) => isPaidStatus(o.status));
+    const pendingOrders = currentMonthOrders.filter((o) => isPendingStatus(o.status, o.paymentStatus));
+    const paidOrders = currentMonthOrders.filter((o) => isPaidStatus(o.status, o.paymentStatus));
 
     return {
       all: currentMonthOrders.length,
@@ -326,7 +326,6 @@ const CurrentMonthOrdersTab = ({
 
   return (
     <div className='admin-content'>
-      {}
       <div className='admin-stats'>
         <div className='stat-card'>
           <i className='fa-solid fa-coins'></i>
@@ -371,11 +370,8 @@ const CurrentMonthOrdersTab = ({
         </div>
       </div>
 
-      {}
       <div className='dashboard-card dashboard-card-spaced'>
-        {}
-        <div className='filter-bar-flex mb-12'>
-          {}
+        <div className='filter-bar-flex'>
           <div className='flex flex-wrap gap-8'>
             <button
               className={`btn ${quickFilter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-small`}
@@ -418,7 +414,6 @@ const CurrentMonthOrdersTab = ({
             </button>
           </div>
 
-          {}
           <div className='flex flex-wrap gap-8'>
             <button
               className={`btn ${quickFilter === 'pending' ? 'btn-primary' : 'btn-ghost'} btn-small`}
@@ -442,9 +437,7 @@ const CurrentMonthOrdersTab = ({
             </button>
           </div>
 
-          {}
-          <div className='search-input-wrapper search-input-flex-250'>
-            <i className='fa-solid fa-search search-input-icon'></i>
+          <div >
             <input
               type='text'
               className='input-field search-input-with-icon'
@@ -456,7 +449,6 @@ const CurrentMonthOrdersTab = ({
         </div>
       </div>
 
-      {}
       <div className='dashboard-card'>
         <div className='flex justify-between items-center mb-16'>
           <div className='text-secondary text-base'>
@@ -499,7 +491,7 @@ const CurrentMonthOrdersTab = ({
                       order.date || order.order_date || null
                     );
                     const dateStr = formatDate(orderDate);
-                    const isPaid = isPaidStatus(order.status);
+                    const isPaid = isPaidStatus(order.status, order.paymentStatus);
 
                     return (
                       <tr
@@ -571,7 +563,6 @@ const CurrentMonthOrdersTab = ({
               </table>
             </div>
 
-            {}
             <div className='pagination-controls'>
               <div>
                 <button
@@ -581,7 +572,7 @@ const CurrentMonthOrdersTab = ({
                 >
                   <i className='fa-solid fa-chevron-left'></i> Previous
                 </button>
-                <span className='mx-16 font-semibold'>
+                <span className='pagination-info'>
                   Page {currentPage} of {totalPages || 1}
                 </span>
                 <button
@@ -592,10 +583,10 @@ const CurrentMonthOrdersTab = ({
                   Next <i className='fa-solid fa-chevron-right'></i>
                 </button>
               </div>
-              <div className='flex items-center gap-8'>
+              <div className='pagination-container'>
                 <span>Show:</span>
                 <select
-                  className='input-field w-80 p-8'
+                  className='pagination-select'
                   value={recordsPerPage}
                   onChange={(e) => {
                     const value = parseInt(e.target.value);
@@ -614,7 +605,6 @@ const CurrentMonthOrdersTab = ({
         )}
       </div>
 
-      {}
       {showAddOrderModal && (
         <OrderModal
           show={showAddOrderModal}
@@ -647,9 +637,7 @@ const CurrentMonthOrdersTab = ({
                       setEditingOrder(null);
                       if (loadOrders) loadOrders();
                     } catch (error) {
-                      if (process.env.NODE_ENV === 'development') {
-                        console.error('Error updating order:', error);
-                      }
+                      console.error('Error updating order:', error);
                     }
                   }
                 }

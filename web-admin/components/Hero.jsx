@@ -33,10 +33,10 @@ const Hero = ({ onOrderClick }) => {
             rel='noopener noreferrer'
             className='btn btn-primary btn-large'
           >
-            <i className='fa-brands fa-whatsapp'></i> Order on WhatsApp
+            <i className='fa-brands fa-whatsapp'></i> {t('common.orderOnWhatsApp')}
           </a>
           <a href={getPhoneLink()} className='btn btn-secondary btn-large'>
-            <i className='fa-solid fa-phone'></i> Call {getFormattedPhone()}
+            <i className='fa-solid fa-phone'></i> {t('common.call')} {getFormattedPhone()}
           </a>
         </div>
       </div>

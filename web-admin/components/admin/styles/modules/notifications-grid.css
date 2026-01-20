@@ -1,0 +1,104 @@
+/* ========================================================================
+   NOTIFICATIONS GRID MODULE
+   ======================================================================== */
+
+.notification-grid-4-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.notifications-empty-state {
+  padding: 64px 24px;
+  text-align: center;
+}
+
+.notification-badge-unread-grid {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--admin-danger, #dc2626);
+  color: var(--admin-text-white, #ffffff);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: var(--admin-fs-2xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.notification-icon-order {
+  color: var(--admin-accent, #449031);
+}
+
+.notification-icon-payment {
+  color: var(--admin-success, #16a34a);
+}
+
+.notification-icon-system {
+  color: var(--admin-info, #007aff);
+}
+
+.notification-icon-default {
+  color: var(--admin-text-secondary, #6b7280);
+}
+
+.notification-card-grid-content {
+  padding: 16px;
+}
+
+.notification-card-grid-title {
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--admin-text-primary, #1e293b);
+  margin: 0 0 8px 0;
+}
+
+.notification-card-grid-message {
+  line-height: 1.5;
+  color: var(--admin-text-primary, #1e293b);
+  margin: 0 0 4px 0;
+}
+
+.notification-card-grid-details {
+  font-size: var(--admin-fs-sm);
+  line-height: 1.5;
+  color: var(--admin-text-secondary, #6b7280);
+  margin: 0 0 12px 0;
+}
+
+.notification-card-grid-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--admin-border, #e5e7eb);
+}
+
+.notification-card-grid-time {
+  font-size: var(--admin-fs-xs);
+  color: var(--admin-text-light, #9ca3af);
+}
+
+.notification-card-grid-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.notification-card-grid {
+  position: relative;
+  background: var(--admin-bg, #ffffff);
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.notification-card-grid.read {
+  opacity: 0.8;
+}
+
+.notification-card-grid.unread {
+  border-left: 1px solid var(--admin-accent, #449031);
+}

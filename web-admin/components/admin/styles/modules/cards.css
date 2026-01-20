@@ -1,0 +1,168 @@
+/* ========================================================================
+   ADMIN CARDS MODULE
+   ======================================================================== */
+
+.stat-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+  padding: 22px 24px;
+  background: var(--admin-bg, #ffffff);
+  border: 1px solid var(--admin-border, #e2e8f0);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 96px;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--admin-accent, #449031);
+  transform: scaleX(0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px 12px 0 0;
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 150px;
+  height: 150px;
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.15));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 50%;
+}
+
+.stat-card i {
+  font-size: var(--admin-fs-xl);
+  color: var(--admin-accent, #449031);
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.12));
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+  flex: 1;
+  min-width: 0;
+  gap: 4px;
+  align-self: stretch;
+}
+
+.stat-card h3 {
+  font-size: var(--admin-fs-xl);
+  font-weight: 700;
+  color: var(--admin-text-primary, #1e293b);
+  margin: 0;
+  line-height: 1.3;
+  text-align: left;
+  letter-spacing: -0.02em;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.stat-card-primary h3 {
+  font-weight: 700;
+}
+
+.stat-card p {
+  color: var(--admin-text-secondary, #64748b);
+  margin: 0;
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.stat-card .stat-card-subtitle {
+  font-size: var(--admin-fs-sm);
+  margin-top: 4px;
+  color: var(--admin-text-light, #9ca3af);
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.stat-card-subtitle-success {
+  color: var(--admin-success, #16a34a);
+}
+
+.stat-card-subtitle-danger {
+  color: var(--admin-danger, #dc2626);
+}
+
+.stat-card-primary {
+  border: 1px solid var(--admin-accent, #449031);
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.12));
+  box-shadow:
+    0 2px 12px rgba(68, 144, 49, 0.15),
+    0 1px 4px rgba(68, 144, 49, 0.1);
+}
+
+.stat-card-primary::before {
+  transform: scaleX(1);
+}
+
+.stat-card-primary h3 {
+  font-weight: 700;
+  color: var(--admin-accent, #449031);
+}
+
+.stat-card-primary i {
+  background: var(--admin-accent, #449031);
+  color: var(--admin-text-white, #ffffff);
+}
+
+.stat-card-clickable {
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-card-clickable::before,
+.stat-card-clickable::after {
+  pointer-events: none;
+}
+
+.stat-card-clickable:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    0 4px 8px rgba(0, 0, 0, 0.08);
+  border-color: var(--admin-accent, #449031);
+}
+
+.stat-card-clickable:hover::before {
+  transform: scaleX(1);
+}
+
+.stat-card-clickable:hover::after {
+  opacity: 1;
+}
+
+.stat-card-icon-accent {
+  color: var(--admin-accent, #449031);
+}

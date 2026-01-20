@@ -2,6 +2,7 @@ import ExcelJS from 'exceljs';
 import { useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
 import { formatDate, formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
+import { getOrderAmount, isPaidStatus, isPendingStatus } from './utils/orderUtils.js';
 
 const ReportsTab = ({
   orders = [],
@@ -64,24 +65,6 @@ const ReportsTab = ({
       return `"${str.replace(/"/g, '""')}"`;
     }
     return str;
-  };
-
-  const getOrderAmount = (order) => {
-    let amount = null;
-
-    if (order.totalAmount !== undefined && order.totalAmount !== null) {
-      amount = parseFloat(order.totalAmount);
-    } else if (order.total !== undefined && order.total !== null) {
-      amount = parseFloat(order.total);
-    }
-
-    if (amount === null || isNaN(amount)) {
-      const qty = parseFloat(order.quantity || 1);
-      const price = parseFloat(order.unitPrice || 0);
-      amount = qty * price;
-    }
-
-    return isNaN(amount) ? 0 : amount;
   };
 
   const handleGenerateReport = async () => {
@@ -148,13 +131,11 @@ const ReportsTab = ({
 
       const totalRevenue = filteredOrders.reduce((sum, o) => sum + getOrderAmount(o), 0);
       const totalOrders = filteredOrders.length;
-      const paidOrders = filteredOrders.filter(
-        (o) => (o.status || '').toLowerCase() === 'paid'
+      const paidOrders = filteredOrders.filter((o) => isPaidStatus(o.status, o.paymentStatus))
+        .length;
+      const unpaidOrders = filteredOrders.filter((o) =>
+        isPendingStatus(o.status, o.paymentStatus)
       ).length;
-      const unpaidOrders = filteredOrders.filter((o) => {
-        const status = (o.status || '').toLowerCase();
-        return status === 'unpaid' || status === 'pending';
-      }).length;
 
       csvContent += `\nSummary\n`;
       csvContent += `Total Orders,${totalOrders}\n`;
@@ -183,15 +164,19 @@ const ReportsTab = ({
         }
 
         const amount = getOrderAmount(o);
-        const status = (o.status || '').toLowerCase();
+        const paid = isPaidStatus(o.status, o.paymentStatus);
+        const s = (o.status || '').toLowerCase();
+        const ps = (o.paymentStatus || '').toLowerCase();
+        const unpaid = !paid && (s === 'unpaid' || ps === 'unpaid');
+        const pending = !paid && !unpaid;
 
         paymentStats[paymentMode].totalOrders++;
         paymentStats[paymentMode].totalAmount += amount;
 
-        if (status === 'paid') {
+        if (paid) {
           paymentStats[paymentMode].paidOrders++;
           paymentStats[paymentMode].paidAmount += amount;
-        } else if (status === 'unpaid') {
+        } else if (unpaid) {
           paymentStats[paymentMode].unpaidOrders++;
           paymentStats[paymentMode].unpaidAmount += amount;
         } else {
@@ -240,12 +225,12 @@ const ReportsTab = ({
         }
 
         const amount = getOrderAmount(o);
-        const status = (o.status || '').toLowerCase();
+        const paid = isPaidStatus(o.status, o.paymentStatus);
 
         monthStats[monthKey].totalOrders++;
         monthStats[monthKey].totalRevenue += amount;
 
-        if (status === 'paid') {
+        if (paid) {
           monthStats[monthKey].paidOrders++;
           monthStats[monthKey].paidAmount += amount;
         } else {
@@ -290,12 +275,12 @@ const ReportsTab = ({
         }
 
         const amount = getOrderAmount(o);
-        const status = (o.status || '').toLowerCase();
+        const paid = isPaidStatus(o.status, o.paymentStatus);
 
         areaStats[addr].totalOrders++;
         areaStats[addr].totalRevenue += amount;
 
-        if (status === 'paid') {
+        if (paid) {
           areaStats[addr].paidOrders++;
           areaStats[addr].paidAmount += amount;
         } else {
@@ -337,7 +322,7 @@ const ReportsTab = ({
 
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         const amount = getOrderAmount(o);
-        const status = (o.status || '').toLowerCase();
+        const paid = isPaidStatus(o.status, o.paymentStatus);
 
         customerStats[addr].totalOrders++;
         customerStats[addr].totalSpent += amount;
@@ -354,7 +339,7 @@ const ReportsTab = ({
           }
         }
 
-        if (status === 'paid') {
+        if (paid) {
           customerStats[addr].paidOrders++;
         } else {
           customerStats[addr].unpaidOrders++;
@@ -565,13 +550,11 @@ const ReportsTab = ({
         // Add summary
         const totalRevenue = filteredOrders.reduce((sum, o) => sum + getOrderAmount(o), 0);
         const totalOrders = filteredOrders.length;
-        const paidOrders = filteredOrders.filter(
-          (o) => (o.status || '').toLowerCase() === 'paid'
+        const paidOrders = filteredOrders.filter((o) => isPaidStatus(o.status, o.paymentStatus))
+          .length;
+        const unpaidOrders = filteredOrders.filter((o) =>
+          isPendingStatus(o.status, o.paymentStatus)
         ).length;
-        const unpaidOrders = filteredOrders.filter((o) => {
-          const status = (o.status || '').toLowerCase();
-          return status === 'unpaid' || status === 'pending';
-        }).length;
 
         worksheet.addRow([]);
         worksheet.addRow(['Summary']);
@@ -608,13 +591,17 @@ const ReportsTab = ({
             };
           }
           const amount = getOrderAmount(o);
-          const status = (o.status || '').toLowerCase();
+          const paid = isPaidStatus(o.status, o.paymentStatus);
+          const s = (o.status || '').toLowerCase();
+          const ps = (o.paymentStatus || '').toLowerCase();
+          const unpaid = !paid && (s === 'unpaid' || ps === 'unpaid');
+          const pending = !paid && !unpaid;
           paymentStats[paymentMode].totalOrders++;
           paymentStats[paymentMode].totalAmount += amount;
-          if (status === 'paid') {
+          if (paid) {
             paymentStats[paymentMode].paidOrders++;
             paymentStats[paymentMode].paidAmount += amount;
-          } else if (status === 'unpaid') {
+          } else if (unpaid) {
             paymentStats[paymentMode].unpaidOrders++;
             paymentStats[paymentMode].unpaidAmount += amount;
           } else {
@@ -720,7 +707,7 @@ const ReportsTab = ({
             <head>
               <title>${reportType} - ${reportDate}</title>
               <style>
-                body { font-family: Arial, sans-serif; padding: 20px; }
+                body { font-family: 'Baloo 2', sans-serif; padding: 20px; }
                 table { width: 100%; border-collapse: collapse; margin-top: 20px; }
                 th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
                 th { background-color: #f2f2f2; font-weight: bold; }
@@ -793,7 +780,6 @@ const ReportsTab = ({
 
   return (
     <div className='admin-content'>
-      {}
       <div className='action-bar'>
         <div className='action-buttons-group'>
           {onLoadExcelFile && (
@@ -832,14 +818,13 @@ const ReportsTab = ({
         </div>
       </div>
 
-      {}
       <div className='flex-start gap-12 mb-24 flex-wrap'>
-        <button className='btn btn-primary btn-icon-inline' onClick={() => setShowGenerator(true)}>
+        <button className='btn btn-primary' onClick={() => setShowGenerator(true)}>
           <i className='fa-solid fa-file-alt'></i>
           Generate Report
         </button>
         <button
-          className='btn btn-secondary btn-icon-inline'
+          className='btn btn-secondary'
           onClick={handleGenerateReport}
           disabled={!selectedReportType}
         >
@@ -847,7 +832,7 @@ const ReportsTab = ({
           Download Report
         </button>
         <button
-          className='btn btn-ghost btn-icon-inline'
+          className='btn btn-ghost'
           onClick={() => {
             setSelectedReportType('Sales Report');
             setShowGenerator(true);
@@ -857,7 +842,7 @@ const ReportsTab = ({
           Sales Report
         </button>
         <button
-          className='btn btn-ghost btn-icon-inline'
+          className='btn btn-ghost'
           onClick={() => {
             setSelectedReportType('Payment Report');
             setShowGenerator(true);
@@ -868,7 +853,6 @@ const ReportsTab = ({
         </button>
       </div>
 
-      {}
       <div className='dashboard-grid-layout mb-32'>
         <div className='dashboard-grid-item third-width'>
           <div className='dashboard-card text-center'>
@@ -968,7 +952,6 @@ const ReportsTab = ({
         </div>
       </div>
 
-      {}
       {showGenerator && (
         <div className='modal-overlay' onClick={() => setShowGenerator(false)}>
           <div className='modal-container' onClick={(e) => e.stopPropagation()}>
@@ -1107,20 +1090,22 @@ const ReportsTab = ({
         </div>
       )}
 
-      {}
       <div className='reports-side-by-side-container'>
-        {}
         <div className='dashboard-card'>
           <div className='flex-between mb-16'>
-            <h3 className='dashboard-section-title mb-0'>
-              <i className='fa-solid fa-clock opacity-70'></i>
-              Automated Reports
-            </h3>
-            <button className='btn btn-primary btn-small'>
+            <div>
+              <h3 className='dashboard-section-title mb-0'>
+                <i className='fa-solid fa-clock opacity-70'></i>
+                Automated Reports
+                <span className='badge badge-warning' style={{ marginLeft: 8, fontSize: '0.7rem', fontWeight: 600 }}>Coming soon</span>
+              </h3>
+              <p className='text-muted' style={{ fontSize: 'var(--admin-fs-sm)', marginTop: 4, marginBottom: 0 }}>Scheduled reports will be available in a future update.</p>
+            </div>
+            <button className='btn btn-primary btn-small' disabled title='Coming soon'>
               <i className='fa-solid fa-plus'></i> Add Scheduled Report
             </button>
           </div>
-          <div className='orders-table-container'>
+          <div className='orders-table-container' style={{ opacity: 0.7 }}>
             <table className='orders-table'>
               <thead>
                 <tr>
@@ -1156,13 +1141,16 @@ const ReportsTab = ({
           </div>
         </div>
 
-        {}
         <div className='dashboard-card'>
-          <h3 className='dashboard-section-title'>
-            <i className='fa-solid fa-history opacity-70'></i>
-            Recent Reports (Last 30 days)
-          </h3>
-          <div className='orders-table-container'>
+          <div>
+            <h3 className='dashboard-section-title'>
+              <i className='fa-solid fa-history opacity-70'></i>
+              Recent Reports (Last 30 days)
+              <span className='badge badge-warning' style={{ marginLeft: 8, fontSize: '0.7rem', fontWeight: 600 }}>Coming soon</span>
+            </h3>
+            <p className='text-muted' style={{ fontSize: 'var(--admin-fs-sm)', marginTop: 4, marginBottom: 0 }}>Report history will be available in a future update.</p>
+          </div>
+          <div className='orders-table-container' style={{ opacity: 0.7 }}>
             <table className='orders-table'>
               <thead>
                 <tr>

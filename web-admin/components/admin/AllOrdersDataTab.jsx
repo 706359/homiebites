@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import PremiumLoader from './PremiumLoader.jsx';
 import SkeletonLoader from './SkeletonLoader.jsx';
 import { formatDate, parseOrderDate } from './utils/dateUtils.js';
 import {
@@ -23,7 +22,6 @@ const AllOrdersDataTab = ({
   allOrdersFilterPaymentStatus,
   setAllOrdersFilterPaymentStatus,
   onLoadExcelFile,
-  onClearExcelData: _onClearExcelData,
   onClearAllData,
   onEditOrder,
   onDeleteOrder,
@@ -64,26 +62,27 @@ const AllOrdersDataTab = ({
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Load filters from localStorage on mount
+  // Load filters from localStorage on mount (defensive: invalid/corrupt data is ignored)
   useEffect(() => {
     try {
-      const savedFilters = localStorage.getItem('admin_all_orders_filters');
-      if (savedFilters) {
-        const filters = JSON.parse(savedFilters);
-        if (filters.allOrdersFilterMonth) setAllOrdersFilterMonth(filters.allOrdersFilterMonth);
-        if (filters.allOrdersFilterAddress) setAllOrdersFilterAddress(filters.allOrdersFilterAddress);
-        if (filters.allOrdersFilterPaymentStatus) setAllOrdersFilterPaymentStatus(filters.allOrdersFilterPaymentStatus);
-        if (filters.dateRangeFrom) setDateRangeFrom(filters.dateRangeFrom);
-        if (filters.dateRangeTo) setDateRangeTo(filters.dateRangeTo);
-        if (filters.filterStatus) setFilterStatus(filters.filterStatus);
-        if (filters.filterMode) setFilterMode(filters.filterMode);
-        if (filters.filterPayment) setFilterPayment(filters.filterPayment);
-        if (filters.filterYear) setFilterYear(filters.filterYear);
-        if (filters.filterAddress) setFilterAddress(filters.filterAddress);
-        if (filters.searchQuery) setSearchQuery(filters.searchQuery);
-      }
-    } catch (error) {
-      console.warn('Failed to load filters from localStorage:', error);
+      const raw = localStorage.getItem('admin_all_orders_filters');
+      if (!raw || typeof raw !== 'string') return;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return;
+      const filters = parsed;
+      if (typeof filters.allOrdersFilterMonth === 'string') setAllOrdersFilterMonth(filters.allOrdersFilterMonth);
+      if (typeof filters.allOrdersFilterAddress === 'string') setAllOrdersFilterAddress(filters.allOrdersFilterAddress);
+      if (typeof filters.allOrdersFilterPaymentStatus === 'string') setAllOrdersFilterPaymentStatus(filters.allOrdersFilterPaymentStatus);
+      if (typeof filters.dateRangeFrom === 'string') setDateRangeFrom(filters.dateRangeFrom);
+      if (typeof filters.dateRangeTo === 'string') setDateRangeTo(filters.dateRangeTo);
+      if (typeof filters.filterStatus === 'string') setFilterStatus(filters.filterStatus);
+      if (typeof filters.filterMode === 'string') setFilterMode(filters.filterMode);
+      if (typeof filters.filterPayment === 'string') setFilterPayment(filters.filterPayment);
+      if (typeof filters.filterYear === 'string') setFilterYear(filters.filterYear);
+      if (typeof filters.filterAddress === 'string') setFilterAddress(filters.filterAddress);
+      if (typeof filters.searchQuery === 'string') setSearchQuery(filters.searchQuery);
+    } catch {
+      // ignore: corrupted or non-JSON; start with default filters
     }
   }, []);
 
@@ -130,14 +129,12 @@ const AllOrdersDataTab = ({
     searchQuery,
   ]);
 
-  const [selectedRows, setSelectedRows] = useState(new Set());
-  const [selectAll, setSelectAll] = useState(false);
-
   const [sortColumn, setSortColumn] = useState('date');
   const [sortDirection, setSortDirection] = useState('desc');
 
   const filteredOrders = useMemo(() => {
-    let filtered = [...orders];
+    const list = Array.isArray(orders) ? orders : [];
+    let filtered = [...list];
 
     if (debouncedSearchQuery.trim()) {
       const query = debouncedSearchQuery.toLowerCase();
@@ -390,9 +387,16 @@ const AllOrdersDataTab = ({
     sortDirection,
   ]);
 
-  const totalPages = Math.ceil(filteredOrders.length / recordsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / recordsPerPage));
   const startIndex = (currentPage - 1) * recordsPerPage;
   const paginatedOrders = filteredOrders.slice(startIndex, startIndex + recordsPerPage);
+
+  // Reset to page 1 when filters reduce results and current page would be out of bounds
+  useEffect(() => {
+    if (totalPages >= 1 && currentPage > totalPages && onPageChange) {
+      onPageChange(1);
+    }
+  }, [totalPages, currentPage, onPageChange]);
 
   const activeFilters = useMemo(() => {
     const filters = [];
@@ -450,26 +454,6 @@ const AllOrdersDataTab = ({
     }
   };
 
-  const handleSelectAll = (checked) => {
-    setSelectAll(checked);
-    if (checked) {
-      setSelectedRows(new Set(paginatedOrders.map((_, idx) => startIndex + idx)));
-    } else {
-      setSelectedRows(new Set());
-    }
-  };
-
-  const handleRowSelect = (index, checked) => {
-    const newSelected = new Set(selectedRows);
-    if (checked) {
-      newSelected.add(startIndex + index);
-    } else {
-      newSelected.delete(startIndex + index);
-    }
-    setSelectedRows(newSelected);
-    setSelectAll(newSelected.size === paginatedOrders.length);
-  };
-
   const clearAllFilters = () => {
     setFilterStatus('');
     setFilterMode('');
@@ -516,107 +500,9 @@ const AllOrdersDataTab = ({
     }
   };
 
-  const handleBulkAction = async (action) => {
-    const selectedOrderIds = Array.from(selectedRows).map(
-      (idx) => filteredOrders[idx]._id || filteredOrders[idx].orderId
-    );
-    if (selectedOrderIds.length === 0) return;
-
-    const count = selectedOrderIds.length;
-    const selectedOrders = Array.from(selectedRows).map((idx) => filteredOrders[idx]);
-
-    if (action === 'delete') {
-      if (showConfirmation) {
-        showConfirmation({
-          title: 'Delete Selected Orders',
-          message: `Are you sure you want to delete ${count} selected order${
-            count > 1 ? 's' : ''
-          }? This action cannot be undone.`,
-          type: 'danger',
-          confirmText: 'Delete',
-          onConfirm: async () => {
-            try {
-              for (const id of selectedOrderIds) {
-                if (onDeleteOrder) await onDeleteOrder(id);
-              }
-              setSelectedRows(new Set());
-              setSelectAll(false);
-              if (showNotification)
-                showNotification('Selected orders deleted successfully', 'success');
-              if (loadOrders) loadOrders();
-            } catch (error) {
-              console.error('Error deleting orders:', error);
-              if (showNotification) showNotification('Error deleting orders', 'error');
-            }
-          },
-        });
-      }
-    } else if (action === 'paid' || action === 'pending') {
-      const normalizedStatus = action === 'paid' ? 'Paid' : 'Unpaid';
-      const statusLabel = action === 'paid' ? 'Paid' : 'Unpaid';
-
-      if (showConfirmation) {
-        showConfirmation({
-          title: `Mark as ${statusLabel}`,
-          message: `Are you sure you want to mark ${count} selected order${
-            count > 1 ? 's' : ''
-          } as ${statusLabel.toLowerCase()}?`,
-          type: 'info',
-          confirmText: `Mark as ${statusLabel}`,
-          onConfirm: async () => {
-            try {
-              for (const id of selectedOrderIds) {
-                if (onUpdateOrderStatus) {
-                  await onUpdateOrderStatus(id, normalizedStatus, true);
-                }
-              }
-              setSelectedRows(new Set());
-              setSelectAll(false);
-              if (showNotification)
-                showNotification(
-                  `Selected orders marked as ${statusLabel.toLowerCase()}`,
-                  'success'
-                );
-
-              if (loadOrders) {
-                setTimeout(() => {
-                  loadOrders();
-                }, 300);
-              }
-            } catch (error) {
-              console.error('Error updating order status:', error);
-              if (showNotification) showNotification('Error updating order status', 'error');
-
-              if (loadOrders) loadOrders();
-            }
-          },
-        });
-      }
-    } else if (action === 'export') {
-      const csvContent =
-        'Date,Address,Quantity,Amount,Mode,Status\n' +
-        selectedOrders
-          .map((o) => {
-            const date = parseOrderDate(o.date || o.order_date || null);
-            return `"${date ? formatDate(date) : ''}","${
-              o.deliveryAddress || o.customerAddress || o.address || 'N/A'
-            }","${o.quantity || 1}","${o.total || o.totalAmount || 0}","${o.mode || 'N/A'}","${
-              o.status || 'N/A'
-            }"`;
-          })
-          .join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `selected_orders_export_${new Date().toISOString().split('T')[0]}.csv`;
-      link.click();
-      if (showNotification) showNotification('Selected orders exported successfully', 'success');
-    }
-  };
-
   const uniqueStatuses = useMemo(() => {
     const statuses = new Set();
-    orders.forEach((o) => {
+    (orders || []).forEach((o) => {
       if (o.status) statuses.add(o.status);
     });
     return Array.from(statuses).sort();
@@ -624,7 +510,7 @@ const AllOrdersDataTab = ({
 
   const uniqueModes = useMemo(() => {
     const modes = new Set();
-    orders.forEach((o) => {
+    (orders || []).forEach((o) => {
       if (o.mode) modes.add(o.mode);
     });
     return Array.from(modes).sort();
@@ -632,7 +518,7 @@ const AllOrdersDataTab = ({
 
   const uniquePaymentModes = useMemo(() => {
     const paymentModes = new Set();
-    orders.forEach((o) => {
+    (orders || []).forEach((o) => {
       if (o.paymentMode) paymentModes.add(o.paymentMode);
     });
     return Array.from(paymentModes).sort();
@@ -640,7 +526,7 @@ const AllOrdersDataTab = ({
 
   const uniqueYears = useMemo(() => {
     const years = new Set();
-    orders.forEach((o) => {
+    (orders || []).forEach((o) => {
       let year;
       if (o.billingYear) {
         year = parseInt(o.billingYear) || new Date().getFullYear();
@@ -710,12 +596,9 @@ const AllOrdersDataTab = ({
 
   return (
     <div className='admin-content'>
-      {}
       <div className='dashboard-card table-container-card'>
-        {}
         <div className='action-bar'>
           <div className='search-input-wrapper'>
-            <i className='fa-solid fa-search search-input-icon'></i>
             <input
               type='text'
               className='input-field search-input-with-icon'
@@ -724,17 +607,6 @@ const AllOrdersDataTab = ({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          {selectedRows.size > 0 && (
-            <div className='bulk-actions-inline'>
-              <span className='bulk-actions-label'>{selectedRows.size} selected</span>
-              <button
-                className='btn btn-special btn-small'
-                onClick={() => handleBulkAction('paid')}
-              >
-                Mark as Paid
-              </button>
-            </div>
-          )}
           <div className='action-buttons-group'>
             <button
               className='btn btn-ghost btn-small filter-icon-btn'
@@ -775,9 +647,12 @@ const AllOrdersDataTab = ({
               <i className='fa-solid fa-download'></i> Export
             </button>
           </div>
+          <div className='table-info-text'>
+            Showing {startIndex + 1}-{Math.min(startIndex + recordsPerPage, filteredOrders.length)}{' '}
+            of {filteredOrders.length} orders
+          </div>
         </div>
 
-        {}
         {showFilterWrapper && (
         <div className='filter-wrapper-dropdown'>
           <div className='filter-wrapper-header'>
@@ -907,33 +782,24 @@ const AllOrdersDataTab = ({
                 className='input-field filter-input'
                 value={allOrdersFilterMonth || ''}
                 onChange={(e) => {
-                  setAllOrdersFilterMonth(e.target.value);
-                  if (setAllOrdersFilterMonth) setAllOrdersFilterMonth(e.target.value);
+                  const v = e.target.value;
+                  setAllOrdersFilterMonth(v);
+                  if (setAllOrdersFilterMonth) setAllOrdersFilterMonth(v);
                 }}
               >
                 <option value=''>All Months</option>
-                {uniqueYears.flatMap((year) => {
-                  const yearStr = String(year).slice(-2);
-                  const monthNames = [
-                    'Jan',
-                    'Feb',
-                    'Mar',
-                    'Apr',
-                    'May',
-                    'Jun',
-                    'Jul',
-                    'Aug',
-                    'Sep',
-                    'Oct',
-                    'Nov',
-                    'Dec',
-                  ];
-                  return monthNames.map((month) => (
-                    <option key={`${month}'${yearStr}`} value={`${month}'${yearStr}`}>
-                      {month}&apos;{yearStr}
-                    </option>
-                  ));
-                })}
+                {uniqueYears.flatMap((year) =>
+                  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => {
+                    const val = formatBillingMonth(m, year);
+                    if (!val) return null;
+                    const short = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m - 1];
+                    return (
+                      <option key={val} value={val}>
+                        {short}&apos;{String(year).slice(-2)}
+                      </option>
+                    );
+                  })
+                ).filter(Boolean)}
               </select>
             </div>
 
@@ -956,7 +822,6 @@ const AllOrdersDataTab = ({
             <div className='filter-wrapper-section'>
               <label className='filter-label'>Address Search</label>
               <div className='search-input-wrapper'>
-                <i className='fa-solid fa-map-marker-alt search-input-icon'></i>
                 <input
                   type='text'
                   className='input-field search-input-with-icon'
@@ -1006,7 +871,6 @@ const AllOrdersDataTab = ({
         </div>
         )}
 
-        {}
         {activeFilters.length > 0 && (
           <div className='active-filters-container'>
             <span className='active-filters-label'>Applied:</span>
@@ -1022,78 +886,48 @@ const AllOrdersDataTab = ({
             ))}
           </div>
         )}
-        <div className='table-header-container'>
-          <div>
-            <label className='select-all-container'>
-              <input
-                type='checkbox'
-                checked={selectAll}
-                onChange={(e) => handleSelectAll(e.target.checked)}
-              />
-              <span className='select-all-label'>Select All</span>
-            </label>
-            {}
-          </div>
-          <div className='table-info-text'>
-            Showing {startIndex + 1}-{Math.min(startIndex + recordsPerPage, filteredOrders.length)}{' '}
-            of {filteredOrders.length} orders
-          </div>
-        </div>
 
         <div className='orders-table-container'>
-          <table className='orders-table'>
+          <table className='orders-table' role='table' aria-label='All orders'>
             <thead>
               <tr>
-                <th className='table-checkbox-header'>
-                  <input
-                    type='checkbox'
-                    checked={selectAll}
-                    onChange={(e) => handleSelectAll(e.target.checked)}
-                  />
-                </th>
-                <th className='sortable-header' onClick={() => handleSort(null)}>
+                <th scope='col' className='sortable-header' aria-sort={sortColumn === null ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined} onClick={() => handleSort(null)}>
                   S.No {sortColumn === null && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className='sortable-header' onClick={() => handleSort('date')}>
+                <th scope='col' className='sortable-header' aria-sort={sortColumn === 'date' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined} onClick={() => handleSort('date')}>
                   Date {sortColumn === 'date' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className='sortable-header' onClick={() => handleSort('address')}>
+                <th scope='col' className='sortable-header' aria-sort={sortColumn === 'address' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined} onClick={() => handleSort('address')}>
                   Address {sortColumn === 'address' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className='sortable-header' onClick={() => handleSort('quantity')}>
+                <th scope='col' className='sortable-header' aria-sort={sortColumn === 'quantity' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined} onClick={() => handleSort('quantity')}>
                   Qty {sortColumn === 'quantity' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className='sortable-header' onClick={() => handleSort(null)}>
-                  Price
-                </th>
-                <th className='sortable-header' onClick={() => handleSort('total')}>
+                <th scope='col' className='sortable-header' onClick={() => handleSort(null)}>Price</th>
+                <th scope='col' className='sortable-header' aria-sort={sortColumn === 'total' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined} onClick={() => handleSort('total')}>
                   Total {sortColumn === 'total' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className='sortable-header' onClick={() => handleSort('mode')}>
+                <th scope='col' className='sortable-header col-mode' aria-sort={sortColumn === 'mode' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined} onClick={() => handleSort('mode')}>
                   Mode {sortColumn === 'mode' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className='sortable-header' onClick={() => handleSort('status')}>
+                <th scope='col' className='sortable-header col-status' aria-sort={sortColumn === 'status' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined} onClick={() => handleSort('status')}>
                   Status {sortColumn === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className='sortable-header' onClick={() => handleSort('payment')}>
+                <th scope='col' className='sortable-header col-payment' aria-sort={sortColumn === 'payment' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined} onClick={() => handleSort('payment')}>
                   Payment {sortColumn === 'payment' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className='sortable-header' onClick={() => handleSort(null)}>
-                  Month
-                </th>
-                <th className='sortable-header' onClick={() => handleSort(null)}>
-                  Year
-                </th>
-                <th className='sortable-header' onClick={() => handleSort('orderId')}>
+                <th scope='col' className='sortable-header' onClick={() => handleSort(null)}>Month</th>
+                <th scope='col' className='sortable-header' onClick={() => handleSort(null)}>Year</th>
+                <th scope='col' className='sortable-header col-orderid' aria-sort={sortColumn === 'orderId' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined} onClick={() => handleSort('orderId')}>
                   OrderID {sortColumn === 'orderId' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th>Actions</th>
+                <th scope='col'>Actions</th>
               </tr>
             </thead>
             <tbody>
               {paginatedOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={14} className='empty-state-cell'>
+                  <td colSpan={13} className='empty-state-cell'>
                     <div className='empty-state'>
                       <i className='fa-solid fa-inbox empty-state-icon'></i>
                       <p>No orders found</p>
@@ -1117,23 +951,14 @@ const AllOrdersDataTab = ({
                     month = null;
                     year = null;
                   }
-                  const isSelected = selectedRows.has(startIndex + idx);
                   const isPaid = isPaidStatus(order.status, order.paymentStatus);
 
                   return (
                     <tr
                       key={order._id || order.orderId || idx}
-                      className={`table-row-clickable ${isSelected ? 'table-row-selected' : ''}`}
+                      className='table-row-clickable'
                       onDoubleClick={() => onEditOrder && onEditOrder(order)}
                     >
-                      <td>
-                        <input
-                          type='checkbox'
-                          checked={isSelected}
-                          onChange={(e) => handleRowSelect(idx, e.target.checked)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </td>
                       <td>
                         <div className='order-row-number'>{startIndex + idx + 1}</div>
                       </td>
@@ -1275,7 +1100,6 @@ const AllOrdersDataTab = ({
           </table>
         </div>
 
-        {}
         <div className='pagination-controls'>
           <div>
             <button
@@ -1299,7 +1123,7 @@ const AllOrdersDataTab = ({
           <div className='pagination-container'>
             <span>Show:</span>
             <select
-              className='input-field pagination-select'
+              className='pagination-select'
               value={recordsPerPage}
               onChange={(e) => {
                 const value = parseInt(e.target.value);

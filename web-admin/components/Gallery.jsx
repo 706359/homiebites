@@ -362,7 +362,10 @@ const Gallery = () => {
     return (
       <section id='gallery' className='gallery-section'>
         <div className='section-container'>
-          <h2 className='section-heading'>{t('gallery.title')}</h2>
+          <div className='gallery-header'>
+            <span className='gallery-kicker'>{t('gallery.kicker') || 'Food gallery'}</span>
+            <h2 className='gallery-title'>{t('gallery.title')}</h2>
+          </div>
           <PremiumLoader message={t('common.loading') || 'Loading gallery...'} size='medium' />
         </div>
       </section>
@@ -372,8 +375,11 @@ const Gallery = () => {
   return (
     <section id='gallery' className='gallery-section'>
       <div className='section-container'>
-        <h2 className='section-heading'>{t('gallery.title')}</h2>
-        <p className='section-subtitle'>{t('gallery.subtitle')}</p>
+        <div className='gallery-header'>
+          <span className='gallery-kicker'>{t('gallery.kicker') || 'Food gallery'}</span>
+          <h2 className='gallery-title'>{t('gallery.title')}</h2>
+          <p className='gallery-subtitle'>{t('gallery.subtitle')}</p>
+        </div>
 
         {galleryItems.length === 0 ? (
           <div className='gallery-empty-state'>
@@ -402,7 +408,7 @@ const Gallery = () => {
                 <div key={category} className='gallery-category-section'>
                   <div className='gallery-category-header'>
                     <h3 className='gallery-category-title'>{category}</h3>
-                    <span className='gallery-category-count'>({categoryItems.length} items)</span>
+                    <span className='gallery-category-count'>({categoryItems.length} {t('common.items')})</span>
                   </div>
                   <div className='gallery-grid'>
                     {displayItems.map((item, index) => (
@@ -458,16 +464,16 @@ const Gallery = () => {
                       <button
                         className='gallery-view-all-btn'
                         onClick={() => toggleCategory(category)}
-                        aria-label={isExpanded ? 'Show less' : 'View all items'}
+                        aria-label={isExpanded ? t('gallery.showLess') : t('gallery.viewAll')}
                       >
                         {isExpanded ? (
                           <>
                             <i className='fa-solid fa-chevron-up'></i>
-                            Show Less
+                            {t('gallery.showLess')}
                           </>
                         ) : (
                           <>
-                            View All ({categoryItems.length} items)
+                            {t('gallery.viewAll')} ({categoryItems.length} {t('common.items')})
                             <i className='fa-solid fa-chevron-down'></i>
                           </>
                         )}

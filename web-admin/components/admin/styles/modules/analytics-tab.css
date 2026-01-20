@@ -1,0 +1,782 @@
+/* ============================================
+   ANALYTICS DELIVERY TABLE
+   ============================================ */
+
+.analytics-delivery-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  border-radius: 12px;
+  background: var(--admin-bg);
+  border: 1px solid var(--admin-border);
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+  font-size: var(--admin-fs-base);
+}
+
+.analytics-delivery-table {
+  width: 100%;
+  min-width: 700px;
+  border-collapse: collapse;
+  background: var(--admin-bg);
+  color: var(--admin-text-primary);
+  table-layout: auto;
+  font-size: var(--admin-fs-base);
+}
+
+.analytics-delivery-table thead {
+  background: var(--admin-bg-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.analytics-delivery-table thead th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: var(--admin-fs-base);
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--admin-border);
+  white-space: nowrap;
+  vertical-align: middle;
+  background: var(--admin-bg);
+  line-height: 1.3;
+}
+
+.analytics-delivery-table thead th.analytics-th-sticky {
+  min-width: 100px;
+}
+
+.analytics-delivery-table thead th.analytics-th-year {
+  min-width: 72px;
+  text-align: right;
+}
+
+.analytics-delivery-table thead th.analytics-th-grand-total {
+  min-width: 88px;
+  text-align: right;
+}
+
+.analytics-delivery-table thead th.analytics-th-center {
+  min-width: 44px;
+  text-align: center;
+}
+
+.analytics-delivery-table thead th.analytics-th-monthly {
+  min-width: 420px;
+}
+
+.analytics-delivery-table thead th.analytics-th-right {
+  text-align: right;
+}
+
+.analytics-delivery-table thead th.analytics-th-sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+  padding-right: 12px;
+  position: relative;
+}
+
+.analytics-delivery-table thead th.analytics-th-sortable:hover,
+.analytics-delivery-table thead th.analytics-th-sortable:active {
+  background-color: var(--admin-accent-light);
+}
+
+.analytics-delivery-table thead th.analytics-th-sortable span {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: var(--admin-fs-base);
+  color: var(--admin-accent);
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+/* ============================================
+     TABLE BODY
+     ============================================ */
+
+.analytics-delivery-table tbody td {
+  padding: 12px 16px;
+  font-size: var(--admin-fs-base);
+  color: var(--admin-text-primary, #1e293b);
+  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  vertical-align: middle;
+  white-space: nowrap;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.analytics-delivery-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.analytics-delivery-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.analytics-delivery-table tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.012);
+}
+
+.analytics-delivery-table tbody td.analytics-td-address {
+  min-width: 100px;
+  font-weight: 600;
+  font-size: var(--admin-fs-base);
+  color: var(--admin-text-primary, #1e293b);
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+}
+
+.analytics-delivery-table tbody td.analytics-td-right {
+  text-align: right;
+}
+
+.analytics-delivery-table tbody td.analytics-td-center {
+  text-align: center;
+}
+
+.analytics-delivery-table tbody td.analytics-td-year {
+  min-width: 72px;
+  white-space: nowrap;
+  font-size: var(--admin-fs-base);
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.analytics-delivery-table tbody td.analytics-td-year-empty {
+  min-width: 72px;
+  white-space: nowrap;
+  font-size: var(--admin-fs-base);
+  font-weight: 400;
+  color: var(--admin-text-light);
+  text-align: right;
+  font-style: italic;
+}
+
+.analytics-delivery-table tbody td.analytics-td-grand-total {
+  min-width: 88px;
+  white-space: nowrap;
+  font-size: var(--admin-fs-base);
+  font-weight: 700;
+  color: var(--admin-accent, #449031);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.analytics-delivery-table tbody td.analytics-td-trend {
+  min-width: 44px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.analytics-delivery-table tbody td.analytics-td-monthly {
+  min-width: 420px;
+  padding: 12px 12px 12px 16px;
+  white-space: normal;
+  vertical-align: top;
+  overflow: visible;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--admin-fs-base);
+}
+
+/* ============================================
+     TREND INDICATORS
+     ============================================ */
+
+.analytics-trend-icon {
+  font-size: var(--admin-fs-base);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.analytics-trend-icon-up {
+  color: var(--admin-success);
+  background: rgba(22, 163, 74, 0.12);
+}
+
+.analytics-trend-icon-down {
+  color: var(--admin-danger);
+  background: rgba(220, 38, 38, 0.12);
+}
+
+.analytics-trend-icon-neutral {
+  color: var(--admin-text-secondary, #6b7280);
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* ============================================
+     MONTHLY BREAKDOWN
+     ============================================ */
+
+.analytics-monthly-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 0;
+  width: 100%;
+}
+
+.analytics-monthly-year-row {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(24px, 1fr));
+  gap: 5px;
+  align-items: center;
+  width: 100%;
+  padding: 2px 0;
+}
+
+.analytics-monthly-value {
+  font-size: var(--admin-fs-base);
+  padding: 4px 5px;
+  border-radius: 4px;
+  text-align: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  cursor: help;
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+}
+
+.analytics-monthly-value-positive {
+  background: rgba(68, 144, 49, 0.15);
+  color: var(--admin-accent, #449031);
+  border-color: rgba(68, 144, 49, 0.3);
+}
+
+.analytics-monthly-value-empty {
+  background: transparent;
+  color: var(--admin-text-light);
+  border-color: transparent;
+  cursor: default;
+}
+
+.analytics-monthly-year3-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.analytics-monthly-value-year3-positive {
+  background: rgba(22, 163, 74, 0.18);
+  color: var(--admin-success);
+  border-color: var(--admin-success);
+  font-weight: 700;
+}
+
+.analytics-monthly-value-year3-negative {
+  background: rgba(220, 38, 38, 0.18);
+  color: var(--admin-danger);
+  border-color: var(--admin-danger);
+  font-weight: 700;
+}
+
+/* ============================================
+     CHART SECTION
+     ============================================ */
+
+.analytics-chart-container {
+  padding: 20px;
+  border-top: 1px solid var(--admin-border, #e2e8f0);
+  margin-top: 16px;
+  background: var(--admin-bg, #ffffff);
+  box-sizing: border-box;
+}
+
+/* ============================================
+     EMPTY STATE
+     ============================================ */
+
+.analytics-empty-state {
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--admin-text-muted);
+}
+
+.analytics-empty-icon {
+  font-size: var(--admin-fs-display);
+  opacity: 0.25;
+  margin-bottom: 16px;
+  color: var(--admin-text-light);
+}
+
+.analytics-empty-title {
+  font-size: var(--admin-fs-lg);
+  font-weight: 600;
+  color: var(--admin-text-secondary);
+  margin: 0 0 8px 0;
+}
+
+.analytics-empty-message {
+  font-size: var(--admin-fs-base);
+  color: var(--admin-text-light);
+  margin: 0;
+}
+
+/* ============================================
+     RESPONSIVE BREAKPOINTS
+     ============================================ */
+
+/* Large desktops (1400px+) – slightly more breathing room */
+@media (min-width: 1400px) {
+  .analytics-delivery-table thead th,
+  .analytics-delivery-table tbody td {
+    padding: 10px 6px;
+  }
+
+  .analytics-monthly-year-row {
+    grid-template-columns: repeat(12, minmax(18px, 1fr));
+    gap: 2px;
+    padding: 3px 0;
+  }
+
+  .analytics-monthly-value {
+    font-size: var(--admin-fs-base);
+    padding: 2px 3px;
+    min-height: 17px;
+  }
+}
+
+/* Standard desktops (1024px–1399px) – match base compact */
+@media (min-width: 1024px) and (max-width: 1399px) {
+  .analytics-delivery-table thead th,
+  .analytics-delivery-table tbody td {
+    padding: 8px 6px;
+  }
+
+  .analytics-monthly-year-row {
+    grid-template-columns: repeat(12, minmax(16px, 1fr));
+    gap: 2px;
+  }
+
+  .analytics-monthly-value {
+    font-size: var(--admin-fs-base);
+    padding: 2px 3px;
+    min-height: 16px;
+  }
+}
+
+/* Tablets (768px–1023px) */
+@media (max-width: 1023px) {
+  .analytics-delivery-table {
+    min-width: 520px;
+  }
+
+  .analytics-delivery-table thead th,
+  .analytics-delivery-table tbody td {
+    padding: 7px 5px;
+    font-size: var(--admin-fs-base);
+  }
+
+  .analytics-monthly-year-row {
+    grid-template-columns: repeat(12, minmax(14px, 1fr));
+    gap: 2px;
+  }
+
+  .analytics-monthly-value {
+    font-size: var(--admin-fs-base);
+    padding: 2px 2px;
+    min-height: 14px;
+  }
+
+  .analytics-trend-icon {
+    width: 18px;
+    height: 18px;
+    font-size: var(--admin-fs-base);
+  }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 767px) {
+  .analytics-delivery-table-wrapper {
+    border-radius: 8px;
+  }
+
+  .analytics-delivery-table {
+    min-width: 480px;
+  }
+
+  .analytics-delivery-table thead th,
+  .analytics-delivery-table tbody td {
+    padding: 6px 4px;
+    font-size: var(--admin-fs-base);
+  }
+
+  .analytics-monthly-year-row {
+    grid-template-columns: repeat(12, minmax(13px, 1fr));
+    gap: 1px;
+  }
+
+  .analytics-monthly-value {
+    font-size: var(--admin-fs-base);
+    padding: 1px 2px;
+    min-height: 13px;
+  }
+
+  .analytics-trend-icon {
+    width: 18px;
+    height: 18px;
+    font-size: var(--admin-fs-base);
+  }
+
+  .analytics-chart-container {
+    padding: 14px;
+  }
+}
+
+/* ============================================
+     PRINT STYLES
+     ============================================ */
+
+@media print {
+  .analytics-delivery-table-wrapper {
+    border: 1px solid var(--admin-text-primary);
+    box-shadow: none;
+  }
+
+  .analytics-delivery-table thead th {
+    background: var(--admin-bg-secondary);
+    border-bottom: 1px solid var(--admin-text-primary);
+  }
+
+}
+
+/* ============================================
+     ACCESSIBILITY
+     ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .analytics-delivery-table tbody tr,
+  .analytics-monthly-value,
+  .analytics-trend-icon,
+  .analytics-delivery-table thead th.analytics-th-sortable {
+    transition: none;
+  }
+
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .analytics-delivery-table {
+    border: 1px solid currentColor;
+  }
+
+  .analytics-delivery-table thead th {
+    border-bottom: 1px solid currentColor;
+  }
+
+  .analytics-delivery-table tbody td {
+    border-bottom: 1px solid currentColor;
+  }
+
+  .analytics-monthly-value-positive {
+    border: 1px solid var(--admin-accent, #449031);
+  }
+
+  .analytics-trend-icon {
+    border: 1px solid currentColor;
+  }
+}
+
+/* ============================================
+     ANALYTICS TAB (merged from analytics-tab.css)
+     ============================================ */
+
+.analytics-empty-state-center {
+  text-align: center;
+  padding: 48px;
+  color: var(--admin-text-muted);
+  width: 100%;
+}
+
+.analytics-empty-icon-large {
+  font-size: var(--admin-fs-display);
+  opacity: 0.3;
+}
+
+.analytics-empty-text {
+  margin-top: 16px;
+}
+
+/* Section header: heading left, selector right, same line (Top 10, Payment Mode) */
+.section-header-with-select {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.section-header-with-select .dashboard-section-title {
+  margin: 0;
+  flex: 1 0 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.section-header-with-select .top-areas-range-select {
+  flex-shrink: 0;
+  margin-left: auto;
+  flex-grow: 0;
+}
+
+.top-areas-range-select {
+  height: 44px;
+  font-size: var(--admin-fs-md);
+  font-weight: 500;
+  text-align: center;
+  color: var(--admin-text-primary, #1e293b);
+  background: var(--admin-bg, #ffffff);
+  border: 1px solid var(--admin-border, #e2e8f0);
+  border-radius: 10px;
+  padding: 10px 28px 10px 12px;
+  min-width: 90px;
+  max-width: 140px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+}
+
+.top-areas-range-select:focus {
+  outline: none;
+  border-color: var(--admin-accent, #449031);
+  box-shadow: 0 0 0 2px rgba(68, 144, 49, 0.2);
+}
+
+.analytics-chart-section {
+  padding: 16px 0;
+  border-top: 1px solid var(--admin-border, #e2e8f0);
+  margin-top: 12px;
+}
+
+.analytics-empty-state-inline {
+  text-align: center;
+  padding: 48px;
+  color: var(--admin-text-secondary, #94a3b8);
+}
+
+/* Top delivery areas – area item and progress bars */
+.area-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+}
+
+.area-item:last-child {
+  border-bottom: none;
+}
+
+.area-item-even {
+  background: transparent;
+}
+
+.area-item-odd {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.area-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.area-name {
+  font-size: var(--admin-fs-base);
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+  flex: 1;
+  min-width: 0;
+}
+
+.area-revenue {
+  font-size: var(--admin-fs-sm-mid);
+  font-weight: 500;
+  color: var(--admin-accent, #449031);
+  white-space: nowrap;
+}
+
+/* Progress bar base – used with analytics-progress-bar-container */
+.progress-bar-container {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  width: var(--bar-width, 0%);
+  min-width: 0;
+  background: var(--admin-accent, #449031);
+  transition: width 0.3s ease;
+}
+
+.analytics-progress-bar-container {
+  width: 100%;
+  height: 20px;
+  background: var(--admin-bg-secondary, rgba(0, 0, 0, 0.05));
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--admin-border, rgba(0, 0, 0, 0.1));
+}
+
+.analytics-progress-bar-container .progress-bar-fill {
+  height: 20px;
+  min-height: 20px;
+  border-radius: 10px;
+}
+
+.progress-bar-container-alt {
+  width: 100%;
+  height: 24px;
+  background: var(--admin-bg-secondary, rgba(0, 0, 0, 0.05));
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--admin-border, rgba(0, 0, 0, 0.1));
+}
+
+.progress-bar-container-alt .progress-bar-fill {
+  height: 24px;
+  min-height: 24px;
+  border-radius: 12px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+}
+
+.analytics-progress-bar-container-alt {
+  width: 100%;
+  height: 24px;
+  background: var(--admin-bg-secondary, rgba(0, 0, 0, 0.05));
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--admin-border, rgba(0, 0, 0, 0.1));
+}
+
+.analytics-progress-bar-container-alt .progress-bar-fill {
+  height: 24px;
+  min-height: 24px;
+  border-radius: 12px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+}
+
+.analytics-progress-bar-container-alt .progress-bar-label-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 8px;
+  pointer-events: none;
+}
+
+.analytics-progress-bar-container-alt .progress-bar-label {
+  font-size: var(--admin-fs-sm);
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.analytics-th-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.analytics-th-sort-indicator {
+  margin-left: 4px;
+}
+
+.analytics-top-days-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  min-height: 250px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.analytics-day-item {
+  flex: 1 1 0;
+  min-width: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.analytics-day-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(68, 144, 49, 0.03);
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.analytics-day-summary-label {
+  font-size: var(--admin-fs-sm-mid);
+  color: var(--admin-text-secondary);
+  font-weight: 500;
+}
+
+.analytics-day-summary-value {
+  font-size: var(--admin-fs-lg);
+  color: var(--admin-accent, #449031);
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+.analytics-day-summary-text {
+  color: var(--admin-text-primary, #1e293b);
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.analytics-rank-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--admin-warning);
+}

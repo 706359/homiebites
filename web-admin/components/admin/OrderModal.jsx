@@ -1101,7 +1101,6 @@ const OrderModal = ({
           </button>
         </div>
         <div className='modal-body'>
-          {}
           <div className='form-row'>
             <div className='form-group'>
               <label>
@@ -1302,7 +1301,6 @@ const OrderModal = ({
             </div>
           </div>
 
-          {}
           <div className='form-row'>
             <div className='form-group form-group-relative'>
               <label className='required'>
@@ -1532,7 +1530,6 @@ const OrderModal = ({
             </div>
           </div>
 
-          {}
           <div className='form-row'>
             <div className='form-group'>
               <label className='required'>
@@ -1576,7 +1573,6 @@ const OrderModal = ({
             </div>
           </div>
 
-          {}
           <div className='form-row'>
             <div className='form-group'>
               <label className='required'>
@@ -1623,7 +1619,6 @@ const OrderModal = ({
             </div>
           </div>
         </div>
-        {}
         <div className='order-form-total'>
           <span className='order-form-total-label'>
             Total Amount

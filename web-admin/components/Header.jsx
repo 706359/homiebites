@@ -146,8 +146,8 @@ const Header = ({ onOrderClick }) => {
               target='_blank'
               rel='noopener noreferrer'
               className='whatsapp-order-link'
-              aria-label='Order on WhatsApp'
-              title='Order on WhatsApp'
+              aria-label={t('common.orderOnWhatsApp')}
+              title={t('common.orderOnWhatsApp')}
             >
               <i className='fa-brands fa-whatsapp'></i>
               <span>+91-9958983578</span>

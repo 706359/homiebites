@@ -1,4 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const ConfirmationModal = ({
   show,
@@ -11,18 +13,56 @@ const ConfirmationModal = ({
   onCancel,
   isLoading = false,
 }) => {
+  const containerRef = useRef(null);
+
   useEffect(() => {
     if (!show) return;
 
-    const handleEscape = (e) => {
+    const handleKey = (e) => {
       if (e.key === 'Escape' && !isLoading) {
+        e.preventDefault();
         onCancel();
+        return;
+      }
+      if (e.key === 'Enter' && !isLoading && onConfirm) {
+        e.preventDefault();
+        onConfirm();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const el = containerRef.current;
+      if (!el) return;
+      const focusables = Array.from(el.querySelectorAll(FOCUSABLE));
+      if (focusables.length < 2) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
 
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
-  }, [show, isLoading, onCancel]);
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [show, isLoading, onCancel, onConfirm]);
+
+  // Focus first focusable when opened
+  useEffect(() => {
+    if (show && containerRef.current) {
+      const first = containerRef.current.querySelector(FOCUSABLE);
+      if (first) {
+        const t = requestAnimationFrame(() => { first.focus(); });
+        return () => cancelAnimationFrame(t);
+      }
+    }
+  }, [show]);
 
   if (!show) return null;
 
@@ -34,15 +74,13 @@ const ConfirmationModal = ({
           iconColor: 'var(--admin-danger, #dc2626)',
           iconBg: 'rgba(220, 38, 38, 0.1)',
           confirmBtn: 'btn-special danger',
-          btnStyle: null, // Uses .danger modifier
         };
       case 'success':
         return {
           icon: 'fa-check-circle',
           iconColor: 'var(--admin-success, #16a34a)',
           iconBg: 'rgba(22, 163, 74, 0.1)',
-          confirmBtn: 'btn-special',
-          btnStyle: { '--btn-bg': 'var(--admin-success, #16a34a)', '--btn-bg-hover': '#15803d' },
+          confirmBtn: 'btn-primary',
         };
       case 'info':
         return {
@@ -50,15 +88,13 @@ const ConfirmationModal = ({
           iconColor: 'var(--admin-accent, #449031)',
           iconBg: 'rgba(68, 144, 49, 0.1)',
           confirmBtn: 'btn-primary',
-          btnStyle: null,
         };
       default:
         return {
           icon: 'fa-exclamation-circle',
           iconColor: 'var(--admin-warning, #f59e0b)',
           iconBg: 'rgba(245, 158, 11, 0.1)',
-          confirmBtn: 'btn-special',
-          btnStyle: { '--btn-bg': 'var(--admin-warning, #f59e0b)', '--btn-bg-hover': '#d97706' },
+          confirmBtn: 'btn-secondary',
         };
     }
   };
@@ -67,17 +103,24 @@ const ConfirmationModal = ({
 
   return (
     <div className='modal-overlay'>
-      <div className='modal-container max-width-540'>
+      <div
+        ref={containerRef}
+        className='modal-container max-width-540'
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby='confirmation-modal-title'
+        aria-describedby='confirmation-modal-message'
+      >
         <div className='modal-header'>
           <div className='flex-center'>
             <div className='modal-icon-box'>
               <i className={`fa-solid ${styles.icon}`}></i>
             </div>
-            <h2>{title}</h2>
+            <h2 id='confirmation-modal-title'>{title}</h2>
           </div>
         </div>
         <div className='modal-body'>
-          <p className='text-no-margin'>{message}</p>
+          <p id='confirmation-modal-message' className='text-no-margin'>{message}</p>
         </div>
         <div className='modal-footer'>
           <button className='btn btn-ghost' onClick={onCancel} disabled={isLoading}>
@@ -85,7 +128,6 @@ const ConfirmationModal = ({
           </button>
           <button
             className={`btn ${styles.confirmBtn}`}
-            style={styles.btnStyle || undefined}
             onClick={onConfirm}
             disabled={isLoading}
           >

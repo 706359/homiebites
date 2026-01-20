@@ -1,19 +1,16 @@
 import React from 'react';
 
 const PremiumLoader = ({ message = 'Loading...', size = 'large', showText = false }) => {
-  const sizeClasses = {
-    small: { container: '64px', logo: '120px', text: '0.85rem' },
-    medium: { container: '80px', logo: '150px', text: '0.9rem' },
-    large: { container: '100px', logo: '180px', text: '1rem' },
-  };
-
-  const dimensions = sizeClasses[size] || sizeClasses.large;
+  const sizeMap = { small: 48, medium: 67, large: 180 };
+  const px = sizeMap[size] ?? 180;
 
   return (
     <div className='premium-loader-container'>
       <div className='premium-loader-wrapper'>
-        {}
-        <div className='premium-loader-logo-container'>
+        <div
+          className='premium-loader-logo-container'
+          style={{ width: px, height: px, minWidth: px, minHeight: px }}
+        >
           <img
             src='/logo.png'
             alt='Logo'
@@ -23,11 +20,9 @@ const PremiumLoader = ({ message = 'Loading...', size = 'large', showText = fals
               e.target.nextSibling.style.display = 'flex';
             }}
           />
-          <div className='premium-loader-logo-fallback'>Logo</div>
         </div>
       </div>
 
-      {}
       {showText && <div className='premium-loader-text'>{message}</div>}
     </div>
   );

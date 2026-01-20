@@ -2,40 +2,32 @@
 import connectDB from '../../../lib/db.js';
 
 export async function GET() {
-  const diagnostics = {
-    timestamp: new Date().toISOString(),
-    server: 'running',
-    database: {
-      connected: false,
-      error: null,
-      connectionString: process.env.MONGOURI ? 'configured' : 'not configured',
-    },
-    environment: {
-      nodeEnv: process.env.NODE_ENV || 'not set',
-      hasMongoURI: !!process.env.MONGOURI,
-      hasJWTSecret: !!process.env.JWT_SECRET,
-    },
-  };
+  const isProd = process.env.NODE_ENV === 'production';
 
   try {
     await connectDB();
-    diagnostics.database.connected = true;
-    diagnostics.database.error = null;
+    if (isProd) {
+      return Response.json({ success: true, status: 'healthy' }, { status: 200 });
+    }
     return Response.json(
       {
         success: true,
         status: 'healthy',
-        ...diagnostics,
+        timestamp: new Date().toISOString(),
+        database: { connected: true },
       },
       { status: 200 }
     );
   } catch (error) {
-    diagnostics.database.error = error.message;
+    if (isProd) {
+      return Response.json({ success: false, status: 'unhealthy' }, { status: 503 });
+    }
     return Response.json(
       {
         success: false,
         status: 'unhealthy',
-        ...diagnostics,
+        timestamp: new Date().toISOString(),
+        database: { connected: false, error: error.message },
       },
       { status: 503 }
     );

@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
-import './styles/pending-amounts-tab.css';
 import { getFilteredOrdersByDate } from './utils/calculations.js';
 import { formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
 import {
   extractOrderIdSequence,
   formatCurrency,
+  getOverdueOrders,
   getTotalRevenue,
   isPaidStatus,
   isPendingStatus,
@@ -28,25 +28,9 @@ const PendingAmountsTab = ({
   const now = new Date();
 
   const summaryStats = useMemo(() => {
-    const paidOrders = orders.filter((o) => isPaidStatus(o.status));
-    const pendingOrders = orders.filter((o) => isPendingStatus(o.status));
-
-    const fortyFiveDaysAgo = new Date(now);
-    fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
-    fortyFiveDaysAgo.setHours(0, 0, 0, 0);
-    const overdueOrders = pendingOrders.filter((o) => {
-      try {
-        const orderDate = parseOrderDate(o.date || o.order_date || null);
-        if (!orderDate) return false;
-
-        const orderDateMidnight = new Date(orderDate);
-        orderDateMidnight.setHours(0, 0, 0, 0);
-        return orderDateMidnight < fortyFiveDaysAgo;
-      } catch (e) {
-        return false;
-      }
-    });
-
+    const paidOrders = orders.filter((o) => isPaidStatus(o.status, o.paymentStatus));
+    const pendingOrders = orders.filter((o) => isPendingStatus(o.status, o.paymentStatus));
+    const overdueOrders = getOverdueOrders(orders);
     const currentMonthOrders = getFilteredOrdersByDate(orders, 'month', '', '');
     const currentMonthRevenue = getTotalRevenue(currentMonthOrders);
 
@@ -60,10 +44,10 @@ const PendingAmountsTab = ({
       thisMonth: currentMonthRevenue,
       thisMonthCount: currentMonthOrders.length,
     };
-  }, [orders, now]);
+  }, [orders]);
 
   const pendingPayments = useMemo(() => {
-    const pending = orders.filter((o) => isPendingStatus(o.status));
+    const pending = orders.filter((o) => isPendingStatus(o.status, o.paymentStatus));
 
     const fortyFiveDaysAgo = new Date(now);
     fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
@@ -178,7 +162,7 @@ const PendingAmountsTab = ({
         }
       });
 
-      const paidOrders = dayOrders.filter((o) => isPaidStatus(o.status));
+      const paidOrders = dayOrders.filter((o) => isPaidStatus(o.status, o.paymentStatus));
       const collectionRevenue = getTotalRevenue(paidOrders);
 
       timeline.push({
@@ -192,7 +176,7 @@ const PendingAmountsTab = ({
   }, [orders, now]);
 
   const avgCollectionTime = useMemo(() => {
-    const paidOrders = orders.filter((o) => isPaidStatus(o.status));
+    const paidOrders = orders.filter((o) => isPaidStatus(o.status, o.paymentStatus));
     if (paidOrders.length === 0) return 0;
 
     let totalDays = 0;
@@ -346,7 +330,6 @@ const PendingAmountsTab = ({
 
   return (
     <div className='admin-content'>
-      {}
       <div className='admin-stats'>
         <div className='stat-card'>
           <i className='fa-solid fa-check-circle icon-success'></i>
@@ -357,7 +340,7 @@ const PendingAmountsTab = ({
           </div>
         </div>
         <div className='stat-card'>
-          <i className='fa-solid fa-exclamation-triangle' className='pending-warning-text'></i>
+          <i className='fa-solid fa-exclamation-triangle pending-warning-text'></i>
           <div>
             <h3>₹{formatCurrency(summaryStats.pending)}</h3>
             <p>Pending</p>
@@ -382,13 +365,10 @@ const PendingAmountsTab = ({
         </div>
       </div>
 
-      {}
       <div className='dashboard-card margin-bottom-24'>
         <div className='pending-filter-bar'>
           <div className='filter-container pending-filter-container'>
-            {}
             <div className='search-input-wrapper search-input-wrapper-flex'>
-              <i className='fa-solid fa-search search-input-icon'></i>
               <input
                 type='text'
                 className='input-field search-input-with-icon'
@@ -419,20 +399,18 @@ const PendingAmountsTab = ({
             </select>
             {(searchQuery || filterUrgency !== 'all' || filterDaysPending !== 'all') && (
               <button
-                className='btn btn-ghost btn-small'
+                className='btn btn-ghost btn-small pending-clear-filter-btn'
                 onClick={() => {
                   setSearchQuery('');
                   setFilterUrgency('all');
                   setFilterDaysPending('all');
                 }}
-                className='btn btn-ghost btn-small pending-clear-filter-btn'
                 title='Clear all filters'
               >
                 <i className='fa-solid fa-xmark pending-clear-filter-icon'></i>
                 Clear
               </button>
             )}
-            {}
             <div className='action-buttons-group'>
               <button className='btn btn-special btn-small' onClick={handleBulkMarkAsPaid}>
                 <i className='fa-solid fa-check-circle pending-mark-paid-icon'></i>
@@ -496,13 +474,11 @@ const PendingAmountsTab = ({
                     >
                       <td>
                         <div className='pending-payment-date'>
-                          <i className='fa-solid fa-calendar'></i>
                           <span>{dateStr}</span>
                         </div>
                       </td>
                       <td>
                         <div className='pending-payment-address'>
-                          <i className='fa-solid fa-location-dot'></i>
                           <span>
                             {order.deliveryAddress ||
                               order.customerAddress ||
@@ -523,17 +499,6 @@ const PendingAmountsTab = ({
                         <div
                           className={`pending-payment-days-badge pending-payment-days-${urgencyLevel}`}
                         >
-                          <i
-                            className={`fa-solid ${
-                              urgencyLevel === 'overdue'
-                                ? 'fa-exclamation-triangle'
-                                : urgencyLevel === 'urgent'
-                                ? 'fa-clock'
-                                : urgencyLevel === 'warning'
-                                ? 'fa-hourglass-half'
-                                : 'fa-check'
-                            }`}
-                          ></i>
                           <span>
                             {order.daysPending} {order.daysPending === 1 ? 'day' : 'days'}
                           </span>
@@ -567,9 +532,7 @@ const PendingAmountsTab = ({
         </div>
       </div>
 
-      {}
       <div className='dashboard-grid-layout'>
-        {}
         <div className='dashboard-grid-item two-thirds'>
           <div className='dashboard-card'>
             <h3 className='dashboard-section-title'>
@@ -583,17 +546,18 @@ const PendingAmountsTab = ({
                     maxTimelineCollection > 0
                       ? Math.min(100, (day.collection / maxTimelineCollection) * 100)
                       : 0;
+                  const hasLabel = idx % 5 === 0;
                   return (
                     <div
                       key={idx}
-                      className='pending-timeline-item'
+                      className={`pending-timeline-item${hasLabel ? ' has-label' : ''}`}
                       title={`${day.date}: ₹${formatCurrency(day.collection)} (${day.orders} orders)`}
                     >
                       <div
                         className='pending-amounts-timeline-bar pending-timeline-bar'
                         data-height={heightPercent}
                       />
-                      {idx % 5 === 0 && (
+                      {hasLabel && (
                         <span className='pending-timeline-label'>{day.date.split(' ')[0]}</span>
                       )}
                     </div>
@@ -607,7 +571,6 @@ const PendingAmountsTab = ({
           </div>
         </div>
 
-        {}
         <div className='dashboard-grid-item third-width'>
           <div className='dashboard-card'>
             <h3 className='dashboard-section-title'>

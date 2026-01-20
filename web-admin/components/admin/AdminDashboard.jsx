@@ -1,34 +1,42 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState, Suspense, lazy } from 'react';
 import api from '../../lib/api-admin.js';
 import { logout } from '../../lib/auth-admin.js';
 import { setupGlobalErrorHandlers } from '../../lib/globalErrorHandler.js';
-import AllAddressesTab from './AllAddressesTab.jsx';
-import AllOrdersDataTab from './AllOrdersDataTab.jsx';
-import AnalyticsTab from './AnalyticsTab.jsx';
-import CSVUploadModal from './CSVUploadModal.jsx';
-import ConfirmationModal from './ConfirmationModal.jsx';
-import CurrentMonthOrdersTab from './CurrentMonthOrdersTab.jsx';
-import DashboardTab from './DashboardTab.jsx';
+import monitoringService from '../../lib/monitoring.js';
 import ErrorBoundary from './ErrorBoundary.jsx';
-import ImportantNotificationsBanner from './ImportantNotificationsBanner.jsx';
-import InstallPrompt from './InstallPrompt.jsx';
-import MenuPriceTab from './MenuPriceTab.jsx';
-import NotificationsTab from './NotificationsTab.jsx';
-import OrderModal from './OrderModal.jsx';
-import PendingAmountsTab from './PendingAmountsTab.jsx';
-import ReportsTab from './ReportsTab.jsx';
-import SettingsTab from './SettingsTab.jsx';
 import Sidebar from './Sidebar.jsx';
 import TopNav from './TopNav.jsx';
 import { useNotification } from './contexts/NotificationContext.jsx';
 import { useFastDataSync } from './hooks/useFastDataSync.js';
 import dataSyncManager from './utils/dataSyncManager.js';
+import { parseOrderDate } from './utils/dateUtils.js';
+import { isPendingStatus } from './utils/orderUtils.js';
 import { getNotificationDuration, getNotificationMessage } from './utils/notificationMessages.js';
 import './utils/sidebarFontSizeFix.js';
-import { autoFixThemeOnLoad, watchThemeChanges } from './utils/themeFixer.js';
+import { autoFixThemeOnLoad } from './utils/themeFixer.js';
+import { parseFontSize, applyAdminFontSize, roundToStep } from './utils/fontSize.js';
+import PremiumLoader from './PremiumLoader.jsx';
+
+// Lazy load heavy admin components for better performance
+const AllAddressesTab = lazy(() => import('./AllAddressesTab.jsx'));
+const AllOrdersDataTab = lazy(() => import('./AllOrdersDataTab.jsx'));
+const AnalyticsTab = lazy(() => import('./AnalyticsTab.jsx'));
+const CSVUploadModal = lazy(() => import('./CSVUploadModal.jsx'));
+const ConfirmationModal = lazy(() => import('./ConfirmationModal.jsx'));
+const CurrentMonthOrdersTab = lazy(() => import('./CurrentMonthOrdersTab.jsx'));
+const DashboardTab = lazy(() => import('./DashboardTab.jsx'));
+const ImportantNotificationsBanner = lazy(() => import('./ImportantNotificationsBanner.jsx'));
+const OfflineBanner = lazy(() => import('./OfflineBanner.jsx'));
+const InstallPrompt = lazy(() => import('./InstallPrompt.jsx'));
+const MenuPriceTab = lazy(() => import('./MenuPriceTab.jsx'));
+const NotificationsTab = lazy(() => import('./NotificationsTab.jsx'));
+const OrderModal = lazy(() => import('./OrderModal.jsx'));
+const PendingAmountsTab = lazy(() => import('./PendingAmountsTab.jsx'));
+const ReportsTab = lazy(() => import('./ReportsTab.jsx'));
+const SettingsTab = lazy(() => import('./SettingsTab.jsx'));
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -43,6 +51,11 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // Initialize monitoring
+      monitoringService.init();
+      monitoringService.trackPageView('/admin/dashboard');
+      
+      // Setup error handlers
       const cleanup = setupGlobalErrorHandlers(showNotification);
       return cleanup;
     }
@@ -58,8 +71,10 @@ const AdminDashboard = () => {
     message: '',
     type: 'warning',
     onConfirm: null,
+    onCancelCallback: null,
     confirmText: 'Confirm',
     cancelText: 'Cancel',
+    isLoading: false,
   });
   const [newOrder, setNewOrder] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -86,6 +101,7 @@ const AdminDashboard = () => {
   const {
     orders,
     settings,
+    setSettings,
     loading,
     loadOrders,
     loadMenuData,
@@ -97,7 +113,48 @@ const AdminDashboard = () => {
     fastUpdate,
     fastCreate,
     cancelAll,
+    loadError,
   } = useFastDataSync();
+
+  const unreadNotifications = useMemo(() => {
+    const list = Array.isArray(orders) ? orders : [];
+    const now = new Date();
+    const fortyFiveDaysAgo = new Date(now);
+    fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
+    fortyFiveDaysAgo.setHours(0, 0, 0, 0);
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const pending = list.filter((o) => isPendingStatus(o.status, o.paymentStatus));
+    const overdueCount = pending
+      .map((order) => {
+        try {
+          const orderDate = parseOrderDate(order.date || order.order_date || null);
+          if (!orderDate) return null;
+          const orderDateMidnight = new Date(orderDate);
+          orderDateMidnight.setHours(0, 0, 0, 0);
+          const daysPending = Math.floor((now - orderDateMidnight) / (1000 * 60 * 60 * 24));
+          const isOverdue = orderDateMidnight < fortyFiveDaysAgo;
+          const isUrgent = daysPending > 7;
+          return isOverdue || isUrgent ? 1 : null;
+        } catch (e) {
+          return null;
+        }
+      })
+      .filter(Boolean).length;
+
+    const recentCount = list.filter((order) => {
+      try {
+        const orderDate = parseOrderDate(order.date || order.order_date || null);
+        return orderDate && orderDate >= sevenDaysAgo;
+      } catch (e) {
+        return false;
+      }
+    }).length;
+
+    const total = Math.min(15, overdueCount) + Math.min(10, recentCount);
+    return Math.min(99, total);
+  }, [orders]);
 
   // Helper function for color conversion
   const hexToRgb = (hex) => {
@@ -122,9 +179,7 @@ const AdminDashboard = () => {
 
     if (!token || !isAdmin) {
       if (process.env.NODE_ENV === 'development') {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('[AdminDashboard] Authentication check failed, redirecting to /admin');
-        }
+        console.warn('[AdminDashboard] Authentication check failed, redirecting to /admin');
       }
       router.replace('/admin');
     }
@@ -145,14 +200,16 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (!isMounted || typeof window === 'undefined') return;
 
-    const savedTheme = localStorage.getItem('homiebites_theme') || 'light';
     const savedPrimaryColor = localStorage.getItem('homiebites_primary_color') || '#449031';
     const savedSecondaryColor = localStorage.getItem('homiebites_secondary_color') || '#B8D84E';
-    const savedFontSize = localStorage.getItem('homiebites_font_size') || 'medium';
+    const savedFontSize = localStorage.getItem('homiebites_font_size') || '16';
     const savedFontFamily = localStorage.getItem('homiebites_font_family') || 'Baloo 2';
 
     const root = document.documentElement;
     const adminDashboard = document.querySelector('.admin-dashboard');
+
+    const fs = parseFontSize(savedFontSize);
+    if (fs != null) applyAdminFontSize(fs);
 
     root.style.setProperty('--admin-accent', savedPrimaryColor);
     const rgb = hexToRgb(savedPrimaryColor);
@@ -172,124 +229,20 @@ const AdminDashboard = () => {
     }
 
     if (savedFontFamily) {
-      const fontFamily = `'${savedFontFamily}', sans-serif`;
-      root.style.setProperty('--font-primary', fontFamily);
-      document.body.style.fontFamily = fontFamily;
+      root.style.setProperty('--font-primary', `'${savedFontFamily}', sans-serif`);
     }
 
-    const fontSizeMap = {
-      small: '14px',
-      medium: '16px',
-      large: '18px',
-      'extra-large': '20px',
-    };
-
-    const defaultFontSize = savedFontSize || 'medium';
-    const fontSize = fontSizeMap[defaultFontSize] || '16px';
-    
-    // Set base font size on both :root and .admin-dashboard
-    root.style.setProperty('--admin-base-font-size', fontSize);
+    // Always apply light theme (dark theme removed)
+    document.documentElement.classList.add('light-theme');
+    document.documentElement.classList.remove('dark-theme');
     if (adminDashboard) {
-      adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
-      adminDashboard.style.fontSize = fontSize;
-    }
-    document.body.style.fontSize = fontSize;
-
-    // Also set on .admin-sidebar to ensure sidebar menu font size updates
-    const adminSidebar = document.querySelector('.admin-sidebar');
-    if (adminSidebar) {
-      adminSidebar.style.setProperty('--admin-base-font-size', fontSize);
-    }
-
-    // Calculate and set all derived font sizes on :root and .admin-dashboard
-    const baseSize = parseFloat(fontSize);
-    if (!isNaN(baseSize)) {
-      const derivedSizes = {
-        '--admin-font-size-h1': `${baseSize * 1.75}px`,
-        '--admin-font-size-h2': `${baseSize * 1.375}px`,
-        '--admin-font-size-h3': `${baseSize * 1.125}px`,
-        '--admin-font-size-h4': `${baseSize}px`,
-        '--admin-font-size-body-lg': `${baseSize * 0.9375}px`,
-        '--admin-font-size-body': `${baseSize * 0.875}px`,
-        '--admin-font-size-body-sm': `${baseSize * 0.8125}px`,
-        '--admin-font-size-body-xs': `${baseSize * 0.75}px`,
-        '--admin-font-size-body-xxs': `${baseSize * 0.6875}px`,
-        '--admin-font-size-caption': `${baseSize * 0.625}px`,
-      };
-
-      Object.entries(derivedSizes).forEach(([key, value]) => {
-        root.style.setProperty(key, value);
-        if (adminDashboard) {
-          adminDashboard.style.setProperty(key, value);
-        }
-        if (adminSidebar) {
-          adminSidebar.style.setProperty(key, value);
-        }
-      });
-    }
-
-    if (savedTheme === 'dark') {
-      document.documentElement.classList.add('dark-theme');
-      document.documentElement.classList.remove('light-theme');
-      if (adminDashboard) {
-        adminDashboard.classList.add('dark-theme');
-        adminDashboard.classList.remove('light-theme');
-
-        const allElements = adminDashboard.querySelectorAll('*');
-        allElements.forEach((el) => {
-          el.classList.add('dark-theme-applied');
-        });
-      }
-    } else if (savedTheme === 'light') {
-      document.documentElement.classList.add('light-theme');
-      document.documentElement.classList.remove('dark-theme');
-      if (adminDashboard) {
-        adminDashboard.classList.add('light-theme');
-        adminDashboard.classList.remove('dark-theme');
-
-        const allElements = adminDashboard.querySelectorAll('*');
-        allElements.forEach((el) => {
-          el.classList.remove('dark-theme-applied');
-        });
-      }
-    } else if (savedTheme === 'auto') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (prefersDark) {
-        document.documentElement.classList.add('dark-theme');
-        document.documentElement.classList.remove('light-theme');
-        if (adminDashboard) {
-          adminDashboard.classList.add('dark-theme');
-          adminDashboard.classList.remove('light-theme');
-          const allElements = adminDashboard.querySelectorAll('*');
-          allElements.forEach((el) => {
-            el.classList.add('dark-theme-applied');
-          });
-        }
-      } else {
-        document.documentElement.classList.add('light-theme');
-        document.documentElement.classList.remove('dark-theme');
-        if (adminDashboard) {
-          adminDashboard.classList.add('light-theme');
-          adminDashboard.classList.remove('dark-theme');
-          const allElements = adminDashboard.querySelectorAll('*');
-          allElements.forEach((el) => {
-            el.classList.remove('dark-theme-applied');
-          });
-        }
-      }
+      adminDashboard.classList.add('light-theme');
+      adminDashboard.classList.remove('dark-theme');
     }
 
     setTimeout(() => {
       autoFixThemeOnLoad(5, 200);
     }, 100);
-
-    const themeWatcher = watchThemeChanges();
-
-    return () => {
-      if (themeWatcher && themeWatcher.disconnect) {
-        themeWatcher.disconnect();
-      }
-    };
   }, [isMounted]);
 
   useEffect(() => {
@@ -298,14 +251,7 @@ const AdminDashboard = () => {
     const root = document.documentElement;
     const adminDashboard = document.querySelector('.admin-dashboard');
 
-    if (settings.theme !== undefined) {
-      localStorage.setItem('homiebites_theme', settings.theme);
-    }
-    // Get current theme to determine appropriate alpha values
-    const savedTheme = settings.theme !== undefined ? settings.theme : localStorage.getItem('homiebites_theme') || 'light';
-    const isDarkTheme = savedTheme === 'dark' || 
-                       (savedTheme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) ||
-                       document.documentElement.classList.contains('dark-theme');
+    // Always use light theme alpha values (dark theme removed)
 
     if (settings.primaryColor !== undefined) {
       localStorage.setItem('homiebites_primary_color', settings.primaryColor);
@@ -319,8 +265,8 @@ const AdminDashboard = () => {
       }
       
       if (rgb) {
-        // Use appropriate alpha for light/dark theme
-        const accentLightAlpha = isDarkTheme ? 0.15 : 0.1;
+        // Use light theme alpha value
+        const accentLightAlpha = 0.1;
         const accentLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${accentLightAlpha})`;
         root.style.setProperty('--admin-accent-light', accentLight);
         if (adminDashboard) {
@@ -340,8 +286,8 @@ const AdminDashboard = () => {
       }
       
       if (rgb) {
-        // Use appropriate alpha for light/dark theme
-        const secondaryLightAlpha = isDarkTheme ? 0.15 : 0.12;
+        // Use light theme alpha value
+        const secondaryLightAlpha = 0.12;
         const secondaryLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${secondaryLightAlpha})`;
         root.style.setProperty('--admin-secondary-light', secondaryLight);
         if (adminDashboard) {
@@ -349,124 +295,61 @@ const AdminDashboard = () => {
         }
       }
     }
-    if (settings.theme !== undefined) {
-      // Apply theme classes when theme changes
-      const isDark = settings.theme === 'dark' || 
-                     (settings.theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      
-      // Remove all theme classes first
-      root.classList.remove('dark-theme', 'light-theme');
-      if (adminDashboard) {
-        adminDashboard.classList.remove('dark-theme', 'light-theme');
-      }
-      
-      // Add appropriate theme class
-      if (isDark) {
-        root.classList.add('dark-theme');
-        root.classList.remove('light-theme');
+    // Always ensure light theme is applied (dark theme removed)
+    root.classList.remove('dark-theme');
+    root.classList.add('light-theme');
+    if (adminDashboard) {
+      adminDashboard.classList.remove('dark-theme');
+      adminDashboard.classList.add('light-theme');
+    }
+    
+    // Re-apply colors with light theme alpha values
+    if (settings.primaryColor) {
+      const rgb = hexToRgb(settings.primaryColor);
+      if (rgb) {
+        const accentLightAlpha = 0.1;
+        const accentLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${accentLightAlpha})`;
+        root.style.setProperty('--admin-accent-light', accentLight);
         if (adminDashboard) {
-          adminDashboard.classList.add('dark-theme');
-          adminDashboard.classList.remove('light-theme');
+          adminDashboard.style.setProperty('--admin-accent-light', accentLight);
         }
-      } else {
-        root.classList.add('light-theme');
-        root.classList.remove('dark-theme');
+      }
+    }
+    
+    if (settings.secondaryColor) {
+      const rgb = hexToRgb(settings.secondaryColor);
+      if (rgb) {
+        const secondaryLightAlpha = 0.12;
+        const secondaryLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${secondaryLightAlpha})`;
+        root.style.setProperty('--admin-secondary-light', secondaryLight);
         if (adminDashboard) {
-          adminDashboard.classList.add('light-theme');
-          adminDashboard.classList.remove('dark-theme');
-        }
-      }
-      
-      // Force reflow to ensure CSS variables update
-      void root.offsetHeight;
-      if (adminDashboard) {
-        void adminDashboard.offsetHeight;
-      }
-      
-      // Re-apply colors with correct alpha values after theme change
-      if (settings.primaryColor) {
-        const rgb = hexToRgb(settings.primaryColor);
-        if (rgb) {
-          const accentLightAlpha = isDark ? 0.15 : 0.1;
-          const accentLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${accentLightAlpha})`;
-          root.style.setProperty('--admin-accent-light', accentLight);
-          if (adminDashboard) {
-            adminDashboard.style.setProperty('--admin-accent-light', accentLight);
-          }
-        }
-      }
-      
-      if (settings.secondaryColor) {
-        const rgb = hexToRgb(settings.secondaryColor);
-        if (rgb) {
-          const secondaryLightAlpha = isDark ? 0.15 : 0.12;
-          const secondaryLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${secondaryLightAlpha})`;
-          root.style.setProperty('--admin-secondary-light', secondaryLight);
-          if (adminDashboard) {
-            adminDashboard.style.setProperty('--admin-secondary-light', secondaryLight);
-          }
+          adminDashboard.style.setProperty('--admin-secondary-light', secondaryLight);
         }
       }
     }
     if (settings.fontSize !== undefined) {
-      localStorage.setItem('homiebites_font_size', settings.fontSize);
-      
-      // Apply font size immediately
-      const fontSizeMap = {
-        small: '14px',
-        medium: '16px',
-        large: '18px',
-        'extra-large': '20px',
-      };
-      const fontSize = fontSizeMap[settings.fontSize] || '16px';
-      
-      root.style.setProperty('--admin-base-font-size', fontSize);
-      if (adminDashboard) {
-        adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
-        adminDashboard.style.fontSize = fontSize;
-      }
-      document.body.style.fontSize = fontSize;
-
-      // Also set on .admin-sidebar to ensure sidebar menu font size updates
-      const adminSidebar = document.querySelector('.admin-sidebar');
-      if (adminSidebar) {
-        adminSidebar.style.setProperty('--admin-base-font-size', fontSize);
-      }
-
-      // Calculate and set all derived font sizes
-      const baseSize = parseFloat(fontSize);
-      if (!isNaN(baseSize)) {
-        const derivedSizes = {
-          '--admin-font-size-h1': `${baseSize * 1.75}px`,
-          '--admin-font-size-h2': `${baseSize * 1.375}px`,
-          '--admin-font-size-h3': `${baseSize * 1.125}px`,
-          '--admin-font-size-h4': `${baseSize}px`,
-          '--admin-font-size-body-lg': `${baseSize * 0.9375}px`,
-          '--admin-font-size-body': `${baseSize * 0.875}px`,
-          '--admin-font-size-body-sm': `${baseSize * 0.8125}px`,
-          '--admin-font-size-body-xs': `${baseSize * 0.75}px`,
-          '--admin-font-size-body-xxs': `${baseSize * 0.6875}px`,
-          '--admin-font-size-caption': `${baseSize * 0.625}px`,
-        };
-
-        Object.entries(derivedSizes).forEach(([key, value]) => {
-          root.style.setProperty(key, value);
-          if (adminDashboard) {
-            adminDashboard.style.setProperty(key, value);
-          }
-          if (adminSidebar) {
-            adminSidebar.style.setProperty(key, value);
-          }
-        });
-      }
+      const v = parseFontSize(settings.fontSize);
+      const px = v != null ? roundToStep(v) : 16;
+      localStorage.setItem('homiebites_font_size', String(px));
+      applyAdminFontSize(px);
     }
     if (settings.fontFamily !== undefined) {
       localStorage.setItem('homiebites_font_family', settings.fontFamily);
-      const fontFamily = `'${settings.fontFamily}', sans-serif`;
-      root.style.setProperty('--font-primary', fontFamily);
-      document.body.style.fontFamily = fontFamily;
-      if (adminDashboard) {
-        adminDashboard.style.fontFamily = fontFamily;
+      root.style.setProperty('--font-primary', `'${settings.fontFamily}', sans-serif`);
+      // Load Google Font if not already present
+      const fontName = String(settings.fontFamily).replace(/\s+/g, '+');
+      const existingLink = document.querySelector(
+        `link[href*="fonts.googleapis.com"][href*="${fontName}"]`
+      );
+      if (!existingLink && fontName) {
+        const oldLinks = document.querySelectorAll('link[href*="fonts.googleapis.com"]');
+        oldLinks.forEach((link) => {
+          if (!link.href.includes('font-awesome')) link.remove();
+        });
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = `https://fonts.googleapis.com/css2?family=${fontName}:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap`;
+        document.head.appendChild(link);
       }
     }
   }, [settings, isMounted]);
@@ -474,85 +357,29 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (typeof window !== 'undefined' && activeTab) {
       localStorage.setItem('homiebites_active_tab', activeTab);
+      // Track tab changes
+      monitoringService.trackEvent('admin_tab_change', { tab: activeTab });
     }
   }, [activeTab]);
 
   useEffect(() => {
     if (!isMounted || typeof window === 'undefined') return;
 
-    const syncSidebarFontSize = () => {
-      const adminDashboard = document.querySelector('.admin-dashboard');
-      const adminSidebar = document.querySelector('.admin-sidebar');
-      const root = document.documentElement;
-
-      if (!adminDashboard) return;
-
-      const baseFontSize =
-        getComputedStyle(adminDashboard).getPropertyValue('--admin-base-font-size').trim() ||
-        getComputedStyle(root).getPropertyValue('--admin-base-font-size').trim() ||
-        '16px';
-
-      // Set CSS variables on :root, .admin-dashboard, and .admin-sidebar
-      root.style.setProperty('--admin-base-font-size', baseFontSize);
-      if (adminSidebar) {
-        adminSidebar.style.setProperty('--admin-base-font-size', baseFontSize);
-      }
-
-      const baseSize = parseFloat(baseFontSize);
-      if (!isNaN(baseSize)) {
-        const derivedSizes = {
-          '--admin-font-size-h1': `${baseSize * 1.75}px`,
-          '--admin-font-size-h2': `${baseSize * 1.375}px`,
-          '--admin-font-size-h3': `${baseSize * 1.125}px`,
-          '--admin-font-size-h4': `${baseSize}px`,
-          '--admin-font-size-body-lg': `${baseSize * 0.9375}px`,
-          '--admin-font-size-body': `${baseSize * 0.875}px`,
-          '--admin-font-size-body-sm': `${baseSize * 0.8125}px`,
-          '--admin-font-size-body-xs': `${baseSize * 0.75}px`,
-          '--admin-font-size-body-xxs': `${baseSize * 0.6875}px`,
-          '--admin-font-size-caption': `${baseSize * 0.625}px`,
-        };
-
-        Object.entries(derivedSizes).forEach(([key, value]) => {
-          root.style.setProperty(key, value);
-          if (adminSidebar) {
-            adminSidebar.style.setProperty(key, value);
-          }
-        });
-      }
+    const sync = () => {
+      const key = localStorage.getItem('homiebites_font_size') || '16';
+      const v = parseFontSize(key);
+      applyAdminFontSize(v ?? 16);
     };
 
-    const handleFontSizeChange = (event) => {
-      const { fontSize } = event.detail;
-      const adminDashboard = document.querySelector('.admin-dashboard');
-      const adminSidebar = document.querySelector('.admin-sidebar');
-
-      if (adminDashboard) {
-        adminDashboard.style.setProperty('--admin-base-font-size', fontSize);
-        adminDashboard.style.fontSize = fontSize;
-        void adminDashboard.offsetHeight;
-      }
-
-      if (adminSidebar) {
-        adminSidebar.style.setProperty('--admin-base-font-size', fontSize);
-        void adminSidebar.offsetHeight;
-      }
-
-      syncSidebarFontSize();
+    const handleFontSizeChange = (e) => {
+      const v = parseFontSize(e.detail?.fontSize);
+      if (v != null) applyAdminFontSize(v);
     };
 
-    // Sync on mount - use requestAnimationFrame to ensure DOM is ready after hydration
-    requestAnimationFrame(() => {
-      syncSidebarFontSize();
-      setTimeout(syncSidebarFontSize, 100);
-      setTimeout(syncSidebarFontSize, 500);
-    });
+    requestAnimationFrame(() => { sync(); setTimeout(sync, 100); });
 
     window.addEventListener('adminFontSizeChanged', handleFontSizeChange);
-
-    return () => {
-      window.removeEventListener('adminFontSizeChanged', handleFontSizeChange);
-    };
+    return () => window.removeEventListener('adminFontSizeChanged', handleFontSizeChange);
   }, [isMounted]);
 
   const handleLogout = async () => {
@@ -581,11 +408,7 @@ const AdminDashboard = () => {
           // Redirect to admin login page consistently
           window.location.href = '/admin';
         } catch (error) {
-          if (process.env.NODE_ENV === 'development') {
-            if (process.env.NODE_ENV === 'development') {
-              console.error('[AdminDashboard] Error during logout:', error);
-            }
-          }
+          console.error('[AdminDashboard] Error during logout:', error);
           // Still redirect even if there's an error
           await logout();
           window.location.href = '/admin';
@@ -610,11 +433,7 @@ const AdminDashboard = () => {
           try {
             await loadOrders();
           } catch (refreshError) {
-            if (process.env.NODE_ENV === 'development') {
-              if (process.env.NODE_ENV === 'development') {
-                console.warn('Error refreshing orders after save:', refreshError);
-              }
-            }
+            console.warn('Error refreshing orders after save:', refreshError);
           }
 
           const lastSubmittedDate = orderData.date || '';
@@ -639,11 +458,7 @@ const AdminDashboard = () => {
           });
         },
         (error) => {
-          if (process.env.NODE_ENV === 'development') {
-            if (process.env.NODE_ENV === 'development') {
-              console.error('Error adding order:', error);
-            }
-          }
+          console.error('Error adding order:', error);
           if (showNotification) {
             const errorMessage = error?.message || getNotificationMessage('orders', 'addError');
             showNotification(errorMessage, 'error', getNotificationDuration('error'));
@@ -651,11 +466,7 @@ const AdminDashboard = () => {
         }
       );
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error adding order:', error);
-        }
-      }
+      console.error('Error adding order:', error);
       if (showNotification) {
         const errorMessage = error?.message || getNotificationMessage('orders', 'addError');
         showNotification(errorMessage, 'error', getNotificationDuration('error'));
@@ -737,9 +548,7 @@ const AdminDashboard = () => {
           }
         },
         (error) => {
-          if (process.env.NODE_ENV === 'development') {
-            console.error('Error updating order:', error);
-          }
+          console.error('Error updating order:', error);
           if (showNotification) {
             const errorMessage =
               error?.message || getNotificationMessage('orders', 'updateError');
@@ -748,9 +557,7 @@ const AdminDashboard = () => {
         }
       );
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error updating order:', error);
-      }
+      console.error('Error updating order:', error);
       if (showNotification) {
         const errorMessage = error?.message || getNotificationMessage('orders', 'updateError');
         showNotification(errorMessage, 'error', getNotificationDuration('error'));
@@ -788,16 +595,16 @@ const AdminDashboard = () => {
       type: config.type || 'warning',
       onConfirm: async () => {
         if (config.onConfirm) {
+          setConfirmationModal((prev) => ({ ...prev, isLoading: true }));
           try {
             await config.onConfirm();
-            setConfirmationModal((prev) => ({ ...prev, show: false }));
+            setConfirmationModal((prev) => ({ ...prev, show: false, isLoading: false }));
           } catch (error) {
             const errorMessage = error?.message || error?.error || String(error) || 'Action failed';
             if (showNotification) {
               showNotification(errorMessage, 'error', 6000);
             }
-
-            return;
+            setConfirmationModal((prev) => ({ ...prev, isLoading: false }));
           }
         } else {
           setConfirmationModal((prev) => ({ ...prev, show: false }));
@@ -806,6 +613,7 @@ const AdminDashboard = () => {
       onCancelCallback: config.onCancel || null,
       confirmText: config.confirmText || 'Confirm',
       cancelText: config.cancelText || 'Cancel',
+      isLoading: false,
     });
   };
 
@@ -837,9 +645,7 @@ const AdminDashboard = () => {
             },
             (error) => {
               if (process.env.NODE_ENV === 'development') {
-                if (process.env.NODE_ENV === 'development') {
-                  console.error('Error deleting order:', error);
-                }
+                console.error('Error deleting order:', error);
               }
               if (showNotification) {
                 const errorMessage =
@@ -849,9 +655,7 @@ const AdminDashboard = () => {
             }
           );
         } catch (error) {
-          if (process.env.NODE_ENV === 'development') {
-            console.error('Error deleting order:', error);
-          }
+          console.error('Error deleting order:', error);
           if (showNotification) {
             showNotification(
               getNotificationMessage('orders', 'deleteError'),
@@ -941,11 +745,7 @@ const AdminDashboard = () => {
             }
           },
           (error) => {
-            if (process.env.NODE_ENV === 'development') {
-              if (process.env.NODE_ENV === 'development') {
-                console.error('Error updating order status:', error);
-              }
-            }
+            console.error('Error updating order status:', error);
             if (showNotification) {
               const errorMessage =
                 error?.message || getNotificationMessage('orders', 'statusUpdateError');
@@ -958,9 +758,7 @@ const AdminDashboard = () => {
           }
         );
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error updating order status:', error);
-        }
+        console.error('Error updating order status:', error);
         if (showNotification) {
           const errorMessage =
             error?.message || getNotificationMessage('orders', 'statusUpdateError');
@@ -1063,12 +861,9 @@ const AdminDashboard = () => {
               ? 'Your profile and password have been updated'
               : 'Your profile has been updated successfully';
           } else if (newSettings.themeSettings) {
-            const { theme, primaryColor, secondaryColor, fontSize, fontFamily } =
+            const { primaryColor, secondaryColor, fontSize, fontFamily, theme } =
               newSettings.themeSettings;
 
-            if (theme !== undefined) {
-              localStorage.setItem('homiebites_theme', theme);
-            }
             if (primaryColor !== undefined) {
               localStorage.setItem('homiebites_primary_color', primaryColor);
             }
@@ -1076,16 +871,42 @@ const AdminDashboard = () => {
               localStorage.setItem('homiebites_secondary_color', secondaryColor);
             }
             if (fontSize !== undefined) {
-              localStorage.setItem('homiebites_font_size', fontSize);
+              const v = parseFontSize(fontSize);
+              const px = v != null ? roundToStep(v) : 16;
+              localStorage.setItem('homiebites_font_size', String(px));
+              applyAdminFontSize(px);
             }
             if (fontFamily !== undefined) {
               localStorage.setItem('homiebites_font_family', fontFamily);
+              if (typeof setSettings === 'function') {
+                setSettings((prev) => ({ ...prev, fontFamily }));
+              }
+              // Apply immediately (don't wait for useEffect)
+              try {
+                const r = document.documentElement;
+                r.style.setProperty('--font-primary', `'${fontFamily}', sans-serif`);
+                const fontName = String(fontFamily).replace(/\s+/g, '+');
+                const hasLink = document.querySelector(
+                  `link[href*="fonts.googleapis.com"][href*="${fontName}"]`
+                );
+                if (!hasLink && fontName) {
+                  document.querySelectorAll('link[href*="fonts.googleapis.com"]').forEach((link) => {
+                    if (!link.href.includes('font-awesome')) link.remove();
+                  });
+                  const link = document.createElement('link');
+                  link.rel = 'stylesheet';
+                  link.href = `https://fonts.googleapis.com/css2?family=${fontName}:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap`;
+                  document.head.appendChild(link);
+                }
+              } catch (e) {
+                if (process.env.NODE_ENV === 'development') console.warn('Apply font failed:', e);
+              }
             }
 
             const changes = [];
 
             if (theme) {
-              const themeName = theme === 'light' ? 'Light' : theme === 'dark' ? 'Dark' : 'Auto';
+              const themeName = 'Light';
               changes.push(`${themeName} theme`);
             }
 
@@ -1103,16 +924,10 @@ const AdminDashboard = () => {
               changes.push(`${colorName} accent color`);
             }
 
-            if (fontSize) {
-              const sizeName =
-                fontSize === 'small'
-                  ? 'Small'
-                  : fontSize === 'large'
-                  ? 'Large'
-                  : fontSize === 'extra-large'
-                  ? 'Extra Large'
-                  : 'Medium';
-              changes.push(`${sizeName} font size`);
+            if (fontSize != null) {
+              const v = parseFontSize(fontSize);
+              const px = v != null ? roundToStep(v) : 16;
+              changes.push(`${px}px font size`);
             }
 
             if (fontFamily && fontFamily.trim() !== '') {
@@ -1138,11 +953,7 @@ const AdminDashboard = () => {
         throw new Error('Failed to save settings');
       }
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error updating settings:', error);
-        }
-      }
+      console.error('Error updating settings:', error);
       if (showNotification) {
         const errorMessage = error.message || 'Error updating settings';
         showNotification(
@@ -1156,6 +967,20 @@ const AdminDashboard = () => {
 
   const handleBackup = async () => {
     try {
+      const payload = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        orders: Array.isArray(orders) ? orders : [],
+        settings: settings && typeof settings === 'object' ? { ...settings } : {},
+      };
+      const json = JSON.stringify(payload, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `homiebites-backup-${new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-')}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
       if (showNotification) {
         showNotification(
           getNotificationMessage('backup', 'createSuccess'),
@@ -1164,11 +989,7 @@ const AdminDashboard = () => {
         );
       }
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error creating backup:', error);
-        }
-      }
+      console.error('Error creating backup:', error);
       if (showNotification) {
         showNotification(
           getNotificationMessage('backup', 'createError'),
@@ -1179,30 +1000,67 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleRestore = async () => {
-    try {
-      if (showNotification) {
-        showNotification(
-          getNotificationMessage('backup', 'restoreSuccess'),
-          'success',
-          getNotificationDuration('success')
-        );
-      }
-      if (loadOrders) loadOrders();
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error restoring data:', error);
+  const handleRestore = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.onchange = async (e) => {
+      const file = e.target?.files?.[0];
+      input.value = '';
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        const orders = Array.isArray(parsed?.orders) ? parsed.orders : [];
+        const settings = parsed?.settings && typeof parsed.settings === 'object' ? parsed.settings : null;
+        const hasOrders = orders.length > 0;
+        const hasSettings = settings && Object.keys(settings).length > 0;
+        if (!hasOrders && !hasSettings) {
+          if (showNotification) {
+            showNotification('Backup file contains no orders or settings to restore.', 'warning', getNotificationDuration('warning'));
+          }
+          return;
+        }
+        const msg = [
+          hasOrders && `${orders.length} order${orders.length !== 1 ? 's' : ''}`,
+          hasSettings && 'settings',
+        ]
+          .filter(Boolean)
+          .join(' and ');
+        showConfirmation({
+          title: 'Restore from backup',
+          message: `This will import ${msg} from the backup. Orders will be added to existing data. Continue?`,
+          type: 'info',
+          confirmText: 'Restore',
+          onConfirm: async () => {
+            try {
+              if (hasOrders) await api.bulkImportOrders(orders);
+              if (hasSettings) await api.updateSettings({ ...settings, _restore: true });
+              if (loadOrders) await loadOrders();
+              if (loadSettings) await loadSettings();
+              if (showNotification) {
+                showNotification(
+                  getNotificationMessage('backup', 'restoreSuccess'),
+                  'success',
+                  getNotificationDuration('success')
+                );
+              }
+            } catch (err) {
+              console.error('Error during restore:', err);
+              if (showNotification) {
+                showNotification(err?.message || getNotificationMessage('backup', 'restoreError'), 'error', getNotificationDuration('error'));
+              }
+            }
+          },
+        });
+      } catch (err) {
+        console.error('Error parsing backup file:', err);
+        if (showNotification) {
+          showNotification('Invalid backup file. Please select a HomieBites JSON backup.', 'error', getNotificationDuration('error'));
         }
       }
-      if (showNotification) {
-        showNotification(
-          getNotificationMessage('backup', 'restoreError'),
-          'error',
-          getNotificationDuration('error')
-        );
-      }
-    }
+    };
+    input.click();
   };
 
   const handleClearAllData = async (skipConfirmation = false) => {
@@ -1268,11 +1126,7 @@ const AdminDashboard = () => {
           }
         }
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          if (process.env.NODE_ENV === 'development') {
-            console.error('Error clearing data:', error);
-          }
-        }
+        console.error('Error clearing data:', error);
         if (showNotification) {
           showNotification(
             error.message || getNotificationMessage('orders', 'clearAllError'),
@@ -1392,28 +1246,6 @@ const AdminDashboard = () => {
   const renderActiveTab = () => {
     const safeOrders = Array.isArray(orders) ? orders : [];
 
-    // Debug logging for orders (only log if not loading to avoid spam)
-    if (!loading && process.env.NODE_ENV === 'development') {
-      console.log('=== ADMIN DASHBOARD ORDERS DEBUG ===');
-      console.log('Orders array length:', safeOrders.length);
-      console.log('Loading state:', loading);
-      console.log('Orders type:', typeof orders, 'isArray:', Array.isArray(orders));
-      if (safeOrders.length > 0) {
-        console.log('✅ Orders loaded successfully!');
-        console.log('Sample order:', safeOrders[0]);
-      } else {
-        console.warn('⚠️ NO ORDERS FOUND after loading completed!');
-        console.log('This means the API returned an empty array or failed.');
-        console.log('Check the console for [useAdminData] logs above to see API response.');
-        console.log('Common issues:');
-        console.log('1. Backend API not running');
-        console.log('2. Authentication token expired');
-        console.log('3. Database is empty');
-        console.log('4. API endpoint returning error');
-      }
-      console.log('=== END ADMIN DASHBOARD DEBUG ===');
-    }
-
     const commonProps = {
       orders: safeOrders,
       settings,
@@ -1439,7 +1271,6 @@ const AdminDashboard = () => {
             allOrdersFilterPaymentStatus={allOrdersFilterPaymentStatus}
             setAllOrdersFilterPaymentStatus={setAllOrdersFilterPaymentStatus}
             onLoadExcelFile={() => setShowCSVUploadModal(true)}
-            onClearExcelData={() => {}}
             onClearAllData={handleClearAllData}
             onEditOrder={(order) => {
               setEditingOrder(order);
@@ -1602,7 +1433,6 @@ const AdminDashboard = () => {
   return (
     <ErrorBoundary>
       <div className='admin-dashboard'>
-        {}
         <div
           className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`}
           onClick={() => setSidebarOpen(false)}
@@ -1615,6 +1445,7 @@ const AdminDashboard = () => {
           setSidebarOpen={setSidebarOpen}
           sidebarCollapsed={sidebarCollapsed}
           setSidebarCollapsed={setSidebarCollapsed}
+          currentUser={currentUser}
           onLogout={handleLogout}
         />
 
@@ -1624,9 +1455,7 @@ const AdminDashboard = () => {
             setSidebarOpen={setSidebarOpen}
             sidebarCollapsed={sidebarCollapsed}
             setSidebarCollapsed={setSidebarCollapsed}
-            unreadNotifications={0}
-            currentUser={currentUser}
-            onLogout={handleLogout}
+            unreadNotifications={unreadNotifications}
             setActiveTab={setActiveTab}
             tabTitle={tabInfo.title}
             tabSubtitle={tabInfo.subtitle}
@@ -1640,23 +1469,33 @@ const AdminDashboard = () => {
             onRefresh={handleRefresh}
           />
 
-          {}
-          <div className='admin-content'>
+          <Suspense fallback={null}>
+            <OfflineBanner
+              connectionError={loadError || null}
+              onRetry={() => loadOrders({}, true)}
+              onBackOnline={() => loadOrders({}, true)}
+              showNotification={showNotification}
+            />
+          </Suspense>
+          <Suspense fallback={null}>
             <ImportantNotificationsBanner
               orders={orders}
               dismissedNotifications={dismissedNotifications}
               onDismiss={handleDismissNotification}
               onViewPendingAmounts={handleViewPendingAmounts}
             />
+          </Suspense>
 
-            {}
-            <ErrorBoundary>{renderActiveTab()}</ErrorBoundary>
-          </div>
+          <ErrorBoundary>
+            <Suspense fallback={<PremiumLoader message="Loading..." size="medium" />}>
+              {renderActiveTab()}
+            </Suspense>
+          </ErrorBoundary>
         </div>
 
-        {}
         {showOrderModal && (
-          <OrderModal
+          <Suspense fallback={<PremiumLoader message="Loading order form..." size="small" />}>
+            <OrderModal
             show={showOrderModal}
             editingOrder={editingOrder}
             newOrder={newOrder}
@@ -1688,20 +1527,23 @@ const AdminDashboard = () => {
             setShowAddressSuggestions={setShowAddressSuggestions}
             showConfirmation={showConfirmation}
           />
+          </Suspense>
         )}
 
-        {}
         {showCSVUploadModal && (
-          <CSVUploadModal
+          <Suspense fallback={<PremiumLoader message="Loading CSV upload..." size="small" />}>
+            <CSVUploadModal
             show={showCSVUploadModal}
             onClose={() => setShowCSVUploadModal(false)}
-            onUploadSuccess={(_data) => {}}
+            onUploadSuccess={() => {}}
             showNotification={showNotification}
             loadOrders={loadOrders}
             showConfirmation={showConfirmation}
           />
+          </Suspense>
         )}
-        <ConfirmationModal
+        <Suspense fallback={null}>
+          <ConfirmationModal
           show={confirmationModal.show}
           title={confirmationModal.title}
           message={confirmationModal.message}
@@ -1711,12 +1553,15 @@ const AdminDashboard = () => {
           onConfirm={confirmationModal.onConfirm}
           onCancel={() => {
             if (confirmationModal.onCancelCallback) confirmationModal.onCancelCallback();
-            setConfirmationModal({ ...confirmationModal, show: false });
+            setConfirmationModal((prev) => ({ ...prev, show: false, isLoading: false }));
           }}
+          isLoading={confirmationModal.isLoading}
         />
+        </Suspense>
 
-        {}
-        <InstallPrompt />
+        <Suspense fallback={null}>
+          <InstallPrompt />
+        </Suspense>
       </div>
     </ErrorBoundary>
   );

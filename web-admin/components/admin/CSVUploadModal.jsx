@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 import api from '../../lib/api-admin.js';
-import './styles/csv-upload-modal.css';
 
 const CSVUploadModal = ({
   show,
@@ -497,7 +496,6 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
           </button>
         </div>
         <div className='modal-body'>
-          {}
           {!file && (
             <div
               className='dashboard-card file-upload file-upload-container'
@@ -523,7 +521,6 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
             </div>
           )}
 
-          {}
           {file && !isUploading && uploadStatus !== 'success' && (
             <>
               <div className='dashboard-card margin-bottom-24'>
@@ -547,7 +544,6 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                   </button>
                 </div>
 
-                {}
                 {previewData && (
                   <div>
                     <h4 className='csv-preview-title'>Preview (First row with headers):</h4>
@@ -579,7 +575,6 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                   </div>
                 )}
 
-                {}
                 {validationErrors.length > 0 && (
                   <div className='alert alert-danger'>
                     <div className='alert-icon'>
@@ -598,7 +593,6 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                   </div>
                 )}
 
-                {}
                 {validationErrors.length === 0 && previewData && (
                   <div className='alert alert-success'>
                     <div className='alert-icon'>
@@ -620,7 +614,6 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                   </div>
                 )}
 
-                {}
                 <div className='csv-upload-options'>
                   <h4 className='csv-upload-options-title'>Upload Options:</h4>
                   <div className='csv-upload-options-list'>
@@ -669,7 +662,6 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
             </>
           )}
 
-          {}
           {isUploading && !isProgressMinimized && (
             <div className='dashboard-card csv-upload-progress-container'>
               <button
@@ -712,7 +704,6 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
             </div>
           )}
 
-          {}
           {isUploading && isProgressMinimized && (
             <div
               className='dashboard-card csv-upload-progress-card'
@@ -763,7 +754,6 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
             </div>
           )}
 
-          {}
           {uploadStatus === 'success' && (
             <div className='dashboard-card csv-upload-success'>
               <i className='fa-solid fa-check-circle csv-upload-success-icon'></i>
@@ -774,7 +764,6 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
             </div>
           )}
 
-          {}
           {!file && (
             <div className='dashboard-card csv-format-requirements'>
               <h4 className='csv-format-requirements-title'>

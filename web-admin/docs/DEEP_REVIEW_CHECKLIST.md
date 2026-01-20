@@ -62,12 +62,9 @@
 - [ ] Check CSS variable usage (if any)
 - [ ] Validate theme switching in `LanguageSwitcher.jsx`
 
-### Tailwind Configuration
+### CSS utilities and PostCSS
 
-- [ ] Review `tailwind.config.js` for custom theme extensions
-- [ ] Verify Tailwind utilities are properly configured
-- [ ] Check for Tailwind vs custom CSS conflicts
-- [ ] Audit unused Tailwind classes
+- [ ] Use `utilities.css` and module CSS for layout and theming (Tailwind removed)
 - [ ] Validate PostCSS configuration in `postcss.config.js`
 
 ### Component Styling

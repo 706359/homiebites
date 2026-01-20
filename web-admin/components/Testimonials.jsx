@@ -82,8 +82,11 @@ const Testimonials = () => {
     return (
       <section id="testimonials" className="testimonials-section">
         <div className="section-container">
-          <h2 className="section-heading">{t("testimonials.title")}</h2>
-          <p>{t("common.loading") || "Loading..."}</p>
+          <div className="testimonials-header">
+            <span className="testimonials-kicker">{t("testimonials.kicker") || "Reviews"}</span>
+            <h2 className="testimonials-title">{t("testimonials.title")}</h2>
+          </div>
+          <p className="testimonials-loading">{t("common.loading") || "Loading..."}</p>
         </div>
       </section>
     );
@@ -93,13 +96,10 @@ const Testimonials = () => {
     <section id="testimonials" className="testimonials-section">
       <div className="section-container">
         <div className="testimonials-header">
-          <h2 className="section-heading">{t("testimonials.title")}</h2>
-          <button
-            className="btn btn-primary btn-small"
-            onClick={() => setShowReviewForm(true)}
-          >
-            <i className="fa-solid fa-pen"></i>{" "}
-            {t("reviews.writeReview") || "Write a Review"}
+          <span className="testimonials-kicker">{t("testimonials.kicker") || "Reviews"}</span>
+          <h2 className="testimonials-title">{t("testimonials.title")}</h2>
+          <button className="btn btn-primary btn-small" onClick={() => setShowReviewForm(true)}>
+            <i className="fa-solid fa-pen"></i> {t("reviews.writeReview") || "Write a Review"}
           </button>
         </div>
 

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
-import './styles/notifications-tab.css';
 import { formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
 import { isPendingStatus, sortOrdersByOrderId } from './utils/orderUtils.js';
 
@@ -50,7 +49,7 @@ const NotificationsTab = ({
   fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
   fortyFiveDaysAgo.setHours(0, 0, 0, 0);
 
-  const pendingOrders = orders.filter((o) => isPendingStatus(o.status));
+  const pendingOrders = orders.filter((o) => isPendingStatus(o.status, o.paymentStatus));
   const overduePayments = pendingOrders
     .map((order) => {
       try {
@@ -256,7 +255,6 @@ const NotificationsTab = ({
 
   return (
     <div className='admin-content'>
-      {}
       <div className='dashboard-header'>
         <div>{unreadCount > 0 && <h2>Notifications ({unreadCount} unread)</h2>}</div>
         <div className='action-buttons-group'>
@@ -269,7 +267,6 @@ const NotificationsTab = ({
         </div>
       </div>
 
-      {}
       <div className='action-bar action-bar-spaced'>
         <button
           className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-small`}
@@ -303,7 +300,6 @@ const NotificationsTab = ({
         </button>
       </div>
 
-      {}
       <div className='dashboard-card'>
         {filteredNotifications.length === 0 ? (
           <div className='empty-state notifications-empty-state'>
@@ -398,7 +394,6 @@ const NotificationsTab = ({
         )}
       </div>
 
-      {}
       {showSettingsModal && (
         <div className='modal-overlay' onClick={() => setShowSettingsModal(false)}>
           <div className='modal-container' onClick={(e) => e.stopPropagation()}>

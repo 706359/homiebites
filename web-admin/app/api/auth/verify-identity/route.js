@@ -2,12 +2,15 @@
 import connectDB from '../../../../lib/db.js';
 import User from '../../../../lib/models/User.js';
 import jwt from 'jsonwebtoken';
-
+import { rateLimit } from '../../../../lib/middleware/security.js';
 
 function getAdminCredentials() {
+  if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET must be set in production');
+  }
   return {
     JWT_SECRET: process.env.JWT_SECRET || 'homiebites_secret',
-    ADMIN_EMAIL: process.env.ADMIN_EMAIL || '706359@gmail.com',
+    ADMIN_EMAIL: process.env.ADMIN_EMAIL || (process.env.NODE_ENV === 'production' ? '' : '706359@gmail.com'),
     ADMIN_ID: process.env.ADMIN_ID,
     ADMIN_PAN_CARD: process.env.ADMIN_PAN_CARD,
   };
@@ -15,6 +18,11 @@ function getAdminCredentials() {
 
 export async function POST(request) {
   try {
+    const ok = rateLimit(10, 15 * 60 * 1000)(request);
+    if (!ok) {
+      return Response.json({ success: false, error: 'Too many requests. Please try again later.' }, { status: 429 });
+    }
+
     await connectDB();
     
     const body = await request.json();
@@ -179,8 +187,7 @@ export async function POST(request) {
       resetToken,
     });
   } catch (error) {
-    console.error('[Verify Identity API] Error:', error);
-    
+    if (process.env.NODE_ENV === 'development') console.error('[Verify Identity API] Error:', error);
     if (error.message && error.message.includes('connect')) {
       return Response.json(
         { 

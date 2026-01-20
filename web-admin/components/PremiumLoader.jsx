@@ -4,9 +4,9 @@ import React from 'react';
 
 const PremiumLoader = ({ message = 'Loading...', size = 'large', showText = true }) => {
   const sizeClasses = {
-    small: { container: '64px', logo: '48px', text: '0.85rem' },
-    medium: { container: '80px', logo: '60px', text: '0.9rem' },
-    large: { container: '100px', logo: '75px', text: '1rem' },
+    small: { container: '77px', logo: '58px', text: '0.85rem' },
+    medium: { container: '96px', logo: '72px', text: '0.9rem' },
+    large: { container: '120px', logo: '90px', text: '1rem' },
   };
 
   const dimensions = sizeClasses[size] || sizeClasses.large;
@@ -14,7 +14,10 @@ const PremiumLoader = ({ message = 'Loading...', size = 'large', showText = true
   return (
     <div className='premium-loader-container'>
       <div className='premium-loader-wrapper'>
-        <div className='premium-loader-logo-container'>
+        <div
+          className='premium-loader-logo-container'
+          style={{ width: dimensions.logo, height: dimensions.logo, minWidth: dimensions.logo, minHeight: dimensions.logo }}
+        >
           <img
             src='/logo.png'
             alt='Logo'

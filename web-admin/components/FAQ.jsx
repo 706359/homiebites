@@ -44,7 +44,10 @@ const FAQ = () => {
   return (
     <section id="faq" className="faq-section">
       <div className="section-container">
-        <h2 className="section-heading">{t("faq.title")}</h2>
+        <div className="faq-header">
+          <span className="faq-kicker">{t("faq.kicker") || "Common questions"}</span>
+          <h2 className="faq-title">{t("faq.title")}</h2>
+        </div>
 
         <div className="faq-list">
           {faqs.map((faq, index) => (

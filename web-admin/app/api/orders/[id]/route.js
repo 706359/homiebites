@@ -57,9 +57,7 @@ export async function PUT(request, { params }) {
           );
         }
       }
-    } catch (settingsError) {
-      
-    }
+    } catch (_) {}
 
     const update = await request.json();
     delete update.orderId; 

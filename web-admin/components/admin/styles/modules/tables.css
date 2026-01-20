@@ -1,0 +1,545 @@
+/* ========================================================================
+   ADMIN TABLES MODULE
+   ======================================================================== */
+
+.action-bar {
+  display: flex;
+  align-items: center;
+  padding: 20px 24px;
+  gap: 16px;
+  width: 100%;
+  min-height: 64px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  background: var(--admin-bg, #ffffff);
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.select-all-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.select-all-label {
+  font-weight: 500;
+  color: var(--admin-text-primary, #1e293b);
+  white-space: nowrap;
+}
+
+.select-all-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--admin-accent, #449031);
+}
+
+.filter-icon-btn {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-input-wrapper-flex {
+  flex: 1;
+  min-width: 200px;
+}
+
+.action-bar .search-input-wrapper {
+  flex: 0 0 auto;
+  width: 320px;
+  min-width: 320px;
+  max-width: 320px;
+}
+
+.bulk-actions-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: 0;
+}
+
+.bulk-actions-inline .bulk-actions-label {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--admin-fs-sm);
+  font-weight: 500;
+  color: var(--admin-text-secondary, #64748b);
+  white-space: nowrap;
+}
+
+.action-buttons-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.table-info-text {
+  margin-left: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
+  color: var(--admin-text-secondary, #64748b);
+}
+
+/* ========================================================================
+   PAGINATION CONTROLS
+   ======================================================================== */
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 16px 20px;
+  background: var(--admin-bg, #ffffff);
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  margin: 24px auto 0;
+  max-width: 100%;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pagination-controls > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+.pagination-controls .btn {
+  height: 40px;
+  min-height: 40px;
+  padding: 0 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pagination-controls .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--admin-bg-secondary, #f9fafb);
+  color: var(--admin-text-secondary, #64748b);
+  border-color: var(--admin-border, #e5e7eb);
+}
+
+.pagination-controls .btn:not(:disabled):hover {
+  background: var(--admin-bg-secondary, #f3f4f6);
+  border-color: var(--admin-border, #d1d5db);
+  color: var(--admin-text-primary, #1e293b);
+}
+
+.pagination-info {
+  font-weight: 500;
+  color: var(--admin-text-primary, #1e293b);
+  padding: 0 12px;
+  white-space: nowrap;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.pagination-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+.pagination-container > span {
+  font-weight: 500;
+  color: var(--admin-text-secondary, #64748b);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pagination-container .pagination-select {
+  flex-shrink: 0;
+}
+
+.pagination-select {
+  min-width: 80px;
+  height: 44px;
+  padding: 10px 32px 10px 14px;
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 10px;
+  background: var(--admin-bg, #ffffff);
+  color: var(--admin-text-primary, #1e293b);
+  font-size: var(--admin-fs-md);
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+}
+
+.pagination-select:hover {
+  border-color: var(--admin-text-secondary, #9ca3af);
+}
+
+.pagination-select:focus {
+  outline: none;
+  border-color: var(--admin-accent, #449031);
+  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
+}
+
+@media (max-width: 480px) {
+  .pagination-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .pagination-controls > div:first-child {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .pagination-container {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+.orders-table-container {
+  background: var(--admin-bg, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--admin-border, #e2e8f0);
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 350px);
+  max-width: 100%;
+  min-width: 0;
+  min-height: 300px;
+  height: calc(100vh - 350px);
+  width: 100%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 0;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+  display: block;
+}
+
+.orders-table {
+  width: 100%;
+  max-width: 100%;
+  min-width: auto;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: auto;
+  display: table;
+}
+
+.table-wrapper .orders-table {
+  width: 100%;
+  min-width: auto;
+}
+
+.orders-table thead {
+  background: var(--admin-bg-secondary, #f9fafb);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
+}
+
+.orders-table th {
+  height: 52px;
+  padding: 0 20px;
+  text-align: left;
+  font-size: var(--admin-fs-base);
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--admin-text-primary, #1e293b);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
+  background: var(--admin-bg-secondary, #f9fafb);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+/* Min-widths to prevent header/cell truncation (Mode, Status, Payment, OrderID) */
+.orders-table th.col-mode { min-width: 72px; }
+.orders-table th.col-status { min-width: 92px; }
+.orders-table th.col-payment { min-width: 88px; }
+.orders-table th.col-orderid { min-width: 100px; }
+
+.orders-table td {
+  height: 56px;
+  padding: 0 20px;
+  font-size: var(--admin-fs-base);
+  color: var(--admin-text-primary, #1e293b);
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+.orders-table tbody tr {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  display: table-row;
+  width: 100%;
+}
+
+.orders-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.orders-table tbody tr.table-row-selected {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.table-row-selectable {
+  cursor: pointer;
+}
+
+.table-row-selectable:hover {
+  background-color: #f9fafb;
+  cursor: pointer;
+}
+
+.table-row-selected {
+  background-color: rgba(59, 130, 246, 0.15);
+}
+
+.row-paid {
+  background-color: rgba(68, 144, 49, 0.05);
+}
+
+.row-unpaid {
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+.sortable-header:hover {
+  background-color: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+}
+
+.sortable-header:active {
+  background-color: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+}
+
+.table-checkbox-header {
+  width: 40px;
+  text-align: center;
+}
+
+.table-row-clickable {
+  cursor: pointer;
+}
+
+.order-row-number {
+  font-weight: 600;
+  color: var(--admin-text-secondary, #6b7280);
+  font-size: var(--admin-fs-base);
+}
+
+.order-row-date {
+  font-size: var(--admin-fs-base);
+  color: var(--admin-text-primary, #1e293b);
+}
+
+.order-row-address {
+  font-size: var(--admin-fs-base);
+  color: var(--admin-text-primary, #1e293b);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-row-quantity {
+  font-size: var(--admin-fs-base);
+  color: var(--admin-text-primary, #1e293b);
+  text-align: center;
+}
+
+.order-row-price {
+  font-size: var(--admin-fs-base);
+  color: var(--admin-text-primary, #1e293b);
+  font-weight: 600;
+}
+
+/* All other order-row-* used in orders-table (total, mode, payment) – 14px (body-sm) */
+.orders-table .order-row-total,
+.orders-table .order-row-total-symbol,
+.orders-table .order-row-total-value,
+.orders-table .order-row-mode,
+.orders-table .order-row-mode-badge,
+.orders-table .order-row-payment-mode {
+  font-size: var(--admin-fs-base);
+}
+
+/* Min-width for Status, Payment, Mode columns so Paid/Unpaid, Online, Lunch/Dinner don't truncate */
+.orders-table td:has(.status-dropdown-enhanced) {
+  min-width: 100px;
+}
+.orders-table td:has(.order-row-payment-mode) {
+  min-width: 80px;
+}
+.orders-table td:has(.order-row-mode) {
+  min-width: 72px;
+}
+
+/* Badges, buttons, selects, and text inside table cells – 14px (body-sm) */
+.orders-table .badge,
+.orders-table td select,
+.orders-table .status-dropdown-enhanced,
+.orders-table .status-dropdown,
+.orders-table .monospace-text,
+.orders-table .text-xs,
+.orders-table .text-sm {
+  font-size: var(--admin-fs-base);
+}
+
+/* Status dropdown: ensure "Unpaid" / "Paid" are never truncated */
+.orders-table .status-dropdown-enhanced,
+.orders-table .status-dropdown {
+  min-width: 88px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.orders-table td .btn {
+  font-size: var(--admin-fs-base);
+}
+
+/* PendingAmountsTab: pending-* inside orders-table – 14px */
+.orders-table .pending-payment-date,
+.orders-table .pending-payment-address,
+.orders-table .pending-payment-amount-symbol,
+.orders-table .pending-payment-amount-value,
+.orders-table .pending-payment-days-badge,
+.orders-table .pending-payment-order-id {
+  font-size: var(--admin-fs-base);
+}
+
+/* Empty-state text inside table – 14px */
+.orders-table .empty-state-cell .empty-state-text,
+.orders-table .empty-state-cell p,
+.orders-table .pending-table-empty-message .pending-table-empty-text,
+.orders-table .pending-table-empty-message .pending-table-empty-subtext {
+  font-size: var(--admin-fs-base);
+}
+
+.empty-state-cell {
+  text-align: center;
+  padding: 48px 32px;
+}
+
+@media (max-width: 480px) {
+  .orders-table-container {
+    margin-left: calc(-1 * 12px);
+    margin-right: calc(-1 * 12px);
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    width: calc(100% + 24px);
+    max-width: 100vw;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: calc(100dvh - 280px);
+    height: calc(100dvh - 280px);
+    min-height: 200px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .orders-table {
+    min-width: 800px;
+  }
+
+  .orders-table th {
+    padding: 10px 12px;
+    font-size: var(--admin-fs-base);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+
+  .orders-table td {
+    padding: 10px 12px;
+    font-size: var(--admin-fs-base);
+    white-space: nowrap;
+  }
+
+  .orders-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .action-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: auto;
+    padding: 12px 16px;
+  }
+
+  .action-bar .search-input-wrapper {
+    min-width: 100%;
+    max-width: 100%;
+    order: 1;
+  }
+
+  .bulk-actions-inline {
+    order: 2;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .action-buttons-group {
+    order: 3;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-left: 0;
+  }
+
+  .action-bar .table-info-text {
+    order: 4;
+    width: 100%;
+    margin-left: 0;
+    text-align: center;
+  }
+}
+
+/* Note: Additional table styles will be extracted from admin-components.css */
