@@ -29,17 +29,19 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   useEffect(() => {
     const setChartBarHeights = () => {
       const root = dashboardContainerRef.current;
-      (root || document).querySelectorAll('.chart-bar[data-height]').forEach((bar) => {
-        const heightPercent = parseFloat(bar.getAttribute('data-height'));
-        const container = bar.closest('.chart-bars-container');
-        if (container) {
-          const raw = container.offsetHeight || 180;
-          const containerHeight = Math.min(raw, 220);
-          const height = (heightPercent / 100) * containerHeight;
-          bar.style.setProperty('--bar-height', `${height}px`);
-          bar.style.height = 'var(--bar-height)';
-        }
-      });
+      (root || document)
+        .querySelectorAll('.chart-bar[data-height]')
+        .forEach((bar) => {
+          const heightPercent = parseFloat(bar.getAttribute('data-height'));
+          const container = bar.closest('.chart-bars-container');
+          if (container) {
+            const raw = container.offsetHeight || 180;
+            const containerHeight = Math.min(raw, 220);
+            const height = (heightPercent / 100) * containerHeight;
+            bar.style.setProperty('--bar-height', `${height}px`);
+            bar.style.height = 'var(--bar-height)';
+          }
+        });
     };
     setChartBarHeights();
     const observer = new MutationObserver(setChartBarHeights);
@@ -51,11 +53,13 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   useEffect(() => {
     const setProgressBarWidths = () => {
       const root = dashboardContainerRef.current;
-      (root || document).querySelectorAll('.progress-bar-fill[data-width]').forEach((bar) => {
-        const widthPercent = bar.getAttribute('data-width');
-        bar.style.setProperty('--bar-width', `${widthPercent}%`);
-        bar.style.width = 'var(--bar-width)';
-      });
+      (root || document)
+        .querySelectorAll('.progress-bar-fill[data-width]')
+        .forEach((bar) => {
+          const widthPercent = bar.getAttribute('data-width');
+          bar.style.setProperty('--bar-width', `${widthPercent}%`);
+          bar.style.width = 'var(--bar-width)';
+        });
     };
     setProgressBarWidths();
     const observer = new MutationObserver(setProgressBarWidths);
@@ -69,8 +73,8 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   // Early return if loading to avoid unnecessary calculations
   if (loading) {
     return (
-      <div className='admin-content' ref={dashboardContainerRef}>
-        <PremiumLoader message='Loading dashboard data...' size='large' />
+      <div className="admin-content" ref={dashboardContainerRef}>
+        <PremiumLoader message="Loading dashboard data..." size="large" />
       </div>
     );
   }
@@ -87,12 +91,16 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   const allTimeRevenue = getTotalRevenue(allTimeOrders);
   const profitStats = getProfitStats(allTimeRevenue, 70, 30);
 
-  const pendingOrders = allTimeOrders.filter((o) => o && isPendingStatus(o.status, o.paymentStatus));
+  const pendingOrders = allTimeOrders.filter(
+    (o) => o && isPendingStatus(o.status, o.paymentStatus)
+  );
   const allTimeUnpaidAmount = getTotalRevenue(pendingOrders);
   const unpaidOrdersCount = pendingOrders.length;
 
   const allUniqueAddresses = new Set(
-    orders.map((o) => o.deliveryAddress || o.customerAddress || o.address).filter(Boolean)
+    orders
+      .map((o) => o.deliveryAddress || o.customerAddress || o.address)
+      .filter(Boolean)
   ).size;
 
   const currentYear = now.getFullYear();
@@ -121,8 +129,8 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     lastYearRevenue > 0
       ? ((thisYearRevenue - lastYearRevenue) / lastYearRevenue) * 100
       : thisYearRevenue > 0
-      ? 999
-      : 0;
+        ? 999
+        : 0;
   const isNewGrowth = lastYearRevenue === 0 && thisYearRevenue > 0;
 
   const todayOrders = orders.filter((o) => {
@@ -152,13 +160,15 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   const thisWeekRevenue = getTotalRevenue(thisWeekOrders);
   const thisWeekOrdersCount = thisWeekOrders.length;
 
-  const allTimeAvgOrderValue = allTimeTotal > 0 ? Math.round(allTimeRevenue / allTimeTotal) : 0;
+  const allTimeAvgOrderValue =
+    allTimeTotal > 0 ? Math.round(allTimeRevenue / allTimeTotal) : 0;
 
   const cancelledOrders = orders.filter((o) => {
     const status = (o.status || '').toLowerCase();
     return status === 'cancelled' || status === 'cancel';
   });
-  const cancelRate = orders.length > 0 ? (cancelledOrders.length / orders.length) * 100 : 0;
+  const cancelRate =
+    orders.length > 0 ? (cancelledOrders.length / orders.length) * 100 : 0;
 
   // Get all unique years from orders
   const yearsInData = new Set();
@@ -254,9 +264,17 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
         })
         .reduce((sum, o) => {
           let amount = null;
-          if (o.totalAmount !== undefined && o.totalAmount !== null && o.totalAmount !== 0) {
+          if (
+            o.totalAmount !== undefined &&
+            o.totalAmount !== null &&
+            o.totalAmount !== 0
+          ) {
             amount = parseFloat(o.totalAmount);
-          } else if (o.total !== undefined && o.total !== null && o.total !== 0) {
+          } else if (
+            o.total !== undefined &&
+            o.total !== null &&
+            o.total !== 0
+          ) {
             amount = parseFloat(o.total);
           }
           if (amount === null || isNaN(amount) || amount === 0) {
@@ -274,9 +292,17 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
         })
         .reduce((sum, o) => {
           let amount = null;
-          if (o.totalAmount !== undefined && o.totalAmount !== null && o.totalAmount !== 0) {
+          if (
+            o.totalAmount !== undefined &&
+            o.totalAmount !== null &&
+            o.totalAmount !== 0
+          ) {
             amount = parseFloat(o.totalAmount);
-          } else if (o.total !== undefined && o.total !== null && o.total !== 0) {
+          } else if (
+            o.total !== undefined &&
+            o.total !== null &&
+            o.total !== 0
+          ) {
             amount = parseFloat(o.total);
           }
           if (amount === null || isNaN(amount) || amount === 0) {
@@ -423,18 +449,20 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   // Show message if no orders after loading completes
   if (!loading && allTimeOrders.length === 0) {
     return (
-      <div className='admin-content' ref={dashboardContainerRef}>
-        <div className='dashboard-empty-state'>
-          <i className='fa-solid fa-chart-line dashboard-empty-state-icon'></i>
+      <div className="admin-content" ref={dashboardContainerRef}>
+        <div className="dashboard-empty-state">
+          <i className="fa-solid fa-chart-line dashboard-empty-state-icon"></i>
           <h2>No Orders Found</h2>
-          <p className='dashboard-empty-text'>No orders are currently loaded. Please check:</p>
-          <ul className='dashboard-empty-list'>
+          <p className="dashboard-empty-text">
+            No orders are currently loaded. Please check:
+          </p>
+          <ul className="dashboard-empty-list">
             <li>Is the backend API running?</li>
             <li>Are you authenticated as admin?</li>
             <li>Check the browser console for API errors</li>
           </ul>
           <button
-            className='btn btn-primary dashboard-empty-button'
+            className="btn btn-primary dashboard-empty-button"
             onClick={() => window.location.reload()}
           >
             Reload Page
@@ -445,15 +473,15 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   }
 
   return (
-    <div className='admin-content' ref={dashboardContainerRef}>
-      <div className='dashboard-with-sidebar'>
-        <div className='dashboard-main-content'>
+    <div className="admin-content" ref={dashboardContainerRef}>
+      <div className="dashboard-with-sidebar">
+        <div className="dashboard-main-content">
           <div
-            className='admin-stats'
+            className="admin-stats"
             key={`stats-${allTimeTotal}-${allTimeRevenue}-${allTimeUnpaidAmount}`}
           >
             <div
-              className='stat-card stat-card-primary stat-card-clickable'
+              className="stat-card stat-card-primary stat-card-clickable"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -461,8 +489,8 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                   setActiveTab('analytics');
                 }
               }}
-              title='Click to view detailed analytics'
-              role='button'
+              title="Click to view detailed analytics"
+              role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -473,19 +501,17 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 }
               }}
             >
-              <i className='fa-solid fa-rupee-sign'></i>
+              <i className="fa-solid fa-rupee-sign"></i>
               <div>
-                <h3>
-                  ₹{formatCurrency(allTimeRevenue)}
-                </h3>
+                <h3>₹{formatCurrency(allTimeRevenue)}</h3>
                 <p>Total Revenue</p>
                 <p
                   className={`stat-card-subtitle ${
                     isNewGrowth
                       ? 'stat-card-subtitle-success'
                       : yearOverYearGrowth >= 0
-                      ? 'stat-card-subtitle-success'
-                      : 'stat-card-subtitle-danger'
+                        ? 'stat-card-subtitle-success'
+                        : 'stat-card-subtitle-danger'
                   }`}
                 >
                   {isNewGrowth
@@ -497,7 +523,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
               </div>
             </div>
             <div
-              className='stat-card stat-card-clickable'
+              className="stat-card stat-card-clickable"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -505,8 +531,8 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                   setActiveTab('allOrdersData');
                 }
               }}
-              title='Click to view all orders'
-              role='button'
+              title="Click to view all orders"
+              role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -517,15 +543,15 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 }
               }}
             >
-              <i className='fa-solid fa-shopping-cart icon-color-accent'></i>
+              <i className="fa-solid fa-shopping-cart icon-color-accent"></i>
               <div>
                 <h3>{allTimeTotal}</h3>
                 <p>Total Orders</p>
-                <p className='stat-card-subtitle'>All time</p>
+                <p className="stat-card-subtitle">All time</p>
               </div>
             </div>
             <div
-              className='stat-card stat-card-clickable'
+              className="stat-card stat-card-clickable"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -533,8 +559,8 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                   setActiveTab('pendingAmounts');
                 }
               }}
-              title='Click to view pending payments'
-              role='button'
+              title="Click to view pending payments"
+              role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -545,19 +571,18 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 }
               }}
             >
-              <i className='fa-solid fa-exclamation-triangle stat-card-icon-warning'></i>
+              <i className="fa-solid fa-exclamation-triangle stat-card-icon-warning"></i>
               <div>
-                <h3>
-                  ₹{formatCurrency(allTimeUnpaidAmount)}
-                </h3>
+                <h3>₹{formatCurrency(allTimeUnpaidAmount)}</h3>
                 <p>Pending Payments</p>
-                <p className='stat-card-subtitle'>
-                  {unpaidOrdersCount} {unpaidOrdersCount === 1 ? 'order' : 'orders'}
+                <p className="stat-card-subtitle">
+                  {unpaidOrdersCount}{' '}
+                  {unpaidOrdersCount === 1 ? 'order' : 'orders'}
                 </p>
               </div>
             </div>
             <div
-              className='stat-card stat-card-clickable'
+              className="stat-card stat-card-clickable"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -565,8 +590,8 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                   setActiveTab('customers');
                 }
               }}
-              title='Click to view all customers'
-              role='button'
+              title="Click to view all customers"
+              role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -577,48 +602,50 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 }
               }}
             >
-              <i className='fa-solid fa-users icon-color-accent'></i>
+              <i className="fa-solid fa-users icon-color-accent"></i>
               <div>
                 <h3>{allUniqueAddresses}</h3>
                 <p>Total Customers</p>
-                <p className='stat-card-subtitle'>Unique addresses</p>
+                <p className="stat-card-subtitle">Unique addresses</p>
               </div>
             </div>
-            <div className='stat-card'>
-              <i className='fa-solid fa-chart-line stat-card-icon-success'></i>
+            <div className="stat-card">
+              <i className="fa-solid fa-chart-line stat-card-icon-success"></i>
               <div>
                 <h3>₹{formatCurrency(allTimeAvgOrderValue)}</h3>
                 <p>Avg Order Value</p>
               </div>
             </div>
-            <div className='stat-card'>
-              <i className='fa-solid fa-chart-line stat-card-icon-success'></i>
+            <div className="stat-card">
+              <i className="fa-solid fa-chart-line stat-card-icon-success"></i>
               <div>
                 <h3>₹{formatCurrency(profitStats.profit)}</h3>
                 <p>Profit After Expenses</p>
-                <p className='stat-card-subtitle'>
+                <p className="stat-card-subtitle">
                   {profitStats.profitMarginPercent.toFixed(1)}% margin
                 </p>
               </div>
             </div>
-            <div className='stat-card'>
-              <i className='fa-solid fa-percent stat-card-icon-secondary'></i>
+            <div className="stat-card">
+              <i className="fa-solid fa-percent stat-card-icon-secondary"></i>
               <div>
                 <h3>{profitStats.profitMarginPercent.toFixed(1)}%</h3>
                 <p>Profit Margin</p>
-                <p className='stat-card-subtitle'>Target: {profitStats.targetProfitMargin}%</p>
+                <p className="stat-card-subtitle">
+                  Target: {profitStats.targetProfitMargin}%
+                </p>
               </div>
             </div>
           </div>
 
-          <div className='dashboard-charts-container'>
-            <div className='dashboard-chart-full-width'>
-              <div className='dashboard-card widget'>
-                <h3 className='dashboard-section-title'>
-                  <i className='fa-solid fa-chart-line icon-opacity'></i>
+          <div className="dashboard-charts-container">
+            <div className="dashboard-chart-full-width">
+              <div className="dashboard-card widget">
+                <h3 className="dashboard-section-title">
+                  <i className="fa-solid fa-chart-line icon-opacity"></i>
                   Revenue Trend (Year-over-Year Comparison)
                 </h3>
-                <div className='chart-container'>
+                <div className="chart-container">
                   {monthlyRevenueData.length > 0 ? (
                     (() => {
                       // Find max revenue across all months and years for scaling
@@ -630,9 +657,9 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                       );
 
                       return monthlyRevenueData.map((monthData, idx) => {
-                        const yearEntries = Object.entries(monthData.years).sort(
-                          ([a], [b]) => a - b
-                        );
+                        const yearEntries = Object.entries(
+                          monthData.years
+                        ).sort(([a], [b]) => a - b);
 
                         return (
                           <div
@@ -643,12 +670,16 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                 : 'bar-chart-item-single-year'
                             }`}
                           >
-                            <div className='chart-bars-container'>
+                            <div className="chart-bars-container">
                               {yearEntries.map(([year, data]) => {
                                 const barHeightPercent =
-                                  maxRevenue > 0 ? (data.revenue / maxRevenue) * 100 : 0;
-                                const isCurrentYear = parseInt(year) === now.getFullYear();
-                                const isLastYear = parseInt(year) === now.getFullYear() - 1;
+                                  maxRevenue > 0
+                                    ? (data.revenue / maxRevenue) * 100
+                                    : 0;
+                                const isCurrentYear =
+                                  parseInt(year) === now.getFullYear();
+                                const isLastYear =
+                                  parseInt(year) === now.getFullYear() - 1;
 
                                 return (
                                   <div
@@ -661,13 +692,15 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                   >
                                     <div
                                       className={`chart-bar ${
-                                        data.revenue > 0 ? '' : 'chart-bar-empty'
+                                        data.revenue > 0
+                                          ? ''
+                                          : 'chart-bar-empty'
                                       } ${
                                         isCurrentYear
                                           ? 'chart-bar-current-year'
                                           : isLastYear
-                                          ? 'chart-bar-last-year'
-                                          : 'chart-bar-other-year'
+                                            ? 'chart-bar-last-year'
+                                            : 'chart-bar-other-year'
                                       }`}
                                       data-height={barHeightPercent.toFixed(2)}
                                       title={`${monthData.monthName} ${year}: ₹${formatCurrency(
@@ -675,7 +708,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                       )} (${data.orders} orders)`}
                                     ></div>
                                     {yearEntries.length > 1 && (
-                                      <span className='text-xs text-light chart-year-label'>
+                                      <span className="text-xs text-light chart-year-label">
                                         {year.toString().slice(-2)}
                                       </span>
                                     )}
@@ -683,7 +716,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                 );
                               })}
                             </div>
-                            <span className='text-xs text-light text-center font-medium chart-month-label'>
+                            <span className="text-xs text-light text-center font-medium chart-month-label">
                               {monthData.monthName}
                             </span>
                           </div>
@@ -691,27 +724,31 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                       });
                     })()
                   ) : (
-                    <div className='dashboard-empty-state'>
-                      <i className='fa-solid fa-chart-line dashboard-empty-state-icon'></i>
-                      <p className='empty-state-text'>No revenue data available</p>
-                      <p className='dashboard-empty-text'>Start adding orders to see your revenue trends</p>
+                    <div className="dashboard-empty-state">
+                      <i className="fa-solid fa-chart-line dashboard-empty-state-icon"></i>
+                      <p className="empty-state-text">
+                        No revenue data available
+                      </p>
+                      <p className="dashboard-empty-text">
+                        Start adding orders to see your revenue trends
+                      </p>
                     </div>
                   )}
                 </div>
                 {sortedYears.length > 1 && (
-                  <div className='chart-legend-container'>
+                  <div className="chart-legend-container">
                     {sortedYears.map((year) => {
                       const isCurrentYear = year === now.getFullYear();
                       const isLastYear = year === now.getFullYear() - 1;
                       return (
-                        <div key={year} className='chart-legend-item'>
+                        <div key={year} className="chart-legend-item">
                           <div
                             className={`chart-legend-color ${
                               isCurrentYear
                                 ? 'chart-legend-color-current'
                                 : isLastYear
-                                ? 'chart-legend-color-last'
-                                : 'chart-legend-color-other'
+                                  ? 'chart-legend-color-last'
+                                  : 'chart-legend-color-other'
                             }`}
                           />
                           <span>{year}</span>
@@ -723,27 +760,30 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
               </div>
             </div>
 
-            <div className='dashboard-chart-full-width'>
-              <div className='dashboard-card widget'>
-                <h3 className='dashboard-section-title'>
-                  <i className='fa-solid fa-chart-bar icon-opacity'></i>
+            <div className="dashboard-chart-full-width">
+              <div className="dashboard-card widget">
+                <h3 className="dashboard-section-title">
+                  <i className="fa-solid fa-chart-bar icon-opacity"></i>
                   Payment Mode Trend (Year-over-Year Comparison)
                 </h3>
-                <div className='chart-container'>
+                <div className="chart-container">
                   {monthlyPaymentModeData.length > 0 ? (
                     (() => {
                       // Find max amount across all months, years, and payment modes for scaling
                       const maxAmount = Math.max(
                         ...monthlyPaymentModeData.flatMap((m) =>
-                          Object.values(m.years).flatMap((y) => [y.cash || 0, y.online || 0])
+                          Object.values(m.years).flatMap((y) => [
+                            y.cash || 0,
+                            y.online || 0,
+                          ])
                         ),
                         1
                       );
 
                       return monthlyPaymentModeData.map((monthData, idx) => {
-                        const yearEntries = Object.entries(monthData.years).sort(
-                          ([a], [b]) => a - b
-                        );
+                        const yearEntries = Object.entries(
+                          monthData.years
+                        ).sort(([a], [b]) => a - b);
 
                         return (
                           <div
@@ -754,16 +794,25 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                 : 'bar-chart-item-single-year'
                             }`}
                           >
-                            <div className='chart-bars-container'>
+                            <div className="chart-bars-container">
                               {yearEntries.map(([year, data]) => {
                                 const cashHeightPercent =
-                                  maxAmount > 0 ? ((data.cash || 0) / maxAmount) * 100 : 0;
+                                  maxAmount > 0
+                                    ? ((data.cash || 0) / maxAmount) * 100
+                                    : 0;
                                 const onlineHeightPercent =
-                                  maxAmount > 0 ? ((data.online || 0) / maxAmount) * 100 : 0;
-                                const isCurrentYear = parseInt(year) === now.getFullYear();
-                                const isLastYear = parseInt(year) === now.getFullYear() - 1;
-                                const yearMod =
-                                  isCurrentYear ? 'current' : isLastYear ? 'last' : 'other';
+                                  maxAmount > 0
+                                    ? ((data.online || 0) / maxAmount) * 100
+                                    : 0;
+                                const isCurrentYear =
+                                  parseInt(year) === now.getFullYear();
+                                const isLastYear =
+                                  parseInt(year) === now.getFullYear() - 1;
+                                const yearMod = isCurrentYear
+                                  ? 'current'
+                                  : isLastYear
+                                    ? 'last'
+                                    : 'other';
 
                                 return (
                                   <div
@@ -774,14 +823,16 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                         : 'chart-year-entry-single'
                                     }`}
                                   >
-                                    <div className='chart-payment-mode-group'>
+                                    <div className="chart-payment-mode-group">
                                       <div
                                         className={`chart-bar ${
                                           (data.cash || 0) > 0
                                             ? `chart-bar-${yearMod}-cash`
                                             : 'chart-bar-empty'
                                         }`}
-                                        data-height={cashHeightPercent.toFixed(2)}
+                                        data-height={cashHeightPercent.toFixed(
+                                          2
+                                        )}
                                         title={`${
                                           monthData.monthName
                                         } ${year} - Cash: ₹${formatCurrency(data.cash || 0)}`}
@@ -792,14 +843,16 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                             ? `chart-bar-${yearMod}-online`
                                             : 'chart-bar-empty'
                                         }`}
-                                        data-height={onlineHeightPercent.toFixed(2)}
+                                        data-height={onlineHeightPercent.toFixed(
+                                          2
+                                        )}
                                         title={`${
                                           monthData.monthName
                                         } ${year} - Online: ₹${formatCurrency(data.online || 0)}`}
                                       ></div>
                                     </div>
                                     {yearEntries.length > 1 && (
-                                      <span className='text-xs text-light chart-year-label'>
+                                      <span className="text-xs text-light chart-year-label">
                                         {year.toString().slice(-2)}
                                       </span>
                                     )}
@@ -807,7 +860,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                 );
                               })}
                             </div>
-                            <span className='text-xs text-light text-center font-medium chart-month-label'>
+                            <span className="text-xs text-light text-center font-medium chart-month-label">
                               {monthData.monthName}
                             </span>
                           </div>
@@ -815,27 +868,31 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                       });
                     })()
                   ) : (
-                    <div className='dashboard-empty-state'>
-                      <i className='fa-solid fa-chart-bar dashboard-empty-state-icon'></i>
-                      <p className='empty-state-text'>No payment mode data available</p>
-                      <p className='dashboard-empty-text'>Payment data will appear here once orders are added</p>
+                    <div className="dashboard-empty-state">
+                      <i className="fa-solid fa-chart-bar dashboard-empty-state-icon"></i>
+                      <p className="empty-state-text">
+                        No payment mode data available
+                      </p>
+                      <p className="dashboard-empty-text">
+                        Payment data will appear here once orders are added
+                      </p>
                     </div>
                   )}
                 </div>
                 {sortedYears.length > 1 && (
-                  <div className='chart-legend-container'>
+                  <div className="chart-legend-container">
                     {sortedYears.map((year) => {
                       const isCurrentYear = year === now.getFullYear();
                       const isLastYear = year === now.getFullYear() - 1;
                       return (
-                        <div key={year} className='chart-legend-item'>
+                        <div key={year} className="chart-legend-item">
                           <div
                             className={`chart-legend-color ${
                               isCurrentYear
                                 ? 'chart-legend-color-current'
                                 : isLastYear
-                                ? 'chart-legend-color-last'
-                                : 'chart-legend-color-other'
+                                  ? 'chart-legend-color-last'
+                                  : 'chart-legend-color-other'
                             }`}
                           />
                           <span>{year}</span>
@@ -844,13 +901,13 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                     })}
                   </div>
                 )}
-                <div className='chart-legend-container dashboard-chart-legend'>
-                  <div className='chart-legend-item'>
-                    <div className='chart-legend-color chart-legend-color-cash'></div>
+                <div className="chart-legend-container dashboard-chart-legend">
+                  <div className="chart-legend-item">
+                    <div className="chart-legend-color chart-legend-color-cash"></div>
                     <span>Cash</span>
                   </div>
-                  <div className='chart-legend-item'>
-                    <div className='chart-legend-color chart-legend-color-online'></div>
+                  <div className="chart-legend-item">
+                    <div className="chart-legend-color chart-legend-color-online"></div>
                     <span>Online</span>
                   </div>
                 </div>
@@ -859,14 +916,14 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
           </div>
 
           {recentOrders.length > 0 && (
-            <div className='dashboard-section'>
-              <div className='recent-orders-header'>
-                <h3 className='dashboard-section-title m-0'>
-                  <i className='fa-solid fa-clock-rotate-left icon-opacity'></i>
+            <div className="dashboard-section">
+              <div className="recent-orders-header">
+                <h3 className="dashboard-section-title m-0">
+                  <i className="fa-solid fa-clock-rotate-left icon-opacity"></i>
                   Recent Orders (Last 10)
                 </h3>
                 <button
-                  className='btn btn-ghost btn-small'
+                  className="btn btn-ghost btn-small"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -878,9 +935,9 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                   View All Orders →
                 </button>
               </div>
-              <div className='dashboard-card widget'>
-                <div className='recent-orders-table-container'>
-                  <table className='recent-orders-table'>
+              <div className="dashboard-card widget">
+                <div className="recent-orders-table-container">
+                  <table className="recent-orders-table">
                     <thead>
                       <tr>
                         <th>Date</th>
@@ -893,7 +950,9 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                     </thead>
                     <tbody>
                       {recentOrders.map((order, idx) => {
-                        const orderDate = parseOrderDate(order.date || order.order_date || null);
+                        const orderDate = parseOrderDate(
+                          order.date || order.order_date || null
+                        );
                         const dateStr = formatDate(orderDate);
                         const status = (order.status || '').toLowerCase();
                         const isPaid = status === 'paid';

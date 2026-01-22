@@ -1,9 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  getLanguageName,
-  getSupportedLanguages,
-} from "../shared/utils/i18n";
-import { useLanguage } from "../contexts/LanguageContext";
+import { useEffect, useRef, useState } from 'react';
+import { getLanguageName, getSupportedLanguages } from '../shared/utils/i18n';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const LanguageSwitcher = () => {
   const { language, changeLanguage } = useLanguage();
@@ -12,8 +9,8 @@ const LanguageSwitcher = () => {
   const dropdownRef = useRef(null);
 
   const languageFlags = {
-    en: "🇬🇧",
-    hi: "🇮🇳",
+    en: '🇬🇧',
+    hi: '🇮🇳',
   };
 
   const currentLanguage =
@@ -28,11 +25,11 @@ const LanguageSwitcher = () => {
 
     if (isOpen) {
       // Use capture phase to ensure we check before Header's handler
-      document.addEventListener("mousedown", handleClickOutside, true);
+      document.addEventListener('mousedown', handleClickOutside, true);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside, true);
+      document.removeEventListener('mousedown', handleClickOutside, true);
     };
   }, [isOpen]);
 
@@ -62,7 +59,7 @@ const LanguageSwitcher = () => {
         <span className="language-name">
           {getLanguageName(currentLanguage)}
         </span>
-        <i className={`fa-solid fa-chevron-${isOpen ? "up" : "down"}`}></i>
+        <i className={`fa-solid fa-chevron-${isOpen ? 'up' : 'down'}`}></i>
       </button>
 
       {isOpen && (
@@ -71,7 +68,7 @@ const LanguageSwitcher = () => {
             <button
               key={lang}
               type="button"
-              className={`language-option ${lang === language ? "active" : ""}`}
+              className={`language-option ${lang === language ? 'active' : ''}`}
               onClick={(e) => handleLanguageChange(e, lang)}
               onMouseDown={(e) => e.stopPropagation()}
             >

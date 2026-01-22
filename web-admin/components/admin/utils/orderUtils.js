@@ -1,6 +1,3 @@
-
-
-
 import { parseOrderDate } from './dateUtils.js';
 
 export const formatCurrency = (amount) => {
@@ -16,7 +13,6 @@ export const formatCurrency = (amount) => {
   }
 };
 
-
 export const formatNumberIndian = (amount) => {
   try {
     const num = parseFloat(amount) || 0;
@@ -26,7 +22,6 @@ export const formatNumberIndian = (amount) => {
     return '0';
   }
 };
-
 
 /**
  * Get the amount for a single order. Prefers totalAmount/total; falls back to quantity * unitPrice.
@@ -47,11 +42,20 @@ export const getOrderAmount = (order) => {
   if (amount === null) {
     const qty = parseFloat(String(order.quantity || 1));
     const price = parseFloat(String(order.unitPrice || 0));
-    if (!isNaN(qty) && !isNaN(price) && isFinite(qty) && isFinite(price) && qty >= 0 && price >= 0) {
+    if (
+      !isNaN(qty) &&
+      !isNaN(price) &&
+      isFinite(qty) &&
+      isFinite(price) &&
+      qty >= 0 &&
+      price >= 0
+    ) {
       amount = Math.round(qty * price);
     }
   }
-  return amount !== null && !isNaN(amount) && isFinite(amount) && amount >= 0 ? amount : 0;
+  return amount !== null && !isNaN(amount) && isFinite(amount) && amount >= 0
+    ? amount
+    : 0;
 };
 
 /**
@@ -75,7 +79,8 @@ export const getOverdueOrders = (ordersList = []) => {
       return orderDateMidnight < fortyFiveDaysAgo;
     });
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') console.error('Error in getOverdueOrders:', error);
+    if (process.env.NODE_ENV === 'development')
+      console.error('Error in getOverdueOrders:', error);
     return [];
   }
 };
@@ -89,7 +94,6 @@ export const getTotalRevenue = (ordersList = []) => {
   }
 };
 
-
 export const getDeliveredRevenue = (ordersList = []) => {
   try {
     return ordersList
@@ -100,7 +104,6 @@ export const getDeliveredRevenue = (ordersList = []) => {
     return 0;
   }
 };
-
 
 export const getOrderDateOnly = (order) => {
   try {
@@ -116,7 +119,6 @@ export const getOrderDateOnly = (order) => {
   }
 };
 
-
 export const getOrderYear = (order) => {
   try {
     if (!order) return null;
@@ -131,7 +133,6 @@ export const getOrderYear = (order) => {
   }
 };
 
-
 export const calculateTotalAmount = (quantity, unitPrice) => {
   try {
     const qty = parseInt(quantity) || 0;
@@ -143,19 +144,17 @@ export const calculateTotalAmount = (quantity, unitPrice) => {
   }
 };
 
-
 export const extractBillingMonth = (orderDate) => {
   try {
     if (!orderDate) return null;
     const date = new Date(orderDate);
     if (isNaN(date.getTime())) return null;
-    return date.getMonth() + 1; 
+    return date.getMonth() + 1;
   } catch (error) {
     console.error('Error extracting billing month:', error);
     return null;
   }
 };
-
 
 export const extractBillingYear = (orderDate) => {
   try {
@@ -168,7 +167,6 @@ export const extractBillingYear = (orderDate) => {
     return null;
   }
 };
-
 
 export const formatBillingMonth = (month, year) => {
   try {
@@ -197,7 +195,6 @@ export const formatBillingMonth = (month, year) => {
   }
 };
 
-
 export const formatReferenceMonth = (month, year) => {
   try {
     if (!month || !year) return '';
@@ -225,7 +222,6 @@ export const formatReferenceMonth = (month, year) => {
   }
 };
 
-
 export const normalizeOrderDate = (dateValue) => {
   try {
     if (!dateValue) return null;
@@ -241,7 +237,6 @@ export const normalizeOrderDate = (dateValue) => {
   }
 };
 
-
 export const createOrderKey = (orderDate, deliveryAddress) => {
   try {
     const normalizedDate = normalizeOrderDate(orderDate);
@@ -255,7 +250,6 @@ export const createOrderKey = (orderDate, deliveryAddress) => {
     return null;
   }
 };
-
 
 export const findOrderByKey = (orders, orderDate, deliveryAddress) => {
   try {
@@ -276,16 +270,16 @@ export const findOrderByKey = (orders, orderDate, deliveryAddress) => {
   }
 };
 
-
 export const getLastUnitPriceForAddress = (orders, deliveryAddress) => {
   try {
     if (!deliveryAddress || !Array.isArray(orders)) return null;
     const normalizedAddress = String(deliveryAddress).trim().toLowerCase();
 
-    
     const addressOrders = orders
       .filter((order) => {
-        const orderAddress = String(order.deliveryAddress || order.customerAddress || '')
+        const orderAddress = String(
+          order.deliveryAddress || order.customerAddress || ''
+        )
           .trim()
           .toLowerCase();
         return orderAddress === normalizedAddress && order.unitPrice;
@@ -299,30 +293,30 @@ export const getLastUnitPriceForAddress = (orders, deliveryAddress) => {
         return dateB - dateA;
       });
 
-    return addressOrders.length > 0 ? parseFloat(addressOrders[0].unitPrice) : null;
+    return addressOrders.length > 0
+      ? parseFloat(addressOrders[0].unitPrice)
+      : null;
   } catch (error) {
     console.error('Error getting last unit price:', error);
     return null;
   }
 };
 
-
 export const getLastOrderForAddress = (orders, deliveryAddress) => {
   try {
     if (!deliveryAddress || !Array.isArray(orders)) return null;
     const normalizedAddress = String(deliveryAddress).trim().toLowerCase();
 
-    
     const addressOrders = orders
       .filter((order) => {
-        const orderAddress = String(order.deliveryAddress || order.customerAddress || order.address || '')
+        const orderAddress = String(
+          order.deliveryAddress || order.customerAddress || order.address || ''
+        )
           .trim()
           .toLowerCase();
         return orderAddress === normalizedAddress;
       })
       .sort((a, b) => {
-        
-        
         const dateA = parseOrderDate(a.date || a.order_date || null);
         const dateB = parseOrderDate(b.date || b.order_date || null);
         if (!dateA && !dateB) return 0;
@@ -331,7 +325,7 @@ export const getLastOrderForAddress = (orders, deliveryAddress) => {
         if (dateB.getTime() !== dateA.getTime()) {
           return dateB.getTime() - dateA.getTime();
         }
-        
+
         const idA = (a.orderId || '').toString();
         const idB = (b.orderId || '').toString();
         return idB.localeCompare(idA);
@@ -343,7 +337,6 @@ export const getLastOrderForAddress = (orders, deliveryAddress) => {
     return null;
   }
 };
-
 
 export const getUniqueAddresses = (orders) => {
   try {
@@ -362,35 +355,28 @@ export const getUniqueAddresses = (orders) => {
   }
 };
 
-
 export const isPaidStatus = (status, paymentStatus = null) => {
-  
   if (paymentStatus) {
     const ps = String(paymentStatus).toLowerCase().trim();
     if (ps === 'paid') return true;
   }
-  
-  
+
   if (!status) return false;
   const s = String(status).toLowerCase().trim();
   return s === 'paid' || s === 'delivered';
 };
 
-
 export const isPendingStatus = (status, paymentStatus = null) => {
-  
   if (paymentStatus) {
     const ps = String(paymentStatus).toLowerCase().trim();
     if (ps === 'pending' || ps === 'unpaid') return true;
     if (ps === 'paid') return false;
   }
-  
-  
-  if (!status) return true; 
+
+  if (!status) return true;
   const s = String(status).toLowerCase().trim();
   return s === 'pending' || s === 'unpaid';
 };
-
 
 export const normalizeStatus = (status) => {
   if (!status) return 'Pending';
@@ -400,15 +386,13 @@ export const normalizeStatus = (status) => {
   return 'Pending';
 };
 
-
 export const ensureAllOrdersHaveUniqueIds = (orders) => {
   console.warn(
     '[DEPRECATED] ensureAllOrdersHaveUniqueIds: Order IDs are now generated by backend. This function is kept for backward compatibility only.'
   );
-  
+
   return orders;
 };
-
 
 export const extractOrderIdSequence = (orderId) => {
   if (!orderId) return 0;
@@ -416,32 +400,31 @@ export const extractOrderIdSequence = (orderId) => {
   return match && match[1] ? parseInt(match[1], 10) : 0;
 };
 
-
 export const sortOrdersByOrderId = (orders) => {
   if (!Array.isArray(orders) || orders.length === 0) return orders;
-  
+
   return [...orders].sort((a, b) => {
     const seqA = extractOrderIdSequence(a.orderId);
     const seqB = extractOrderIdSequence(b.orderId);
-    
+
     if (seqA > 0 && seqB > 0) {
       return seqB - seqA;
     }
-    
+
     if (seqA > 0) return -1;
     if (seqB > 0) return 1;
-    
+
     const idA = (a.orderId || '').toString();
     const idB = (b.orderId || '').toString();
-    
+
     if (idA && idB) {
       return idB.localeCompare(idA);
     }
-    
+
     if (!idA && !idB) return 0;
     if (!idA) return 1;
     if (!idB) return -1;
-    
+
     return 0;
   });
 };

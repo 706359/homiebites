@@ -29,10 +29,12 @@ const CurrentMonthOrdersTab = ({
   settings,
 }) => {
   const now = new Date();
-  const currentMonthName = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const currentMonthName = now.toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
+  });
 
-  
-  const [quickFilter, setQuickFilter] = useState('all'); 
+  const [quickFilter, setQuickFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddOrderModal, setShowAddOrderModal] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
@@ -49,10 +51,8 @@ const CurrentMonthOrdersTab = ({
     paymentMode: 'Online',
   });
 
-  
   useEffect(() => {
     const handleKeyDown = (e) => {
-      
       if (
         (e.ctrlKey || e.metaKey) &&
         e.key === 'n' &&
@@ -76,16 +76,16 @@ const CurrentMonthOrdersTab = ({
     };
   }, []);
 
-  
   const currentMonthOrders = useMemo(() => {
     return getFilteredOrdersByDate(orders, 'month', '', '');
   }, [orders]);
 
-  
   const currentMonthStats = useMemo(() => {
     const revenue = getTotalRevenue(currentMonthOrders);
     const total = currentMonthOrders.length;
-    const pending = currentMonthOrders.filter((o) => isPendingStatus(o.status, o.paymentStatus));
+    const pending = currentMonthOrders.filter((o) =>
+      isPendingStatus(o.status, o.paymentStatus)
+    );
     const pendingAmount = pending.reduce((sum, o) => {
       let amount = null;
 
@@ -104,16 +104,17 @@ const CurrentMonthOrdersTab = ({
       return sum + (isNaN(amount) ? 0 : amount);
     }, 0);
 
-    
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
     const lastMonthOrders = orders.filter((o) => {
       try {
-        
         const orderDate = parseOrderDate(o.date || o.order_date || null);
-        return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === lastMonthYear;
+        return (
+          orderDate.getMonth() === lastMonth &&
+          orderDate.getFullYear() === lastMonthYear
+        );
       } catch (e) {
         return false;
       }
@@ -123,8 +124,8 @@ const CurrentMonthOrdersTab = ({
       lastMonthRevenue > 0
         ? ((revenue - lastMonthRevenue) / lastMonthRevenue) * 100
         : revenue > 0
-        ? Infinity
-        : 0;
+          ? Infinity
+          : 0;
 
     return {
       revenue,
@@ -135,7 +136,6 @@ const CurrentMonthOrdersTab = ({
     };
   }, [currentMonthOrders, orders, now]);
 
-  
   const today = new Date(now);
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
@@ -148,7 +148,6 @@ const CurrentMonthOrdersTab = ({
   thisWeekStart.setDate(now.getDate() - now.getDay());
   thisWeekStart.setHours(0, 0, 0, 0);
 
-  
   const filteredOrders = useMemo(() => {
     let filtered = [...currentMonthOrders];
 
@@ -156,7 +155,6 @@ const CurrentMonthOrdersTab = ({
       case 'today':
         filtered = filtered.filter((o) => {
           try {
-            
             const orderDate = parseOrderDate(o.date || o.order_date || null);
             return orderDate >= today && orderDate < tomorrow;
           } catch (e) {
@@ -167,7 +165,6 @@ const CurrentMonthOrdersTab = ({
       case 'yesterday':
         filtered = filtered.filter((o) => {
           try {
-            
             const orderDate = parseOrderDate(o.date || o.order_date || null);
             return orderDate >= yesterday && orderDate < today;
           } catch (e) {
@@ -178,7 +175,6 @@ const CurrentMonthOrdersTab = ({
       case 'thisWeek':
         filtered = filtered.filter((o) => {
           try {
-            
             const orderDate = parseOrderDate(o.date || o.order_date || null);
             return orderDate >= thisWeekStart;
           } catch (e) {
@@ -187,17 +183,19 @@ const CurrentMonthOrdersTab = ({
         });
         break;
       case 'pending':
-        filtered = filtered.filter((o) => isPendingStatus(o.status, o.paymentStatus));
+        filtered = filtered.filter((o) =>
+          isPendingStatus(o.status, o.paymentStatus)
+        );
         break;
       case 'paid':
-        filtered = filtered.filter((o) => isPaidStatus(o.status, o.paymentStatus));
+        filtered = filtered.filter((o) =>
+          isPaidStatus(o.status, o.paymentStatus)
+        );
         break;
       default:
-        
         break;
     }
 
-    
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((order) => {
@@ -212,15 +210,20 @@ const CurrentMonthOrdersTab = ({
       });
     }
 
-    
     return sortOrdersByOrderId(filtered);
-  }, [currentMonthOrders, quickFilter, searchQuery, today, tomorrow, yesterday, thisWeekStart]);
+  }, [
+    currentMonthOrders,
+    quickFilter,
+    searchQuery,
+    today,
+    tomorrow,
+    yesterday,
+    thisWeekStart,
+  ]);
 
-  
   const quickFilterCounts = useMemo(() => {
     const todayOrders = currentMonthOrders.filter((o) => {
       try {
-        
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         return orderDate >= today && orderDate < tomorrow;
       } catch (e) {
@@ -230,7 +233,6 @@ const CurrentMonthOrdersTab = ({
 
     const yesterdayOrders = currentMonthOrders.filter((o) => {
       try {
-        
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         return orderDate >= yesterday && orderDate < today;
       } catch (e) {
@@ -240,7 +242,6 @@ const CurrentMonthOrdersTab = ({
 
     const thisWeekOrders = currentMonthOrders.filter((o) => {
       try {
-        
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         return orderDate >= thisWeekStart;
       } catch (e) {
@@ -248,8 +249,12 @@ const CurrentMonthOrdersTab = ({
       }
     });
 
-    const pendingOrders = currentMonthOrders.filter((o) => isPendingStatus(o.status, o.paymentStatus));
-    const paidOrders = currentMonthOrders.filter((o) => isPaidStatus(o.status, o.paymentStatus));
+    const pendingOrders = currentMonthOrders.filter((o) =>
+      isPendingStatus(o.status, o.paymentStatus)
+    );
+    const paidOrders = currentMonthOrders.filter((o) =>
+      isPaidStatus(o.status, o.paymentStatus)
+    );
 
     return {
       all: currentMonthOrders.length,
@@ -261,32 +266,37 @@ const CurrentMonthOrdersTab = ({
     };
   }, [currentMonthOrders, today, tomorrow, yesterday, thisWeekStart]);
 
-  
   const totalPages = Math.ceil(filteredOrders.length / recordsPerPage);
   const startIndex = (currentPage - 1) * recordsPerPage;
-  const paginatedOrders = filteredOrders.slice(startIndex, startIndex + recordsPerPage);
+  const paginatedOrders = filteredOrders.slice(
+    startIndex,
+    startIndex + recordsPerPage
+  );
 
-  
   const handleNewOrderChange = (field, value) => {
     const updated = { ...newOrder, [field]: value };
 
-    
     if (field === 'quantity' || field === 'unitPrice') {
-      const qty = field === 'quantity' ? parseInt(value) || 1 : parseInt(updated.quantity) || 1;
+      const qty =
+        field === 'quantity'
+          ? parseInt(value) || 1
+          : parseInt(updated.quantity) || 1;
       const price =
-        field === 'unitPrice' ? parseFloat(value) || 0 : parseFloat(updated.unitPrice) || 0;
+        field === 'unitPrice'
+          ? parseFloat(value) || 0
+          : parseFloat(updated.unitPrice) || 0;
       updated.total = qty * price;
     }
 
     setNewOrder(updated);
   };
 
-  
   const handleSaveOrder = async () => {
     try {
       if (onAddOrder) {
         await onAddOrder(newOrder);
-        if (showNotification) showNotification('Order added successfully', 'success');
+        if (showNotification)
+          showNotification('Order added successfully', 'success');
         setShowAddOrderModal(false);
         setNewOrder({
           date: new Date().toISOString().split('T')[0],
@@ -306,7 +316,6 @@ const CurrentMonthOrdersTab = ({
     }
   };
 
-  
   const recentAddresses = useMemo(() => {
     const addresses = new Set();
     currentMonthOrders.forEach((o) => {
@@ -316,43 +325,87 @@ const CurrentMonthOrdersTab = ({
     return Array.from(addresses).slice(0, 10);
   }, [currentMonthOrders]);
 
+  const handleExport = () => {
+    const escapeCSV = (value) => {
+      if (value === null || value === undefined) return '';
+      const str = String(value);
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    let csvContent =
+      'Order ID,Date,Delivery Address,Quantity,Unit Price (₹),Total Amount (₹),Mode,Status,Payment Mode\n';
+    filteredOrders.forEach((o) => {
+      const orderDate = parseOrderDate(o.date || o.order_date || null);
+      const dateStr = orderDate ? formatDate(orderDate) : 'N/A';
+      const orderId = o.orderId || o._id || 'N/A';
+      const address =
+        o.deliveryAddress || o.customerAddress || o.address || 'N/A';
+      const quantity = o.quantity || 1;
+      const unitPrice = parseFloat(o.unitPrice || 0).toFixed(2);
+      const totalAmount = getOrderAmount(o).toFixed(2);
+      const mode = o.mode || 'N/A';
+      const status = o.status || 'N/A';
+      const paymentMode = o.paymentMode || 'N/A';
+
+      csvContent += `${escapeCSV(orderId)},${escapeCSV(dateStr)},${escapeCSV(
+        address
+      )},${escapeCSV(quantity)},${escapeCSV(unitPrice)},${escapeCSV(totalAmount)},${escapeCSV(
+        mode
+      )},${escapeCSV(status)},${escapeCSV(paymentMode)}\n`;
+    });
+
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `current_month_orders_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    if (showNotification)
+      showNotification('Current month orders exported successfully', 'success');
+  };
+
   if (loading) {
     return (
-      <div className='admin-content'>
-        <PremiumLoader message='Loading orders...' size='large' />
+      <div className="admin-content">
+        <PremiumLoader message="Loading orders..." size="large" />
       </div>
     );
   }
 
   return (
-    <div className='admin-content'>
-      <div className='admin-stats'>
-        <div className='stat-card'>
-          <i className='fa-solid fa-coins'></i>
+    <div className="admin-content">
+      <div className="admin-stats">
+        <div className="stat-card">
+          <i className="fa-solid fa-coins"></i>
           <div>
             <h3>₹{formatCurrency(currentMonthStats.revenue)}</h3>
             <p>This Month Revenue</p>
           </div>
         </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-shopping-cart'></i>
+        <div className="stat-card">
+          <i className="fa-solid fa-shopping-cart"></i>
           <div>
             <h3>{currentMonthStats.total}</h3>
             <p>Total Orders</p>
           </div>
         </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-exclamation-triangle icon-color-warning'></i>
+        <div className="stat-card">
+          <i className="fa-solid fa-exclamation-triangle icon-color-warning"></i>
           <div>
             <h3>₹{formatCurrency(currentMonthStats.pendingAmount)}</h3>
             <p>Pending Payments</p>
-            <p className='stat-card-subtitle'>
+            <p className="stat-card-subtitle">
               {currentMonthStats.pendingCount} orders
             </p>
           </div>
         </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-chart-line icon-color-success'></i>
+        <div className="stat-card">
+          <i className="fa-solid fa-chart-line icon-color-success"></i>
           <div>
             <h3>
               {currentMonthStats.growth === Infinity
@@ -362,17 +415,20 @@ const CurrentMonthOrdersTab = ({
                   )}%`}
             </h3>
             <p>
-              vs Last Month {currentMonthStats.growth !== Infinity && (
-                <span className='stat-card-arrow'>{currentMonthStats.growth >= 0 ? '↑' : '↓'}</span>
+              vs Last Month{' '}
+              {currentMonthStats.growth !== Infinity && (
+                <span className="stat-card-arrow">
+                  {currentMonthStats.growth >= 0 ? '↑' : '↓'}
+                </span>
               )}
             </p>
           </div>
         </div>
       </div>
 
-      <div className='dashboard-card dashboard-card-spaced'>
-        <div className='filter-bar-flex'>
-          <div className='flex flex-wrap gap-8'>
+      <div className="dashboard-card dashboard-card-spaced">
+        <div className="filter-bar-flex">
+          <div className="flex flex-wrap gap-8">
             <button
               className={`btn ${quickFilter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-small`}
               onClick={() => {
@@ -389,7 +445,7 @@ const CurrentMonthOrdersTab = ({
                 if (onPageChange) onPageChange(1);
               }}
             >
-              <i className='fa-solid fa-calendar-day mr-6'></i>
+              <i className="fa-solid fa-calendar-day mr-6"></i>
               Today ({quickFilterCounts.today})
             </button>
             <button
@@ -399,7 +455,7 @@ const CurrentMonthOrdersTab = ({
                 if (onPageChange) onPageChange(1);
               }}
             >
-              <i className='fa-solid fa-calendar mr-6'></i>
+              <i className="fa-solid fa-calendar mr-6"></i>
               Yesterday ({quickFilterCounts.yesterday})
             </button>
             <button
@@ -409,12 +465,12 @@ const CurrentMonthOrdersTab = ({
                 if (onPageChange) onPageChange(1);
               }}
             >
-              <i className='fa-solid fa-calendar-week mr-6'></i>
+              <i className="fa-solid fa-calendar-week mr-6"></i>
               This Week ({quickFilterCounts.thisWeek})
             </button>
           </div>
 
-          <div className='flex flex-wrap gap-8'>
+          <div className="flex flex-wrap gap-8">
             <button
               className={`btn ${quickFilter === 'pending' ? 'btn-primary' : 'btn-ghost'} btn-small`}
               onClick={() => {
@@ -422,7 +478,7 @@ const CurrentMonthOrdersTab = ({
                 if (onPageChange) onPageChange(1);
               }}
             >
-              <i className='fa-solid fa-exclamation-triangle mr-6'></i>
+              <i className="fa-solid fa-exclamation-triangle mr-6"></i>
               Pending ({quickFilterCounts.pending})
             </button>
             <button
@@ -432,16 +488,16 @@ const CurrentMonthOrdersTab = ({
                 if (onPageChange) onPageChange(1);
               }}
             >
-              <i className='fa-solid fa-check-circle mr-6'></i>
+              <i className="fa-solid fa-check-circle mr-6"></i>
               Paid ({quickFilterCounts.paid})
             </button>
           </div>
 
-          <div >
+          <div>
             <input
-              type='text'
-              className='input-field search-input-with-icon'
-              placeholder='Search by address, order ID...'
+              type="text"
+              className="input-field search-input-with-icon"
+              placeholder="Search by address, order ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -449,26 +505,36 @@ const CurrentMonthOrdersTab = ({
         </div>
       </div>
 
-      <div className='dashboard-card'>
-        <div className='flex justify-between items-center mb-16'>
-          <div className='text-secondary text-base'>
-            Showing {startIndex + 1}-{Math.min(startIndex + recordsPerPage, filteredOrders.length)}{' '}
-            of {filteredOrders.length} orders
+      <div className="dashboard-card">
+        <div className="flex justify-between items-center mb-16">
+          <div className="text-secondary text-base">
+            Showing {startIndex + 1}-
+            {Math.min(startIndex + recordsPerPage, filteredOrders.length)} of{' '}
+            {filteredOrders.length} orders
+          </div>
+          <div className="action-buttons-group">
+            <button
+              className="btn btn-secondary btn-small"
+              onClick={handleExport}
+              title="Export Current Month Orders"
+            >
+              <i className="fa-solid fa-download"></i> Export
+            </button>
           </div>
         </div>
 
         {filteredOrders.length === 0 ? (
           <EmptyState
-            icon='fa-inbox'
-            title='No orders found'
-            message='Try adjusting your filters or add a new order'
-            addOrderLabel='Add New Order'
+            icon="fa-inbox"
+            title="No orders found"
+            message="Try adjusting your filters or add a new order"
+            addOrderLabel="Add New Order"
             onAddOrder={() => setShowAddOrderModal(true)}
           />
         ) : (
           <>
-            <div className='orders-table-container'>
-              <table className='orders-table'>
+            <div className="orders-table-container">
+              <table className="orders-table">
                 <thead>
                   <tr>
                     <th>S.No</th>
@@ -487,11 +553,13 @@ const CurrentMonthOrdersTab = ({
                 <tbody>
                   {paginatedOrders.map((order, idx) => {
                     const orderDate = parseOrderDate(
-                      
                       order.date || order.order_date || null
                     );
                     const dateStr = formatDate(orderDate);
-                    const isPaid = isPaidStatus(order.status, order.paymentStatus);
+                    const isPaid = isPaidStatus(
+                      order.status,
+                      order.paymentStatus
+                    );
 
                     return (
                       <tr
@@ -500,16 +568,24 @@ const CurrentMonthOrdersTab = ({
                           setEditingOrder(order);
                           setShowAddOrderModal(true);
                         }}
-                        className='cursor-pointer'
+                        className="cursor-pointer"
                       >
                         <td>{startIndex + idx + 1}</td>
                         <td>{dateStr}</td>
                         <td>
-                          {order.deliveryAddress || order.customerAddress || order.address || 'N/A'}
+                          {order.deliveryAddress ||
+                            order.customerAddress ||
+                            order.address ||
+                            'N/A'}
                         </td>
                         <td>{order.quantity || 1}</td>
                         <td>₹{formatCurrency(order.unitPrice || 0)}</td>
-                        <td>₹{formatCurrency(order.total || order.totalAmount || 0)}</td>
+                        <td>
+                          ₹
+                          {formatCurrency(
+                            order.total || order.totalAmount || 0
+                          )}
+                        </td>
                         <td>{order.mode || 'N/A'}</td>
                         <td>
                           <select
@@ -520,39 +596,45 @@ const CurrentMonthOrdersTab = ({
                             onChange={(e) => {
                               e.stopPropagation();
                               if (onUpdateOrderStatus) {
-                                onUpdateOrderStatus(order._id || order.orderId, e.target.value);
+                                onUpdateOrderStatus(
+                                  order._id || order.orderId,
+                                  e.target.value
+                                );
                               }
                             }}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <option value='Paid'>Paid</option>
-                            <option value='Unpaid'>Unpaid</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Unpaid">Unpaid</option>
                           </select>
                         </td>
                         <td>{order.paymentMode || 'N/A'}</td>
-                        <td className='monospace-text'>{order.orderId || 'N/A'}</td>
+                        <td className="monospace-text">
+                          {order.orderId || 'N/A'}
+                        </td>
                         <td>
-                          <div className='flex gap-8'>
+                          <div className="flex gap-8">
                             <button
-                              className='btn btn-ghost btn-icon action-icon-edit'
+                              className="btn btn-ghost btn-icon action-icon-edit"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setEditingOrder(order);
                                 setShowAddOrderModal(true);
                               }}
-                              title='Edit'
+                              title="Edit"
                             >
-                              <i className='fa-solid fa-pencil'></i>
+                              <i className="fa-solid fa-pencil"></i>
                             </button>
                             <button
-                              className='btn btn-ghost btn-icon action-icon-delete'
+                              className="btn btn-ghost btn-icon action-icon-delete"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (onDeleteOrder) onDeleteOrder(order._id || order.orderId);
+                                if (onDeleteOrder)
+                                  onDeleteOrder(order._id || order.orderId);
                               }}
-                              title='Delete'
+                              title="Delete"
                             >
-                              <i className='fa-solid fa-trash'></i>
+                              <i className="fa-solid fa-trash"></i>
                             </button>
                           </div>
                         </td>
@@ -563,30 +645,30 @@ const CurrentMonthOrdersTab = ({
               </table>
             </div>
 
-            <div className='pagination-controls'>
+            <div className="pagination-controls">
               <div>
                 <button
-                  className='btn btn-ghost btn-small'
+                  className="btn btn-ghost btn-small"
                   onClick={() => onPageChange && onPageChange(currentPage - 1)}
                   disabled={currentPage === 1}
                 >
-                  <i className='fa-solid fa-chevron-left'></i> Previous
+                  <i className="fa-solid fa-chevron-left"></i> Previous
                 </button>
-                <span className='pagination-info'>
+                <span className="pagination-info">
                   Page {currentPage} of {totalPages || 1}
                 </span>
                 <button
-                  className='btn btn-ghost btn-small'
+                  className="btn btn-ghost btn-small"
                   onClick={() => onPageChange && onPageChange(currentPage + 1)}
                   disabled={currentPage >= totalPages}
                 >
-                  Next <i className='fa-solid fa-chevron-right'></i>
+                  Next <i className="fa-solid fa-chevron-right"></i>
                 </button>
               </div>
-              <div className='pagination-container'>
+              <div className="pagination-container">
                 <span>Show:</span>
                 <select
-                  className='pagination-select'
+                  className="pagination-select"
                   value={recordsPerPage}
                   onChange={(e) => {
                     const value = parseInt(e.target.value);

@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getFormattedPhone, getPhoneLink, getWhatsAppLink } from '../lib/businessConstants';
+import {
+  getFormattedPhone,
+  getPhoneLink,
+  getWhatsAppLink,
+} from '../lib/businessConstants';
 import './Footer.css';
 
 const Footer = ({ onOrderClick }) => {
@@ -20,7 +24,8 @@ const Footer = ({ onOrderClick }) => {
         if (targetElement) {
           const headerOffset = 70;
           const elementPosition = targetElement.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+          const offsetPosition =
+            elementPosition + window.pageYOffset - headerOffset;
           window.scrollTo({
             top: offsetPosition,
             behavior: 'smooth',
@@ -35,7 +40,8 @@ const Footer = ({ onOrderClick }) => {
         if (targetElement) {
           const headerOffset = 70;
           const elementPosition = targetElement.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+          const offsetPosition =
+            elementPosition + window.pageYOffset - headerOffset;
           window.scrollTo({
             top: offsetPosition,
             behavior: 'smooth',
@@ -47,98 +53,121 @@ const Footer = ({ onOrderClick }) => {
 
   return (
     <footer>
-      <div className='footer-inner'>
-        <div className='footer-brand'>
-          <Link href='/' className='footer-logo-link'>
+      <div className="footer-inner">
+        <div className="footer-brand">
+          <Link href="/" className="footer-logo-link">
             <img
-              src='/logo.png'
-              alt='HomieBites'
-              className='footer-logo-img'
+              src="/logo.png"
+              alt="HomieBites"
+              className="footer-logo-img"
               onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.nextSibling.style.display = 'block';
               }}
             />
-            
           </Link>
         </div>
 
-        <div className='footer-actions'>
-          <a
-            href={getWhatsAppLink()}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='btn btn-primary btn-small'
+        <div className="footer-actions">
+          <button
+            onClick={onOrderClick}
+            className="btn btn-primary btn-small"
+            type="button"
           >
-            <i className='fa-brands fa-whatsapp'></i> {t('common.orderOnWhatsApp')}
-          </a>
-          <a href={getPhoneLink()} className='btn btn-secondary btn-small'>
-            <i className='fa-solid fa-phone'></i> {t('common.call')} {getFormattedPhone()}
+            <i className="fa-brands fa-whatsapp"></i>{' '}
+            {t('common.orderOnWhatsApp')}
+          </button>
+          <a href={getPhoneLink()} className="btn btn-secondary btn-small">
+            <i className="fa-solid fa-phone"></i> {t('common.call')}{' '}
+            {getFormattedPhone()}
           </a>
         </div>
       </div>
 
-      <div className='footer-links'>
-        <div className='footer-column'>
+      <div className="footer-links">
+        <div className="footer-column">
           <h4>{t('footer.quickLinks')}</h4>
           <ul>
             <li>
-              <Link href='/'>{t('footer.home')}</Link>
+              <Link href="/">{t('footer.home')}</Link>
             </li>
             <li>
-              <a href='/#about' onClick={(e) => handleHashLink(e, '#about')}>
+              <a href="/#about" onClick={(e) => handleHashLink(e, '#about')}>
                 {t('footer.aboutUs')}
               </a>
             </li>
             <li>
-              <a href='/#gallery' onClick={(e) => handleHashLink(e, '#gallery')}>
+              <a
+                href="/#gallery"
+                onClick={(e) => handleHashLink(e, '#gallery')}
+              >
                 {t('footer.foodGallery')}
               </a>
             </li>
           </ul>
         </div>
 
-        <div className='footer-column'>
+        <div className="footer-column">
           <h4>{t('footer.help')}</h4>
           <ul>
             <li>
-              <Link href='/faq'>{t('common.faq')}</Link>
+              <a href="/#faq" onClick={(e) => handleHashLink(e, '#faq')}>{t('common.faq')}</a>
             </li>
             <li>
-              <a href='/#contact' onClick={(e) => handleHashLink(e, '#contact')}>
+              <a
+                href="/#contact"
+                onClick={(e) => handleHashLink(e, '#contact')}
+              >
                 {t('footer.contactUs')}
               </a>
             </li>
             <li>
-              <a href='https://wa.me/919958983578' target='_blank' rel='noreferrer'>
+              <a
+                href="https://wa.me/919958983578"
+                target="_blank"
+                rel="noreferrer"
+              >
                 {t('footer.whatsappSupport')}
               </a>
             </li>
             <li>
-              <Link href='/admin' className='admin-link'>
-                <i className='fa-solid fa-shield-halved'></i> {t('footer.adminLogin')}
+              <Link href="/admin" className="admin-link">
+                <i className="fa-solid fa-shield-halved"></i>{' '}
+                {t('footer.adminLogin')}
               </Link>
             </li>
           </ul>
         </div>
 
-        <div className='footer-column'>
+        <div className="footer-column">
           <h4>{t('footer.serviceAreas')}</h4>
           <ul>
             <li>{t('footer.panchsheelGreens1')}</li>
-            <li className='footer-note'>{t('footer.emergencyDelivery')}</li>
           </ul>
         </div>
       </div>
 
-      <div className='footer-bottom'>
+      <div className="footer-bottom">
         <p>{t('footer.copyright')}</p>
-        <div className='footer-legal-links'>
-          <Link href='/privacy'>Privacy Policy</Link>
-          <span className='footer-separator'>|</span>
-          <Link href='/terms'>Terms of Service</Link>
-          <span className='footer-separator'>|</span>
-          <Link href='/disclaimer'>Legal Disclaimer</Link>
+        <div className="footer-legal-links">
+          <Link href="/privacy">Privacy Policy</Link>
+          <span className="footer-separator">|</span>
+          <Link href="/terms">Terms of Service</Link>
+          <span className="footer-separator">|</span>
+          <Link href="/disclaimer">Legal Disclaimer</Link>
+        </div>
+        <div className="footer-credits">
+          <p className="footer-made-by">
+            Designed & Developed by{' '}
+            <a
+              href="https://oscillateinfo.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-company-link"
+            >
+              Oscillate Infotech
+            </a>
+          </p>
         </div>
       </div>
     </footer>

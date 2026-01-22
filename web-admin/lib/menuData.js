@@ -1,5 +1,3 @@
-
-
 import api from './api.js';
 
 const MENU_DATA_KEY = 'homiebites_menu_data';
@@ -68,13 +66,11 @@ const defaultMenuData = [
 ];
 
 export const getMenuData = async () => {
-  
   if (typeof window === 'undefined') {
     return [];
   }
 
   try {
-    
     try {
       const response = await api.getMenu();
       if (
@@ -83,16 +79,12 @@ export const getMenuData = async () => {
         Array.isArray(response.data) &&
         response.data.length > 0
       ) {
-        
         return response.data;
       }
     } catch (apiError) {
       console.error('API fetch failed:', apiError.message);
-      
-      
     }
 
-    
     return [];
   } catch (error) {
     console.error('Error accessing menu data:', error);
@@ -100,21 +92,16 @@ export const getMenuData = async () => {
   }
 };
 
-
-
-
 export const getMenuDataSync = () => {
-  
   return [];
 };
 
 export const saveMenuData = async (data) => {
-  
   try {
     const token = localStorage.getItem('homiebites_token');
     if (token) {
       await api.updateMenu(data);
-      
+
       if (typeof window !== 'undefined') {
         localStorage.removeItem(MENU_DATA_KEY);
         localStorage.removeItem('homiebites_menu_version');
@@ -124,23 +111,19 @@ export const saveMenuData = async (data) => {
     }
   } catch (error) {
     console.error('Failed to save menu to API:', error.message);
-    throw error; 
+    throw error;
   }
 };
 
 export const resetMenuData = async () => {
-  
-  
   return defaultMenuData;
 };
-
 
 export const triggerDataSync = () => {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('menuDataUpdated'));
   }
 };
-
 
 export const menuItemsToImport = {
   fullTiffin: [
@@ -156,21 +139,71 @@ export const menuItemsToImport = {
   ],
 
   mixMatchTiffin: [
-    { id: 'mixMatchTiffin_1', name: '1 Sabzi + 4 Rotis + Chawal', details: [], price: 100 },
-    { id: 'mixMatchTiffin_2', name: '2 Sabzis + 4 Rotis', details: [], price: 120 },
-    { id: 'mixMatchTiffin_3', name: '1 Sabzi + 6 Rotis', details: [], price: 100 },
-    { id: 'mixMatchTiffin_4', name: '1 Sabzi + 4 Rotis', details: [], price: 80 },
-    { id: 'mixMatchTiffin_5', name: '1 Sabzi + 2 Bowls Chawal', details: [], price: 100 },
+    {
+      id: 'mixMatchTiffin_1',
+      name: '1 Sabzi + 4 Rotis + Chawal',
+      details: [],
+      price: 100,
+    },
+    {
+      id: 'mixMatchTiffin_2',
+      name: '2 Sabzis + 4 Rotis',
+      details: [],
+      price: 120,
+    },
+    {
+      id: 'mixMatchTiffin_3',
+      name: '1 Sabzi + 6 Rotis',
+      details: [],
+      price: 100,
+    },
+    {
+      id: 'mixMatchTiffin_4',
+      name: '1 Sabzi + 4 Rotis',
+      details: [],
+      price: 80,
+    },
+    {
+      id: 'mixMatchTiffin_5',
+      name: '1 Sabzi + 2 Bowls Chawal',
+      details: [],
+      price: 100,
+    },
     { id: 'mixMatchTiffin_6', name: 'Only 1 Sabzi', details: [], price: 40 },
   ],
 
   khichdiTiffin: [
-    { id: 'khichdiTiffin_0', name: 'Moong Dal Khichdi', details: [], price: 120 },
-    { id: 'khichdiTiffin_4', name: 'Vegetable Khichdi', details: [], price: 130 },
+    {
+      id: 'khichdiTiffin_0',
+      name: 'Moong Dal Khichdi',
+      details: [],
+      price: 120,
+    },
+    {
+      id: 'khichdiTiffin_4',
+      name: 'Vegetable Khichdi',
+      details: [],
+      price: 130,
+    },
     { id: 'khichdiTiffin_6', name: 'Masala Khichdi', details: [], price: 120 },
-    { id: 'khichdiTiffin_8', name: 'Brown Rice Khichdi', details: [], price: 150 },
-    { id: 'khichdiTiffin_10', name: 'Daliya (Broken Wheat) Khichdi', details: [], price: 140 },
-    { id: 'khichdiTiffin_13', name: 'Sabudana Khichdi (Fasting)', details: [], price: 120 },
+    {
+      id: 'khichdiTiffin_8',
+      name: 'Brown Rice Khichdi',
+      details: [],
+      price: 150,
+    },
+    {
+      id: 'khichdiTiffin_10',
+      name: 'Daliya (Broken Wheat) Khichdi',
+      details: [],
+      price: 140,
+    },
+    {
+      id: 'khichdiTiffin_13',
+      name: 'Sabudana Khichdi (Fasting)',
+      details: [],
+      price: 120,
+    },
   ],
 
   rotisParathas: [
@@ -178,7 +211,12 @@ export const menuItemsToImport = {
     { id: 'rotisParathas_1', name: 'Roti with Ghee', details: [], price: 12 },
     { id: 'rotisParathas_2', name: 'Plain Paratha', details: [], price: 20 },
     { id: 'rotisParathas_3', name: 'Stuffed Paratha', details: [], price: 35 },
-    { id: 'rotisParathas_4', name: '3 Stuffed Parathas', details: [], price: 100 },
+    {
+      id: 'rotisParathas_4',
+      name: '3 Stuffed Parathas',
+      details: [],
+      price: 100,
+    },
   ],
 
   breakfastCombos: [
@@ -204,20 +242,65 @@ export const menuItemsToImport = {
 
   lunchCombos: [
     { id: 'lunchCombos_0', name: 'Full Tiffin Meal', details: [], price: 140 },
-    { id: 'lunchCombos_1', name: 'Stuffed Parathas with Curd', details: [], price: 110 },
-    { id: 'lunchCombos_2', name: 'Aloo Matar with Chawal', details: [], price: 90 },
-    { id: 'lunchCombos_3', name: 'Aloo Matar with Puri + Curd', details: [], price: 120 },
-    { id: 'lunchCombos_4', name: 'Chhole & Lobhiya Combo', details: [], price: 100 },
-    { id: 'lunchCombos_5', name: 'Rajma & Kala Chana Combo', details: [], price: 100 },
+    {
+      id: 'lunchCombos_1',
+      name: 'Stuffed Parathas with Curd',
+      details: [],
+      price: 110,
+    },
+    {
+      id: 'lunchCombos_2',
+      name: 'Aloo Matar with Chawal',
+      details: [],
+      price: 90,
+    },
+    {
+      id: 'lunchCombos_3',
+      name: 'Aloo Matar with Puri + Curd',
+      details: [],
+      price: 120,
+    },
+    {
+      id: 'lunchCombos_4',
+      name: 'Chhole & Lobhiya Combo',
+      details: [],
+      price: 100,
+    },
+    {
+      id: 'lunchCombos_5',
+      name: 'Rajma & Kala Chana Combo',
+      details: [],
+      price: 100,
+    },
   ],
 
   dinnerCombos: [
     { id: 'dinnerCombos_0', name: 'Mini Tiffin', details: [], price: 100 },
-    { id: 'dinnerCombos_1', name: 'Protein Power Combo', details: [], price: 110 },
-    { id: 'dinnerCombos_2', name: 'Desi Comfort Combo', details: [], price: 100 },
-    { id: 'dinnerCombos_3', name: 'North Indian Classic', details: [], price: 120 },
+    {
+      id: 'dinnerCombos_1',
+      name: 'Protein Power Combo',
+      details: [],
+      price: 110,
+    },
+    {
+      id: 'dinnerCombos_2',
+      name: 'Desi Comfort Combo',
+      details: [],
+      price: 100,
+    },
+    {
+      id: 'dinnerCombos_3',
+      name: 'North Indian Classic',
+      details: [],
+      price: 120,
+    },
     { id: 'dinnerCombos_4', name: 'Puri Bhaji Combo', details: [], price: 120 },
-    { id: 'dinnerCombos_5', name: 'Paneer Paratha Deluxe', details: [], price: 150 },
+    {
+      id: 'dinnerCombos_5',
+      name: 'Paneer Paratha Deluxe',
+      details: [],
+      price: 150,
+    },
     { id: 'dinnerCombos_6', name: 'Gharwala Combo', details: [], price: 120 },
     { id: 'dinnerCombos_7', name: 'Budget Combo', details: [], price: 90 },
     { id: 'dinnerCombos_8', name: 'Light Meal Combo', details: [], price: 100 },
@@ -230,10 +313,14 @@ export const menuItemsToImport = {
   ],
 
   pickupOption: [
-    { id: 'pickupOption_0', name: 'Full Tiffin (Self-Pickup)', details: [], price: 100 },
+    {
+      id: 'pickupOption_0',
+      name: 'Full Tiffin (Self-Pickup)',
+      details: [],
+      price: 100,
+    },
   ],
 };
-
 
 export const convertMenuItemsToCategories = () => {
   let categoryId = 1;
@@ -241,7 +328,6 @@ export const convertMenuItemsToCategories = () => {
 
   const categories = [];
 
-  
   if (menuItemsToImport.fullTiffin && menuItemsToImport.fullTiffin.length > 0) {
     categories.push({
       id: categoryId++,
@@ -260,8 +346,10 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  
-  if (menuItemsToImport.mixMatchTiffin && menuItemsToImport.mixMatchTiffin.length > 0) {
+  if (
+    menuItemsToImport.mixMatchTiffin &&
+    menuItemsToImport.mixMatchTiffin.length > 0
+  ) {
     categories.push({
       id: categoryId++,
       category: 'Mix & Match Tiffin',
@@ -276,8 +364,10 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  
-  if (menuItemsToImport.khichdiTiffin && menuItemsToImport.khichdiTiffin.length > 0) {
+  if (
+    menuItemsToImport.khichdiTiffin &&
+    menuItemsToImport.khichdiTiffin.length > 0
+  ) {
     categories.push({
       id: categoryId++,
       category: 'Khichdi Tiffin',
@@ -293,8 +383,10 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  
-  if (menuItemsToImport.rotisParathas && menuItemsToImport.rotisParathas.length > 0) {
+  if (
+    menuItemsToImport.rotisParathas &&
+    menuItemsToImport.rotisParathas.length > 0
+  ) {
     categories.push({
       id: categoryId++,
       category: 'Rotis & Parathas',
@@ -309,8 +401,10 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  
-  if (menuItemsToImport.breakfastCombos && menuItemsToImport.breakfastCombos.length > 0) {
+  if (
+    menuItemsToImport.breakfastCombos &&
+    menuItemsToImport.breakfastCombos.length > 0
+  ) {
     categories.push({
       id: categoryId++,
       category: 'Breakfast Combos',
@@ -325,8 +419,10 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  
-  if (menuItemsToImport.lunchCombos && menuItemsToImport.lunchCombos.length > 0) {
+  if (
+    menuItemsToImport.lunchCombos &&
+    menuItemsToImport.lunchCombos.length > 0
+  ) {
     categories.push({
       id: categoryId++,
       category: 'Lunch Combos',
@@ -341,8 +437,10 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  
-  if (menuItemsToImport.dinnerCombos && menuItemsToImport.dinnerCombos.length > 0) {
+  if (
+    menuItemsToImport.dinnerCombos &&
+    menuItemsToImport.dinnerCombos.length > 0
+  ) {
     categories.push({
       id: categoryId++,
       category: 'Dinner Combos',
@@ -357,7 +455,6 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  
   if (menuItemsToImport.addOns && menuItemsToImport.addOns.length > 0) {
     categories.push({
       id: categoryId++,
@@ -373,8 +470,10 @@ export const convertMenuItemsToCategories = () => {
     });
   }
 
-  
-  if (menuItemsToImport.pickupOption && menuItemsToImport.pickupOption.length > 0) {
+  if (
+    menuItemsToImport.pickupOption &&
+    menuItemsToImport.pickupOption.length > 0
+  ) {
     categories.push({
       id: categoryId++,
       category: 'Pickup Option',

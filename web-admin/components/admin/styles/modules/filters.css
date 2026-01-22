@@ -48,7 +48,7 @@
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
@@ -69,7 +69,9 @@
   background: var(--admin-bg, #ffffff);
   border: 1px solid var(--admin-border, #e2e8f0);
   border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08);
   margin-bottom: 20px;
   z-index: 10;
   animation: slideDown 0.2s ease-out;
@@ -285,8 +287,32 @@
   border: 1px solid var(--admin-border, #e5e7eb);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.06);
   margin-bottom: 24px;
+}
+
+/* Filter field group standard - used in reviews and financial tabs */
+.filter-field-group-standard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 150px;
+}
+
+.filter-label-standard {
+  font-size: var(--admin-fs-sm);
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+  margin-bottom: 0;
+}
+
+.filter-bar-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
 }
 
 .filter-bar-compact {
@@ -342,4 +368,15 @@
   .filter-bar-row .filter-select-compact {
     min-width: 100%;
   }
+}
+
+/* Make placeholder option text smaller in filter selects */
+.filter-select-compact option[value=""] {
+  font-size: 0.8rem !important;
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.filter-select option[value=""] {
+  font-size: 0.85rem !important;
+  color: rgba(0, 0, 0, 0.5) !important;
 }

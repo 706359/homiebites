@@ -46,6 +46,8 @@ const SettingsTab = ({
   showConfirmation,
 }) => {
   const [activeTab, setActiveTab] = useState('general');
+  const [newStatus, setNewStatus] = useState('');
+  const [showStatusInput, setShowStatusInput] = useState(false);
 
   useAutoKeyboardAvoidance({
     containerSelector: '.admin-content',
@@ -57,6 +59,11 @@ const SettingsTab = ({
     contact: settings?.contact || '',
     email: settings?.email || '',
     address: settings?.address || '',
+    whatsappNumber: settings?.whatsappNumber || '',
+    deliveryTimings: settings?.deliveryTimings || '',
+    minOrderValue: settings?.minOrderValue || 0,
+    deliveryCharge: settings?.deliveryCharge || 0,
+    announcement: settings?.announcement || '',
   });
 
   const [pricing, setPricing] = useState({
@@ -105,58 +112,89 @@ const SettingsTab = ({
   useEffect(() => {
     const fromSettings = settings?.fontFamily;
     const fromStorage =
-      typeof localStorage !== 'undefined' ? localStorage.getItem('homiebites_font_family') : null;
-    const fs = parseFontSize(settings?.fontSize ?? (typeof localStorage !== 'undefined' ? localStorage.getItem('homiebites_font_size') : null)) ?? ADMIN_FONT_SIZE_DEFAULT;
+      typeof localStorage !== 'undefined'
+        ? localStorage.getItem('homiebites_font_family')
+        : null;
+    const fs =
+      parseFontSize(
+        settings?.fontSize ??
+          (typeof localStorage !== 'undefined'
+            ? localStorage.getItem('homiebites_font_size')
+            : null)
+      ) ?? ADMIN_FONT_SIZE_DEFAULT;
     setAppearanceSettings((prev) => ({
       ...prev,
       fontFamily: fromSettings || fromStorage || 'Baloo 2',
       fontSize: fs,
     }));
+    // Apply font size immediately on load
+    if (fs != null) {
+      applyAdminFontSize(fs);
+    }
   }, [settings?.fontFamily, settings?.fontSize]);
 
   const handleSaveAppearance = () => {
+    const saveSettings = () => {
+      // Ensure font size is applied before saving
+      const fontSize = appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT;
+      applyAdminFontSize(fontSize);
+      
+      // Save to localStorage immediately
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('homiebites_font_size', String(fontSize));
+        localStorage.setItem('homiebites_font_family', appearanceSettings.fontFamily);
+      }
+      
+      // Dispatch event to notify other components
+      window.dispatchEvent(
+        new CustomEvent('adminFontSizeChanged', { detail: { fontSize } })
+      );
+      
+      // Save to database
+      if (onUpdateSettings) {
+        onUpdateSettings({
+          themeSettings: {
+            fontFamily: appearanceSettings.fontFamily,
+            fontSize: fontSize,
+          },
+        });
+      }
+      
+      if (showNotification) {
+        showNotification('Appearance settings saved successfully', 'success');
+      }
+    };
+
     if (showConfirmation) {
       showConfirmation({
         title: 'Save appearance',
         message: 'Apply this font style and size to your admin dashboard?',
         type: 'info',
         confirmText: 'Save',
-        onConfirm: () => {
-          if (onUpdateSettings) {
-            onUpdateSettings({
-              themeSettings: {
-                fontFamily: appearanceSettings.fontFamily,
-                fontSize: appearanceSettings.fontSize,
-              },
-            });
-          }
-        },
+        onConfirm: saveSettings,
       });
     } else {
-      if (onUpdateSettings) {
-        onUpdateSettings({
-          themeSettings: {
-            fontFamily: appearanceSettings.fontFamily,
-            fontSize: appearanceSettings.fontSize,
-          },
-        });
-      }
+      saveSettings();
     }
   };
 
   const applyFontSize = (v) => {
     const px = roundToStep(Number(v));
     setAppearanceSettings((p) => ({ ...p, fontSize: px }));
-    if (typeof localStorage !== 'undefined') localStorage.setItem('homiebites_font_size', String(px));
+    if (typeof localStorage !== 'undefined')
+      localStorage.setItem('homiebites_font_size', String(px));
     applyAdminFontSize(px);
-    window.dispatchEvent(new CustomEvent('adminFontSizeChanged', { detail: { fontSize: px } }));
+    window.dispatchEvent(
+      new CustomEvent('adminFontSizeChanged', { detail: { fontSize: px } })
+    );
   };
 
   const handleSaveBusinessInfo = () => {
     if (showConfirmation) {
       showConfirmation({
         title: 'Save Business Information',
-        message: 'Are you sure you want to save changes to business information?',
+        message:
+          'Are you sure you want to save changes to business information?',
         type: 'info',
         confirmText: 'Save',
         onConfirm: () => {
@@ -216,7 +254,8 @@ const SettingsTab = ({
     if (showConfirmation) {
       showConfirmation({
         title: 'Save Notification Preferences',
-        message: 'Are you sure you want to save changes to notification preferences?',
+        message:
+          'Are you sure you want to save changes to notification preferences?',
         type: 'info',
         confirmText: 'Save',
         onConfirm: () => {
@@ -253,7 +292,10 @@ const SettingsTab = ({
   };
 
   const handleSaveUserProfile = () => {
-    if (userProfile.newPassword && userProfile.newPassword !== userProfile.confirmPassword) {
+    if (
+      userProfile.newPassword &&
+      userProfile.newPassword !== userProfile.confirmPassword
+    ) {
       if (showNotification) showNotification('Passwords do not match', 'error');
       return;
     }
@@ -277,7 +319,6 @@ const SettingsTab = ({
     }
   };
 
-
   const handleBackup = async () => {
     if (showConfirmation) {
       showConfirmation({
@@ -288,15 +329,70 @@ const SettingsTab = ({
         onConfirm: async () => {
           if (onBackup) {
             await onBackup();
-            if (showNotification) showNotification('Backup created successfully', 'success');
+            if (showNotification)
+              showNotification('Backup created successfully', 'success');
           }
         },
       });
     } else {
       if (onBackup) {
         await onBackup();
-        if (showNotification) showNotification('Backup created successfully', 'success');
+        if (showNotification)
+          showNotification('Backup created successfully', 'success');
       }
+    }
+  };
+
+  const handleDownloadBackup = async () => {
+    try {
+      if (onBackup) {
+        // Create backup first, then download it
+        await onBackup();
+        if (showNotification)
+          showNotification('Backup downloaded successfully', 'success');
+      } else {
+        if (showNotification)
+          showNotification('Backup functionality not available', 'error');
+      }
+    } catch (error) {
+      if (showNotification)
+        showNotification('Failed to download backup', 'error');
+    }
+  };
+
+  const handleExportSettings = () => {
+    try {
+      const settingsToExport = {
+        businessInfo,
+        pricing,
+        orderSettings,
+        notificationPrefs,
+        dataSettings,
+        userProfile: {
+          name: userProfile.name,
+          email: userProfile.email,
+          phone: userProfile.phone,
+        },
+        appearanceSettings,
+        exportedAt: new Date().toISOString(),
+      };
+
+      const dataStr = JSON.stringify(settingsToExport, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `homiebites-settings-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      if (showNotification)
+        showNotification('Settings exported successfully', 'success');
+    } catch (error) {
+      if (showNotification)
+        showNotification('Failed to export settings', 'error');
     }
   };
 
@@ -311,44 +407,71 @@ const SettingsTab = ({
         onConfirm: async () => {
           if (onRestore) {
             await onRestore();
-            if (showNotification) showNotification('Data restored successfully', 'success');
+            if (showNotification)
+              showNotification('Data restored successfully', 'success');
           }
         },
       });
     } else {
       if (onRestore) {
         await onRestore();
-        if (showNotification) showNotification('Data restored successfully', 'success');
+        if (showNotification)
+          showNotification('Data restored successfully', 'success');
       }
     }
   };
 
   if (loading) {
     return (
-      <div className='admin-content'>
-        <PremiumLoader message='Loading settings...' size='large' />
+      <div className="admin-content">
+        <PremiumLoader message="Loading settings..." size="large" />
       </div>
     );
   }
 
   const settingsTabs = [
-    { id: 'general', label: 'General', icon: 'fa-cog', description: 'Business & Pricing' },
-    { id: 'orders', label: 'Orders', icon: 'fa-shopping-cart', description: 'Order Configuration' },
+    {
+      id: 'general',
+      label: 'General',
+      icon: 'fa-cog',
+      description: 'Business & Pricing',
+    },
+    {
+      id: 'orders',
+      label: 'Orders',
+      icon: 'fa-shopping-cart',
+      description: 'Order Configuration',
+    },
     {
       id: 'notifications',
       label: 'Notifications',
       icon: 'fa-bell',
       description: 'Alerts & Preferences',
     },
-    { id: 'data', label: 'Data', icon: 'fa-database', description: 'Backup & Restore' },
-    { id: 'profile', label: 'Profile', icon: 'fa-user', description: 'User Account' },
-    { id: 'appearance', label: 'Appearance', icon: 'fa-palette', description: 'Font & display' },
+    {
+      id: 'data',
+      label: 'Data',
+      icon: 'fa-database',
+      description: 'Backup & Restore',
+    },
+    {
+      id: 'profile',
+      label: 'Profile',
+      icon: 'fa-user',
+      description: 'User Account',
+    },
+    {
+      id: 'appearance',
+      label: 'Appearance',
+      icon: 'fa-palette',
+      description: 'Font & display',
+    },
   ];
 
   return (
-    <div className='admin-content'>
-      <div className='dashboard-card filter-bar-card filter-bar-compact margin-bottom-24'>
-        <div className='filter-bar-container-compact'>
+    <div className="admin-content">
+      <div className="dashboard-card filter-bar-card filter-bar-compact margin-bottom-24">
+        <div className="filter-bar-container-compact">
           {settingsTabs.map((tab) => (
             <button
               key={tab.id}
@@ -363,115 +486,240 @@ const SettingsTab = ({
         </div>
       </div>
 
-      <div className='settings-tab-content-wrapper'>
+      <div className="settings-tab-content-wrapper">
         {activeTab === 'general' && (
-          <div className='admin-stats'>
-            <div className='dashboard-card'>
-              <div className='settings-section-header'>
-                <div className='settings-section-icon-wrapper'>
-                  <i className='fa-solid fa-building'></i>
+          <div className="admin-stats">
+            <div className="dashboard-card">
+              <div className="settings-section-header">
+                <div className="settings-section-icon-wrapper">
+                  <i className="fa-solid fa-building"></i>
                 </div>
-                <div className='settings-section-title-wrapper'>
-                  <h3 className='settings-section-title'>Business Information</h3>
-                  <p className='settings-section-subtitle'>
+                <div className="settings-section-title-wrapper">
+                  <h3 className="settings-section-title">
+                    Business Information
+                  </h3>
+                  <p className="settings-section-subtitle">
                     Manage your business details and contact information
                   </p>
                 </div>
               </div>
-              <div className='settings-section-body'>
-                <div className='settings-form-grid'>
-                  <div className='settings-form-group'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-store'></i>
+              <div className="settings-section-body">
+                <div className="settings-form-grid">
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-store"></i>
                       <span>Business Name</span>
                     </label>
                     <input
-                      type='text'
-                      className='settings-input-field'
+                      type="text"
+                      className="settings-input-field"
                       value={businessInfo.businessName}
                       onChange={(e) =>
-                        setBusinessInfo({ ...businessInfo, businessName: e.target.value })
+                        setBusinessInfo({
+                          ...businessInfo,
+                          businessName: e.target.value,
+                        })
                       }
-                      placeholder='Enter business name'
+                      placeholder="Enter business name"
                     />
                   </div>
-                  <div className='settings-form-group'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-phone'></i>
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-phone"></i>
                       <span>Contact Number</span>
                     </label>
                     <input
-                      type='tel'
-                      className='settings-input-field'
+                      type="tel"
+                      className="settings-input-field"
                       value={businessInfo.contact}
                       onChange={(e) =>
-                        setBusinessInfo({ ...businessInfo, contact: e.target.value })
+                        setBusinessInfo({
+                          ...businessInfo,
+                          contact: e.target.value,
+                        })
                       }
-                      placeholder='+91 1234567890'
+                      placeholder="+91 1234567890"
                     />
                   </div>
-                  <div className='settings-form-group'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-envelope'></i>
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-envelope"></i>
                       <span>Email Address</span>
                     </label>
                     <input
-                      type='email'
-                      className='settings-input-field'
+                      type="email"
+                      className="settings-input-field"
                       value={businessInfo.email}
-                      onChange={(e) => setBusinessInfo({ ...businessInfo, email: e.target.value })}
-                      placeholder='business@example.com'
+                      onChange={(e) =>
+                        setBusinessInfo({
+                          ...businessInfo,
+                          email: e.target.value,
+                        })
+                      }
+                      placeholder="business@example.com"
                     />
                   </div>
-                  <div className='settings-form-group settings-form-group-full'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-location-dot'></i>
+                  <div className="settings-form-group settings-form-group-full">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-location-dot"></i>
                       <span>Business Address</span>
                     </label>
                     <textarea
-                      className='settings-input-field'
+                      className="settings-input-field"
                       value={businessInfo.address}
                       onChange={(e) =>
-                        setBusinessInfo({ ...businessInfo, address: e.target.value })
+                        setBusinessInfo({
+                          ...businessInfo,
+                          address: e.target.value,
+                        })
                       }
                       rows={3}
-                      placeholder='Enter complete business address'
+                      placeholder="Enter complete business address"
                     />
                   </div>
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-brands fa-whatsapp"></i>
+                      <span>WhatsApp Number</span>
+                    </label>
+                    <input
+                      type="tel"
+                      className="settings-input-field"
+                      value={businessInfo.whatsappNumber}
+                      onChange={(e) =>
+                        setBusinessInfo({
+                          ...businessInfo,
+                          whatsappNumber: e.target.value,
+                        })
+                      }
+                      placeholder="919958983578"
+                    />
+                    <p className="settings-form-hint">
+                      Enter WhatsApp number without + or spaces (e.g., 919958983578)
+                    </p>
+                  </div>
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-clock"></i>
+                      <span>Delivery Timings</span>
+                    </label>
+                    <input
+                      type="text"
+                      className="settings-input-field"
+                      value={businessInfo.deliveryTimings}
+                      onChange={(e) =>
+                        setBusinessInfo({
+                          ...businessInfo,
+                          deliveryTimings: e.target.value,
+                        })
+                      }
+                      placeholder="7:30 PM - 8:30 PM"
+                    />
+                  </div>
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-indian-rupee-sign"></i>
+                      <span>Minimum Order Value</span>
+                    </label>
+                    <div className="settings-input-with-symbol">
+                      <span className="settings-input-symbol">₹</span>
+                      <input
+                        type="number"
+                        className="settings-input-field"
+                        value={businessInfo.minOrderValue}
+                        onChange={(e) =>
+                          setBusinessInfo({
+                            ...businessInfo,
+                            minOrderValue: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        placeholder="100"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-truck"></i>
+                      <span>Delivery Charge</span>
+                    </label>
+                    <div className="settings-input-with-symbol">
+                      <span className="settings-input-symbol">₹</span>
+                      <input
+                        type="number"
+                        className="settings-input-field"
+                        value={businessInfo.deliveryCharge}
+                        onChange={(e) =>
+                          setBusinessInfo({
+                            ...businessInfo,
+                            deliveryCharge: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        placeholder="0"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+                  <div className="settings-form-group settings-form-group-full">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-bullhorn"></i>
+                      <span>Announcement</span>
+                    </label>
+                    <textarea
+                      className="settings-input-field"
+                      value={businessInfo.announcement}
+                      onChange={(e) =>
+                        setBusinessInfo({
+                          ...businessInfo,
+                          announcement: e.target.value,
+                        })
+                      }
+                      rows={2}
+                      placeholder="Home delivery on orders over ₹200"
+                    />
+                    <p className="settings-form-hint">
+                      This message will be displayed on the website
+                    </p>
+                  </div>
                 </div>
-                <div className='settings-section-actions'>
-                  <button className='btn btn-primary btn-large' onClick={handleSaveBusinessInfo}>
-                    <i className='fa-solid fa-save'></i>
+                <div className="settings-section-actions">
+                  <button
+                    className="btn btn-primary btn-large"
+                    onClick={handleSaveBusinessInfo}
+                  >
+                    <i className="fa-solid fa-save"></i>
                     <span>Save Business Information</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className='dashboard-card'>
-              <div className='settings-section-header'>
-                <div className='settings-section-icon-wrapper'>
-                  <i className='fa-solid fa-indian-rupee-sign'></i>
+            <div className="dashboard-card">
+              <div className="settings-section-header">
+                <div className="settings-section-icon-wrapper">
+                  <i className="fa-solid fa-indian-rupee-sign"></i>
                 </div>
-                <div className='settings-section-title-wrapper'>
-                  <h3 className='settings-section-title'>Pricing Configuration</h3>
-                  <p className='settings-section-subtitle'>
+                <div className="settings-section-title-wrapper">
+                  <h3 className="settings-section-title">
+                    Pricing Configuration
+                  </h3>
+                  <p className="settings-section-subtitle">
                     Set default prices for your menu items
                   </p>
                 </div>
               </div>
-              <div className='settings-section-body'>
-                <div className='settings-form-grid'>
-                  <div className='settings-form-group'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-tag'></i>
+              <div className="settings-section-body">
+                <div className="settings-form-grid">
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-tag"></i>
                       <span>Default Unit Price</span>
                     </label>
-                    <div className='settings-input-with-symbol'>
-                      <span className='settings-input-symbol'>₹</span>
+                    <div className="settings-input-with-symbol">
+                      <span className="settings-input-symbol">₹</span>
                       <input
-                        type='number'
-                        className='settings-input-field'
+                        type="number"
+                        className="settings-input-field"
                         value={pricing.defaultUnitPrice}
                         onChange={(e) =>
                           setPricing({
@@ -479,69 +727,81 @@ const SettingsTab = ({
                             defaultUnitPrice: parseFloat(e.target.value) || 0,
                           })
                         }
-                        placeholder='100'
-                        min='0'
+                        placeholder="100"
+                        min="0"
                       />
                     </div>
                   </div>
-                  <div className='settings-form-group'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-sun'></i>
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-sun"></i>
                       <span>Lunch Price</span>
                     </label>
-                    <div className='settings-input-with-symbol'>
-                      <span className='settings-input-symbol'>₹</span>
+                    <div className="settings-input-with-symbol">
+                      <span className="settings-input-symbol">₹</span>
                       <input
-                        type='number'
-                        className='settings-input-field'
+                        type="number"
+                        className="settings-input-field"
                         value={pricing.lunchPrice}
                         onChange={(e) =>
-                          setPricing({ ...pricing, lunchPrice: parseFloat(e.target.value) || 0 })
+                          setPricing({
+                            ...pricing,
+                            lunchPrice: parseFloat(e.target.value) || 0,
+                          })
                         }
-                        placeholder='100'
-                        min='0'
+                        placeholder="100"
+                        min="0"
                       />
                     </div>
                   </div>
-                  <div className='settings-form-group'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-moon'></i>
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-moon"></i>
                       <span>Dinner Price</span>
                     </label>
-                    <div className='settings-input-with-symbol'>
-                      <span className='settings-input-symbol'>₹</span>
+                    <div className="settings-input-with-symbol">
+                      <span className="settings-input-symbol">₹</span>
                       <input
-                        type='number'
-                        className='settings-input-field'
+                        type="number"
+                        className="settings-input-field"
                         value={pricing.dinnerPrice}
                         onChange={(e) =>
-                          setPricing({ ...pricing, dinnerPrice: parseFloat(e.target.value) || 0 })
+                          setPricing({
+                            ...pricing,
+                            dinnerPrice: parseFloat(e.target.value) || 0,
+                          })
                         }
-                        placeholder='100'
-                        min='0'
+                        placeholder="100"
+                        min="0"
                       />
                     </div>
                   </div>
-                  <div className='settings-form-group'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-box'></i>
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-box"></i>
                       <span>Minimum Order Quantity</span>
                     </label>
                     <input
-                      type='number'
-                      className='settings-input-field'
+                      type="number"
+                      className="settings-input-field"
                       value={pricing.minimumOrderQty}
                       onChange={(e) =>
-                        setPricing({ ...pricing, minimumOrderQty: parseInt(e.target.value) || 1 })
+                        setPricing({
+                          ...pricing,
+                          minimumOrderQty: parseInt(e.target.value) || 1,
+                        })
                       }
-                      placeholder='1'
+                      placeholder="1"
                       min={1}
                     />
                   </div>
                 </div>
-                <div className='settings-section-actions'>
-                  <button className='btn btn-primary btn-large' onClick={handleSavePricing}>
-                    <i className='fa-solid fa-save'></i>
+                <div className="settings-section-actions">
+                  <button
+                    className="btn btn-primary btn-large"
+                    onClick={handleSavePricing}
+                  >
+                    <i className="fa-solid fa-save"></i>
                     <span>Update Pricing</span>
                   </button>
                 </div>
@@ -551,55 +811,60 @@ const SettingsTab = ({
         )}
 
         {activeTab === 'orders' && (
-          <div className='dashboard-card'>
-            <div className='dashboard-section-header'>
-              <div className='dashboard-section-icon-wrapper'>
-                <i className='fa-solid fa-shopping-cart'></i>
+          <div className="dashboard-card">
+            <div className="dashboard-section-header">
+              <div className="dashboard-section-icon-wrapper">
+                <i className="fa-solid fa-shopping-cart"></i>
               </div>
-              <div className='dashboard-section-title-wrapper'>
-                <h3 className='dashboard-section-title'>Order Configuration</h3>
-                <p className='dashboard-section-subtitle'>
+              <div className="dashboard-section-title-wrapper">
+                <h3 className="dashboard-section-title">Order Configuration</h3>
+                <p className="dashboard-section-subtitle">
                   Configure how orders are created and managed
                 </p>
               </div>
             </div>
-            <div className='settings-section-body'>
-              <div className='settings-form-grid'>
-                <div className='settings-form-group'>
-                  <label className='settings-form-label'>
-                    <i className='fa-solid fa-hashtag'></i>
+            <div className="settings-section-body">
+              <div className="settings-form-grid">
+                <div className="settings-form-group">
+                  <label className="settings-form-label">
+                    <i className="fa-solid fa-hashtag"></i>
                     <span>Order ID Prefix</span>
                   </label>
                   <input
-                    type='text'
-                    className='settings-input-field'
+                    type="text"
+                    className="settings-input-field"
                     value={orderSettings.orderIdPrefix}
                     onChange={(e) =>
-                      setOrderSettings({ ...orderSettings, orderIdPrefix: e.target.value })
+                      setOrderSettings({
+                        ...orderSettings,
+                        orderIdPrefix: e.target.value,
+                      })
                     }
-                    placeholder='HB-'
+                    placeholder="HB-"
                   />
-                  <p className='settings-form-hint'>
-                    Orders will be numbered as: {orderSettings.orderIdPrefix}001,{' '}
-                    {orderSettings.orderIdPrefix}002, etc.
+                  <p className="settings-form-hint">
+                    Orders will be numbered as: {orderSettings.orderIdPrefix}
+                    001, {orderSettings.orderIdPrefix}002, etc.
                   </p>
                 </div>
 
-                <div className='settings-toggle-group'>
-                  <div className='settings-toggle-item'>
-                    <div className='settings-toggle-content'>
-                      <div className='settings-toggle-label-wrapper'>
-                        <i className='fa-solid fa-magic'></i>
+                <div className="settings-toggle-group">
+                  <div className="settings-toggle-item">
+                    <div className="settings-toggle-content">
+                      <div className="settings-toggle-label-wrapper">
+                        <i className="fa-solid fa-magic"></i>
                         <div>
-                          <span className='settings-toggle-label'>Auto-generate Order ID</span>
-                          <span className='settings-toggle-description'>
+                          <span className="settings-toggle-label">
+                            Auto-generate Order ID
+                          </span>
+                          <span className="settings-toggle-description">
                             Automatically create unique order IDs
                           </span>
                         </div>
                       </div>
-                      <label className='settings-toggle-switch'>
+                      <label className="settings-toggle-switch">
                         <input
-                          type='checkbox'
+                          type="checkbox"
                           checked={orderSettings.autoGenerateOrderId}
                           onChange={(e) =>
                             setOrderSettings({
@@ -608,25 +873,27 @@ const SettingsTab = ({
                             })
                           }
                         />
-                        <span className='settings-toggle-slider'></span>
+                        <span className="settings-toggle-slider"></span>
                       </label>
                     </div>
                   </div>
 
-                  <div className='settings-toggle-item'>
-                    <div className='settings-toggle-content'>
-                      <div className='settings-toggle-label-wrapper'>
-                        <i className='fa-solid fa-copy'></i>
+                  <div className="settings-toggle-item">
+                    <div className="settings-toggle-content">
+                      <div className="settings-toggle-label-wrapper">
+                        <i className="fa-solid fa-copy"></i>
                         <div>
-                          <span className='settings-toggle-label'>Allow Duplicate Address</span>
-                          <span className='settings-toggle-description'>
+                          <span className="settings-toggle-label">
+                            Allow Duplicate Address
+                          </span>
+                          <span className="settings-toggle-description">
                             Allow multiple orders with same address
                           </span>
                         </div>
                       </div>
-                      <label className='settings-toggle-switch'>
+                      <label className="settings-toggle-switch">
                         <input
-                          type='checkbox'
+                          type="checkbox"
                           checked={orderSettings.allowDuplicateAddress}
                           onChange={(e) =>
                             setOrderSettings({
@@ -635,27 +902,27 @@ const SettingsTab = ({
                             })
                           }
                         />
-                        <span className='settings-toggle-slider'></span>
+                        <span className="settings-toggle-slider"></span>
                       </label>
                     </div>
                   </div>
 
-                  <div className='settings-toggle-item'>
-                    <div className='settings-toggle-content'>
-                      <div className='settings-toggle-label-wrapper'>
-                        <i className='fa-solid fa-shield-halved'></i>
+                  <div className="settings-toggle-item">
+                    <div className="settings-toggle-content">
+                      <div className="settings-toggle-label-wrapper">
+                        <i className="fa-solid fa-shield-halved"></i>
                         <div>
-                          <span className='settings-toggle-label'>
+                          <span className="settings-toggle-label">
                             Require Payment Confirmation
                           </span>
-                          <span className='settings-toggle-description'>
+                          <span className="settings-toggle-description">
                             Confirm payment before marking as paid
                           </span>
                         </div>
                       </div>
-                      <label className='settings-toggle-switch'>
+                      <label className="settings-toggle-switch">
                         <input
-                          type='checkbox'
+                          type="checkbox"
                           checked={orderSettings.requirePaymentConfirmation}
                           onChange={(e) =>
                             setOrderSettings({
@@ -664,34 +931,124 @@ const SettingsTab = ({
                             })
                           }
                         />
-                        <span className='settings-toggle-slider'></span>
+                        <span className="settings-toggle-slider"></span>
                       </label>
                     </div>
                   </div>
                 </div>
 
-                <div className='settings-form-group settings-form-group-full'>
-                  <label className='settings-form-label'>
-                    <i className='fa-solid fa-list-check'></i>
+                <div className="settings-form-group settings-form-group-full">
+                  <label className="settings-form-label">
+                    <i className="fa-solid fa-list-check"></i>
                     <span>Order Status Options</span>
                   </label>
-                  <div className='settings-status-list'>
+                  <div className="settings-status-list">
                     {orderSettings.statusOptions.map((status, idx) => (
-                      <div key={idx} className='settings-status-item'>
-                        <i className='fa-solid fa-circle indicator-circle-small'></i>
+                      <div key={idx} className="settings-status-item">
+                        <i className="fa-solid fa-circle indicator-circle-small"></i>
                         <span>{status}</span>
+                        {orderSettings.statusOptions.length > 1 && (
+                          <button
+                            className="btn btn-ghost btn-icon-only btn-small"
+                            onClick={() => {
+                              const updated = orderSettings.statusOptions.filter(
+                                (_, i) => i !== idx
+                              );
+                              setOrderSettings({
+                                ...orderSettings,
+                                statusOptions: updated,
+                              });
+                            }}
+                            title="Remove status"
+                          >
+                            <i className="fa-solid fa-times"></i>
+                          </button>
+                        )}
                       </div>
                     ))}
-                    <button className='btn btn-ghost btn-small settings-add-status-btn'>
-                      <i className='fa-solid fa-plus'></i>
-                      <span>Add Status</span>
-                    </button>
+                    {showStatusInput ? (
+                      <div className="settings-status-input-group">
+                        <input
+                          type="text"
+                          className="settings-input-field settings-status-input"
+                          value={newStatus}
+                          onChange={(e) => setNewStatus(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && newStatus.trim()) {
+                              if (
+                                !orderSettings.statusOptions.includes(
+                                  newStatus.trim()
+                                )
+                              ) {
+                                setOrderSettings({
+                                  ...orderSettings,
+                                  statusOptions: [
+                                    ...orderSettings.statusOptions,
+                                    newStatus.trim(),
+                                  ],
+                                });
+                                setNewStatus('');
+                                setShowStatusInput(false);
+                              }
+                            } else if (e.key === 'Escape') {
+                              setNewStatus('');
+                              setShowStatusInput(false);
+                            }
+                          }}
+                          placeholder="Enter new status"
+                          autoFocus
+                        />
+                        <button
+                          className="btn btn-primary btn-small"
+                          onClick={() => {
+                            if (
+                              newStatus.trim() &&
+                              !orderSettings.statusOptions.includes(
+                                newStatus.trim()
+                              )
+                            ) {
+                              setOrderSettings({
+                                ...orderSettings,
+                                statusOptions: [
+                                  ...orderSettings.statusOptions,
+                                  newStatus.trim(),
+                                ],
+                              });
+                              setNewStatus('');
+                              setShowStatusInput(false);
+                            }
+                          }}
+                        >
+                          <i className="fa-solid fa-check"></i>
+                        </button>
+                        <button
+                          className="btn btn-ghost btn-small"
+                          onClick={() => {
+                            setNewStatus('');
+                            setShowStatusInput(false);
+                          }}
+                        >
+                          <i className="fa-solid fa-times"></i>
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        className="btn btn-ghost btn-small settings-add-status-btn"
+                        onClick={() => setShowStatusInput(true)}
+                      >
+                        <i className="fa-solid fa-plus"></i>
+                        <span>Add Status</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
-              <div className='settings-section-actions'>
-                <button className='btn btn-primary btn-large' onClick={handleSaveOrderSettings}>
-                  <i className='fa-solid fa-save'></i>
+              <div className="settings-section-actions">
+                <button
+                  className="btn btn-primary btn-large"
+                  onClick={handleSaveOrderSettings}
+                >
+                  <i className="fa-solid fa-save"></i>
                   <span>Save Order Settings</span>
                 </button>
               </div>
@@ -700,40 +1057,46 @@ const SettingsTab = ({
         )}
 
         {activeTab === 'notifications' && (
-          <div className='dashboard-card'>
-            <div className='settings-section-header'>
-              <div className='settings-section-icon-wrapper'>
-                <i className='fa-solid fa-bell'></i>
+          <div className="dashboard-card">
+            <div className="settings-section-header">
+              <div className="settings-section-icon-wrapper">
+                <i className="fa-solid fa-bell"></i>
               </div>
-              <div className='settings-section-title-wrapper'>
-                <h3 className='settings-section-title'>Notification Preferences</h3>
-                <p className='settings-section-subtitle'>
+              <div className="settings-section-title-wrapper">
+                <h3 className="settings-section-title">
+                  Notification Preferences
+                </h3>
+                <p className="settings-section-subtitle">
                   Configure how and when you receive notifications
                 </p>
               </div>
             </div>
-            <div className='settings-section-body'>
-              <div className='settings-notification-categories'>
-                <div className='settings-notification-category'>
-                  <div className='settings-notification-category-header'>
-                    <i className='fa-solid fa-envelope'></i>
-                    <h4 className='settings-notification-category-title'>Email Notifications</h4>
+            <div className="settings-section-body">
+              <div className="settings-notification-categories">
+                <div className="settings-notification-category">
+                  <div className="settings-notification-category-header">
+                    <i className="fa-solid fa-envelope"></i>
+                    <h4 className="settings-notification-category-title">
+                      Email Notifications
+                    </h4>
                   </div>
-                  <div className='settings-toggle-group'>
-                    <div className='settings-toggle-item'>
-                      <div className='settings-toggle-content'>
-                        <div className='settings-toggle-label-wrapper'>
-                          <i className='fa-solid fa-calendar-day'></i>
+                  <div className="settings-toggle-group">
+                    <div className="settings-toggle-item">
+                      <div className="settings-toggle-content">
+                        <div className="settings-toggle-label-wrapper">
+                          <i className="fa-solid fa-calendar-day"></i>
                           <div>
-                            <span className='settings-toggle-label'>Daily Summary</span>
-                            <span className='settings-toggle-description'>
+                            <span className="settings-toggle-label">
+                              Daily Summary
+                            </span>
+                            <span className="settings-toggle-description">
                               Receive daily order summary via email
                             </span>
                           </div>
                         </div>
-                        <label className='settings-toggle-switch'>
+                        <label className="settings-toggle-switch">
                           <input
-                            type='checkbox'
+                            type="checkbox"
                             checked={notificationPrefs.emailDailySummary}
                             onChange={(e) =>
                               setNotificationPrefs({
@@ -742,25 +1105,27 @@ const SettingsTab = ({
                               })
                             }
                           />
-                          <span className='settings-toggle-slider'></span>
+                          <span className="settings-toggle-slider"></span>
                         </label>
                       </div>
                     </div>
 
-                    <div className='settings-toggle-item'>
-                      <div className='settings-toggle-content'>
-                        <div className='settings-toggle-label-wrapper'>
-                          <i className='fa-solid fa-bell'></i>
+                    <div className="settings-toggle-item">
+                      <div className="settings-toggle-content">
+                        <div className="settings-toggle-label-wrapper">
+                          <i className="fa-solid fa-bell"></i>
                           <div>
-                            <span className='settings-toggle-label'>New Order Alert</span>
-                            <span className='settings-toggle-description'>
+                            <span className="settings-toggle-label">
+                              New Order Alert
+                            </span>
+                            <span className="settings-toggle-description">
                               Get notified when a new order is placed
                             </span>
                           </div>
                         </div>
-                        <label className='settings-toggle-switch'>
+                        <label className="settings-toggle-switch">
                           <input
-                            type='checkbox'
+                            type="checkbox"
                             checked={notificationPrefs.emailNewOrderAlert}
                             onChange={(e) =>
                               setNotificationPrefs({
@@ -769,25 +1134,27 @@ const SettingsTab = ({
                               })
                             }
                           />
-                          <span className='settings-toggle-slider'></span>
+                          <span className="settings-toggle-slider"></span>
                         </label>
                       </div>
                     </div>
 
-                    <div className='settings-toggle-item'>
-                      <div className='settings-toggle-content'>
-                        <div className='settings-toggle-label-wrapper'>
-                          <i className='fa-solid fa-money-bill-wave'></i>
+                    <div className="settings-toggle-item">
+                      <div className="settings-toggle-content">
+                        <div className="settings-toggle-label-wrapper">
+                          <i className="fa-solid fa-money-bill-wave"></i>
                           <div>
-                            <span className='settings-toggle-label'>Payment Received</span>
-                            <span className='settings-toggle-description'>
+                            <span className="settings-toggle-label">
+                              Payment Received
+                            </span>
+                            <span className="settings-toggle-description">
                               Alert when payment is received
                             </span>
                           </div>
                         </div>
-                        <label className='settings-toggle-switch'>
+                        <label className="settings-toggle-switch">
                           <input
-                            type='checkbox'
+                            type="checkbox"
                             checked={notificationPrefs.emailPaymentReceived}
                             onChange={(e) =>
                               setNotificationPrefs({
@@ -796,25 +1163,27 @@ const SettingsTab = ({
                               })
                             }
                           />
-                          <span className='settings-toggle-slider'></span>
+                          <span className="settings-toggle-slider"></span>
                         </label>
                       </div>
                     </div>
 
-                    <div className='settings-toggle-item'>
-                      <div className='settings-toggle-content'>
-                        <div className='settings-toggle-label-wrapper'>
-                          <i className='fa-solid fa-exclamation-triangle'></i>
+                    <div className="settings-toggle-item">
+                      <div className="settings-toggle-content">
+                        <div className="settings-toggle-label-wrapper">
+                          <i className="fa-solid fa-exclamation-triangle"></i>
                           <div>
-                            <span className='settings-toggle-label'>Low Order Day Warning</span>
-                            <span className='settings-toggle-description'>
+                            <span className="settings-toggle-label">
+                              Low Order Day Warning
+                            </span>
+                            <span className="settings-toggle-description">
                               Alert when daily orders are below average
                             </span>
                           </div>
                         </div>
-                        <label className='settings-toggle-switch'>
+                        <label className="settings-toggle-switch">
                           <input
-                            type='checkbox'
+                            type="checkbox"
                             checked={notificationPrefs.emailLowOrderDayWarning}
                             onChange={(e) =>
                               setNotificationPrefs({
@@ -823,33 +1192,37 @@ const SettingsTab = ({
                               })
                             }
                           />
-                          <span className='settings-toggle-slider'></span>
+                          <span className="settings-toggle-slider"></span>
                         </label>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className='settings-notification-category'>
-                  <div className='settings-notification-category-header'>
-                    <i className='fa-solid fa-message'></i>
-                    <h4 className='settings-notification-category-title'>SMS Notifications</h4>
+                <div className="settings-notification-category">
+                  <div className="settings-notification-category-header">
+                    <i className="fa-solid fa-message"></i>
+                    <h4 className="settings-notification-category-title">
+                      SMS Notifications
+                    </h4>
                   </div>
-                  <div className='settings-toggle-group'>
-                    <div className='settings-toggle-item'>
-                      <div className='settings-toggle-content'>
-                        <div className='settings-toggle-label-wrapper'>
-                          <i className='fa-solid fa-clock'></i>
+                  <div className="settings-toggle-group">
+                    <div className="settings-toggle-item">
+                      <div className="settings-toggle-content">
+                        <div className="settings-toggle-label-wrapper">
+                          <i className="fa-solid fa-clock"></i>
                           <div>
-                            <span className='settings-toggle-label'>Payment Reminders</span>
-                            <span className='settings-toggle-description'>
+                            <span className="settings-toggle-label">
+                              Payment Reminders
+                            </span>
+                            <span className="settings-toggle-description">
                               Send SMS reminders for pending payments
                             </span>
                           </div>
                         </div>
-                        <label className='settings-toggle-switch'>
+                        <label className="settings-toggle-switch">
                           <input
-                            type='checkbox'
+                            type="checkbox"
                             checked={notificationPrefs.smsPaymentReminders}
                             onChange={(e) =>
                               setNotificationPrefs({
@@ -858,25 +1231,27 @@ const SettingsTab = ({
                               })
                             }
                           />
-                          <span className='settings-toggle-slider'></span>
+                          <span className="settings-toggle-slider"></span>
                         </label>
                       </div>
                     </div>
 
-                    <div className='settings-toggle-item'>
-                      <div className='settings-toggle-content'>
-                        <div className='settings-toggle-label-wrapper'>
-                          <i className='fa-solid fa-check-circle'></i>
+                    <div className="settings-toggle-item">
+                      <div className="settings-toggle-content">
+                        <div className="settings-toggle-label-wrapper">
+                          <i className="fa-solid fa-check-circle"></i>
                           <div>
-                            <span className='settings-toggle-label'>Order Confirmations</span>
-                            <span className='settings-toggle-description'>
+                            <span className="settings-toggle-label">
+                              Order Confirmations
+                            </span>
+                            <span className="settings-toggle-description">
                               Send SMS when order is confirmed
                             </span>
                           </div>
                         </div>
-                        <label className='settings-toggle-switch'>
+                        <label className="settings-toggle-switch">
                           <input
-                            type='checkbox'
+                            type="checkbox"
                             checked={notificationPrefs.smsOrderConfirmations}
                             onChange={(e) =>
                               setNotificationPrefs({
@@ -885,16 +1260,19 @@ const SettingsTab = ({
                               })
                             }
                           />
-                          <span className='settings-toggle-slider'></span>
+                          <span className="settings-toggle-slider"></span>
                         </label>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className='settings-section-actions'>
-                <button className='btn btn-primary btn-large' onClick={handleSaveNotificationPrefs}>
-                  <i className='fa-solid fa-save'></i>
+              <div className="settings-section-actions">
+                <button
+                  className="btn btn-primary btn-large"
+                  onClick={handleSaveNotificationPrefs}
+                >
+                  <i className="fa-solid fa-save"></i>
                   <span>Save Notification Preferences</span>
                 </button>
               </div>
@@ -903,97 +1281,126 @@ const SettingsTab = ({
         )}
 
         {activeTab === 'data' && (
-          <div className='admin-stats'>
-            <div className='dashboard-card'>
-              <div className='settings-section-header'>
-                <div className='settings-section-icon-wrapper'>
-                  <i className='fa-solid fa-database'></i>
+          <div className="admin-stats">
+            <div className="dashboard-card">
+              <div className="settings-section-header">
+                <div className="settings-section-icon-wrapper">
+                  <i className="fa-solid fa-database"></i>
                 </div>
-                <div className='settings-section-title-wrapper'>
-                  <h3 className='settings-section-title'>Backup & Restore</h3>
-                  <p className='settings-section-subtitle'>
+                <div className="settings-section-title-wrapper">
+                  <h3 className="settings-section-title">Backup & Restore</h3>
+                  <p className="settings-section-subtitle">
                     Manage your data backups and restore points
                   </p>
                 </div>
               </div>
-              <div className='settings-section-body'>
-                <div className='settings-backup-info'>
-                  <div className='settings-backup-info-item'>
-                    <i className='fa-solid fa-clock'></i>
+              <div className="settings-section-body">
+                <div className="settings-backup-info">
+                  <div className="settings-backup-info-item">
+                    <i className="fa-solid fa-clock"></i>
                     <div>
-                      <span className='settings-backup-info-label'>Last Backup</span>
-                      <span className='settings-backup-info-value'>
+                      <span className="settings-backup-info-label">
+                        Last Backup
+                      </span>
+                      <span className="settings-backup-info-value">
                         {settings?.lastBackup || '15-Jan-2025 09:30 AM'}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className='settings-backup-actions'>
-                  <button className='btn btn-primary btn-large' onClick={handleBackup}>
-                    <i className='fa-solid fa-save'></i>
+                <div className="settings-backup-actions">
+                  <button
+                    className="btn btn-primary btn-large"
+                    onClick={handleBackup}
+                  >
+                    <i className="fa-solid fa-save"></i>
                     <span>Create Backup Now</span>
                   </button>
-                  <button className='btn btn-secondary btn-large' onClick={handleBackup}>
-                    <i className='fa-solid fa-download'></i>
+                  <button
+                    className="btn btn-secondary btn-large"
+                    onClick={handleDownloadBackup}
+                  >
+                    <i className="fa-solid fa-download"></i>
                     <span>Download Backup</span>
                   </button>
-                  <button className='btn btn-secondary btn-large' onClick={handleRestore}>
-                    <i className='fa-solid fa-rotate'></i>
+                  <button
+                    className="btn btn-secondary btn-large"
+                    onClick={handleRestore}
+                  >
+                    <i className="fa-solid fa-rotate"></i>
                     <span>Restore from Backup</span>
+                  </button>
+                  <button
+                    className="btn btn-secondary btn-large"
+                    onClick={handleExportSettings}
+                  >
+                    <i className="fa-solid fa-file-export"></i>
+                    <span>Export Settings</span>
                   </button>
                 </div>
 
-                <div className='settings-form-group settings-form-group-full mt-2xl'>
-                  <div className='settings-toggle-item'>
-                    <div className='settings-toggle-content'>
-                      <div className='settings-toggle-label-wrapper'>
-                        <i className='fa-solid fa-clock-rotate-left'></i>
+                <div className="settings-form-group settings-form-group-full mt-2xl">
+                  <div className="settings-toggle-item">
+                    <div className="settings-toggle-content">
+                      <div className="settings-toggle-label-wrapper">
+                        <i className="fa-solid fa-clock-rotate-left"></i>
                         <div>
-                          <span className='settings-toggle-label'>Enable Auto Backup</span>
-                          <span className='settings-toggle-description'>
+                          <span className="settings-toggle-label">
+                            Enable Auto Backup
+                          </span>
+                          <span className="settings-toggle-description">
                             Automatically backup data daily
                           </span>
                         </div>
                       </div>
-                      <label className='settings-toggle-switch'>
+                      <label className="settings-toggle-switch">
                         <input
-                          type='checkbox'
+                          type="checkbox"
                           checked={dataSettings.autoBackup}
                           onChange={(e) =>
-                            setDataSettings({ ...dataSettings, autoBackup: e.target.checked })
+                            setDataSettings({
+                              ...dataSettings,
+                              autoBackup: e.target.checked,
+                            })
                           }
                         />
-                        <span className='settings-toggle-slider'></span>
+                        <span className="settings-toggle-slider"></span>
                       </label>
                     </div>
                   </div>
                 </div>
 
                 {dataSettings.autoBackup && (
-                  <div className='settings-form-group'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-clock'></i>
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-clock"></i>
                       <span>Auto Backup Time</span>
                     </label>
                     <input
-                      type='time'
-                      className='settings-input-field'
+                      type="time"
+                      className="settings-input-field"
                       value={dataSettings.autoBackupTime}
                       onChange={(e) =>
-                        setDataSettings({ ...dataSettings, autoBackupTime: e.target.value })
+                        setDataSettings({
+                          ...dataSettings,
+                          autoBackupTime: e.target.value,
+                        })
                       }
                     />
-                    <p className='settings-form-hint'>
+                    <p className="settings-form-hint">
                       Daily backup will run automatically at this time
                     </p>
                   </div>
                 )}
 
                 {dataSettings.autoBackup && (
-                  <div className='settings-section-actions'>
-                    <button className='btn btn-primary btn-large' onClick={handleSaveDataSettings}>
-                      <i className='fa-solid fa-save'></i>
+                  <div className="settings-section-actions">
+                    <button
+                      className="btn btn-primary btn-large"
+                      onClick={handleSaveDataSettings}
+                    >
+                      <i className="fa-solid fa-save"></i>
                       <span>Save Backup Settings</span>
                     </button>
                   </div>
@@ -1001,30 +1408,36 @@ const SettingsTab = ({
               </div>
             </div>
 
-            <div className='dashboard-card settings-danger-zone'>
-              <div className='settings-section-header'>
-                <div className='settings-section-icon-wrapper danger-zone-icon-wrapper'>
-                  <i className='fa-solid fa-triangle-exclamation'></i>
+            <div className="dashboard-card settings-danger-zone">
+              <div className="settings-section-header">
+                <div className="settings-section-icon-wrapper danger-zone-icon-wrapper">
+                  <i className="fa-solid fa-triangle-exclamation"></i>
                 </div>
-                <div className='settings-section-title-wrapper'>
-                  <h3 className='settings-section-title danger-zone-title'>Danger Zone</h3>
-                  <p className='settings-section-subtitle'>Irreversible and destructive actions</p>
+                <div className="settings-section-title-wrapper">
+                  <h3 className="settings-section-title danger-zone-title">
+                    Danger Zone
+                  </h3>
+                  <p className="settings-section-subtitle">
+                    Irreversible and destructive actions
+                  </p>
                 </div>
               </div>
-              <div className='settings-section-body'>
-                <div className='settings-danger-action'>
-                  <div className='settings-danger-action-info'>
-                    <i className='fa-solid fa-trash'></i>
+              <div className="settings-section-body">
+                <div className="settings-danger-action">
+                  <div className="settings-danger-action-info">
+                    <i className="fa-solid fa-trash"></i>
                     <div>
-                      <span className='settings-danger-action-label'>Clear All Data</span>
-                      <span className='settings-danger-action-description'>
-                        Permanently delete all orders, customers, and settings. This action cannot
-                        be undone.
+                      <span className="settings-danger-action-label">
+                        Clear All Data
+                      </span>
+                      <span className="settings-danger-action-description">
+                        Permanently delete all orders, customers, and settings.
+                        This action cannot be undone.
                       </span>
                     </div>
                   </div>
                   <button
-                    className='btn btn-special danger btn-large'
+                    className="btn btn-special danger btn-large"
                     onClick={() => {
                       if (showConfirmation && onClearAllData) {
                         showConfirmation({
@@ -1042,7 +1455,7 @@ const SettingsTab = ({
                       }
                     }}
                   >
-                    <i className='fa-solid fa-trash'></i>
+                    <i className="fa-solid fa-trash"></i>
                     <span>Clear All Data</span>
                   </button>
                 </div>
@@ -1052,131 +1465,162 @@ const SettingsTab = ({
         )}
 
         {activeTab === 'profile' && (
-          <div className='admin-stats'>
-            <div className='dashboard-card'>
-              <div className='settings-section-header'>
-                <div className='settings-section-icon-wrapper'>
-                  <i className='fa-solid fa-user'></i>
+          <div className="admin-stats">
+            <div className="dashboard-card">
+              <div className="settings-section-header">
+                <div className="settings-section-icon-wrapper">
+                  <i className="fa-solid fa-user"></i>
                 </div>
-                <div className='settings-section-title-wrapper'>
-                  <h3 className='settings-section-title'>Profile Information</h3>
-                  <p className='settings-section-subtitle'>Update your personal account details</p>
+                <div className="settings-section-title-wrapper">
+                  <h3 className="settings-section-title">
+                    Profile Information
+                  </h3>
+                  <p className="settings-section-subtitle">
+                    Update your personal account details
+                  </p>
                 </div>
               </div>
-              <div className='settings-section-body'>
-                <div className='settings-form-grid'>
-                  <div className='settings-form-group'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-user'></i>
+              <div className="settings-section-body">
+                <div className="settings-form-grid">
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-user"></i>
                       <span>Full Name</span>
                     </label>
                     <input
-                      type='text'
-                      className='settings-input-field'
+                      type="text"
+                      className="settings-input-field"
                       value={userProfile.name}
-                      onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value })}
-                      placeholder='Enter your full name'
+                      onChange={(e) =>
+                        setUserProfile({ ...userProfile, name: e.target.value })
+                      }
+                      placeholder="Enter your full name"
                     />
                   </div>
-                  <div className='settings-form-group'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-envelope'></i>
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-envelope"></i>
                       <span>Email Address</span>
                     </label>
                     <input
-                      type='email'
-                      className='settings-input-field'
+                      type="email"
+                      className="settings-input-field"
                       value={userProfile.email}
-                      onChange={(e) => setUserProfile({ ...userProfile, email: e.target.value })}
-                      placeholder='your.email@example.com'
+                      onChange={(e) =>
+                        setUserProfile({
+                          ...userProfile,
+                          email: e.target.value,
+                        })
+                      }
+                      placeholder="your.email@example.com"
                     />
                   </div>
-                  <div className='settings-form-group'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-phone'></i>
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-phone"></i>
                       <span>Phone Number</span>
                     </label>
                     <input
-                      type='tel'
-                      className='settings-input-field'
+                      type="tel"
+                      className="settings-input-field"
                       value={userProfile.phone}
-                      onChange={(e) => setUserProfile({ ...userProfile, phone: e.target.value })}
-                      placeholder='+91 1234567890'
+                      onChange={(e) =>
+                        setUserProfile({
+                          ...userProfile,
+                          phone: e.target.value,
+                        })
+                      }
+                      placeholder="+91 1234567890"
                     />
                   </div>
                 </div>
-                <div className='settings-section-actions'>
-                  <button className='btn btn-primary btn-large' onClick={handleSaveUserProfile}>
-                    <i className='fa-solid fa-save'></i>
+                <div className="settings-section-actions">
+                  <button
+                    className="btn btn-primary btn-large"
+                    onClick={handleSaveUserProfile}
+                  >
+                    <i className="fa-solid fa-save"></i>
                     <span>Update Profile</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className='dashboard-card'>
-              <div className='settings-section-header'>
-                <div className='settings-section-icon-wrapper'>
-                  <i className='fa-solid fa-lock'></i>
+            <div className="dashboard-card">
+              <div className="settings-section-header">
+                <div className="settings-section-icon-wrapper">
+                  <i className="fa-solid fa-lock"></i>
                 </div>
-                <div className='settings-section-title-wrapper'>
-                  <h3 className='settings-section-title'>Change Password</h3>
-                  <p className='settings-section-subtitle'>
+                <div className="settings-section-title-wrapper">
+                  <h3 className="settings-section-title">Change Password</h3>
+                  <p className="settings-section-subtitle">
                     Update your account password for better security
                   </p>
                 </div>
               </div>
-              <div className='settings-section-body'>
-                <div className='settings-form-grid'>
-                  <div className='settings-form-group'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-key'></i>
+              <div className="settings-section-body">
+                <div className="settings-form-grid">
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-key"></i>
                       <span>Current Password</span>
                     </label>
                     <input
-                      type='password'
-                      className='settings-input-field'
+                      type="password"
+                      className="settings-input-field"
                       value={userProfile.currentPassword}
                       onChange={(e) =>
-                        setUserProfile({ ...userProfile, currentPassword: e.target.value })
+                        setUserProfile({
+                          ...userProfile,
+                          currentPassword: e.target.value,
+                        })
                       }
-                      placeholder='Enter current password'
+                      placeholder="Enter current password"
                     />
                   </div>
-                  <div className='settings-form-group'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-lock'></i>
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-lock"></i>
                       <span>New Password</span>
                     </label>
                     <input
-                      type='password'
-                      className='settings-input-field'
+                      type="password"
+                      className="settings-input-field"
                       value={userProfile.newPassword}
                       onChange={(e) =>
-                        setUserProfile({ ...userProfile, newPassword: e.target.value })
+                        setUserProfile({
+                          ...userProfile,
+                          newPassword: e.target.value,
+                        })
                       }
-                      placeholder='Enter new password'
+                      placeholder="Enter new password"
                     />
                   </div>
-                  <div className='settings-form-group'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-lock'></i>
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-lock"></i>
                       <span>Confirm New Password</span>
                     </label>
                     <input
-                      type='password'
-                      className='settings-input-field'
+                      type="password"
+                      className="settings-input-field"
                       value={userProfile.confirmPassword}
                       onChange={(e) =>
-                        setUserProfile({ ...userProfile, confirmPassword: e.target.value })
+                        setUserProfile({
+                          ...userProfile,
+                          confirmPassword: e.target.value,
+                        })
                       }
-                      placeholder='Confirm new password'
+                      placeholder="Confirm new password"
                     />
                   </div>
                 </div>
-                <div className='settings-section-actions'>
-                  <button className='btn btn-primary btn-large' onClick={handleSaveUserProfile}>
-                    <i className='fa-solid fa-save'></i>
+                <div className="settings-section-actions">
+                  <button
+                    className="btn btn-primary btn-large"
+                    onClick={handleSaveUserProfile}
+                  >
+                    <i className="fa-solid fa-save"></i>
                     <span>Update Password</span>
                   </button>
                 </div>
@@ -1186,29 +1630,29 @@ const SettingsTab = ({
         )}
 
         {activeTab === 'appearance' && (
-          <div className='admin-stats'>
-            <div className='dashboard-card'>
-              <div className='settings-section-header'>
-                <div className='settings-section-icon-wrapper'>
-                  <i className='fa-solid fa-font'></i>
+          <div className="admin-stats">
+            <div className="dashboard-card">
+              <div className="settings-section-header">
+                <div className="settings-section-icon-wrapper">
+                  <i className="fa-solid fa-font"></i>
                 </div>
-                <div className='settings-section-title-wrapper'>
-                  <h3 className='settings-section-title'>Font style</h3>
-                  <p className='settings-section-subtitle'>
-                    Choose a font for the full platform—main website, admin dashboard, and admin
-                    login. Changes apply after saving.
+                <div className="settings-section-title-wrapper">
+                  <h3 className="settings-section-title">Font style</h3>
+                  <p className="settings-section-subtitle">
+                    Choose a font for the full platform—main website, admin
+                    dashboard, and admin login. Changes apply after saving.
                   </p>
                 </div>
               </div>
-              <div className='settings-section-body'>
-                <div className='settings-form-grid'>
-                  <div className='settings-form-group settings-form-group-full'>
-                    <label className='settings-form-label'>
-                      <i className='fa-solid fa-palette'></i>
+              <div className="settings-section-body">
+                <div className="settings-form-grid">
+                  <div className="settings-form-group settings-form-group-full">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-palette"></i>
                       <span>My font style</span>
                     </label>
                     <select
-                      className='settings-input-field'
+                      className="settings-input-field"
                       value={appearanceSettings.fontFamily}
                       onChange={(e) =>
                         setAppearanceSettings({
@@ -1216,7 +1660,7 @@ const SettingsTab = ({
                           fontFamily: e.target.value,
                         })
                       }
-                      aria-label='Select font style'
+                      aria-label="Select font style"
                     >
                       {FONT_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -1224,60 +1668,94 @@ const SettingsTab = ({
                         </option>
                       ))}
                     </select>
-                    <p className='settings-form-hint'>
-                      Applies everywhere: customer site, admin, and login. Font loads from Google
-                      Fonts when you save.
+                    <p className="settings-form-hint">
+                      Applies everywhere: customer site, admin, and login. Font
+                      loads from Google Fonts when you save.
                     </p>
                   </div>
-                  <div className='settings-form-group settings-form-group-full'>
-                    <label className='settings-form-label' htmlFor='admin-font-size-input'>
-                      <i className='fa-solid fa-text-height'></i>
+                  <div className="settings-form-group settings-form-group-full">
+                    <label
+                      className="settings-form-label"
+                      htmlFor="admin-font-size-input"
+                    >
+                      <i className="fa-solid fa-text-height"></i>
                       <span>Font size (admin dashboard only)</span>
                     </label>
-                    <div className='settings-font-size-control' role='group' aria-label={`Font size ${ADMIN_FONT_SIZE_MIN}–${ADMIN_FONT_SIZE_MAX} px`}>
+                    <div
+                      className="settings-font-size-control"
+                      role="group"
+                      aria-label={`Font size ${ADMIN_FONT_SIZE_MIN}–${ADMIN_FONT_SIZE_MAX} px`}
+                    >
                       <button
-                        type='button'
-                        className='btn btn-ghost settings-font-size-btn'
-                        onClick={() => applyFontSize((appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT) - ADMIN_FONT_SIZE_STEP)}
-                        disabled={(appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT) <= ADMIN_FONT_SIZE_MIN}
-                        aria-label='Decrease by 0.25 px'
+                        type="button"
+                        className="btn btn-ghost settings-font-size-btn"
+                        onClick={() =>
+                          applyFontSize(
+                            (appearanceSettings.fontSize ??
+                              ADMIN_FONT_SIZE_DEFAULT) - ADMIN_FONT_SIZE_STEP
+                          )
+                        }
+                        disabled={
+                          (appearanceSettings.fontSize ??
+                            ADMIN_FONT_SIZE_DEFAULT) <= ADMIN_FONT_SIZE_MIN
+                        }
+                        aria-label="Decrease by 0.25 px"
                       >
-                        <i className='fa-solid fa-minus' aria-hidden />
+                        <i className="fa-solid fa-minus" aria-hidden />
                       </button>
                       <input
-                        id='admin-font-size-input'
-                        type='number'
+                        id="admin-font-size-input"
+                        type="number"
                         min={ADMIN_FONT_SIZE_MIN}
                         max={ADMIN_FONT_SIZE_MAX}
                         step={ADMIN_FONT_SIZE_STEP}
-                        value={appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT}
+                        value={
+                          appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT
+                        }
                         onChange={(e) => applyFontSize(e.target.value)}
                         onBlur={(e) => applyFontSize(e.target.value)}
-                        className='settings-font-size-input'
+                        className="settings-font-size-input"
                         aria-label={`Font size in px, ${ADMIN_FONT_SIZE_MIN} to ${ADMIN_FONT_SIZE_MAX}`}
                         aria-valuemin={ADMIN_FONT_SIZE_MIN}
                         aria-valuemax={ADMIN_FONT_SIZE_MAX}
-                        aria-valuenow={appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT}
+                        aria-valuenow={
+                          appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT
+                        }
                       />
-                      <span className='settings-font-size-unit' aria-hidden>px</span>
+                      <span className="settings-font-size-unit" aria-hidden>
+                        px
+                      </span>
                       <button
-                        type='button'
-                        className='btn btn-ghost settings-font-size-btn'
-                        onClick={() => applyFontSize((appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT) + ADMIN_FONT_SIZE_STEP)}
-                        disabled={(appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT) >= ADMIN_FONT_SIZE_MAX}
-                        aria-label='Increase by 0.25 px'
+                        type="button"
+                        className="btn btn-ghost settings-font-size-btn"
+                        onClick={() =>
+                          applyFontSize(
+                            (appearanceSettings.fontSize ??
+                              ADMIN_FONT_SIZE_DEFAULT) + ADMIN_FONT_SIZE_STEP
+                          )
+                        }
+                        disabled={
+                          (appearanceSettings.fontSize ??
+                            ADMIN_FONT_SIZE_DEFAULT) >= ADMIN_FONT_SIZE_MAX
+                        }
+                        aria-label="Increase by 0.25 px"
                       >
-                        <i className='fa-solid fa-plus' aria-hidden />
+                        <i className="fa-solid fa-plus" aria-hidden />
                       </button>
                     </div>
-                    <p className='settings-form-hint'>
-                      {ADMIN_FONT_SIZE_MIN}–{ADMIN_FONT_SIZE_MAX} px in {ADMIN_FONT_SIZE_STEP} px steps. Applies immediately; save to persist.
+                    <p className="settings-form-hint">
+                      {ADMIN_FONT_SIZE_MIN}–{ADMIN_FONT_SIZE_MAX} px in{' '}
+                      {ADMIN_FONT_SIZE_STEP} px steps. Applies immediately; save
+                      to persist.
                     </p>
                   </div>
                 </div>
-                <div className='settings-section-actions'>
-                  <button className='btn btn-primary btn-large' onClick={handleSaveAppearance}>
-                    <i className='fa-solid fa-save'></i>
+                <div className="settings-section-actions">
+                  <button
+                    className="btn btn-primary btn-large"
+                    onClick={handleSaveAppearance}
+                  >
+                    <i className="fa-solid fa-save"></i>
                     <span>Save font style</span>
                   </button>
                 </div>

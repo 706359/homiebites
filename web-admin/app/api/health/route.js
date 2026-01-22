@@ -1,4 +1,3 @@
-
 import connectDB from '../../../lib/db.js';
 
 export async function GET() {
@@ -7,7 +6,10 @@ export async function GET() {
   try {
     await connectDB();
     if (isProd) {
-      return Response.json({ success: true, status: 'healthy' }, { status: 200 });
+      return Response.json(
+        { success: true, status: 'healthy' },
+        { status: 200 }
+      );
     }
     return Response.json(
       {
@@ -20,7 +22,10 @@ export async function GET() {
     );
   } catch (error) {
     if (isProd) {
-      return Response.json({ success: false, status: 'unhealthy' }, { status: 503 });
+      return Response.json(
+        { success: false, status: 'unhealthy' },
+        { status: 503 }
+      );
     }
     return Response.json(
       {
@@ -33,4 +38,3 @@ export async function GET() {
     );
   }
 }
-

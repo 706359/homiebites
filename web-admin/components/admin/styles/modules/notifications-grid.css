@@ -3,9 +3,9 @@
    ======================================================================== */
 
 .notification-grid-4-col {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .notifications-empty-state {
@@ -14,9 +14,7 @@
 }
 
 .notification-badge-unread-grid {
-  position: absolute;
-  top: 8px;
-  right: 8px;
+  position: static;
   background: var(--admin-danger, #dc2626);
   color: var(--admin-text-white, #ffffff);
   padding: 2px 6px;
@@ -25,6 +23,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  align-self: flex-end;
 }
 
 .notification-icon-order {
@@ -44,14 +43,41 @@
 }
 
 .notification-card-grid-content {
-  padding: 16px;
+  padding: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-card-grid-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.notification-card-grid-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--admin-bg-secondary, #f9fafb);
+  flex-shrink: 0;
+}
+
+.notification-card-grid-icon i {
+  font-size: var(--admin-fs-lg);
 }
 
 .notification-card-grid-title {
   font-weight: 600;
   line-height: 1.3;
   color: var(--admin-text-primary, #1e293b);
-  margin: 0 0 8px 0;
+  margin: 0 0 4px 0;
+  display: inline-block;
+  margin-right: 8px;
 }
 
 .notification-card-grid-message {
@@ -64,15 +90,18 @@
   font-size: var(--admin-fs-sm);
   line-height: 1.5;
   color: var(--admin-text-secondary, #6b7280);
-  margin: 0 0 12px 0;
+  margin: 0 0 4px 0;
 }
 
 .notification-card-grid-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 12px;
-  border-top: 1px solid var(--admin-border, #e5e7eb);
+  padding-top: 4px;
+  margin-top: 4px;
+  border-top: none;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .notification-card-grid-time {
@@ -82,23 +111,36 @@
 
 .notification-card-grid-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.notification-card-grid-actions .btn {
+  white-space: nowrap;
 }
 
 .notification-card-grid {
   position: relative;
-  background: var(--admin-bg, #ffffff);
-  border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 8px;
-  overflow: hidden;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 0;
+  overflow: visible;
   transition: all 0.2s ease;
   cursor: pointer;
+  padding: 12px 0;
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
 }
 
 .notification-card-grid.read {
-  opacity: 0.8;
+  opacity: 0.7;
 }
 
 .notification-card-grid.unread {
-  border-left: 1px solid var(--admin-accent, #449031);
+  border-left: 3px solid var(--admin-accent, #449031);
+  padding-left: 13px;
+  margin-left: 0;
 }

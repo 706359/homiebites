@@ -1,7 +1,9 @@
-
 import connectDB from '../../../../lib/db.js';
 import Order from '../../../../lib/models/Order.js';
-import { isAdmin, createErrorResponse } from '../../../../lib/middleware/auth.js';
+import {
+  isAdmin,
+  createErrorResponse,
+} from '../../../../lib/middleware/auth.js';
 
 export async function DELETE(request) {
   try {
@@ -31,13 +33,17 @@ export async function DELETE(request) {
 
       return Response.json({
         success: finalCount === 0,
-        message: finalCount === 0
-          ? `Successfully deleted ${deletedCount + secondDeletedCount} orders (required 2 attempts)`
-          : `Deleted ${deletedCount + secondDeletedCount} orders, but ${finalCount} orders still remain`,
+        message:
+          finalCount === 0
+            ? `Successfully deleted ${deletedCount + secondDeletedCount} orders (required 2 attempts)`
+            : `Deleted ${deletedCount + secondDeletedCount} orders, but ${finalCount} orders still remain`,
         deletedCount: deletedCount + secondDeletedCount,
         beforeCount,
         afterCount: finalCount,
-        warning: finalCount > 0 ? `${finalCount} orders could not be deleted` : undefined,
+        warning:
+          finalCount > 0
+            ? `${finalCount} orders could not be deleted`
+            : undefined,
       });
     }
 
@@ -49,28 +55,35 @@ export async function DELETE(request) {
       afterCount: 0,
     });
   } catch (error) {
-    
     if (error.status === 401 || error.status === 403) {
-      return createErrorResponse(error.status, error.message || 'Authentication failed');
+      return createErrorResponse(
+        error.status,
+        error.message || 'Authentication failed'
+      );
     }
-    
-    if (error.message && (error.message.includes('connect') || error.message.includes('ECONNREFUSED'))) {
+
+    if (
+      error.message &&
+      (error.message.includes('connect') ||
+        error.message.includes('ECONNREFUSED'))
+    ) {
       return Response.json(
-        { 
-          success: false, 
-          error: 'Database connection failed. Please check your database configuration.'
+        {
+          success: false,
+          error:
+            'Database connection failed. Please check your database configuration.',
         },
         { status: 503 }
       );
     }
     return Response.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: error.message || 'Failed to clear orders',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
       { status: error.status || 500 }
     );
   }
 }
-

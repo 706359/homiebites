@@ -20,8 +20,10 @@ const AdminLogin = ({ onLoginSuccess }) => {
   useEffect(() => {
     const applyThemeSettings = () => {
       try {
-        const primaryColor = localStorage.getItem('homiebites_primary_color') || '#449031';
-        const fontFamily = localStorage.getItem('homiebites_font_family') || 'Baloo 2';
+        const primaryColor =
+          localStorage.getItem('homiebites_primary_color') || '#449031';
+        const fontFamily =
+          localStorage.getItem('homiebites_font_family') || 'Baloo 2';
         const fontSize = localStorage.getItem('homiebites_font_size') || '16';
 
         const root = document.documentElement;
@@ -59,7 +61,10 @@ const AdminLogin = ({ onLoginSuccess }) => {
         }
 
         if (fontFamily) {
-          root.style.setProperty('--font-primary', `'${fontFamily}', sans-serif`);
+          root.style.setProperty(
+            '--font-primary',
+            `'${fontFamily}', sans-serif`
+          );
         }
 
         const fs = parseFontSize(fontSize);
@@ -110,7 +115,9 @@ const AdminLogin = ({ onLoginSuccess }) => {
         if (
           data.success &&
           data.user &&
-          (data.user.role === 'admin' || data.user.isAdmin || data.user.role === 'Admin')
+          (data.user.role === 'admin' ||
+            data.user.isAdmin ||
+            data.user.role === 'Admin')
         ) {
           localStorage.setItem('homiebites_token', data.token);
           localStorage.setItem('homiebites_user', JSON.stringify(data.user));
@@ -130,14 +137,17 @@ const AdminLogin = ({ onLoginSuccess }) => {
 
           // Show success message and add proper delay before redirect
           showSuccess('Login successful! Redirecting to dashboard...');
-          
+
           if (process.env.NODE_ENV === 'development') {
-            if (process.env.NODE_ENV === 'development') console.log('[AdminLogin] Login successful, redirecting to dashboard');
+            if (process.env.NODE_ENV === 'development')
+              console.log(
+                '[AdminLogin] Login successful, redirecting to dashboard'
+              );
           }
-          
+
           // Add delay for user to see success message
           await new Promise((resolve) => setTimeout(resolve, 1000));
-          
+
           // Redirect to dashboard
           if (onLoginSuccess && typeof onLoginSuccess === 'function') {
             onLoginSuccess();
@@ -146,7 +156,9 @@ const AdminLogin = ({ onLoginSuccess }) => {
           }
           return;
         } else {
-          showError(data.error || 'Invalid credentials. Admin access required.');
+          showError(
+            data.error || 'Invalid credentials. Admin access required.'
+          );
           setLoading(false);
           return;
         }
@@ -169,7 +181,9 @@ const AdminLogin = ({ onLoginSuccess }) => {
         }
       }
 
-      showError('Invalid credentials. Please check your username and password.');
+      showError(
+        'Invalid credentials. Please check your username and password.'
+      );
       setLoading(false);
     } catch (err) {
       showError(
@@ -181,101 +195,108 @@ const AdminLogin = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className='admin-page-wrapper login-page-wrapper'>
-      <div className='login-page-container'>
-        <div className='login-left-section'>
-          <div className='login-image-overlay'>
-            <div className='login-brand'>
-              <div className='login-brand-logo'>
-                <img src='/logo.png' alt='HomieBites Logo' className='login-logo-img' />
+    <div className="admin-page-wrapper login-page-wrapper">
+      <div className="login-page-container">
+        <div className="login-left-section">
+          <div className="login-image-overlay">
+            <div className="login-brand">
+              <div className="login-brand-logo">
+                <img
+                  src="/logo.png"
+                  alt="HomieBites Logo"
+                  className="login-logo-img"
+                />
               </div>
             </div>
           </div>
           <img
-            src='https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80'
-            alt='Admin access to HomieBites dashboard'
-            className='login-image'
+            src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+            alt="Admin access to HomieBites dashboard"
+            className="login-image"
           />
         </div>
 
-        <div className='login-right-section'>
-          <div className='login-content'>
-            <div className='login-header'>
-              <div className='login-icon-wrapper'>
-                <i className='fa-solid fa-shield-halved'></i>
+        <div className="login-right-section">
+          <div className="login-content">
+            <div className="login-header">
+              <div className="login-icon-wrapper">
+                <i className="fa-solid fa-shield-halved"></i>
               </div>
-              <h1 className='login-title'>Admin Login</h1>
-              <p className='login-subtitle'>Access your dashboard securely</p>
+              <h1 className="login-title">Admin Login</h1>
+              <p className="login-subtitle">Access your dashboard securely</p>
             </div>
 
-            <form onSubmit={handleSubmit} className='login-form'>
-              <div className='form-field'>
-                <label htmlFor='email-input'>
-                  <i className='fa-solid fa-envelope'></i>
+            <form onSubmit={handleSubmit} className="login-form">
+              <div className="form-field">
+                <label htmlFor="email-input">
+                  <i className="fa-solid fa-envelope"></i>
                   Email Address
                 </label>
                 <input
-                  id='email-input'
-                  type='email'
+                  id="email-input"
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder='Enter your email address'
+                  placeholder="Enter your email address"
                   required
                   autoFocus
-                  autoComplete='email'
-                  className='login-input'
+                  autoComplete="email"
+                  className="login-input"
                 />
               </div>
 
-              <div className='form-field'>
-                <label htmlFor='password-input'>
-                  <i className='fa-solid fa-lock'></i>
+              <div className="form-field">
+                <label htmlFor="password-input">
+                  <i className="fa-solid fa-lock"></i>
                   Password
                 </label>
                 <input
-                  id='password-input'
-                  type='password'
+                  id="password-input"
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder='Enter your password'
+                  placeholder="Enter your password"
                   required
-                  autoComplete='current-password'
-                  className='login-input'
+                  autoComplete="current-password"
+                  className="login-input"
                 />
               </div>
 
               <button
-                type='submit'
-                className='btn btn-primary btn-full login-submit-btn'
+                type="submit"
+                className="btn btn-primary btn-full login-submit-btn"
                 disabled={loading}
               >
                 {loading ? (
                   <>
-                    <i className='fa-solid fa-spinner fa-spin'></i>
+                    <i className="fa-solid fa-spinner fa-spin"></i>
                     <span>Logging in...</span>
                   </>
                 ) : (
                   <>
-                    <i className='fa-solid fa-arrow-right-to-bracket'></i>
+                    <i className="fa-solid fa-arrow-right-to-bracket"></i>
                     <span>Log In</span>
                   </>
                 )}
               </button>
 
-              <div className='admin-login-forgot-link-wrapper'>
-                <a href='/admin/forgot-password' className='admin-login-forgot-link'>
-                  <i className='fa-solid fa-key'></i>
+              <div className="admin-login-forgot-link-wrapper">
+                <a
+                  href="/admin/forgot-password"
+                  className="admin-login-forgot-link"
+                >
+                  <i className="fa-solid fa-key"></i>
                   Forgot Password?
                 </a>
               </div>
             </form>
 
-            <div className='login-info'>
-              <div className='login-info-icon'>
-                <i className='fa-solid fa-shield-check'></i>
+            <div className="login-info">
+              <div className="login-info-icon">
+                <i className="fa-solid fa-shield-check"></i>
               </div>
-              <p className='login-info-title'>Secure Admin Access</p>
-              <p className='admin-login-info-text'>Authorized personnel only</p>
+              <p className="login-info-title">Secure Admin Access</p>
+              <p className="admin-login-info-text">Authorized personnel only</p>
             </div>
           </div>
         </div>

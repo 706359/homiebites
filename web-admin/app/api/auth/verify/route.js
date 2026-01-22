@@ -1,4 +1,3 @@
-
 import connectDB from '../../../../lib/db.js';
 import User from '../../../../lib/models/User.js';
 import jwt from 'jsonwebtoken';
@@ -45,18 +44,18 @@ export async function GET(request) {
         email: user.email,
         name: user.name,
         role: user.role || 'user',
-        requirePasswordChange: user.isTemporaryPassword
-      }
+        requirePasswordChange: user.isTemporaryPassword,
+      },
     });
-
   } catch (error) {
     console.error('[Verify API] Error:', error);
-    
+
     return Response.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: error.message || 'Server error',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
       { status: 500 }
     );

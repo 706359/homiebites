@@ -1,25 +1,48 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useLanguage } from "../contexts/LanguageContext";
-import ReviewForm from "./ReviewForm";
-import "./Testimonials.css";
+import { useEffect, useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
+import ReviewForm from './ReviewForm';
+import './Testimonials.css';
 
 const Testimonials = () => {
   const { t } = useLanguage();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [expandedCardId, setExpandedCardId] = useState(null);
 
   // Fetch live reviews from API
   useEffect(() => {
     loadReviews();
   }, []);
 
+  // Close expanded card when clicking outside
+  useEffect(() => {
+    if (expandedCardId === null) return;
+
+    const handleClickOutside = (e) => {
+      const card = e.target.closest('.review-card');
+      if (!card || card.dataset.reviewId !== expandedCardId) {
+        setExpandedCardId(null);
+      }
+    };
+
+    // Use capture phase for better reliability
+    document.addEventListener('mousedown', handleClickOutside, true);
+    document.addEventListener('touchstart', handleClickOutside, true);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside, true);
+      document.removeEventListener('touchstart', handleClickOutside, true);
+    };
+  }, [expandedCardId]);
+
   const loadReviews = async () => {
     try {
-      const api = (await import("../lib/api")).default;
-      const data = await api.getReviews(true, 10);
+      const api = (await import('../lib/api')).default;
+      // Fetch all approved reviews (not just featured ones)
+      const data = await api.getReviews(false, 10);
 
       if (data.success) {
         // API returns { success: true, data: [...] }
@@ -31,7 +54,7 @@ const Testimonials = () => {
         }
       }
     } catch (error) {
-      console.error("Error loading reviews:", error);
+      console.error('Error loading reviews:', error);
       // No reviews on error - wait for first real review
       setReviews([]);
     } finally {
@@ -45,11 +68,11 @@ const Testimonials = () => {
 
   const renderStars = (rating) => {
     return (
-      <div className="review-stars">
+      <div className="review-stars" data-rating={rating}>
         {[1, 2, 3, 4, 5].map((star) => (
           <i
             key={star}
-            className={`fa-solid fa-star ${star <= rating ? "active" : ""}`}
+            className={`fa-solid fa-star ${star <= rating ? 'active' : ''}`}
           />
         ))}
       </div>
@@ -57,23 +80,23 @@ const Testimonials = () => {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return "";
+    if (!dateString) return '';
     const date = new Date(dateString);
     if (isNaN(date)) return String(dateString);
-    const day = String(date.getDate()).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, '0');
     const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
   };
@@ -83,10 +106,23 @@ const Testimonials = () => {
       <section id="testimonials" className="testimonials-section">
         <div className="section-container">
           <div className="testimonials-header">
-            <span className="testimonials-kicker">{t("testimonials.kicker") || "Reviews"}</span>
-            <h2 className="testimonials-title">{t("testimonials.title")}</h2>
+            <span className="testimonials-kicker">
+              {t('testimonials.kicker') || 'Reviews'}
+            </span>
+            <h2 className="testimonials-title">{t('testimonials.title')}</h2>
           </div>
-          <p className="testimonials-loading">{t("common.loading") || "Loading..."}</p>
+          <div className="testimonials-actions">
+            <button
+              className="btn btn-primary btn-small"
+              onClick={() => setShowReviewForm(true)}
+            >
+              <i className="fa-solid fa-pen"></i>{' '}
+              {t('reviews.writeReview') || 'Write a Review'}
+            </button>
+          </div>
+          <p className="testimonials-loading">
+            {t('common.loading') || 'Loading...'}
+          </p>
         </div>
       </section>
     );
@@ -96,45 +132,99 @@ const Testimonials = () => {
     <section id="testimonials" className="testimonials-section">
       <div className="section-container">
         <div className="testimonials-header">
-          <span className="testimonials-kicker">{t("testimonials.kicker") || "Reviews"}</span>
-          <h2 className="testimonials-title">{t("testimonials.title")}</h2>
-          <button className="btn btn-primary btn-small" onClick={() => setShowReviewForm(true)}>
-            <i className="fa-solid fa-pen"></i> {t("reviews.writeReview") || "Write a Review"}
+          <span className="testimonials-kicker">
+            {t('testimonials.kicker') || 'Reviews'}
+          </span>
+          <h2 className="testimonials-title">{t('testimonials.title')}</h2>
+        </div>
+        <div className="testimonials-actions">
+          <button
+            className="btn btn-primary btn-small"
+            onClick={() => setShowReviewForm(true)}
+          >
+            <i className="fa-solid fa-pen"></i>{' '}
+            {t('reviews.writeReview') || 'Write a Review'}
           </button>
         </div>
 
         {reviews.length > 0 ? (
           <div className="reviews-grid">
-            {reviews.map((review) => (
-              <div key={review._id || review.id} className="review-card">
+            {reviews.map((review) => {
+              const rating = review.rating || 5;
+              const reviewId = review._id || review.id;
+              const isExpanded = expandedCardId === reviewId;
+              return (
+              <div
+                key={reviewId}
+                className={`review-card ${review.featured ? 'review-card-featured' : ''} ${isExpanded ? 'review-card-expanded' : ''}`}
+                data-rating={rating}
+                data-review-id={reviewId}
+                onClick={(e) => {
+                  // Only handle click on mobile (below 480px)
+                  // Check if we're on mobile by checking window width or using a class
+                  if (window.innerWidth <= 480) {
+                    if (isExpanded) {
+                      setExpandedCardId(null);
+                    } else {
+                      setExpandedCardId(reviewId);
+                    }
+                  }
+                }}
+              >
                 <div className="review-card-header">
                   <div className="author-avatar">
-                    {(review.userName || review.name || "Customer")
+                    {(review.userName || review.name || 'Customer')
                       .charAt(0)
                       .toUpperCase()}
                   </div>
                   <div className="review-author-info">
-                    <strong>
-                      {review.userName || review.name || "Customer"}
-                    </strong>
+                    <div className="review-author-name-row">
+                      <strong>
+                        {review.userName || review.name || 'Customer'}
+                      </strong>
+                      {review.featured && (
+                        <span className="review-featured-badge" title="Featured Review">
+                          <i className="fa-solid fa-star"></i>
+                        </span>
+                      )}
+                    </div>
                     {review.userLocation || review.location ? (
-                      <span>{review.userLocation || review.location}</span>
+                      <span className="review-location">
+                        <i className="fa-solid fa-location-dot"></i>{' '}
+                        {review.userLocation || review.location}
+                      </span>
                     ) : null}
+                  </div>
+                  <div className="review-rating-section review-rating-header">
+                    {renderStars(review.rating || 5)}
+                    <span className="review-rating-number">
+                      {review.rating || 5}/5
+                    </span>
+                  </div>
+                  <div className="review-card-expand-indicator">
+                    <i className="fa-solid fa-chevron-down"></i>
                   </div>
                 </div>
                 <div className="review-card-body">
-                  {renderStars(review.rating || 5)}
+                  <div className="review-rating-section review-rating-body">
+                    {renderStars(review.rating || 5)}
+                    <span className="review-rating-number">
+                      {review.rating || 5}/5
+                    </span>
+                  </div>
                   <p className="review-comment">
                     {review.comment || review.text}
                   </p>
                 </div>
                 <div className="review-card-footer">
                   <span className="review-date">
-                    {review.createdAt ? formatDate(review.createdAt) : ""}
+                    <i className="fa-solid fa-calendar"></i>{' '}
+                    {review.createdAt ? formatDate(review.createdAt) : ''}
                   </span>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="no-reviews">
@@ -142,12 +232,12 @@ const Testimonials = () => {
               <i className="fa-solid fa-star"></i>
             </div>
             <h3 className="no-reviews-title">
-              {t("reviews.noReviewsTitle") ||
-                "Be the First to Share Your Experience!"}
+              {t('reviews.noReviewsTitle') ||
+                'Be the First to Share Your Experience!'}
             </h3>
             <p className="no-reviews-message">
-              {t("reviews.noReviews") ||
-                "No reviews yet. Be the first to review!"}
+              {t('reviews.noReviews') ||
+                'No reviews yet. Be the first to review!'}
             </p>
           </div>
         )}

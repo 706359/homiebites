@@ -1,54 +1,67 @@
-
 export const adminFeatures = {
   dashboard: {
-    name: "Dashboard",
-    icon: "fa-chart-line",
+    name: 'Dashboard',
+    icon: 'fa-chart-line',
     enabled: true,
   },
   excelViewer: {
-    name: "All Orders",
-    icon: "fa-table",
+    name: 'All Orders',
+    icon: 'fa-table',
     enabled: true,
   },
   orders: {
-    name: "Current Month",
-    icon: "fa-calendar-alt",
+    name: 'Current Month',
+    icon: 'fa-calendar-alt',
     enabled: true,
   },
   analytics: {
-    name: "Analytics",
-    icon: "fa-chart-bar",
+    name: 'Analytics',
+    icon: 'fa-chart-bar',
     enabled: true,
   },
   customers: {
-    name: "Customers",
-    icon: "fa-users",
+    name: 'Customers',
+    icon: 'fa-users',
     enabled: true,
   },
   reports: {
-    name: "Reports",
-    icon: "fa-file-alt",
+    name: 'Reports',
+    icon: 'fa-file-alt',
     enabled: true,
   },
   pendingAmounts: {
-    name: "Pending Amounts",
-    icon: "fa-exclamation-triangle",
+    name: 'Pending Amounts',
+    icon: 'fa-exclamation-triangle',
     enabled: true,
   },
   notifications: {
-    name: "Notifications",
-    icon: "fa-bell",
+    name: 'Notifications',
+    icon: 'fa-bell',
     enabled: true,
   },
   settings: {
-    name: "Settings",
-    icon: "fa-cog",
+    name: 'Settings',
+    icon: 'fa-cog',
     enabled: true,
   },
   menuPrice: {
-    name: "Menu & Price",
-    icon: "fa-utensils",
+    name: 'Menu & Price',
+    icon: 'fa-utensils',
+    enabled: true,
+  },
+  reviews: {
+    name: 'Reviews & Feedback',
+    icon: 'fa-star',
+    enabled: true,
+  },
+  financialSummary: {
+    name: 'Financial Summary',
+    icon: 'fa-chart-pie',
+    enabled: true,
+  },
+  offers: {
+    name: 'Special Offers',
+    icon: 'fa-tag',
     enabled: true,
   },
 };
-

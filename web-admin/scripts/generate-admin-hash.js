@@ -15,7 +15,9 @@ async function generateHash() {
   }
 
   console.log('🔐 Generating secure password hash...\n');
-  console.log(`Password: ${password.replace(/./g, '*')} (${password.length} characters)\n`);
+  console.log(
+    `Password: ${password.replace(/./g, '*')} (${password.length} characters)\n`
+  );
 
   try {
     // Use 12 rounds for good security
@@ -28,8 +30,12 @@ async function generateHash() {
     console.log('⚠️  Important Security Notes:');
     console.log('   - Never commit your .env file to version control');
     console.log('   - Keep your .env file secure and backed up');
-    console.log('   - Remove ADMIN_PASSWORD (plain text) after setting ADMIN_PASSWORD_HASH');
-    console.log('   - The hash is one-way - you cannot recover the original password from it\n');
+    console.log(
+      '   - Remove ADMIN_PASSWORD (plain text) after setting ADMIN_PASSWORD_HASH'
+    );
+    console.log(
+      '   - The hash is one-way - you cannot recover the original password from it\n'
+    );
 
     // Also show what to remove
     console.log('🗑️  You can now remove or comment out:');

@@ -1,7 +1,9 @@
-
 import connectDB from '../../../../lib/db.js';
 import Order from '../../../../lib/models/Order.js';
-import { isAdmin, createErrorResponse } from '../../../../lib/middleware/auth.js';
+import {
+  isAdmin,
+  createErrorResponse,
+} from '../../../../lib/middleware/auth.js';
 
 const normalizePaymentMode = (pm) => {
   if (!pm) return 'Online';
@@ -40,16 +42,21 @@ export async function POST(request) {
         const normalized = {
           sNo: orderData['S No.'] || orderData.sNo || orderData.s_no,
           date: orderData.Date || orderData.date,
-          deliveryAddress: orderData['Delivery Address'] || orderData.deliveryAddress,
+          deliveryAddress:
+            orderData['Delivery Address'] || orderData.deliveryAddress,
           quantity: Number(orderData.Quantity || orderData.quantity) || 1,
-          unitPrice: Number(orderData['Unit Price'] || orderData.unitPrice) || 0,
-          totalAmount: Number(orderData['Total Amount'] || orderData.totalAmount) || 0,
+          unitPrice:
+            Number(orderData['Unit Price'] || orderData.unitPrice) || 0,
+          totalAmount:
+            Number(orderData['Total Amount'] || orderData.totalAmount) || 0,
           mode: orderData.Mode || orderData.mode || 'Lunch',
           status: orderData.Status || orderData.status || 'Pending',
-          paymentMode: orderData['Payment Mode'] || orderData.paymentMode || 'Online',
+          paymentMode:
+            orderData['Payment Mode'] || orderData.paymentMode || 'Online',
           billingMonth: orderData['Billing Month'] || orderData.billingMonth,
           year: orderData.Year || orderData.year,
-          orderId: orderData['Order ID'] || orderData.orderId || orderData.order_id,
+          orderId:
+            orderData['Order ID'] || orderData.orderId || orderData.order_id,
         };
 
         if (!normalized.date || !normalized.deliveryAddress) {
@@ -61,7 +68,9 @@ export async function POST(request) {
           continue;
         }
 
-        const orderId = normalized.orderId ? String(normalized.orderId).trim() : '';
+        const orderId = normalized.orderId
+          ? String(normalized.orderId).trim()
+          : '';
         if (!orderId) {
           errors.push({
             index: i + 2,
@@ -87,8 +96,23 @@ export async function POST(request) {
           const dateStr = normalized.date.trim();
           if (dateStr.match(/^\d{1,2}-[A-Za-z]{3}-\d{2,4}$/)) {
             const [day, monthStr, yearStr] = dateStr.split('-');
-            const monthNames = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
-            const monthIndex = monthNames.findIndex((m) => monthStr.toLowerCase().startsWith(m));
+            const monthNames = [
+              'jan',
+              'feb',
+              'mar',
+              'apr',
+              'may',
+              'jun',
+              'jul',
+              'aug',
+              'sep',
+              'oct',
+              'nov',
+              'dec',
+            ];
+            const monthIndex = monthNames.findIndex((m) =>
+              monthStr.toLowerCase().startsWith(m)
+            );
             let year = parseInt(yearStr);
             if (year < 100) year = year < 50 ? 2000 + year : 1900 + year;
             if (monthIndex !== -1) {
@@ -103,15 +127,19 @@ export async function POST(request) {
           normalized.dateNeedsReview = true;
           normalized.originalDateString = String(normalized.date);
           normalized.date = String(normalized.date);
-          normalized.billingYear = orderData.billingYear ?? orderData.Year ?? orderData.year;
-          normalized.billingMonth = orderData.billingMonth ?? orderData['Billing Month'];
+          normalized.billingYear =
+            orderData.billingYear ?? orderData.Year ?? orderData.year;
+          normalized.billingMonth =
+            orderData.billingMonth ?? orderData['Billing Month'];
         } else {
           const year = parsedDate.getFullYear();
           const month = parsedDate.getMonth() + 1;
           const day = String(parsedDate.getDate()).padStart(2, '0');
           normalized.date = `${year}-${String(month).padStart(2, '0')}-${day}`;
-          normalized.billingYear = orderData.billingYear ?? orderData.Year ?? orderData.year ?? year;
-          normalized.billingMonth = orderData.billingMonth ?? orderData['Billing Month'] ?? month;
+          normalized.billingYear =
+            orderData.billingYear ?? orderData.Year ?? orderData.year ?? year;
+          normalized.billingMonth =
+            orderData.billingMonth ?? orderData['Billing Month'] ?? month;
         }
 
         normalized.totalAmount = normalized.unitPrice * normalized.quantity;
@@ -120,7 +148,11 @@ export async function POST(request) {
         if (normalized.status) {
           const statusLower = String(normalized.status).toLowerCase();
           normalized.paymentStatus =
-            statusLower === 'paid' ? 'Paid' : statusLower === 'unpaid' ? 'Unpaid' : 'Pending';
+            statusLower === 'paid'
+              ? 'Paid'
+              : statusLower === 'unpaid'
+                ? 'Unpaid'
+                : 'Pending';
         }
 
         normalized.source = 'excel';
@@ -181,4 +213,3 @@ export async function POST(request) {
     );
   }
 }
-

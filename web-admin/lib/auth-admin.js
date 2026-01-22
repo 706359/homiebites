@@ -1,5 +1,4 @@
-
-const ADMIN_KEY = "homiebites_admin";
+const ADMIN_KEY = 'homiebites_admin';
 
 /** Session expires after this many ms of inactivity / absolute time. Browser closed = no refresh, so login expires. */
 export const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -11,10 +10,10 @@ export const getSessionExpiresAt = () =>
 export const clearAuthStorage = () => {
   try {
     localStorage.removeItem(ADMIN_KEY);
-    localStorage.removeItem("homiebites_admin");
-    localStorage.removeItem("homiebites_user");
-    localStorage.removeItem("homiebites_token");
-    localStorage.removeItem("homiebites_token_meta");
+    localStorage.removeItem('homiebites_admin');
+    localStorage.removeItem('homiebites_user');
+    localStorage.removeItem('homiebites_token');
+    localStorage.removeItem('homiebites_token_meta');
   } catch (e) {
     if (process.env.NODE_ENV === 'development') {
       console.warn('[Auth] clearAuthStorage error:', e);
@@ -29,7 +28,7 @@ export const clearAuthStorage = () => {
 export const checkSessionAndClearIfExpired = () => {
   if (typeof window === 'undefined') return false;
   try {
-    const raw = localStorage.getItem("homiebites_token_meta");
+    const raw = localStorage.getItem('homiebites_token_meta');
     if (!raw) return false;
     const meta = JSON.parse(raw);
     if (!meta || !meta.expiresAt) return false;
@@ -42,8 +41,10 @@ export const checkSessionAndClearIfExpired = () => {
 };
 
 export const login = (username, password) => {
-  console.warn('login() from auth-admin.js is deprecated. Use API authentication instead.');
-  return { success: false, error: "Please use API authentication" };
+  console.warn(
+    'login() from auth-admin.js is deprecated. Use API authentication instead.'
+  );
+  return { success: false, error: 'Please use API authentication' };
 };
 
 export const logout = async () => {
@@ -63,7 +64,7 @@ export const logout = async () => {
 };
 
 export const isAuthenticated = () => {
-  return localStorage.getItem(ADMIN_KEY) === "true";
+  return localStorage.getItem(ADMIN_KEY) === 'true';
 };
 
 export const requireAuth = () => {
@@ -72,5 +73,3 @@ export const requireAuth = () => {
   }
   return true;
 };
-
-

@@ -1,9 +1,14 @@
 // Use NEXT_PUBLIC_API_URL when backend is on another origin. Empty = same-origin /api.
-const resolvedApiUrl = typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL
-  ? String(process.env.NEXT_PUBLIC_API_URL).replace(/\/$/, '')
-  : '';
+const resolvedApiUrl =
+  typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL
+    ? String(process.env.NEXT_PUBLIC_API_URL).replace(/\/$/, '')
+    : '';
 
-export const retryAsync = async (fn, maxAttempts = 3, initialDelayMs = 1000) => {
+export const retryAsync = async (
+  fn,
+  maxAttempts = 3,
+  initialDelayMs = 1000
+) => {
   let lastError;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -43,10 +48,15 @@ export const api = {
 
   async request(endpoint, options = {}) {
     const url = `${resolvedApiUrl}${endpoint}`;
-    const token = typeof window !== 'undefined' ? localStorage.getItem('homiebites_token') : null;
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('homiebites_token')
+        : null;
 
     const isFormData = options.body instanceof FormData;
-    const defaultHeaders = isFormData ? {} : { 'Content-Type': 'application/json' };
+    const defaultHeaders = isFormData
+      ? {}
+      : { 'Content-Type': 'application/json' };
 
     const signal = options.signal || options.abortController?.signal;
 
@@ -64,8 +74,9 @@ export const api = {
 
     delete config.abortController;
 
-    const startTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
-    
+    const startTime =
+      typeof performance !== 'undefined' ? performance.now() : Date.now();
+
     try {
       const response = await fetch(url, config);
 
@@ -80,7 +91,10 @@ export const api = {
       } else {
         const text = await response.text();
 
-        if (text.trim().startsWith('<!doctype') || text.trim().startsWith('<!DOCTYPE')) {
+        if (
+          text.trim().startsWith('<!doctype') ||
+          text.trim().startsWith('<!DOCTYPE')
+        ) {
           console.error(
             `[API] Got HTML instead of JSON from ${url}. Backend server may not be running or API URL is incorrect.`
           );
@@ -113,10 +127,14 @@ export const api = {
             localStorage.removeItem('homiebites_user');
 
             if (window.location.pathname.startsWith('/admin')) {
-              console.warn('[API] Authentication failed. Redirecting to admin login...');
+              console.warn(
+                '[API] Authentication failed. Redirecting to admin login...'
+              );
               window.location.href = '/admin';
             } else if (window.location.pathname === '/') {
-              console.warn('[API] Authentication failed but already on home page');
+              console.warn(
+                '[API] Authentication failed but already on home page'
+              );
             }
           }
 
@@ -135,10 +153,19 @@ export const api = {
 
       // Track API performance
       if (typeof window !== 'undefined') {
-        const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - startTime;
+        const duration =
+          (typeof performance !== 'undefined'
+            ? performance.now()
+            : Date.now()) - startTime;
         try {
-          const { default: monitoringService } = await import('../lib/monitoring.js');
-          monitoringService.trackAPI(endpoint, options.method || 'GET', duration, response.status);
+          const { default: monitoringService } =
+            await import('../lib/monitoring.js');
+          monitoringService.trackAPI(
+            endpoint,
+            options.method || 'GET',
+            duration,
+            response.status
+          );
         } catch (trackError) {
           // Silently fail if monitoring not available
         }
@@ -148,10 +175,20 @@ export const api = {
     } catch (error) {
       // Track API error performance
       if (typeof window !== 'undefined') {
-        const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - startTime;
+        const duration =
+          (typeof performance !== 'undefined'
+            ? performance.now()
+            : Date.now()) - startTime;
         try {
-          const { default: monitoringService } = await import('../lib/monitoring.js');
-          monitoringService.trackAPI(endpoint, options.method || 'GET', duration, 0, error);
+          const { default: monitoringService } =
+            await import('../lib/monitoring.js');
+          monitoringService.trackAPI(
+            endpoint,
+            options.method || 'GET',
+            duration,
+            0,
+            error
+          );
         } catch (trackError) {
           // Silently fail if monitoring not available
         }
@@ -211,7 +248,11 @@ export const api = {
   },
 
   async deleteMenu() {
-    return retryAsync(() => this.request('/api/menu', { method: 'DELETE' }), 3, 1000);
+    return retryAsync(
+      () => this.request('/api/menu', { method: 'DELETE' }),
+      3,
+      1000
+    );
   },
 
   async createOrder(orderData) {
@@ -344,6 +385,34 @@ export const api = {
     if (featured) params.append('featured', 'true');
     if (limit) params.append('limit', limit.toString());
     return this.request(`/api/reviews?${params.toString()}`);
+  },
+
+  async getAllReviews() {
+    // Get all reviews (including unapproved) for admin
+    return retryAsync(() => this.request('/api/reviews?all=true&limit=1000'), 3, 1000);
+  },
+
+  async updateReview(reviewId, updates) {
+    return retryAsync(
+      () =>
+        this.request(`/api/reviews/${reviewId}`, {
+          method: 'PUT',
+          body: JSON.stringify(updates),
+        }),
+      3,
+      1000
+    );
+  },
+
+  async deleteReview(reviewId) {
+    return retryAsync(
+      () =>
+        this.request(`/api/reviews/${reviewId}`, {
+          method: 'DELETE',
+        }),
+      3,
+      1000
+    );
   },
 
   async getOffers() {

@@ -1,6 +1,6 @@
 /**
  * Jest Configuration for Testing
- * 
+ *
  * Basic setup for unit and integration tests
  */
 
@@ -26,10 +26,7 @@ const customJestConfig = {
     '!**/node_modules/**',
     '!**/.next/**',
   ],
-  testMatch: [
-    '**/__tests__/**/*.[jt]s?(x)',
-    '**/?(*.)+(spec|test).[jt]s?(x)',
-  ],
+  testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

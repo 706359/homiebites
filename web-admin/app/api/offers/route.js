@@ -1,8 +1,6 @@
-
 import connectDB from '../../../lib/db.js';
 import { createErrorResponse, isAdmin } from '../../../lib/middleware/auth.js';
 import Offer from '../../../lib/models/Offers.js';
-
 
 const fmt = (d) => {
   if (!d) return null;
@@ -28,13 +26,14 @@ const fmt = (d) => {
   return `${dd}-${m}-${yyyy}`;
 };
 
-
 export async function GET() {
   try {
     await connectDB();
     const now = new Date();
     const offers = await Offer.find({ isActive: true }).lean();
-    const active = offers.filter((o) => !o.endDate || new Date(o.endDate) >= now);
+    const active = offers.filter(
+      (o) => !o.endDate || new Date(o.endDate) >= now
+    );
     const formatted = active.map((o) => ({
       ...o,
       startDate: fmt(o.startDate),
@@ -43,27 +42,31 @@ export async function GET() {
 
     return Response.json({ success: true, data: formatted });
   } catch (error) {
-    
-    if (error.message && (error.message.includes('connect') || error.message.includes('ECONNREFUSED'))) {
+    if (
+      error.message &&
+      (error.message.includes('connect') ||
+        error.message.includes('ECONNREFUSED'))
+    ) {
       return Response.json(
-        { 
-          success: false, 
-          error: 'Database connection failed. Please check your database configuration.'
+        {
+          success: false,
+          error:
+            'Database connection failed. Please check your database configuration.',
         },
         { status: 503 }
       );
     }
     return Response.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: error.message || 'Failed to fetch offers',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
       { status: error.status || 500 }
     );
   }
 }
-
 
 export async function PUT(request) {
   try {
@@ -78,7 +81,10 @@ export async function PUT(request) {
         : null;
 
     if (!Array.isArray(data)) {
-      return Response.json({ success: false, error: 'Offers must be an array' }, { status: 400 });
+      return Response.json(
+        { success: false, error: 'Offers must be an array' },
+        { status: 400 }
+      );
     }
 
     await Offer.deleteMany({});
@@ -86,36 +92,46 @@ export async function PUT(request) {
 
     return Response.json({ success: true, data: created });
   } catch (error) {
-    
     if (error.name === 'ValidationError') {
       return Response.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Validation failed',
-          details: Object.values(error.errors || {}).map(e => e.message).join(', ')
+          details: Object.values(error.errors || {})
+            .map((e) => e.message)
+            .join(', '),
         },
         { status: 400 }
       );
     }
-    
+
     if (error.status === 401 || error.status === 403) {
-      return createErrorResponse(error.status, error.message || 'Authentication failed');
+      return createErrorResponse(
+        error.status,
+        error.message || 'Authentication failed'
+      );
     }
-    
-    if (error.message && (error.message.includes('connect') || error.message.includes('ECONNREFUSED'))) {
+
+    if (
+      error.message &&
+      (error.message.includes('connect') ||
+        error.message.includes('ECONNREFUSED'))
+    ) {
       return Response.json(
-        { 
-          success: false, 
-          error: 'Database connection failed. Please check your database configuration.'
+        {
+          success: false,
+          error:
+            'Database connection failed. Please check your database configuration.',
         },
         { status: 503 }
       );
     }
     return Response.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: error.message || 'Failed to update offers',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
       { status: error.status || 500 }
     );

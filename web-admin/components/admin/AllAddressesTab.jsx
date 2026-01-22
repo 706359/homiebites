@@ -1,8 +1,16 @@
 import { useMemo, useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
 
-import { formatDate, formatDateShort, parseOrderDate } from './utils/dateUtils.js';
-import { formatCurrency, getOrderAmount, sortOrdersByOrderId } from './utils/orderUtils.js';
+import {
+  formatDate,
+  formatDateShort,
+  parseOrderDate,
+} from './utils/dateUtils.js';
+import {
+  formatCurrency,
+  getOrderAmount,
+  sortOrdersByOrderId,
+} from './utils/orderUtils.js';
 
 const AllAddressesTab = ({
   orders = [],
@@ -71,7 +79,10 @@ const AllAddressesTab = ({
       const orderDate = parseOrderDate(order.date || order.order_date || null);
 
       if (orderDate) {
-        if (!customerMap[address].lastOrderDate || orderDate > customerMap[address].lastOrderDate) {
+        if (
+          !customerMap[address].lastOrderDate ||
+          orderDate > customerMap[address].lastOrderDate
+        ) {
           customerMap[address].lastOrderDate = orderDate;
         }
         if (
@@ -93,20 +104,27 @@ const AllAddressesTab = ({
 
     const customers = Object.values(customerMap).map((customer) => {
       const avgOrderValue =
-        customer.totalOrders > 0 ? customer.totalSpent / customer.totalOrders : 0;
+        customer.totalOrders > 0
+          ? customer.totalSpent / customer.totalOrders
+          : 0;
 
       const preferredMode =
-        Object.entries(customer.preferredMode).sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A';
+        Object.entries(customer.preferredMode).sort(
+          ([, a], [, b]) => b - a
+        )[0]?.[0] || 'N/A';
       const preferredModePercent =
         customer.totalOrders > 0
           ? (customer.preferredMode[preferredMode] / customer.totalOrders) * 100
           : 0;
 
       const preferredPayment =
-        Object.entries(customer.paymentModes).sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A';
+        Object.entries(customer.paymentModes).sort(
+          ([, a], [, b]) => b - a
+        )[0]?.[0] || 'N/A';
       const preferredPaymentPercent =
         customer.totalOrders > 0
-          ? (customer.paymentModes[preferredPayment] / customer.totalOrders) * 100
+          ? (customer.paymentModes[preferredPayment] / customer.totalOrders) *
+            100
           : 0;
 
       let segment = 'New';
@@ -118,7 +136,8 @@ const AllAddressesTab = ({
         segment = 'Regular';
       }
 
-      const isInactive = customer.lastOrderDate && customer.lastOrderDate < thirtyDaysAgo;
+      const isInactive =
+        customer.lastOrderDate && customer.lastOrderDate < thirtyDaysAgo;
 
       return {
         ...customer,
@@ -140,7 +159,9 @@ const AllAddressesTab = ({
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter((c) => c.address.toLowerCase().includes(query));
+      filtered = filtered.filter((c) =>
+        c.address.toLowerCase().includes(query)
+      );
     }
 
     if (filterStatus === 'active') {
@@ -181,7 +202,14 @@ const AllAddressesTab = ({
     });
 
     return filtered;
-  }, [customerStats, searchQuery, filterStatus, filterSegment, sortBy, sortOrder]);
+  }, [
+    customerStats,
+    searchQuery,
+    filterStatus,
+    filterSegment,
+    sortBy,
+    sortOrder,
+  ]);
 
   const paginatedCustomers = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -255,25 +283,28 @@ const AllAddressesTab = ({
     link.href = URL.createObjectURL(blob);
     link.download = `customers_export_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
-    if (showNotification) showNotification('Customer list exported successfully', 'success');
+    if (showNotification)
+      showNotification('Customer list exported successfully', 'success');
   };
 
   if (loading) {
     return (
-      <div className='admin-content'>
-        <PremiumLoader message='Loading customers...' size='large' />
+      <div className="admin-content">
+        <PremiumLoader message="Loading customers..." size="large" />
       </div>
     );
   }
 
   if (!orders || orders.length === 0) {
     return (
-      <div className='admin-content'>
-        <div className='dashboard-card empty-state-center'>
-          <div className='empty-state'>
-            <i className='fa-solid fa-users empty-state-icon'></i>
+      <div className="admin-content">
+        <div className="dashboard-card empty-state-center">
+          <div className="empty-state">
+            <i className="fa-solid fa-users empty-state-icon"></i>
             <p>No orders found</p>
-            <p className='empty-state-text'>Add some orders to see customer data here</p>
+            <p className="empty-state-text">
+              Add some orders to see customer data here
+            </p>
           </div>
         </div>
       </div>
@@ -281,112 +312,116 @@ const AllAddressesTab = ({
   }
 
   return (
-    <div className='admin-content'>
-      <div className='admin-stats customer-stats-row'>
-        <div className='stat-card stat-card-gradient-accent customer-stat-card'>
-          <div className='customer-stat-content'>
-            <h3 className='customer-stat-number'>{segments.total}</h3>
-            <p className='customer-stat-label'>Total Customers</p>
+    <div className="admin-content">
+      <div className="admin-stats customer-stats-row">
+        <div className="stat-card stat-card-gradient-accent customer-stat-card">
+          <div className="customer-stat-content">
+            <h3 className="customer-stat-number">{segments.total}</h3>
+            <p className="customer-stat-label">Total Customers</p>
           </div>
         </div>
-        <div className='stat-card stat-card-gradient-warning customer-stat-card'>
-          <i className='fa-solid fa-crown customer-stat-icon customer-stat-icon-green'></i>
-          <div className='customer-stat-content'>
-            <h3 className='customer-stat-number'>{segments.superVip}</h3>
-            <p className='customer-stat-label'>Super VIP (≥₹15k)</p>
+        <div className="stat-card stat-card-gradient-warning customer-stat-card">
+          <i className="fa-solid fa-crown customer-stat-icon customer-stat-icon-green"></i>
+          <div className="customer-stat-content">
+            <h3 className="customer-stat-number">{segments.superVip}</h3>
+            <p className="customer-stat-label">Super VIP (≥₹15k)</p>
           </div>
         </div>
-        <div className='stat-card stat-card-gradient-warning customer-stat-card'>
-          <i className='fa-solid fa-star customer-stat-icon customer-stat-icon-green'></i>
-          <div className='customer-stat-content'>
-            <h3 className='customer-stat-number'>{segments.vip}</h3>
-            <p className='customer-stat-label'>VIP (₹8k-₹15k)</p>
+        <div className="stat-card stat-card-gradient-warning customer-stat-card">
+          <i className="fa-solid fa-star customer-stat-icon customer-stat-icon-green"></i>
+          <div className="customer-stat-content">
+            <h3 className="customer-stat-number">{segments.vip}</h3>
+            <p className="customer-stat-label">VIP (₹8k-₹15k)</p>
           </div>
         </div>
-        <div className='stat-card stat-card-gradient-secondary customer-stat-card'>
-          <i className='fa-solid fa-user customer-stat-icon customer-stat-icon-light'></i>
-          <div className='customer-stat-content'>
-            <h3 className='customer-stat-number'>{segments.regular}</h3>
-            <p className='customer-stat-label'>Regular Customers</p>
+        <div className="stat-card stat-card-gradient-secondary customer-stat-card">
+          <i className="fa-solid fa-user customer-stat-icon customer-stat-icon-light"></i>
+          <div className="customer-stat-content">
+            <h3 className="customer-stat-number">{segments.regular}</h3>
+            <p className="customer-stat-label">Regular Customers</p>
           </div>
         </div>
-        <div className='stat-card stat-card-gradient-success customer-stat-card'>
-          <div className='customer-stat-content'>
-            <h3 className='customer-stat-number'>₹{formatCurrency(segments.totalRevenue)}</h3>
-            <p className='customer-stat-label'>Total Revenue</p>
+        <div className="stat-card stat-card-gradient-success customer-stat-card">
+          <div className="customer-stat-content">
+            <h3 className="customer-stat-number">
+              ₹{formatCurrency(segments.totalRevenue)}
+            </h3>
+            <p className="customer-stat-label">Total Revenue</p>
           </div>
         </div>
       </div>
 
-      <div className='dashboard-card filter-bar-card filter-bar-compact'>
-        <div className='filter-bar-container-compact filter-bar-layout-by-rows'>
-          <div className='filter-bar-row'>
-            <div className='search-input-wrapper search-input-compact search-input-flex'>
+      <div className="dashboard-card filter-bar-card filter-bar-compact">
+        <div className="filter-bar-container-compact filter-bar-layout-by-rows">
+          <div className="filter-bar-row">
+            <div className="search-input-wrapper search-input-compact search-input-flex">
               <input
-                type='text'
-                className='input-field search-input-with-icon'
-                placeholder='Search by address...'
+                type="text"
+                className="input-field search-input-with-icon"
+                placeholder="Search by address..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <select
-              className='input-field filter-select-compact'
+              className="input-field filter-select-compact"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
-              <option value='all'>All Status</option>
-              <option value='active'>Active</option>
-              <option value='inactive'>Inactive</option>
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
             </select>
             <select
-              className='input-field filter-select-compact'
+              className="input-field filter-select-compact"
               value={filterSegment}
               onChange={(e) => setFilterSegment(e.target.value)}
             >
-              <option value='all'>All Segments</option>
-              <option value='Super VIP'>Super VIP</option>
-              <option value='VIP'>VIP</option>
-              <option value='Regular'>Regular</option>
-              <option value='New'>New</option>
+              <option value="all">All Segments</option>
+              <option value="Super VIP">Super VIP</option>
+              <option value="VIP">VIP</option>
+              <option value="Regular">Regular</option>
+              <option value="New">New</option>
             </select>
           </div>
 
-          <div className='filter-bar-row'>
-            <div className='view-toggle-compact'>
+          <div className="filter-bar-row">
+            <div className="view-toggle-compact">
               <button
                 className={`btn btn-ghost btn-icon ${viewMode === 'table' ? 'active' : ''}`}
                 onClick={() => setViewMode('table')}
-                title='Table View'
+                title="Table View"
               >
-                <i className='fa-solid fa-table'></i>
+                <i className="fa-solid fa-table"></i>
               </button>
               <button
                 className={`btn btn-ghost btn-icon ${viewMode === 'cards' ? 'active' : ''}`}
                 onClick={() => setViewMode('cards')}
-                title='Card View'
+                title="Card View"
               >
-                <i className='fa-solid fa-th'></i>
+                <i className="fa-solid fa-th"></i>
               </button>
             </div>
             <button
-              className='btn btn-secondary btn-small'
+              className="btn btn-secondary btn-small"
               onClick={handleExport}
-              title='Export'
+              title="Export"
             >
-              <i className='fa-solid fa-download'></i> Export
+              <i className="fa-solid fa-download"></i> Export
             </button>
-            {(searchQuery || filterStatus !== 'all' || filterSegment !== 'all') && (
+            {(searchQuery ||
+              filterStatus !== 'all' ||
+              filterSegment !== 'all') && (
               <button
-                className='btn btn-ghost btn-small'
+                className="btn btn-ghost btn-small"
                 onClick={() => {
                   setSearchQuery('');
                   setFilterStatus('all');
                   setFilterSegment('all');
                 }}
-                title='Clear Filters'
+                title="Clear Filters"
               >
-                <i className='fa-solid fa-xmark'></i> Clear
+                <i className="fa-solid fa-xmark"></i> Clear
               </button>
             )}
           </div>
@@ -394,17 +429,20 @@ const AllAddressesTab = ({
       </div>
 
       {inactiveCustomers.length > 0 && (
-        <div className='dashboard-card margin-bottom-24'>
-          <div className='flex justify-between items-center'>
+        <div className="dashboard-card margin-bottom-24">
+          <div className="flex justify-between items-center">
             <div>
-              <h3 className='text-warning mb-8'>
-                ⚠️ {inactiveCustomers.length} customers haven&apos;t ordered in 30+ days
+              <h3 className="text-warning mb-8">
+                ⚠️ {inactiveCustomers.length} customers haven&apos;t ordered in
+                30+ days
               </h3>
-              <p className='text-base'>Consider reaching out to re-engage these customers</p>
+              <p className="text-base">
+                Consider reaching out to re-engage these customers
+              </p>
             </div>
-            <div className='action-buttons-group'>
+            <div className="action-buttons-group">
               <button
-                className='btn btn-special btn-small'
+                className="btn btn-special btn-small"
                 onClick={() => {
                   setFilterStatus('inactive');
                 }}
@@ -417,30 +455,32 @@ const AllAddressesTab = ({
       )}
 
       {viewMode === 'table' ? (
-        <div className='dashboard-card table-container-card table-container-no-padding'>
-          <div className='orders-table-container table-wrapper table-wrapper-min-height'>
+        <div className="dashboard-card table-container-card table-container-no-padding">
+          <div className="orders-table-container table-wrapper table-wrapper-min-height">
             {filteredCustomers.length === 0 ? (
-              <div className='empty-state-center'>
-                <div className='empty-state'>
-                  <i className='fa-solid fa-users empty-state-icon'></i>
+              <div className="empty-state-center">
+                <div className="empty-state">
+                  <i className="fa-solid fa-users empty-state-icon"></i>
                   <p>No customers found</p>
-                  <p className='empty-state-text'>
+                  <p className="empty-state-text">
                     {orders.length > 0 && customerStats.length === 0
                       ? `Found ${orders.length} orders, but none have valid delivery addresses.`
-                      : searchQuery || filterStatus !== 'all' || filterSegment !== 'all'
-                      ? 'Try adjusting your search or filters'
-                      : 'No customer data available. Add orders with delivery addresses to see customers here.'}
+                      : searchQuery ||
+                          filterStatus !== 'all' ||
+                          filterSegment !== 'all'
+                        ? 'Try adjusting your search or filters'
+                        : 'No customer data available. Add orders with delivery addresses to see customers here.'}
                   </p>
                 </div>
               </div>
             ) : (
               <>
-                <table className='orders-table table-full-width'>
+                <table className="orders-table table-full-width">
                   <thead>
                     <tr>
                       <th
                         onClick={() => handleSort('address')}
-                        className='cursor-pointer select-none'
+                        className="cursor-pointer select-none"
                       >
                         Address
                         {sortBy === 'address' && (
@@ -453,7 +493,7 @@ const AllAddressesTab = ({
                       </th>
                       <th
                         onClick={() => handleSort('totalOrders')}
-                        className='cursor-pointer select-none'
+                        className="cursor-pointer select-none"
                       >
                         Orders
                         {sortBy === 'totalOrders' && (
@@ -466,7 +506,7 @@ const AllAddressesTab = ({
                       </th>
                       <th
                         onClick={() => handleSort('totalSpent')}
-                        className='cursor-pointer select-none'
+                        className="cursor-pointer select-none"
                       >
                         Total Spent
                         {sortBy === 'totalSpent' && (
@@ -479,7 +519,7 @@ const AllAddressesTab = ({
                       </th>
                       <th
                         onClick={() => handleSort('avgOrderValue')}
-                        className='cursor-pointer select-none'
+                        className="cursor-pointer select-none"
                       >
                         Avg Order
                         {sortBy === 'avgOrderValue' && (
@@ -492,7 +532,7 @@ const AllAddressesTab = ({
                       </th>
                       <th
                         onClick={() => handleSort('lastOrder')}
-                        className='cursor-pointer select-none'
+                        className="cursor-pointer select-none"
                       >
                         Last Order
                         {sortBy === 'lastOrder' && (
@@ -506,7 +546,7 @@ const AllAddressesTab = ({
                       <th>Segment</th>
                       <th>Preferred Mode</th>
                       <th>Status</th>
-                      <th className='text-center'>Actions</th>
+                      <th className="text-center">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -515,68 +555,79 @@ const AllAddressesTab = ({
                         customer.segment === 'Super VIP'
                           ? 'var(--admin-warning)'
                           : customer.segment === 'VIP'
-                          ? 'var(--admin-accent)'
-                          : customer.segment === 'Regular'
-                          ? 'var(--admin-success)'
-                          : 'var(--admin-text-secondary)';
+                            ? 'var(--admin-accent)'
+                            : customer.segment === 'Regular'
+                              ? 'var(--admin-success)'
+                              : 'var(--admin-text-secondary)';
                       return (
                         <tr
                           key={idx}
                           onClick={() => handleViewCustomer(customer)}
-                          className='cursor-pointer'
+                          className="cursor-pointer"
                         >
                           <td>
-                            <div className='font-semibold text-primary'>{customer.address}</div>
+                            <div className="font-semibold text-primary">
+                              {customer.address}
+                            </div>
                           </td>
                           <td>
-                            <span className='font-semibold'>{customer.totalOrders}</span>
+                            <span className="font-semibold">
+                              {customer.totalOrders}
+                            </span>
                           </td>
                           <td>
-                            <span className='font-bold text-accent text-sm'>
+                            <span className="font-bold text-accent text-sm">
                               ₹{formatCurrency(customer.totalSpent)}
                             </span>
                           </td>
                           <td>
-                            <span className='font-semibold'>
+                            <span className="font-semibold">
                               ₹{formatCurrency(customer.avgOrderValue)}
                             </span>
                           </td>
                           <td>
-                            <span className='text-xs text-secondary'>
+                            <span className="text-xs text-secondary">
                               {formatDateDiff(customer.lastOrderDate)}
                             </span>
                           </td>
                           <td>
-                            <span className='badge badge-small'>
+                            <span className="badge badge-small">
                               {customer.segment === 'Super VIP'
                                 ? '👑'
                                 : customer.segment === 'VIP'
-                                ? '🌟'
-                                : customer.segment === 'Regular'
-                                ? '📈'
-                                : '👤'}{' '}
+                                  ? '🌟'
+                                  : customer.segment === 'Regular'
+                                    ? '📈'
+                                    : '👤'}{' '}
                               {customer.segment}
                             </span>
                           </td>
                           <td>
-                            <span className='text-xs'>{customer.preferredMode}</span>
+                            <span className="text-xs">
+                              {customer.preferredMode}
+                            </span>
                           </td>
                           <td>
                             {customer.isInactive ? (
-                              <span className='badge badge-warning badge-small'>Inactive</span>
+                              <span className="badge badge-warning badge-small">
+                                Inactive
+                              </span>
                             ) : (
-                              <span className='badge badge-success badge-small'>Active</span>
+                              <span className="badge badge-success badge-small">
+                                Active
+                              </span>
                             )}
                           </td>
-                          <td className='text-center'>
+                          <td className="text-center">
                             <button
-                              className='btn btn-primary btn-small badge-small'
+                              className="btn btn-primary btn-small badge-small"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (onViewOrders) onViewOrders(customer.address);
+                                if (onViewOrders)
+                                  onViewOrders(customer.address);
                               }}
                             >
-                              <i className='fa-solid fa-list'></i>
+                              <i className="fa-solid fa-list"></i>
                             </button>
                           </td>
                         </tr>
@@ -586,30 +637,34 @@ const AllAddressesTab = ({
                 </table>
 
                 {totalPages > 1 && (
-                  <div className='pagination-controls'>
+                  <div className="pagination-controls">
                     <div>
                       <button
-                        className='btn btn-ghost btn-small'
-                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        className="btn btn-ghost btn-small"
+                        onClick={() =>
+                          setCurrentPage(Math.max(1, currentPage - 1))
+                        }
                         disabled={currentPage === 1}
                       >
-                        <i className='fa-solid fa-chevron-left'></i> Previous
+                        <i className="fa-solid fa-chevron-left"></i> Previous
                       </button>
-                      <span className='pagination-info'>
+                      <span className="pagination-info">
                         Page {currentPage} of {totalPages}
                       </span>
                       <button
-                        className='btn btn-ghost btn-small'
-                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        className="btn btn-ghost btn-small"
+                        onClick={() =>
+                          setCurrentPage(Math.min(totalPages, currentPage + 1))
+                        }
                         disabled={currentPage === totalPages}
                       >
-                        Next <i className='fa-solid fa-chevron-right'></i>
+                        Next <i className="fa-solid fa-chevron-right"></i>
                       </button>
                     </div>
-                    <div className='pagination-container'>
+                    <div className="pagination-container">
                       <span>Show:</span>
                       <select
-                        className='pagination-select'
+                        className="pagination-select"
                         value={itemsPerPage}
                         onChange={(e) => {
                           setItemsPerPage(Number(e.target.value));
@@ -630,18 +685,20 @@ const AllAddressesTab = ({
           </div>
         </div>
       ) : (
-        <div className='customer-cards-grid'>
+        <div className="customer-cards-grid">
           {filteredCustomers.length === 0 ? (
-            <div className='dashboard-card grid-col-full empty-state-center'>
-              <div className='empty-state'>
-                <i className='fa-solid fa-users empty-state-icon'></i>
+            <div className="dashboard-card grid-col-full empty-state-center">
+              <div className="empty-state">
+                <i className="fa-solid fa-users empty-state-icon"></i>
                 <p>No customers found</p>
-                <p className='empty-state-text'>
+                <p className="empty-state-text">
                   {orders.length > 0 && customerStats.length === 0
                     ? `Found ${orders.length} orders, but none have valid delivery addresses.`
-                    : searchQuery || filterStatus !== 'all' || filterSegment !== 'all'
-                    ? 'Try adjusting your search or filters'
-                    : 'No customer data available. Add orders with delivery addresses to see customers here.'}
+                    : searchQuery ||
+                        filterStatus !== 'all' ||
+                        filterSegment !== 'all'
+                      ? 'Try adjusting your search or filters'
+                      : 'No customer data available. Add orders with delivery addresses to see customers here.'}
                 </p>
               </div>
             </div>
@@ -651,18 +708,18 @@ const AllAddressesTab = ({
                 customer.segment === 'Super VIP'
                   ? '👑'
                   : customer.segment === 'VIP'
-                  ? '🌟'
-                  : customer.segment === 'Regular'
-                  ? '📈'
-                  : '👤';
+                    ? '🌟'
+                    : customer.segment === 'Regular'
+                      ? '📈'
+                      : '👤';
               const segmentLabel =
                 customer.segment === 'Super VIP'
                   ? 'Super VIP Customer'
                   : customer.segment === 'VIP'
-                  ? 'VIP Customer'
-                  : customer.segment === 'Regular'
-                  ? 'Regular Customer'
-                  : 'New Customer';
+                    ? 'VIP Customer'
+                    : customer.segment === 'Regular'
+                      ? 'Regular Customer'
+                      : 'New Customer';
 
               const segmentColors = {
                 'Super VIP': {
@@ -691,98 +748,111 @@ const AllAddressesTab = ({
                 },
               };
 
-              const segmentStyle = segmentColors[customer.segment] || segmentColors.New;
+              const segmentStyle =
+                segmentColors[customer.segment] || segmentColors.New;
 
               return (
                 <div
                   key={idx}
-                  className='customer-card-enhanced'
+                  className="customer-card-enhanced"
                   onClick={() => handleViewCustomer(customer)}
                 >
-                  <div className='customer-card-enhanced-header'>
-                    <div className='customer-card-enhanced-segment-badge'>
-                      <span className='customer-card-enhanced-segment-icon'>{segmentIcon}</span>
-                      <span className='customer-card-enhanced-segment-label'>
+                  <div className="customer-card-enhanced-header">
+                    <div className="customer-card-enhanced-segment-badge">
+                      <span className="customer-card-enhanced-segment-icon">
+                        {segmentIcon}
+                      </span>
+                      <span className="customer-card-enhanced-segment-label">
                         {customer.segment}
                       </span>
                     </div>
                     {customer.isInactive ? (
-                      <span className='customer-card-enhanced-status-badge inactive'>
-                        <i className='fa-solid fa-clock'></i>
+                      <span className="customer-card-enhanced-status-badge inactive">
+                        <i className="fa-solid fa-clock"></i>
                         <span>Inactive</span>
                       </span>
                     ) : (
-                      <span className='customer-card-enhanced-status-badge active'>
-                        <i className='fa-solid fa-check-circle'></i>
+                      <span className="customer-card-enhanced-status-badge active">
+                        <i className="fa-solid fa-check-circle"></i>
                         <span>Active</span>
                       </span>
                     )}
                   </div>
 
-                  <div className='customer-card-enhanced-body'>
-                    <h3 className='customer-card-enhanced-title'>{customer.address}</h3>
+                  <div className="customer-card-enhanced-body">
+                    <h3 className="customer-card-enhanced-title">
+                      {customer.address}
+                    </h3>
 
-                    <div className='customer-card-enhanced-stats'>
-                      <div className='customer-card-enhanced-stat-item'>
-                        <div className='customer-card-enhanced-stat-icon'>
-                          <i className='fa-solid fa-shopping-cart'></i>
+                    <div className="customer-card-enhanced-stats">
+                      <div className="customer-card-enhanced-stat-item">
+                        <div className="customer-card-enhanced-stat-icon">
+                          <i className="fa-solid fa-shopping-cart"></i>
                         </div>
-                        <div className='customer-card-enhanced-stat-content'>
-                          <span className='customer-card-enhanced-stat-label'>Total Orders</span>
-                          <span className='customer-card-enhanced-stat-value'>
+                        <div className="customer-card-enhanced-stat-content">
+                          <span className="customer-card-enhanced-stat-label">
+                            Total Orders
+                          </span>
+                          <span className="customer-card-enhanced-stat-value">
                             {customer.totalOrders}
                           </span>
                         </div>
                       </div>
 
-                      <div className='customer-card-enhanced-stat-item highlight'>
-                        <div className='customer-card-enhanced-stat-icon'>
-                          <i className='fa-solid fa-rupee-sign'></i>
+                      <div className="customer-card-enhanced-stat-item highlight">
+                        <div className="customer-card-enhanced-stat-icon">
+                          <i className="fa-solid fa-rupee-sign"></i>
                         </div>
-                        <div className='customer-card-enhanced-stat-content'>
-                          <span className='customer-card-enhanced-stat-label'>Total Spent</span>
-                          <span className='customer-card-enhanced-stat-value'>
+                        <div className="customer-card-enhanced-stat-content">
+                          <span className="customer-card-enhanced-stat-label">
+                            Total Spent
+                          </span>
+                          <span className="customer-card-enhanced-stat-value">
                             ₹{formatCurrency(customer.totalSpent)}
                           </span>
                         </div>
                       </div>
 
-                      <div className='customer-card-enhanced-stat-item'>
-                        <div className='customer-card-enhanced-stat-icon'>
-                          <i className='fa-solid fa-chart-line'></i>
+                      <div className="customer-card-enhanced-stat-item">
+                        <div className="customer-card-enhanced-stat-icon">
+                          <i className="fa-solid fa-chart-line"></i>
                         </div>
-                        <div className='customer-card-enhanced-stat-content'>
-                          <span className='customer-card-enhanced-stat-label'>Avg Order</span>
-                          <span className='customer-card-enhanced-stat-value'>
+                        <div className="customer-card-enhanced-stat-content">
+                          <span className="customer-card-enhanced-stat-label">
+                            Avg Order
+                          </span>
+                          <span className="customer-card-enhanced-stat-value">
                             ₹{formatCurrency(customer.avgOrderValue)}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className='customer-card-enhanced-footer'>
-                      <div className='customer-card-enhanced-meta'>
-                        <div className='customer-card-enhanced-meta-item'>
-                          <i className='fa-solid fa-calendar'></i>
-                          <span>Last: {formatDateDiff(customer.lastOrderDate)}</span>
+                    <div className="customer-card-enhanced-footer">
+                      <div className="customer-card-enhanced-meta">
+                        <div className="customer-card-enhanced-meta-item">
+                          <i className="fa-solid fa-calendar"></i>
+                          <span>
+                            Last: {formatDateDiff(customer.lastOrderDate)}
+                          </span>
                         </div>
-                        <div className='customer-card-enhanced-meta-item'>
-                          <i className='fa-solid fa-clock'></i>
+                        <div className="customer-card-enhanced-meta-item">
+                          <i className="fa-solid fa-clock"></i>
                           <span>{customer.preferredMode}</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className='customer-card-enhanced-actions'>
+                  <div className="customer-card-enhanced-actions">
                     <button
-                      className='btn btn-primary btn-small btn-full'
+                      className="btn btn-primary btn-small btn-full"
                       onClick={(e) => {
                         e.stopPropagation();
                         if (onViewOrders) onViewOrders(customer.address);
                       }}
                     >
-                      <i className='fa-solid fa-list'></i> View Orders
+                      <i className="fa-solid fa-list"></i> View Orders
                     </button>
                   </div>
                 </div>
@@ -793,93 +863,112 @@ const AllAddressesTab = ({
       )}
 
       {viewMode === 'cards' && totalPages > 1 && (
-        <div className='pagination-controls'>
+        <div className="pagination-controls">
           <div>
             <button
-              className='btn btn-ghost btn-small'
+              className="btn btn-ghost btn-small"
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
             >
-              <i className='fa-solid fa-chevron-left'></i> Previous
+              <i className="fa-solid fa-chevron-left"></i> Previous
             </button>
-            <span className='pagination-info'>
+            <span className="pagination-info">
               Page {currentPage} of {totalPages}
             </span>
             <button
-              className='btn btn-ghost btn-small'
-              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              className="btn btn-ghost btn-small"
+              onClick={() =>
+                setCurrentPage(Math.min(totalPages, currentPage + 1))
+              }
               disabled={currentPage === totalPages}
             >
-              Next <i className='fa-solid fa-chevron-right'></i>
+              Next <i className="fa-solid fa-chevron-right"></i>
             </button>
           </div>
         </div>
       )}
 
       {showCustomerModal && selectedCustomer && (
-        <div className='modal-overlay' onClick={() => setShowCustomerModal(false)}>
-          <div className='modal-container' onClick={(e) => e.stopPropagation()}>
-            <div className='modal-header'>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowCustomerModal(false)}
+        >
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
               <h2>{selectedCustomer.address} Customer Details</h2>
               <button
-                className='btn btn-ghost btn-icon modal-close'
+                className="btn btn-ghost btn-icon modal-close"
                 onClick={() => setShowCustomerModal(false)}
               >
-                <i className='fa-solid fa-times'></i>
+                <i className="fa-solid fa-times"></i>
               </button>
             </div>
-            <div className='modal-body'>
-              <div className='filter-bar-flex-col'>
+            <div className="modal-body">
+              <div className="filter-bar-flex-col">
                 <div>
-                  <h3 className='section-title-mb'>Customer Information</h3>
-                  <div className='customer-detail-grid'>
+                  <h3 className="section-title-mb">Customer Information</h3>
+                  <div className="customer-detail-grid">
                     <div>
-                      <span className='customer-detail-label'>Status:</span>
-                      <span className='badge badge-success customer-detail-value-sm'>
+                      <span className="customer-detail-label">Status:</span>
+                      <span className="badge badge-success customer-detail-value-sm">
                         🟢 Active
                       </span>
                     </div>
                     <div>
-                      <span className='customer-detail-label'>Customer Since:</span>
-                      <span className='customer-detail-value'>
+                      <span className="customer-detail-label">
+                        Customer Since:
+                      </span>
+                      <span className="customer-detail-value">
                         {selectedCustomer.firstOrderDate
                           ? formatDateShort(selectedCustomer.firstOrderDate)
                           : 'N/A'}
                       </span>
                     </div>
                     <div>
-                      <span className='customer-detail-label'>Total Orders:</span>
-                      <span className='customer-detail-value'>{selectedCustomer.totalOrders}</span>
+                      <span className="customer-detail-label">
+                        Total Orders:
+                      </span>
+                      <span className="customer-detail-value">
+                        {selectedCustomer.totalOrders}
+                      </span>
                     </div>
                     <div>
-                      <span className='customer-detail-label'>Total Spent:</span>
-                      <span className='customer-detail-value font-bold text-accent'>
+                      <span className="customer-detail-label">
+                        Total Spent:
+                      </span>
+                      <span className="customer-detail-value font-bold text-accent">
                         ₹{formatCurrency(selectedCustomer.totalSpent)}
                       </span>
                     </div>
                     <div>
-                      <span className='customer-detail-label'>Average Order Value:</span>
-                      <span className='customer-detail-value'>
+                      <span className="customer-detail-label">
+                        Average Order Value:
+                      </span>
+                      <span className="customer-detail-value">
                         ₹{formatCurrency(selectedCustomer.avgOrderValue)}
                       </span>
                     </div>
                     <div>
-                      <span className='customer-detail-label'>Preferred Mode:</span>
-                      <span className='customer-detail-value'>
+                      <span className="customer-detail-label">
+                        Preferred Mode:
+                      </span>
+                      <span className="customer-detail-value">
                         {selectedCustomer.preferredMode} (
                         {selectedCustomer.preferredModePercent.toFixed(0)}%)
                       </span>
                     </div>
                     <div>
-                      <span className='customer-detail-label'>Payment Mode:</span>
-                      <span className='customer-detail-value'>
+                      <span className="customer-detail-label">
+                        Payment Mode:
+                      </span>
+                      <span className="customer-detail-value">
                         {selectedCustomer.preferredPayment} (
                         {selectedCustomer.preferredPaymentPercent.toFixed(0)}%)
                       </span>
                     </div>
                     <div>
-                      <span className='customer-detail-label'>Last Order:</span>
-                      <span className='customer-detail-value'>
+                      <span className="customer-detail-label">Last Order:</span>
+                      <span className="customer-detail-value">
                         {formatDateDiff(selectedCustomer.lastOrderDate)}
                       </span>
                     </div>
@@ -887,9 +976,9 @@ const AllAddressesTab = ({
                 </div>
 
                 <div>
-                  <h3 className='section-title-mb'>Order History (Last 10)</h3>
-                  <div className='orders-table-container'>
-                    <table className='orders-table'>
+                  <h3 className="section-title-mb">Order History (Last 10)</h3>
+                  <div className="orders-table-container">
+                    <table className="orders-table">
                       <thead>
                         <tr>
                           <th>Date</th>
@@ -906,13 +995,19 @@ const AllAddressesTab = ({
                               order.date || order.order_date || null
                             );
                             const dateStr = formatDate(orderDate);
-                            const isPaid = (order.status || '').toLowerCase() === 'paid';
+                            const isPaid =
+                              (order.status || '').toLowerCase() === 'paid';
 
                             return (
                               <tr key={idx}>
                                 <td>{dateStr}</td>
                                 <td>{order.quantity || 1}</td>
-                                <td>₹{formatCurrency(order.total || order.totalAmount || 0)}</td>
+                                <td>
+                                  ₹
+                                  {formatCurrency(
+                                    order.total || order.totalAmount || 0
+                                  )}
+                                </td>
                                 <td>
                                   <span
                                     className={`badge ${
@@ -931,9 +1026,9 @@ const AllAddressesTab = ({
                 </div>
               </div>
             </div>
-            <div className='modal-footer'>
+            <div className="modal-footer">
               <button
-                className='btn btn-secondary'
+                className="btn btn-secondary"
                 onClick={() => {
                   setShowCustomerModal(false);
                   if (onViewOrders) onViewOrders(selectedCustomer.address);
@@ -941,7 +1036,10 @@ const AllAddressesTab = ({
               >
                 View All Orders
               </button>
-              <button className='btn btn-primary' onClick={() => setShowCustomerModal(false)}>
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowCustomerModal(false)}
+              >
                 Close
               </button>
             </div>

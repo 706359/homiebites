@@ -1,4 +1,3 @@
-
 import {
   formatCurrency,
   getDeliveredRevenue,
@@ -7,7 +6,6 @@ import {
   isPendingStatus,
 } from './orderUtils.js';
 import { parseOrderDate } from './dateUtils.js';
-
 
 export const getTodayStats = (ordersList = []) => {
   try {
@@ -19,7 +17,9 @@ export const getTodayStats = (ordersList = []) => {
     const todayOrders = ordersList.filter((order) => {
       try {
         if (!order || !order.orderId) return false;
-        const orderDate = parseOrderDate(order.date || order.order_date || null);
+        const orderDate = parseOrderDate(
+          order.date || order.order_date || null
+        );
         if (!orderDate) return false;
         return orderDate >= today && orderDate < tomorrow;
       } catch (e) {
@@ -29,7 +29,9 @@ export const getTodayStats = (ordersList = []) => {
 
     const todayRevenue = getDeliveredRevenue(todayOrders);
     const todayTotalRevenue = getTotalRevenue(todayOrders);
-    const pending = todayOrders.filter((o) => isPendingStatus(o.status, o.paymentStatus)).length;
+    const pending = todayOrders.filter((o) =>
+      isPendingStatus(o.status, o.paymentStatus)
+    ).length;
 
     return {
       orders: todayOrders.length,
@@ -48,21 +50,22 @@ export const getTodayStats = (ordersList = []) => {
   }
 };
 
-
 export const getWeeklyStats = (ordersList = []) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - today.getDay()); 
+    weekStart.setDate(today.getDate() - today.getDay());
     const weekEnd = new Date(today);
-    weekEnd.setDate(today.getDate() + (6 - today.getDay())); 
+    weekEnd.setDate(today.getDate() + (6 - today.getDay()));
     weekEnd.setHours(23, 59, 59, 999);
 
     const weekOrders = ordersList.filter((order) => {
       try {
         if (!order || !order.orderId) return false;
-        const orderDate = parseOrderDate(order.date || order.order_date || null);
+        const orderDate = parseOrderDate(
+          order.date || order.order_date || null
+        );
         if (!orderDate) return false;
         return orderDate >= weekStart && orderDate <= weekEnd;
       } catch (e) {
@@ -72,18 +75,21 @@ export const getWeeklyStats = (ordersList = []) => {
 
     const weekRevenue = getTotalRevenue(weekOrders);
     const weekDeliveredRevenue = getDeliveredRevenue(weekOrders);
-    const deliveredWeekOrders = weekOrders.filter((o) => o && o.status === 'delivered');
+    const deliveredWeekOrders = weekOrders.filter(
+      (o) => o && o.status === 'delivered'
+    );
 
     return {
       orders: weekOrders.length,
-      revenue: weekDeliveredRevenue, 
-      totalRevenue: weekRevenue, 
+      revenue: weekDeliveredRevenue,
+      totalRevenue: weekRevenue,
       deliveredRevenue: weekDeliveredRevenue,
       avgOrderValue:
         deliveredWeekOrders.length > 0
           ? Math.round(weekDeliveredRevenue / deliveredWeekOrders.length)
           : 0,
-      avgOrderValueAll: weekOrders.length > 0 ? Math.round(weekRevenue / weekOrders.length) : 0,
+      avgOrderValueAll:
+        weekOrders.length > 0 ? Math.round(weekRevenue / weekOrders.length) : 0,
       formattedRevenue: formatCurrency(weekDeliveredRevenue),
       formattedDeliveredRevenue: formatCurrency(weekDeliveredRevenue),
     };
@@ -99,18 +105,22 @@ export const getWeeklyStats = (ordersList = []) => {
   }
 };
 
-
 export const getPendingOrders = (ordersList = []) => {
   try {
-    return ordersList.filter((o) => isPendingStatus(o.status, o.paymentStatus)).length;
+    return ordersList.filter((o) => isPendingStatus(o.status, o.paymentStatus))
+      .length;
   } catch (error) {
     console.error('Error calculating pending orders:', error);
     return 0;
   }
 };
 
-
-export const getFilteredOrdersByDate = (ordersList, dateRange, customStartDate, customEndDate) => {
+export const getFilteredOrdersByDate = (
+  ordersList,
+  dateRange,
+  customStartDate,
+  customEndDate
+) => {
   try {
     if (!Array.isArray(ordersList)) {
       return [];
@@ -163,10 +173,12 @@ export const getFilteredOrdersByDate = (ordersList, dateRange, customStartDate, 
     return ordersList.filter((order) => {
       try {
         if (!order) return false;
-        
-        const orderDate = parseOrderDate(order.date || order.order_date || order.orderDate || null);
+
+        const orderDate = parseOrderDate(
+          order.date || order.order_date || order.orderDate || null
+        );
         if (!orderDate) return false;
-        
+
         orderDate.setHours(0, 0, 0, 0);
         const start = new Date(startDate);
         start.setHours(0, 0, 0, 0);
@@ -182,7 +194,6 @@ export const getFilteredOrdersByDate = (ordersList, dateRange, customStartDate, 
     return ordersList;
   }
 };
-
 
 export const getSummaryReport = (ordersList = []) => {
   try {
@@ -238,7 +249,8 @@ export const getSummaryReport = (ordersList = []) => {
           amount = Math.round(qty * price);
         }
 
-        const isDelivered = String(order.status || '').toLowerCase() === 'delivered';
+        const isDelivered =
+          String(order.status || '').toLowerCase() === 'delivered';
 
         report.totalOrders++;
         report.totalRevenue += isNaN(amount) ? 0 : amount;
@@ -265,7 +277,6 @@ export const getSummaryReport = (ordersList = []) => {
   }
 };
 
-
 export const getAllCustomers = (ordersList = []) => {
   try {
     if (!Array.isArray(ordersList) || ordersList.length === 0) {
@@ -278,7 +289,9 @@ export const getAllCustomers = (ordersList = []) => {
       try {
         if (!order) return;
 
-        const address = String(order.deliveryAddress || order.customerAddress || '').trim();
+        const address = String(
+          order.deliveryAddress || order.customerAddress || ''
+        ).trim();
         if (!address) return;
 
         if (!customerMap.has(address)) {
@@ -313,7 +326,9 @@ export const getAllCustomers = (ordersList = []) => {
           amount = Math.round(qty * price);
         }
 
-        const orderDate = parseOrderDate(order.date || order.order_date || null);
+        const orderDate = parseOrderDate(
+          order.date || order.order_date || null
+        );
 
         customer.totalOrders++;
         customer.totalAmount += isNaN(amount) ? 0 : amount;
@@ -339,7 +354,6 @@ export const getAllCustomers = (ordersList = []) => {
   }
 };
 
-
 export const calculateTotalExpenses = (revenue, expensePercentage = 70) => {
   try {
     const revenueNum = parseFloat(revenue) || 0;
@@ -351,8 +365,11 @@ export const calculateTotalExpenses = (revenue, expensePercentage = 70) => {
   }
 };
 
-
-export const calculateProfit = (revenue, expenses = null, expensePercentage = 70) => {
+export const calculateProfit = (
+  revenue,
+  expenses = null,
+  expensePercentage = 70
+) => {
   try {
     const revenueNum = parseFloat(revenue) || 0;
     const expensesNum =
@@ -365,7 +382,6 @@ export const calculateProfit = (revenue, expenses = null, expensePercentage = 70
     return 0;
   }
 };
-
 
 export const calculateProfitWithMargin = (
   revenue,
@@ -383,7 +399,6 @@ export const calculateProfitWithMargin = (
   }
 };
 
-
 export const calculateProfitMarginPercentage = (
   revenue,
   expenses = null,
@@ -400,8 +415,11 @@ export const calculateProfitMarginPercentage = (
   }
 };
 
-
-export const getProfitStats = (revenue, expensePercentage = 70, targetProfitMargin = 30) => {
+export const getProfitStats = (
+  revenue,
+  expensePercentage = 70,
+  targetProfitMargin = 30
+) => {
   try {
     const revenueNum = parseFloat(revenue) || 0;
     const expenses = calculateTotalExpenses(revenueNum, expensePercentage);

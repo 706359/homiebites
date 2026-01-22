@@ -1,6 +1,6 @@
 /**
  * Monitoring and Analytics Service
- * 
+ *
  * This module provides centralized monitoring, error tracking, and analytics.
  * Can be extended to integrate with services like Sentry, Google Analytics, etc.
  */
@@ -21,10 +21,10 @@ class MonitoringService {
     // Track page views
     if (typeof window !== 'undefined') {
       this.trackPageView();
-      
+
       // Track performance metrics
       this.trackPerformance();
-      
+
       // Track errors
       this.setupErrorTracking();
     }
@@ -39,7 +39,7 @@ class MonitoringService {
     if (typeof window === 'undefined') return;
 
     const pagePath = path || window.location.pathname;
-    
+
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
       console.log('[Analytics] Page view:', pagePath);
@@ -82,7 +82,8 @@ class MonitoringService {
       context,
       timestamp: new Date().toISOString(),
       path: typeof window !== 'undefined' ? window.location.pathname : 'server',
-      userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'server',
+      userAgent:
+        typeof window !== 'undefined' ? window.navigator.userAgent : 'server',
     };
 
     // Add to queue
@@ -126,10 +127,14 @@ class MonitoringService {
         tcp: navigation.connectEnd - navigation.connectStart,
         request: navigation.responseStart - navigation.requestStart,
         response: navigation.responseEnd - navigation.responseStart,
-        dom: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
+        dom:
+          navigation.domContentLoadedEventEnd -
+          navigation.domContentLoadedEventStart,
         load: navigation.loadEventEnd - navigation.loadEventStart,
-        firstPaint: paint.find(p => p.name === 'first-paint')?.startTime || 0,
-        firstContentfulPaint: paint.find(p => p.name === 'first-contentful-paint')?.startTime || 0,
+        firstPaint: paint.find((p) => p.name === 'first-paint')?.startTime || 0,
+        firstContentfulPaint:
+          paint.find((p) => p.name === 'first-contentful-paint')?.startTime ||
+          0,
         timestamp: new Date().toISOString(),
         path: window.location.pathname,
       };

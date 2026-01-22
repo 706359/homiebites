@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
+import OrderModal from '../../components/OrderModal';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getOffersData } from '../../lib/offersData';
 import '../../pages/OffersPage.css';
@@ -13,25 +14,24 @@ export default function OffersPage() {
   const { t } = useLanguage();
   const [offers, setOffers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   useEffect(() => {
     const loadOffers = async () => {
       try {
         const data = await getOffersData();
-        
+
         const validOffers = data.filter((offer) => {
-          
           const hasValidTitle =
             offer.title &&
             offer.title.trim() !== '' &&
             !offer.title.toLowerCase().includes('test') &&
             !offer.title.toLowerCase().includes('saved via');
 
-          
           const isActive = offer.isActive !== false;
 
-          
-          const notExpired = !offer.endDate || new Date(offer.endDate) >= new Date();
+          const notExpired =
+            !offer.endDate || new Date(offer.endDate) >= new Date();
 
           return hasValidTitle && isActive && notExpired;
         });
@@ -44,7 +44,6 @@ export default function OffersPage() {
       }
     };
 
-    
     try {
       loadOffers().catch((err) => {
         console.error('loadOffers promise rejected:', err);
@@ -59,14 +58,18 @@ export default function OffersPage() {
   }, []);
 
   const openOrderModal = () => {
-    
+    setIsOrderModalOpen(true);
   };
 
   const handleGetDeal = (offer) => {
     const message = encodeURIComponent(
       offer.whatsappMessage || `I'm interested in: ${offer.title}`
     );
-    window.open(`https://wa.me/919958983578?text=${message}`, '_blank', 'noopener');
+    window.open(
+      `https://wa.me/919958983578?text=${message}`,
+      '_blank',
+      'noopener'
+    );
   };
 
   const formatDate = (dateString) => {
@@ -95,9 +98,9 @@ export default function OffersPage() {
     return (
       <>
         <Header onOrderClick={openOrderModal} />
-        <div className='offers-page'>
-          <div className='offers-container'>
-            <div className='offers-loading-state'>
+        <div className="offers-page">
+          <div className="offers-container">
+            <div className="offers-loading-state">
               <p>{t('common.loading') || 'Loading...'}</p>
             </div>
           </div>
@@ -111,24 +114,26 @@ export default function OffersPage() {
     return (
       <>
         <Header onOrderClick={openOrderModal} />
-        <div className='offers-page'>
-          <div className='offers-container'>
-            <h1 className='offers-title'>{t('offers.title') || 'Special Offers & Discounts'}</h1>
-            <div className='no-offers-container'>
-              <i className='fa-solid fa-tag no-offers-icon'></i>
-              <h2 className='no-offers-title'>
+        <div className="offers-page">
+          <div className="offers-container">
+            <h1 className="offers-title">
+              {t('offers.title') || 'Special Offers & Discounts'}
+            </h1>
+            <div className="no-offers-container">
+              <i className="fa-solid fa-tag no-offers-icon"></i>
+              <h2 className="no-offers-title">
                 {t('offers.noOffersTitle') || 'No Active Offers'}
               </h2>
-              <p className='no-offers-text'>
+              <p className="no-offers-text">
                 {t('offers.noOffers') ||
                   "We currently don't have any active offers. Check back soon for exciting deals and special discounts!"}
               </p>
-              <div className='no-offers-actions'>
-                <Link href='/menu' className='btn btn-primary'>
-                  <i className='fa-solid fa-utensils'></i> View Menu
-                </Link>
-                <Link href='/' className='btn btn-secondary'>
-                  <i className='fa-solid fa-home'></i> Go Home
+              <div className="no-offers-actions">
+                <a href="/#gallery" className="btn btn-primary">
+                  <i className="fa-solid fa-images"></i> View Gallery
+                </a>
+                <Link href="/" className="btn btn-secondary">
+                  <i className="fa-solid fa-home"></i> Go Home
                 </Link>
               </div>
             </div>
@@ -142,24 +147,33 @@ export default function OffersPage() {
   return (
     <>
       <Header onOrderClick={openOrderModal} />
-      <div className='offers-page'>
-        <div className='offers-container'>
-          <h1 className='offers-title'>{t('offers.title') || 'Special Offers & Discounts'}</h1>
-          <p className='offers-subtitle'>
-            {t('offers.subtitle') || 'Discover our latest deals and special offers'}
+      <div className="offers-page">
+        <div className="offers-container">
+          <h1 className="offers-title">
+            {t('offers.title') || 'Special Offers & Discounts'}
+          </h1>
+          <p className="offers-subtitle">
+            {t('offers.subtitle') ||
+              'Discover our latest deals and special offers'}
           </p>
 
-          <div className='offers-grid'>
+          <div className="offers-grid">
             {offers.map((offer) => (
-              <div key={offer.id} className='offer-card'>
-                {offer.badge && <div className='offer-badge'>{offer.badge}</div>}
-                <div className='offer-card-header'>
-                  <h2 className='offer-card-title'>{offer.title}</h2>
-                  {offer.discount && <div className='offer-discount'>{offer.discount}</div>}
+              <div key={offer.id} className="offer-card">
+                {offer.badge && (
+                  <div className="offer-badge">{offer.badge}</div>
+                )}
+                <div className="offer-card-header">
+                  <h2 className="offer-card-title">{offer.title}</h2>
+                  {offer.discount && (
+                    <div className="offer-discount">{offer.discount}</div>
+                  )}
                 </div>
-                {offer.description && <p className='offer-description'>{offer.description}</p>}
+                {offer.description && (
+                  <p className="offer-description">{offer.description}</p>
+                )}
                 {offer.terms && offer.terms.length > 0 && (
-                  <div className='offer-terms'>
+                  <div className="offer-terms">
                     <h3>{t('offers.terms') || 'Terms & Conditions:'}</h3>
                     <ul>
                       {offer.terms.map((term, index) => (
@@ -169,7 +183,7 @@ export default function OffersPage() {
                   </div>
                 )}
                 {(offer.startDate || offer.endDate) && (
-                  <div className='offer-dates'>
+                  <div className="offer-dates">
                     {offer.startDate && (
                       <div>
                         <strong>{t('offers.starts') || 'Starts:'}</strong>{' '}
@@ -178,16 +192,17 @@ export default function OffersPage() {
                     )}
                     {offer.endDate && (
                       <div>
-                        <strong>{t('offers.ends') || 'Ends:'}</strong> {formatDate(offer.endDate)}
+                        <strong>{t('offers.ends') || 'Ends:'}</strong>{' '}
+                        {formatDate(offer.endDate)}
                       </div>
                     )}
                   </div>
                 )}
                 <button
-                  className='btn btn-primary offer-cta-btn'
+                  className="btn btn-primary offer-cta-btn"
                   onClick={() => handleGetDeal(offer)}
                 >
-                  <i className='fa-solid fa-whatsapp'></i>{' '}
+                  <i className="fa-solid fa-whatsapp"></i>{' '}
                   {offer.ctaText || t('offers.getDeal') || 'Get This Deal'}
                 </button>
               </div>
@@ -196,6 +211,7 @@ export default function OffersPage() {
         </div>
       </div>
       <Footer onOrderClick={openOrderModal} />
+      <OrderModal isOpen={isOrderModalOpen} onClose={() => setIsOrderModalOpen(false)} />
     </>
   );
 }

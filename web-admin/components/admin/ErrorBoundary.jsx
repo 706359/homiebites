@@ -51,9 +51,7 @@ class ErrorBoundary extends Component {
             <div className="error-boundary-icon-wrapper">
               <i className="fa-solid fa-exclamation-triangle error-boundary-icon"></i>
             </div>
-            <h2 className="error-boundary-title">
-              Something went wrong
-            </h2>
+            <h2 className="error-boundary-title">Something went wrong</h2>
             <p className="error-boundary-message">
               {this.props.errorMessage ||
                 'An unexpected error occurred. Please try refreshing the page or contact support if the problem persists.'}
@@ -73,9 +71,7 @@ class ErrorBoundary extends Component {
             </div>
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <details className="error-boundary-details">
-                <summary>
-                  Error Details (Development Only)
-                </summary>
+                <summary>Error Details (Development Only)</summary>
                 <pre>
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack}

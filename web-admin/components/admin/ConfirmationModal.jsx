@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 
-const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const ConfirmationModal = ({
   show,
@@ -58,7 +59,9 @@ const ConfirmationModal = ({
     if (show && containerRef.current) {
       const first = containerRef.current.querySelector(FOCUSABLE);
       if (first) {
-        const t = requestAnimationFrame(() => { first.focus(); });
+        const t = requestAnimationFrame(() => {
+          first.focus();
+        });
         return () => cancelAnimationFrame(t);
       }
     }
@@ -102,28 +105,34 @@ const ConfirmationModal = ({
   const styles = getTypeStyles();
 
   return (
-    <div className='modal-overlay'>
+    <div className="modal-overlay">
       <div
         ref={containerRef}
-        className='modal-container max-width-540'
-        role='dialog'
-        aria-modal='true'
-        aria-labelledby='confirmation-modal-title'
-        aria-describedby='confirmation-modal-message'
+        className="modal-container max-width-540"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirmation-modal-title"
+        aria-describedby="confirmation-modal-message"
       >
-        <div className='modal-header'>
-          <div className='flex-center'>
-            <div className='modal-icon-box'>
+        <div className="modal-header">
+          <div className="flex-center">
+            <div className="modal-icon-box">
               <i className={`fa-solid ${styles.icon}`}></i>
             </div>
-            <h2 id='confirmation-modal-title'>{title}</h2>
+            <h2 id="confirmation-modal-title">{title}</h2>
           </div>
         </div>
-        <div className='modal-body'>
-          <p id='confirmation-modal-message' className='text-no-margin'>{message}</p>
+        <div className="modal-body">
+          <p id="confirmation-modal-message" className="text-no-margin">
+            {message}
+          </p>
         </div>
-        <div className='modal-footer'>
-          <button className='btn btn-ghost' onClick={onCancel} disabled={isLoading}>
+        <div className="modal-footer">
+          <button
+            className="btn btn-ghost"
+            onClick={onCancel}
+            disabled={isLoading}
+          >
             {cancelText}
           </button>
           <button
@@ -133,7 +142,7 @@ const ConfirmationModal = ({
           >
             {isLoading ? (
               <>
-                <i className='fa-solid fa-spinner fa-spin'></i> Processing...
+                <i className="fa-solid fa-spinner fa-spin"></i> Processing...
               </>
             ) : (
               confirmText

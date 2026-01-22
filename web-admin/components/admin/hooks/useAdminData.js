@@ -16,7 +16,7 @@ export const useAdminData = () => {
     deliveryTimings: '7:30 PM - 8:30 PM',
     minOrderValue: 100,
     deliveryCharge: 0,
-    announcement: 'Free delivery on orders over ₹200',
+    announcement: 'Home delivery on orders over ₹200',
   });
   const [notifications, setNotifications] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
@@ -62,15 +62,21 @@ export const useAdminData = () => {
       const isAdmin = localStorage.getItem('homiebites_admin') === 'true';
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('[useAdminData] Auth check:', { hasToken: !!token, isAdmin });
+        console.log('[useAdminData] Auth check:', {
+          hasToken: !!token,
+          isAdmin,
+        });
       }
 
       if (!token || !isAdmin) {
         if (process.env.NODE_ENV === 'development') {
-          console.warn('[useAdminData] Cannot load orders: missing token or admin status', {
-            hasToken: !!token,
-            isAdmin,
-          });
+          console.warn(
+            '[useAdminData] Cannot load orders: missing token or admin status',
+            {
+              hasToken: !!token,
+              isAdmin,
+            }
+          );
         }
         setOrders([]);
         return;
@@ -101,14 +107,19 @@ export const useAdminData = () => {
           if (nextOrders.length > 0) {
             nextOrders = sortOrdersByOrderId(nextOrders);
             if (process.env.NODE_ENV === 'development') {
-              console.log('[useAdminData] Orders sorted, first order:', nextOrders[0]?.orderId);
+              console.log(
+                '[useAdminData] Orders sorted, first order:',
+                nextOrders[0]?.orderId
+              );
             }
           }
           setOrders((prev) => {
             const prevArr = Array.isArray(prev) ? prev : [];
             if (prevArr.length === 0 && nextOrders.length === 0) {
               if (process.env.NODE_ENV === 'development') {
-                console.warn('[useAdminData] Both prev and next orders are empty, keeping prev');
+                console.warn(
+                  '[useAdminData] Both prev and next orders are empty, keeping prev'
+                );
               }
               return prevArr;
             }
@@ -119,7 +130,10 @@ export const useAdminData = () => {
           });
         } else {
           if (process.env.NODE_ENV === 'development') {
-            console.warn('[useAdminData] API returned unsuccessful response:', response);
+            console.warn(
+              '[useAdminData] API returned unsuccessful response:',
+              response
+            );
           }
 
           if (response && response.error) {
@@ -131,11 +145,19 @@ export const useAdminData = () => {
         }
       } catch (apiError) {
         setLoadError(apiError?.message || 'Failed to load orders');
-        console.error('[useAdminData] Failed to load orders from API:', apiError);
+        console.error(
+          '[useAdminData] Failed to load orders from API:',
+          apiError
+        );
 
-        if (apiError.message && apiError.message.includes('Authentication failed')) {
+        if (
+          apiError.message &&
+          apiError.message.includes('Authentication failed')
+        ) {
           if (process.env.NODE_ENV === 'development') {
-            console.warn('[useAdminData] Authentication failed. Stopping data load.');
+            console.warn(
+              '[useAdminData] Authentication failed. Stopping data load.'
+            );
           }
           setLoadError(null);
           setOrders([]);
@@ -148,7 +170,11 @@ export const useAdminData = () => {
             apiError.message.includes('not available') ||
             apiError.message.includes('connect'))
         ) {
-          console.error('[useAdminData] Backend server appears to be offline. Ensure backend is running on', api.baseURL, apiError);
+          console.error(
+            '[useAdminData] Backend server appears to be offline. Ensure backend is running on',
+            api.baseURL,
+            apiError
+          );
         }
 
         throw apiError;
@@ -169,21 +195,30 @@ export const useAdminData = () => {
           if (response?.success && Array.isArray(response.data)) {
             setUsers(response.data);
             try {
-              localStorage.setItem('homiebites_users', JSON.stringify(response.data));
-            } catch (e) { /* quota or disabled */ }
+              localStorage.setItem(
+                'homiebites_users',
+                JSON.stringify(response.data)
+              );
+            } catch (e) {
+              /* quota or disabled */
+            }
             return;
           }
         } catch (apiError) {
           const msg = apiError?.message || '';
           if (!msg.includes('Route not found') && !msg.includes('404')) {
             if (process.env.NODE_ENV === 'development') {
-              console.warn('Failed to load users from API, using cached data:', msg);
+              console.warn(
+                'Failed to load users from API, using cached data:',
+                msg
+              );
             }
           }
         }
       }
       const stored =
-        localStorage.getItem('homiebites_users') || localStorage.getItem('homiebites_users_data');
+        localStorage.getItem('homiebites_users') ||
+        localStorage.getItem('homiebites_users_data');
       if (stored && typeof stored === 'string') {
         try {
           const parsed = JSON.parse(stored);
@@ -193,7 +228,10 @@ export const useAdminData = () => {
         }
       }
     } catch (error) {
-      if (!error.message?.includes('Route not found') && !error.message?.includes('404')) {
+      if (
+        !error.message?.includes('Route not found') &&
+        !error.message?.includes('404')
+      ) {
         console.error('Error loading users:', error);
       }
     }
@@ -202,7 +240,12 @@ export const useAdminData = () => {
   const loadSettings = useCallback(async () => {
     try {
       const res = await api.getFullSettings();
-      if (res?.success && res.data && typeof res.data === 'object' && !Array.isArray(res.data)) {
+      if (
+        res?.success &&
+        res.data &&
+        typeof res.data === 'object' &&
+        !Array.isArray(res.data)
+      ) {
         setSettings(res.data);
         return;
       }
@@ -264,15 +307,21 @@ export const useAdminData = () => {
 
     if (!token || !isAdmin) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn('[useAdminData] Skipping data load: user not authenticated');
+        console.warn(
+          '[useAdminData] Skipping data load: user not authenticated'
+        );
       }
       return;
     }
 
-    const loadOpId = errorTracker.addToQueue('load-all-data', 'Load All Dashboard Data', {
-      component: 'AdminDashboard',
-      phase: 'initialization',
-    });
+    const loadOpId = errorTracker.addToQueue(
+      'load-all-data',
+      'Load All Dashboard Data',
+      {
+        component: 'AdminDashboard',
+        phase: 'initialization',
+      }
+    );
 
     const loadAllData = async () => {
       try {

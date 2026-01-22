@@ -14,7 +14,13 @@
   background: var(--admin-bg, #ffffff);
   border: 1px solid var(--admin-border, #e5e7eb);
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.action-bar-spaced {
+  margin-top: 24px;
 }
 
 .select-all-container {
@@ -79,7 +85,7 @@
 .action-buttons-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
@@ -97,15 +103,15 @@
 .pagination-controls {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
+  justify-content: space-evenly;
   padding: 16px 20px;
   background: var(--admin-bg, #ffffff);
   border: 1px solid var(--admin-border, #e5e7eb);
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.06);
   margin: 24px auto 0;
-  max-width: 100%;
   flex-wrap: nowrap;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -226,7 +232,9 @@
 .orders-table-container {
   background: var(--admin-bg, #ffffff);
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.06);
   border: 1px solid var(--admin-border, #e2e8f0);
   overflow-x: auto;
   overflow-y: auto;
@@ -288,10 +296,18 @@
 }
 
 /* Min-widths to prevent header/cell truncation (Mode, Status, Payment, OrderID) */
-.orders-table th.col-mode { min-width: 72px; }
-.orders-table th.col-status { min-width: 92px; }
-.orders-table th.col-payment { min-width: 88px; }
-.orders-table th.col-orderid { min-width: 100px; }
+.orders-table th.col-mode {
+  min-width: 72px;
+}
+.orders-table th.col-status {
+  min-width: 92px;
+}
+.orders-table th.col-payment {
+  min-width: 88px;
+}
+.orders-table th.col-orderid {
+  min-width: 100px;
+}
 
 .orders-table td {
   height: 56px;
@@ -530,7 +546,7 @@
     order: 3;
     width: 100%;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 10px;
     margin-left: 0;
   }
 

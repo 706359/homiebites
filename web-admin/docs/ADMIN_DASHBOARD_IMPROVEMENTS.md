@@ -1,6 +1,7 @@
 # Admin Dashboard - Improvement Recommendations
 
 ## 🎯 Overview
+
 Based on comprehensive code review, here are actionable improvements organized by priority and impact.
 
 ---
@@ -8,6 +9,7 @@ Based on comprehensive code review, here are actionable improvements organized b
 ## 🚀 HIGH PRIORITY (Quick Wins, High Impact)
 
 ### 1. **Search Debouncing** ⚡
+
 **Current:** Search queries trigger filters on every keystroke  
 **Impact:** Performance issues with large datasets  
 **Fix:** Debounce search input (300-500ms)
@@ -18,9 +20,10 @@ import { useMemo, useCallback } from 'react';
 import { debounce } from 'lodash'; // or custom debounce
 
 const debouncedSearch = useMemo(
-  () => debounce((query) => {
-    setSearchQuery(query);
-  }, 300),
+  () =>
+    debounce((query) => {
+      setSearchQuery(query);
+    }, 300),
   []
 );
 ```
@@ -30,6 +33,7 @@ const debouncedSearch = useMemo(
 ---
 
 ### 2. **Table Virtualization** 📊
+
 **Current:** All rows render at once  
 **Impact:** Slow rendering with 2900+ orders  
 **Fix:** Use `react-window` or `react-virtualized` for virtual scrolling
@@ -44,6 +48,7 @@ import { FixedSizeList } from 'react-window';
 ---
 
 ### 3. **Filter Persistence** 💾
+
 **Current:** Filters reset on page reload  
 **Impact:** User has to reapply filters  
 **Fix:** Save filters to localStorage
@@ -67,6 +72,7 @@ useEffect(() => {
 ---
 
 ### 4. **Skeleton Loaders** ⏳
+
 **Current:** Generic loading spinner  
 **Impact:** Better perceived performance  
 **Fix:** Add skeleton loaders matching table/card layout
@@ -88,6 +94,7 @@ useEffect(() => {
 ---
 
 ### 5. **Error Recovery** 🔄
+
 **Current:** Error boundaries catch errors but recovery is limited  
 **Impact:** Better user experience on errors  
 **Fix:** Add retry buttons and error details
@@ -111,6 +118,7 @@ useEffect(() => {
 ## 🎨 MEDIUM PRIORITY (UX Enhancements)
 
 ### 6. **Keyboard Shortcuts** ⌨️
+
 **Current:** Basic shortcuts (Ctrl+K for search, Ctrl+N for new order)  
 **Enhancement:** Add more shortcuts
 
@@ -128,6 +136,7 @@ useEffect(() => {
 ---
 
 ### 7. **Bulk Actions Enhancement** 🔢
+
 **Current:** Bulk mark as paid  
 **Enhancement:** More bulk actions (delete, export, change status, change address)
 
@@ -146,6 +155,7 @@ useEffect(() => {
 ---
 
 ### 8. **Column Visibility Toggle** 👁️
+
 **Current:** All columns always visible  
 **Enhancement:** Allow users to show/hide columns
 
@@ -164,6 +174,7 @@ const [visibleColumns, setVisibleColumns] = useState({
 ---
 
 ### 9. **Export Options** 📥
+
 **Current:** Basic export  
 **Enhancement:** Export formats (CSV, Excel, PDF), filtered data export, scheduled exports
 
@@ -179,6 +190,7 @@ const [visibleColumns, setVisibleColumns] = useState({
 ---
 
 ### 10. **Mobile Swipe Gestures** 📱
+
 **Current:** Tap to open/close sidebar  
 **Enhancement:** Swipe gestures for better mobile UX
 
@@ -199,6 +211,7 @@ const handlers = useSwipeable({
 ## 🔧 MEDIUM-LOW PRIORITY (Polish & Performance)
 
 ### 11. **Component Memoization** ⚡
+
 **Current:** Components re-render unnecessarily  
 **Enhancement:** Memoize expensive components
 
@@ -219,6 +232,7 @@ const filteredOrders = useMemo(() => {
 ---
 
 ### 12. **Toast Notification Stacking** 🔔
+
 **Current:** Multiple notifications stack but could be improved  
 **Enhancement:** Better grouping, auto-dismiss, action buttons
 
@@ -235,6 +249,7 @@ const filteredOrders = useMemo(() => {
 ---
 
 ### 13. **Data Refresh Indicators** 🔄
+
 **Current:** Refresh button shows loading state  
 **Enhancement:** Show last refresh time, auto-refresh option, sync status
 
@@ -250,6 +265,7 @@ const filteredOrders = useMemo(() => {
 ---
 
 ### 14. **Table Column Resizing** 📏
+
 **Current:** Fixed column widths  
 **Enhancement:** Allow users to resize columns
 
@@ -263,6 +279,7 @@ import { useTable, useResizeColumns } from 'react-table';
 ---
 
 ### 15. **Advanced Filtering UI** 🔍
+
 **Current:** Filter icon opens dropdown  
 **Enhancement:** Save filter presets, quick filter chips, filter combinations
 
@@ -282,12 +299,14 @@ import { useTable, useResizeColumns } from 'react-table';
 ## 🌟 LOW PRIORITY (Nice to Have)
 
 ### 16. **Dark Mode Support** 🌙
+
 **Impact:** User preference, eye strain reduction  
 **Effort:** Medium (CSS variables already removed, need to add back for theming)
 
 ---
 
 ### 17. **Analytics Enhancements** 📈
+
 - Trend lines and predictions
 - Comparative analysis (this month vs last month)
 - Custom date range charts
@@ -296,18 +315,21 @@ import { useTable, useResizeColumns } from 'react-table';
 ---
 
 ### 18. **Offline Support Indicators** 📶
+
 **Current:** Service worker exists but no UI indicators  
 **Enhancement:** Show offline/online status, sync queue, conflict resolution
 
 ---
 
 ### 19. **Multi-Language Support** 🌍
+
 **Current:** English only  
 **Enhancement:** Add i18n for admin dashboard
 
 ---
 
 ### 20. **Audit Log** 📝
+
 **Current:** No audit trail  
 **Enhancement:** Track who changed what and when
 
@@ -316,39 +338,43 @@ import { useTable, useResizeColumns } from 'react-table';
 ## 🎯 Recommended Implementation Order
 
 ### Phase 1 (Week 1-2): Quick Wins
+
 1. Search Debouncing ⚡
 2. Filter Persistence 💾
 3. Skeleton Loaders ⏳
 4. Enhanced Error Recovery 🔄
 
 ### Phase 2 (Week 3-4): UX Improvements
+
 5. Keyboard Shortcuts ⌨️
 6. Bulk Actions Enhancement 🔢
 7. Column Visibility Toggle 👁️
 8. Export Options 📥
 
 ### Phase 3 (Month 2): Performance
+
 9. Table Virtualization 📊
 10. Component Memoization ⚡
 11. Mobile Swipe Gestures 📱
 
 ### Phase 4 (Month 3): Polish
+
 12. Remaining enhancements based on user feedback
 
 ---
 
 ## 📊 Impact Assessment
 
-| Improvement | Impact | Effort | Priority |
-|------------|--------|--------|----------|
-| Search Debouncing | High | Low | ⭐⭐⭐⭐⭐ |
-| Filter Persistence | High | Low | ⭐⭐⭐⭐⭐ |
-| Table Virtualization | High | Medium | ⭐⭐⭐⭐ |
-| Skeleton Loaders | Medium | Low | ⭐⭐⭐⭐ |
-| Keyboard Shortcuts | Medium | Low | ⭐⭐⭐ |
-| Bulk Actions | Medium | Medium | ⭐⭐⭐ |
-| Column Visibility | Low | Medium | ⭐⭐ |
-| Export Options | Medium | Medium | ⭐⭐⭐ |
+| Improvement          | Impact | Effort | Priority   |
+| -------------------- | ------ | ------ | ---------- |
+| Search Debouncing    | High   | Low    | ⭐⭐⭐⭐⭐ |
+| Filter Persistence   | High   | Low    | ⭐⭐⭐⭐⭐ |
+| Table Virtualization | High   | Medium | ⭐⭐⭐⭐   |
+| Skeleton Loaders     | Medium | Low    | ⭐⭐⭐⭐   |
+| Keyboard Shortcuts   | Medium | Low    | ⭐⭐⭐     |
+| Bulk Actions         | Medium | Medium | ⭐⭐⭐     |
+| Column Visibility    | Low    | Medium | ⭐⭐       |
+| Export Options       | Medium | Medium | ⭐⭐⭐     |
 
 ---
 
@@ -361,7 +387,7 @@ import { useTable, useResizeColumns } from 'react-table';
 ✅ **Optimistic updates** - Fast data sync implemented  
 ✅ **Search functionality** - Global search with keyboard shortcut  
 ✅ **Filter system** - Comprehensive filtering options  
-✅ **PWA support** - Admin-only PWA implemented  
+✅ **PWA support** - Admin-only PWA implemented
 
 ---
 

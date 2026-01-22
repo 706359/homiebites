@@ -13,7 +13,8 @@ dotenv.config({ path: join(__dirname, '..', '.env') });
 
 const resetAdminPassword = async () => {
   try {
-    const mongoUri = process.env.MONGOURI || process.env.MONGODB_URI || process.env.MONGO_URI;
+    const mongoUri =
+      process.env.MONGOURI || process.env.MONGODB_URI || process.env.MONGO_URI;
     if (!mongoUri) {
       console.error('❌ Error: MONGOURI not found in environment variables');
       process.exit(1);
@@ -69,7 +70,9 @@ const resetAdminPassword = async () => {
     console.log('\n📋 Admin Credentials:');
     console.log('   Email:', admin.email);
     console.log('   Password:', tempPassword);
-    console.log('   ⚠️  IMPORTANT: You MUST change this password on first login!');
+    console.log(
+      '   ⚠️  IMPORTANT: You MUST change this password on first login!'
+    );
     console.log('\n✅ Admin account is ready to use!\n');
 
     await mongoose.disconnect();

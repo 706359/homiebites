@@ -1,16 +1,14 @@
-import { useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export const useSmoothScroll = () => {
   const pathname = usePathname();
 
   useEffect(() => {
-    
     const handleHashScroll = () => {
-      if (pathname === "/") {
+      if (pathname === '/') {
         const hash = window.location.hash;
-        if (hash && hash !== "#") {
-          
+        if (hash && hash !== '#') {
           setTimeout(() => {
             const targetElement = document.querySelector(hash);
             if (targetElement) {
@@ -21,7 +19,7 @@ export const useSmoothScroll = () => {
 
               window.scrollTo({
                 top: offsetPosition,
-                behavior: "smooth",
+                behavior: 'smooth',
               });
             }
           }, 200);
@@ -29,38 +27,31 @@ export const useSmoothScroll = () => {
       }
     };
 
-    
     handleHashScroll();
 
-    
     const handleHashChange = () => {
       handleHashScroll();
     };
-    window.addEventListener("hashchange", handleHashChange);
+    window.addEventListener('hashchange', handleHashChange);
 
-    
     const handleClick = (e) => {
-      
       if (
-        e.target.tagName === "BUTTON" ||
-        e.target.tagName === "INPUT" ||
-        e.target.closest("button") ||
-        e.target.closest(".faq-question") ||
-        e.target.closest(".order-modal") ||
-        e.target.closest(".gallery-modal")
+        e.target.tagName === 'BUTTON' ||
+        e.target.tagName === 'INPUT' ||
+        e.target.closest('button') ||
+        e.target.closest('.faq-question') ||
+        e.target.closest('.order-modal') ||
+        e.target.closest('.gallery-modal')
       ) {
         return;
       }
 
-      
       const link = e.target.closest('a[href*="#"]');
       if (link) {
-        const href = link.getAttribute("href");
-        if (href && href.startsWith("/#")) {
-          
-          const hash = href.split("#")[1];
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('/#')) {
+          const hash = href.split('#')[1];
           if (hash) {
-            
             setTimeout(() => {
               const targetElement = document.querySelector(`#${hash}`);
               if (targetElement) {
@@ -72,7 +63,7 @@ export const useSmoothScroll = () => {
 
                 window.scrollTo({
                   top: offsetPosition,
-                  behavior: "smooth",
+                  behavior: 'smooth',
                 });
               }
             }, 300);
@@ -81,15 +72,13 @@ export const useSmoothScroll = () => {
         }
       }
 
-      
       const anchor = e.target.closest('a[href^="#"]');
       if (!anchor) return;
 
-      const targetId = anchor.getAttribute("href");
-      if (targetId === "#") return;
+      const targetId = anchor.getAttribute('href');
+      if (targetId === '#') return;
 
-      
-      if (pathname === "/") {
+      if (pathname === '/') {
         const targetElement = document.querySelector(targetId);
         if (targetElement) {
           e.preventDefault();
@@ -101,16 +90,16 @@ export const useSmoothScroll = () => {
 
           window.scrollTo({
             top: offsetPosition,
-            behavior: "smooth",
+            behavior: 'smooth',
           });
         }
       }
     };
 
-    document.addEventListener("click", handleClick, true);
+    document.addEventListener('click', handleClick, true);
     return () => {
-      document.removeEventListener("click", handleClick, true);
-      window.removeEventListener("hashchange", handleHashChange);
+      document.removeEventListener('click', handleClick, true);
+      window.removeEventListener('hashchange', handleHashChange);
     };
   }, [pathname]);
 };

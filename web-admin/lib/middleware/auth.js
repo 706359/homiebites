@@ -1,4 +1,3 @@
-
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'homiebites_secret';
@@ -9,7 +8,9 @@ export function authenticate(request) {
       reject({ status: 500, message: 'Server misconfiguration' });
       return;
     }
-    const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+    const authHeader =
+      request.headers.get('authorization') ||
+      request.headers.get('Authorization');
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
@@ -27,13 +28,15 @@ export function authenticate(request) {
   });
 }
 
-
 export async function isAdmin(request) {
   try {
     const user = await authenticate(request);
-    
+
     const userRole = user?.role?.toLowerCase();
-    if (user && (userRole === 'admin' || user.role === 'Admin' || user.isAdmin)) {
+    if (
+      user &&
+      (userRole === 'admin' || user.role === 'Admin' || user.isAdmin)
+    ) {
       return user;
     }
     throw { status: 403, message: 'Admin access required' };
@@ -41,7 +44,6 @@ export async function isAdmin(request) {
     throw error;
   }
 }
-
 
 export function createErrorResponse(status, message) {
   return Response.json({ success: false, error: message }, { status });

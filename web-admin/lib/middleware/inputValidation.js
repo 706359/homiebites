@@ -1,4 +1,3 @@
-
 export function validateEmail(email) {
   if (!email || typeof email !== 'string') {
     return false;
@@ -6,7 +5,6 @@ export function validateEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
-
 
 export function validatePhone(phone) {
   if (!phone || typeof phone !== 'string') {
@@ -16,7 +14,6 @@ export function validatePhone(phone) {
   return phoneRegex.test(phone.replace(/\s/g, ''));
 }
 
-
 export function validateObjectId(id) {
   if (!id || typeof id !== 'string') {
     return false;
@@ -24,7 +21,6 @@ export function validateObjectId(id) {
   const objectIdRegex = /^[0-9a-fA-F]{24}$/;
   return objectIdRegex.test(id);
 }
-
 
 export function sanitizeString(str, maxLength = 1000) {
   if (typeof str !== 'string') {
@@ -39,7 +35,6 @@ export function sanitizeString(str, maxLength = 1000) {
     .replace(/on\w+\s*=/gi, '');
 }
 
-
 export function validateDate(dateString) {
   if (!dateString) {
     return false;
@@ -48,7 +43,6 @@ export function validateDate(dateString) {
   const date = new Date(dateString);
   return !isNaN(date.getTime()) && date instanceof Date;
 }
-
 
 export function validateNumber(value, min = null, max = null) {
   const num = Number(value);
@@ -67,7 +61,6 @@ export function validateNumber(value, min = null, max = null) {
 
   return true;
 }
-
 
 export function validateOrderData(data) {
   const errors = [];
@@ -88,7 +81,10 @@ export function validateOrderData(data) {
     errors.push('Invalid quantity');
   }
 
-  if (data.unitPrice !== undefined && !validateNumber(data.unitPrice, 0, 100000)) {
+  if (
+    data.unitPrice !== undefined &&
+    !validateNumber(data.unitPrice, 0, 100000)
+  ) {
     errors.push('Invalid unit price');
   }
 
@@ -102,7 +98,6 @@ export function validateOrderData(data) {
   };
 }
 
-
 export function validateUserData(data) {
   const errors = [];
 
@@ -114,11 +109,17 @@ export function validateUserData(data) {
     errors.push('Invalid phone number');
   }
 
-  if (data.username && (typeof data.username !== 'string' || data.username.length < 3)) {
+  if (
+    data.username &&
+    (typeof data.username !== 'string' || data.username.length < 3)
+  ) {
     errors.push('Invalid username');
   }
 
-  if (data.password && (typeof data.password !== 'string' || data.password.length < 6)) {
+  if (
+    data.password &&
+    (typeof data.password !== 'string' || data.password.length < 6)
+  ) {
     errors.push('Password must be at least 6 characters');
   }
 

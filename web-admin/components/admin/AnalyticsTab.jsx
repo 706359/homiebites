@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
-import { getFilteredOrdersByDate, getProfitStats } from './utils/calculations.js';
+import {
+  getFilteredOrdersByDate,
+  getProfitStats,
+} from './utils/calculations.js';
 import { parseOrderDate } from './utils/dateUtils.js';
 import {
   formatCurrency,
@@ -82,12 +85,17 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     // Cap growth rate at 999% to prevent Infinity breaking UI
     const growthRate =
       previousRevenue > 0
-        ? Math.min(((totalRevenue - previousRevenue) / previousRevenue) * 100, 999)
+        ? Math.min(
+            ((totalRevenue - previousRevenue) / previousRevenue) * 100,
+            999
+          )
         : totalRevenue > 0
-        ? 999
-        : 0;
+          ? 999
+          : 0;
 
-    const pendingOrders = periodOrders.filter((o) => isPendingStatus(o.status, o.paymentStatus));
+    const pendingOrders = periodOrders.filter((o) =>
+      isPendingStatus(o.status, o.paymentStatus)
+    );
     const pendingAmount = pendingOrders.reduce((sum, o) => {
       // Use centralized getOrderAmount function
       const amount = getOrderAmount(o);
@@ -98,13 +106,18 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
       periodOrders
         .map(
           (o) =>
-            o.deliveryAddress || o.customerAddress || o.address || o['Delivery Address'] || o.delivery_address
+            o.deliveryAddress ||
+            o.customerAddress ||
+            o.address ||
+            o['Delivery Address'] ||
+            o.delivery_address
         )
         .filter(Boolean)
     );
     const totalCustomers = uniqueAddresses.size;
 
-    const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
+    const avgOrderValue =
+      totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
 
     const profitStats = getProfitStats(totalRevenue, 70, 30);
 
@@ -155,7 +168,10 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         }
       });
 
-      const monthName = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      const monthName = date.toLocaleDateString('en-US', {
+        month: 'short',
+        year: 'numeric',
+      });
       trend.push({
         month: monthName,
         revenue: getTotalRevenue(monthOrders),
@@ -165,7 +181,10 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     return trend;
   }, [orders]);
 
-  const maxMonthlyRevenue = Math.max(...monthlyRevenueTrend.map((m) => m.revenue), 1);
+  const maxMonthlyRevenue = Math.max(
+    ...monthlyRevenueTrend.map((m) => m.revenue),
+    1
+  );
   const peakMonth = monthlyRevenueTrend.reduce(
     (max, m) => (m.revenue > max.revenue ? m : max),
     monthlyRevenueTrend[0]
@@ -228,7 +247,11 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     const areaStats = {};
     topAreasOrders.forEach((o) => {
       const addr =
-        o.deliveryAddress || o.customerAddress || o.address || o['Delivery Address'] || o.delivery_address;
+        o.deliveryAddress ||
+        o.customerAddress ||
+        o.address ||
+        o['Delivery Address'] ||
+        o.delivery_address;
       if (addr) {
         if (!areaStats[addr]) {
           areaStats[addr] = { address: addr, orders: 0, revenue: 0 };
@@ -267,7 +290,11 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     const customerData = {};
     periodOrders.forEach((o) => {
       const addr =
-        o.deliveryAddress || o.customerAddress || o.address || o['Delivery Address'] || o.delivery_address;
+        o.deliveryAddress ||
+        o.customerAddress ||
+        o.address ||
+        o['Delivery Address'] ||
+        o.delivery_address;
       if (addr) {
         if (!customerData[addr]) {
           customerData[addr] = { orders: 0, spent: 0 };
@@ -280,14 +307,18 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
       }
     });
 
-    const oneTime = Object.values(customerData).filter((c) => c.orders === 1).length;
+    const oneTime = Object.values(customerData).filter(
+      (c) => c.orders === 1
+    ).length;
     const regular = Object.values(customerData).filter(
       (c) => c.spent >= 2000 && c.spent < 8000
     ).length;
     const vip = Object.values(customerData).filter(
       (c) => c.spent >= 8000 && c.spent < 15000
     ).length;
-    const superVip = Object.values(customerData).filter((c) => c.spent >= 15000).length;
+    const superVip = Object.values(customerData).filter(
+      (c) => c.spent >= 15000
+    ).length;
     return { oneTime, regular, vip, superVip };
   }, [periodOrders]);
 
@@ -320,12 +351,20 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
       .sort((a, b) => b.amount - a.amount);
   }, [paymentModeOrders]);
 
-  const totalPaymentAmount = paymentTrends.reduce((sum, t) => sum + t.amount, 0);
+  const totalPaymentAmount = paymentTrends.reduce(
+    (sum, t) => sum + t.amount,
+    0
+  );
 
   const deliveryAddressAnalytics = useMemo(() => {
     const addressData = {};
     const getAddr = (o) =>
-      o.deliveryAddress || o.customerAddress || o.address || o['Delivery Address'] || o.delivery_address || '';
+      o.deliveryAddress ||
+      o.customerAddress ||
+      o.address ||
+      o['Delivery Address'] ||
+      o.delivery_address ||
+      '';
 
     // Derive years from actual order dates instead of hardcoding
     const allYears = new Set();
@@ -384,7 +423,12 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         const amount = getOrderAmount(o);
         if (isNaN(amount) || amount < 0) {
           if (process.env.NODE_ENV === 'development') {
-            console.warn('[Analytics] Invalid amount for order:', o, 'amount:', amount);
+            console.warn(
+              '[Analytics] Invalid amount for order:',
+              o,
+              'amount:',
+              amount
+            );
           }
           return; // Skip invalid orders
         }
@@ -410,7 +454,12 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     });
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('[Analytics] Processed orders:', processedCount, 'out of', orders.length);
+      console.log(
+        '[Analytics] Processed orders:',
+        processedCount,
+        'out of',
+        orders.length
+      );
     }
 
     const currentMonth = now.getMonth();
@@ -421,8 +470,10 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
       const y3 = data.yearly[year3] || 0;
 
       // Cap trend calculations at 999% to prevent Infinity
-      const trendY1toY2 = y1 > 0 ? Math.min(((y2 - y1) / y1) * 100, 999) : y2 > 0 ? 999 : 0;
-      const trendY2toY3 = y2 > 0 ? Math.min(((y3 - y2) / y2) * 100, 999) : y3 > 0 ? 999 : 0;
+      const trendY1toY2 =
+        y1 > 0 ? Math.min(((y2 - y1) / y1) * 100, 999) : y2 > 0 ? 999 : 0;
+      const trendY2toY3 =
+        y2 > 0 ? Math.min(((y3 - y2) / y2) * 100, 999) : y3 > 0 ? 999 : 0;
 
       // Fix gap calculation: Compare year3 months with same month in year2 (not Dec year2)
       const monthlyGaps = [];
@@ -431,7 +482,9 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           const currentMonthValue = data.monthly[year3][month] || 0;
           // Compare with same month in previous year (year2), not December
           const previousYearSameMonth =
-            data.monthly[year2] && data.monthly[year2][month] ? data.monthly[year2][month] : 0;
+            data.monthly[year2] && data.monthly[year2][month]
+              ? data.monthly[year2][month]
+              : 0;
           const gap = currentMonthValue - previousYearSameMonth;
           monthlyGaps.push({
             month,
@@ -519,7 +572,8 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     if (type === 'monthly') {
       csvContent = 'Month,Year,Revenue (₹),Orders,Average Order Value (₹)\n';
       monthlyRevenueTrend.forEach((m) => {
-        const avgOrderValue = m.orders > 0 ? (m.revenue / m.orders).toFixed(2) : '0.00';
+        const avgOrderValue =
+          m.orders > 0 ? (m.revenue / m.orders).toFixed(2) : '0.00';
         csvContent += `${escapeCSV(m.month)},${escapeCSV(m.revenue)},${escapeCSV(
           m.orders
         )},${escapeCSV(avgOrderValue)}\n`;
@@ -538,7 +592,8 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
 
       const sortedYears = Array.from(years).sort((a, b) => b - a);
 
-      const mostRecentYear = sortedYears.length > 0 ? sortedYears[0] : now.getFullYear();
+      const mostRecentYear =
+        sortedYears.length > 0 ? sortedYears[0] : now.getFullYear();
 
       for (let i = 3; i >= 0; i--) {
         const quarterStart = new Date(mostRecentYear, i * 3, 1);
@@ -557,7 +612,8 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
 
         const revenue = getTotalRevenue(quarterOrders);
         const orderCount = quarterOrders.length;
-        const avgOrderValue = orderCount > 0 ? (revenue / orderCount).toFixed(2) : '0.00';
+        const avgOrderValue =
+          orderCount > 0 ? (revenue / orderCount).toFixed(2) : '0.00';
 
         quarters.push({
           quarter: `Q${i + 1}`,
@@ -614,7 +670,8 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
       Object.values(years)
         .sort((a, b) => b.year - a.year)
         .forEach((y) => {
-          const avgOrderValue = y.orders > 0 ? (y.revenue / y.orders).toFixed(2) : '0.00';
+          const avgOrderValue =
+            y.orders > 0 ? (y.revenue / y.orders).toFixed(2) : '0.00';
           csvContent += `${escapeCSV(y.year)},${escapeCSV(y.revenue.toFixed(2))},${escapeCSV(
             y.orders
           )},${escapeCSV(avgOrderValue)},${escapeCSV(y.paidOrders)},${escapeCSV(
@@ -624,7 +681,9 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
     }
 
     const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([BOM + csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `${type}_report_${reportDate}.csv`;
@@ -641,7 +700,9 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
       container.querySelectorAll('.chart-bar[data-height]').forEach((bar) => {
         const heightPercent = parseFloat(bar.getAttribute('data-height'));
         if (isNaN(heightPercent)) return;
-        const barContainer = bar.closest('.chart-container, .chart-bars-container');
+        const barContainer = bar.closest(
+          '.chart-container, .chart-bars-container'
+        );
         if (barContainer) {
           const containerHeight = barContainer.offsetHeight || 180;
           const height = (heightPercent / 100) * containerHeight;
@@ -651,13 +712,15 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
       });
 
       // Update progress bars
-      container.querySelectorAll('.progress-bar-fill[data-width]').forEach((bar) => {
-        const widthPercent = bar.getAttribute('data-width');
-        if (widthPercent && !isNaN(parseFloat(widthPercent))) {
-          bar.style.setProperty('--bar-width', `${widthPercent}%`);
-          bar.style.width = 'var(--bar-width)';
-        }
-      });
+      container
+        .querySelectorAll('.progress-bar-fill[data-width]')
+        .forEach((bar) => {
+          const widthPercent = bar.getAttribute('data-width');
+          if (widthPercent && !isNaN(parseFloat(widthPercent))) {
+            bar.style.setProperty('--bar-width', `${widthPercent}%`);
+            bar.style.width = 'var(--bar-width)';
+          }
+        });
     };
 
     // Wait for ref to be attached and DOM to be ready
@@ -683,7 +746,9 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
           return (
             target.classList?.contains('chart-bar') ||
             target.classList?.contains('progress-bar-fill') ||
-            target.closest('.chart-container, .chart-bars-container, .progress-bar-container')
+            target.closest(
+              '.chart-container, .chart-bars-container, .progress-bar-container'
+            )
           );
         });
 
@@ -714,24 +779,89 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
 
   if (loading) {
     return (
-      <div className='admin-content'>
-        <PremiumLoader message='Loading analytics...' size='large' />
+      <div className="admin-content">
+        <PremiumLoader message="Loading analytics..." size="large" />
       </div>
     );
   }
 
   return (
-    <div className='admin-content' ref={analyticsContainerRef}>
-      <div className='dashboard-with-sidebar'>
-        <div className='dashboard-main-content'>
-          <div className='admin-stats'>
-            <div className='stat-card'>
-              <i className='fa-solid fa-rupee-sign'></i>
+    <div className="admin-content" ref={analyticsContainerRef}>
+      <div className="action-bar mb-24">
+        <div className="action-buttons-group">
+          <div className="period-selector-group">
+            <select
+              className="input-field period-select"
+              value={period}
+              onChange={(e) => {
+                setPeriod(e.target.value);
+                if (e.target.value !== 'custom') {
+                  setCustomFrom('');
+                  setCustomTo('');
+                }
+              }}
+            >
+              <option value="thisMonth">This Month</option>
+              <option value="thisYear">This Year</option>
+              <option value="custom">Custom Range</option>
+              <option value="all">All Time</option>
+            </select>
+            {period === 'custom' && (
+              <div className="date-range-inputs">
+                <input
+                  type="date"
+                  className="input-field"
+                  value={customFrom}
+                  onChange={(e) => setCustomFrom(e.target.value)}
+                  placeholder="From"
+                />
+                <span className="date-range-separator">to</span>
+                <input
+                  type="date"
+                  className="input-field"
+                  value={customTo}
+                  onChange={(e) => setCustomTo(e.target.value)}
+                  placeholder="To"
+                />
+              </div>
+            )}
+          </div>
+          <div className="export-buttons-group">
+            <button
+              className="btn btn-secondary btn-small"
+              onClick={() => handleExportReport('monthly')}
+              title="Export Monthly Report"
+            >
+              <i className="fa-solid fa-download"></i> Export Monthly
+            </button>
+            <button
+              className="btn btn-secondary btn-small"
+              onClick={() => handleExportReport('quarterly')}
+              title="Export Quarterly Report"
+            >
+              <i className="fa-solid fa-download"></i> Export Quarterly
+            </button>
+            <button
+              className="btn btn-secondary btn-small"
+              onClick={() => handleExportReport('annual')}
+              title="Export Annual Report"
+            >
+              <i className="fa-solid fa-download"></i> Export Annual
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="dashboard-with-sidebar">
+        <div className="dashboard-main-content">
+          <div className="admin-stats">
+            <div className="stat-card">
+              <i className="fa-solid fa-rupee-sign"></i>
               <div>
                 <h3>₹{formatCurrency(keyMetrics.totalRevenue)}</h3>
                 <p>Total Revenue</p>
                 {keyMetrics.growthRate !== 0 && (
-                  <p className='stat-card-subtitle'>
+                  <p className="stat-card-subtitle">
                     {keyMetrics.growthRate >= 999
                       ? 'New ↑'
                       : `${keyMetrics.growthRate >= 0 ? '+' : ''}${keyMetrics.growthRate.toFixed(
@@ -741,78 +871,85 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                 )}
               </div>
             </div>
-            <div className='stat-card'>
-              <i className='fa-solid fa-shopping-cart icon-color-accent'></i>
+            <div className="stat-card">
+              <i className="fa-solid fa-shopping-cart icon-color-accent"></i>
               <div>
                 <h3>{keyMetrics.totalOrders}</h3>
                 <p>Total Orders</p>
               </div>
             </div>
-            <div className='stat-card'>
-              <i className='fa-solid fa-exclamation-triangle icon-color-warning'></i>
+            <div className="stat-card">
+              <i className="fa-solid fa-exclamation-triangle icon-color-warning"></i>
               <div>
                 <h3>₹{formatCurrency(keyMetrics.pendingAmount)}</h3>
                 <p>Pending Payments</p>
-                <p className='stat-card-subtitle'>
+                <p className="stat-card-subtitle">
                   {keyMetrics.pendingOrdersCount}{' '}
                   {keyMetrics.pendingOrdersCount === 1 ? 'order' : 'orders'}
                 </p>
               </div>
             </div>
-            <div className='stat-card'>
-              <i className='fa-solid fa-users icon-color-accent'></i>
+            <div className="stat-card">
+              <i className="fa-solid fa-users icon-color-accent"></i>
               <div>
                 <h3>{keyMetrics.totalCustomers}</h3>
                 <p>Total Customers</p>
-                <p className='stat-card-subtitle'>Unique addresses</p>
+                <p className="stat-card-subtitle">Unique addresses</p>
               </div>
             </div>
-            <div className='stat-card'>
-              <i className='fa-solid fa-chart-line icon-color-success'></i>
+            <div className="stat-card">
+              <i className="fa-solid fa-chart-line icon-color-success"></i>
               <div>
                 <h3>₹{formatCurrency(keyMetrics.avgOrderValue)}</h3>
                 <p>Avg Order Value</p>
               </div>
             </div>
-            <div className='stat-card'>
-              <i className='fa-solid fa-chart-line stat-card-icon-success'></i>
+            <div className="stat-card">
+              <i className="fa-solid fa-chart-line stat-card-icon-success"></i>
               <div>
                 <h3>₹{formatCurrency(keyMetrics.profitStats.profit)}</h3>
                 <p>Profit After Expenses</p>
-                <p className='stat-card-subtitle'>
-                  {keyMetrics.profitStats.profitMarginPercent.toFixed(1)}% margin
+                <p className="stat-card-subtitle">
+                  {keyMetrics.profitStats.profitMarginPercent.toFixed(1)}%
+                  margin
                 </p>
               </div>
             </div>
-            <div className='stat-card'>
-              <i className='fa-solid fa-percent stat-card-icon-secondary'></i>
+            <div className="stat-card">
+              <i className="fa-solid fa-percent stat-card-icon-secondary"></i>
               <div>
-                <h3>{keyMetrics.profitStats.profitMarginPercent.toFixed(1)}%</h3>
+                <h3>
+                  {keyMetrics.profitStats.profitMarginPercent.toFixed(1)}%
+                </h3>
                 <p>Profit Margin</p>
-                <p className='stat-card-subtitle'>
+                <p className="stat-card-subtitle">
                   Target: {keyMetrics.profitStats.targetProfitMargin}%
                 </p>
               </div>
             </div>
           </div>
 
-          <div className='dashboard-grid-layout'>
-            <div className='dashboard-grid-item full-width'>
-              <div className='dashboard-card'>
-                <h3 className='dashboard-section-title'>
-                  <i className='fa-solid fa-chart-line icon-opacity'></i>
+          <div className="dashboard-grid-layout">
+            <div className="dashboard-grid-item full-width">
+              <div className="dashboard-card">
+                <h3 className="dashboard-section-title">
+                  <i className="fa-solid fa-chart-line icon-opacity"></i>
                   Monthly Revenue Trend (Last 12M)
                 </h3>
-                <div className='chart-container-padding'>
-                  <div className='chart-container mb-16'>
+                <div className="chart-container-padding">
+                  <div className="chart-container mb-16">
                     {monthlyRevenueTrend && monthlyRevenueTrend.length > 0 ? (
                       monthlyRevenueTrend.map((month, idx) => {
                         const barHeightPercent =
-                          maxMonthlyRevenue > 0 ? (month.revenue / maxMonthlyRevenue) * 100 : 0;
-                        const isPeak = month.month === peakMonth.month && month.revenue === peakMonth.revenue;
+                          maxMonthlyRevenue > 0
+                            ? (month.revenue / maxMonthlyRevenue) * 100
+                            : 0;
+                        const isPeak =
+                          month.month === peakMonth.month &&
+                          month.revenue === peakMonth.revenue;
                         return (
-                          <div key={idx} className='bar-chart-item'>
-                            <div className='chart-bars-container'>
+                          <div key={idx} className="bar-chart-item">
+                            <div className="chart-bars-container">
                               <div
                                 className={`chart-bar chart-bar-small ${
                                   month.revenue > 0 ? '' : 'chart-bar-empty'
@@ -823,44 +960,53 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                                 } orders)${isPeak ? ' (Peak)' : ''}`}
                               >
                                 {month.revenue > 0 && (
-                                  <span className='chart-bar-label-small'>
+                                  <span className="chart-bar-label-small">
                                     ₹{formatNumberIndian(month.revenue)}
                                   </span>
                                 )}
                               </div>
                             </div>
-                            <span className='chart-bar-label'>{month.month}</span>
+                            <span className="chart-bar-label">
+                              {month.month}
+                            </span>
                           </div>
                         );
                       })
                     ) : (
-                      <div className='analytics-empty-state-center'>No revenue data available</div>
+                      <div className="analytics-empty-state-center">
+                        No revenue data available
+                      </div>
                     )}
                   </div>
                   {monthlyRevenueTrend && monthlyRevenueTrend.length > 0 && (
-                    <div className='chart-summary'>
-                      Peak: <span className='chart-summary-value'>₹{formatCurrency(peakMonth.revenue)}</span>
-                      <span className='chart-summary-month'>({peakMonth.month})</span>
+                    <div className="chart-summary">
+                      Peak:{' '}
+                      <span className="chart-summary-value">
+                        ₹{formatCurrency(peakMonth.revenue)}
+                      </span>
+                      <span className="chart-summary-month">
+                        ({peakMonth.month})
+                      </span>
                     </div>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className='dashboard-grid-item full-width'>
-              <div className='dashboard-card'>
-                <div className='section-header-with-select'>
-                  <h3 className='dashboard-section-title m-0'>
-                    <i className='fa-solid fa-map-marker-alt icon-opacity'></i>
+            <div className="dashboard-grid-item full-width">
+              <div className="dashboard-card">
+                <div className="section-header-with-select">
+                  <h3 className="dashboard-section-title m-0">
+                    <i className="fa-solid fa-map-marker-alt icon-opacity"></i>
                     Top 10 Delivery Areas
                   </h3>
                   <select
-                    className='top-areas-range-select'
+                    className="top-areas-range-select"
                     value={topAreasRange}
                     onChange={(e) => setTopAreasRange(e.target.value)}
-                    aria-label='Filter by time range'
+                    aria-label="Filter by time range"
                   >
-                    <option value='all'>All time</option>
+                    <option value="all">All time</option>
                     {topAreasYears.map((y) => (
                       <option key={y} value={String(y)}>
                         {y}
@@ -868,14 +1014,16 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                     ))}
                   </select>
                 </div>
-                <div className='analytics-chart-section'>
+                <div className="analytics-chart-section">
                   {topAreas.length === 0 ? (
-                    <div className='analytics-empty-state-inline'>
-                      <i className='fa-solid fa-inbox analytics-empty-icon-large'></i>
-                      <p className='analytics-empty-text'>No delivery areas found</p>
+                    <div className="analytics-empty-state-inline">
+                      <i className="fa-solid fa-inbox analytics-empty-icon-large"></i>
+                      <p className="analytics-empty-text">
+                        No delivery areas found
+                      </p>
                     </div>
                   ) : (
-                    <div className='flex-col gap-12'>
+                    <div className="flex-col gap-12">
                       {topAreas.map((area, idx) => (
                         <div
                           key={idx}
@@ -883,21 +1031,24 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                             idx % 2 === 0 ? 'area-item-even' : 'area-item-odd'
                           }`}
                         >
-                          <div className='area-header'>
-                            <span className='area-name'>
+                          <div className="area-header">
+                            <span className="area-name">
                               {idx + 1}. {area.address}
                             </span>
-                            <span className='area-revenue'>
+                            <span className="area-revenue">
                               ₹{formatCurrency(area.revenue)} ({area.orders}{' '}
                               {area.orders === 1 ? 'order' : 'orders'})
                             </span>
                           </div>
-                          <div className='progress-bar-container analytics-progress-bar-container'>
+                          <div className="progress-bar-container analytics-progress-bar-container">
                             <div
-                              className='progress-bar-fill rounded-xl'
+                              className="progress-bar-fill rounded-xl"
                               data-width={
                                 maxAreaRevenue > 0
-                                  ? ((area.revenue / maxAreaRevenue) * 100).toFixed(2)
+                                  ? (
+                                      (area.revenue / maxAreaRevenue) *
+                                      100
+                                    ).toFixed(2)
                                   : '0'
                               }
                             />
@@ -910,20 +1061,20 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               </div>
             </div>
 
-            <div className='dashboard-grid-item full-width'>
-              <div className='dashboard-card'>
-                <div className='section-header-with-select'>
-                  <h3 className='dashboard-section-title m-0'>
-                    <i className='fa-solid fa-credit-card icon-opacity'></i>
+            <div className="dashboard-grid-item full-width">
+              <div className="dashboard-card">
+                <div className="section-header-with-select">
+                  <h3 className="dashboard-section-title m-0">
+                    <i className="fa-solid fa-credit-card icon-opacity"></i>
                     Payment Mode Trends
                   </h3>
                   <select
-                    className='top-areas-range-select'
+                    className="top-areas-range-select"
                     value={paymentModeRange}
                     onChange={(e) => setPaymentModeRange(e.target.value)}
-                    aria-label='Filter Payment Mode Trends by time range'
+                    aria-label="Filter Payment Mode Trends by time range"
                   >
-                    <option value='all'>All time</option>
+                    <option value="all">All time</option>
                     {topAreasYears.map((y) => (
                       <option key={y} value={String(y)}>
                         {y}
@@ -931,29 +1082,42 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                     ))}
                   </select>
                 </div>
-                <div className='chart-container-padding'>
-                  <div className='flex-col gap-12'>
+                <div className="chart-container-padding">
+                  <div className="flex-col gap-12">
                     {paymentTrends.map((trend, idx) => {
                       const percentage =
                         totalPaymentAmount > 0
                           ? Math.min(
                               100,
-                              parseFloat(((trend.amount / totalPaymentAmount) * 100).toFixed(2))
+                              parseFloat(
+                                (
+                                  (trend.amount / totalPaymentAmount) *
+                                  100
+                                ).toFixed(2)
+                              )
                             )
                           : 0;
                       return (
-                        <div key={idx} className='flex-col gap-6'>
-                          <div className='flex justify-between items-center'>
-                            <span className='font-semibold text-primary'>{trend.mode}</span>
-                            <span className='font-bold text-accent text-lg'>
-                              ₹{formatCurrency(trend.amount)} ({percentage.toFixed(2)}%)
+                        <div key={idx} className="flex-col gap-6">
+                          <div className="flex justify-between items-center">
+                            <span className="font-semibold text-primary">
+                              {trend.mode}
+                            </span>
+                            <span className="font-bold text-accent text-lg">
+                              ₹{formatCurrency(trend.amount)} (
+                              {percentage.toFixed(2)}%)
                             </span>
                           </div>
-                          <div className='progress-bar-container progress-bar-container-alt analytics-progress-bar-container-alt'>
-                            <div className='progress-bar-fill' data-width={percentage.toFixed(2)} />
+                          <div className="progress-bar-container progress-bar-container-alt analytics-progress-bar-container-alt">
+                            <div
+                              className="progress-bar-fill"
+                              data-width={percentage.toFixed(2)}
+                            />
                             {percentage > 15 && (
-                              <div className='progress-bar-label-container'>
-                                <span className='progress-bar-label'>{percentage.toFixed(0)}%</span>
+                              <div className="progress-bar-label-container">
+                                <span className="progress-bar-label">
+                                  {percentage.toFixed(0)}%
+                                </span>
                               </div>
                             )}
                           </div>
@@ -965,31 +1129,37 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               </div>
             </div>
 
-            <div className='dashboard-grid-item full-width'>
-              <div className='dashboard-card'>
-                <h3 className='dashboard-section-title'>
-                  <i className='fa-solid fa-map-marker-alt icon-opacity'></i>
+            <div className="dashboard-grid-item full-width">
+              <div className="dashboard-card">
+                <h3 className="dashboard-section-title">
+                  <i className="fa-solid fa-map-marker-alt icon-opacity"></i>
                   Delivery Address Analytics (Yearly & Monthly)
                 </h3>
-                <div className='analytics-chart-container'>
+                <div className="analytics-chart-container">
                   {!deliveryAddressAnalytics ||
                   !deliveryAddressAnalytics.data ||
                   deliveryAddressAnalytics.data.length === 0 ? (
-                    <div className='analytics-empty-state'>
-                      <i className='fa-solid fa-inbox analytics-empty-icon'></i>
-                      <p className='mt-16'>No delivery address data available</p>
+                    <div className="analytics-empty-state">
+                      <i className="fa-solid fa-inbox analytics-empty-icon"></i>
+                      <p className="mt-16">
+                        No delivery address data available
+                      </p>
                     </div>
                   ) : (
-                    <div className='analytics-delivery-table-wrapper'>
-                      <table className='analytics-delivery-table'>
+                    <div className="analytics-delivery-table-wrapper">
+                      <table className="analytics-delivery-table">
                         <thead>
                           <tr>
-                            <th className='analytics-th-sticky'>Delivery Address</th>
+                            <th className="analytics-th-sticky">
+                              Delivery Address
+                            </th>
                             <th
-                              className='analytics-th-right analytics-th-year analytics-th-sortable'
+                              className="analytics-th-right analytics-th-year analytics-th-sortable"
                               onClick={() => {
                                 if (sortColumn === 'year1') {
-                                  setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                                  setSortDirection(
+                                    sortDirection === 'asc' ? 'desc' : 'asc'
+                                  );
                                 } else {
                                   setSortColumn('year1');
                                   setSortDirection('desc');
@@ -998,16 +1168,18 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                             >
                               {deliveryAddressAnalytics?.year1 || 'Year 1'}
                               {sortColumn === 'year1' && (
-                                <span className='analytics-th-sort-indicator'>
+                                <span className="analytics-th-sort-indicator">
                                   {sortDirection === 'asc' ? '↑' : '↓'}
                                 </span>
                               )}
                             </th>
                             <th
-                              className='analytics-th-right analytics-th-year analytics-th-sortable'
+                              className="analytics-th-right analytics-th-year analytics-th-sortable"
                               onClick={() => {
                                 if (sortColumn === 'year2') {
-                                  setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                                  setSortDirection(
+                                    sortDirection === 'asc' ? 'desc' : 'asc'
+                                  );
                                 } else {
                                   setSortColumn('year2');
                                   setSortDirection('desc');
@@ -1016,16 +1188,18 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                             >
                               {deliveryAddressAnalytics?.year2 || 'Year 2'}
                               {sortColumn === 'year2' && (
-                                <span className='analytics-th-sort-indicator'>
+                                <span className="analytics-th-sort-indicator">
                                   {sortDirection === 'asc' ? '↑' : '↓'}
                                 </span>
                               )}
                             </th>
                             <th
-                              className='analytics-th-right analytics-th-year analytics-th-sortable'
+                              className="analytics-th-right analytics-th-year analytics-th-sortable"
                               onClick={() => {
                                 if (sortColumn === 'year3') {
-                                  setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                                  setSortDirection(
+                                    sortDirection === 'asc' ? 'desc' : 'asc'
+                                  );
                                 } else {
                                   setSortColumn('year3');
                                   setSortDirection('desc');
@@ -1034,14 +1208,16 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                             >
                               {deliveryAddressAnalytics?.year3 || 'Year 3'}
                               {sortColumn === 'year3' && (
-                                <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                                <span>
+                                  {sortDirection === 'asc' ? '↑' : '↓'}
+                                </span>
                               )}
                             </th>
-                            <th className='analytics-th-right analytics-th-grand-total'>
+                            <th className="analytics-th-right analytics-th-grand-total">
                               Grand Total
                             </th>
-                            <th className='analytics-th-center'>Trend</th>
-                            <th className='analytics-th-center analytics-th-monthly'>
+                            <th className="analytics-th-center">Trend</th>
+                            <th className="analytics-th-center analytics-th-monthly">
                               Monthly Breakdown
                             </th>
                           </tr>
@@ -1088,7 +1264,9 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
 
                             return (
                               <tr key={idx}>
-                                <td className='analytics-td-address'>{data.address}</td>
+                                <td className="analytics-td-address">
+                                  {data.address}
+                                </td>
                                 <td
                                   className={`analytics-td-right ${
                                     data.yearly[year1] > 0
@@ -1122,101 +1300,118 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                                     ? `₹${formatCurrency(data.yearly[year3])}`
                                     : '—'}
                                 </td>
-                                <td className='analytics-td-grand-total'>
+                                <td className="analytics-td-grand-total">
                                   ₹{formatCurrency(data.grandTotal)}
                                 </td>
-                                <td className='analytics-td-trend'>
+                                <td className="analytics-td-trend">
                                   <span
                                     className={`analytics-trend-icon ${
                                       totalGap > 0
                                         ? 'analytics-trend-icon-up'
                                         : totalGap < 0
-                                        ? 'analytics-trend-icon-down'
-                                        : 'analytics-trend-icon-neutral'
+                                          ? 'analytics-trend-icon-down'
+                                          : 'analytics-trend-icon-neutral'
                                     }`}
                                   >
                                     {trendIcon}
                                   </span>
                                 </td>
-                                <td className='analytics-td-monthly'>
-                                  <div className='analytics-monthly-breakdown'>
+                                <td className="analytics-td-monthly">
+                                  <div className="analytics-monthly-breakdown">
                                     {data.monthly[year1] && (
-                                      <div className='analytics-monthly-year-row'>
-                                        {data.monthly[year1].map((monthVal, mIdx) => (
-                                          <span
-                                            key={`${year1}-${mIdx}`}
-                                            className={`analytics-monthly-value ${
-                                              monthVal > 0
-                                                ? 'analytics-monthly-value-positive'
-                                                : 'analytics-monthly-value-empty'
-                                            }`}
-                                            title={`${monthNames[mIdx]}: ₹${formatCurrency(
-                                              monthVal
-                                            )}`}
-                                          >
-                                            {monthVal > 0 ? formatCurrency(monthVal) : '—'}
-                                          </span>
-                                        ))}
+                                      <div className="analytics-monthly-year-row">
+                                        {data.monthly[year1].map(
+                                          (monthVal, mIdx) => (
+                                            <span
+                                              key={`${year1}-${mIdx}`}
+                                              className={`analytics-monthly-value ${
+                                                monthVal > 0
+                                                  ? 'analytics-monthly-value-positive'
+                                                  : 'analytics-monthly-value-empty'
+                                              }`}
+                                              title={`${monthNames[mIdx]}: ₹${formatCurrency(
+                                                monthVal
+                                              )}`}
+                                            >
+                                              {monthVal > 0
+                                                ? formatCurrency(monthVal)
+                                                : '—'}
+                                            </span>
+                                          )
+                                        )}
                                       </div>
                                     )}
                                     {data.monthly[year2] && (
-                                      <div className='analytics-monthly-year-row'>
-                                        {data.monthly[year2].map((monthVal, mIdx) => (
-                                          <span
-                                            key={`${year2}-${mIdx}`}
-                                            className={`analytics-monthly-value ${
-                                              monthVal > 0
-                                                ? 'analytics-monthly-value-positive'
-                                                : 'analytics-monthly-value-empty'
-                                            }`}
-                                            title={`${monthNames[mIdx]}: ₹${formatCurrency(
-                                              monthVal
-                                            )}`}
-                                          >
-                                            {monthVal > 0 ? formatCurrency(monthVal) : '—'}
-                                          </span>
-                                        ))}
+                                      <div className="analytics-monthly-year-row">
+                                        {data.monthly[year2].map(
+                                          (monthVal, mIdx) => (
+                                            <span
+                                              key={`${year2}-${mIdx}`}
+                                              className={`analytics-monthly-value ${
+                                                monthVal > 0
+                                                  ? 'analytics-monthly-value-positive'
+                                                  : 'analytics-monthly-value-empty'
+                                              }`}
+                                              title={`${monthNames[mIdx]}: ₹${formatCurrency(
+                                                monthVal
+                                              )}`}
+                                            >
+                                              {monthVal > 0
+                                                ? formatCurrency(monthVal)
+                                                : '—'}
+                                            </span>
+                                          )
+                                        )}
                                       </div>
                                     )}
                                     {data.monthly[year3] && (
-                                      <div className='analytics-monthly-year3-container'>
-                                        <div className='analytics-monthly-year-row'>
-                                          {data.monthly[year3].map((monthVal, mIdx) => {
-                                            // Calculate gap: current month vs same month previous year
-                                            const monthGap =
-                                              data.monthlyGaps && data.monthlyGaps[mIdx]
-                                                ? data.monthlyGaps[mIdx].gap
-                                                : monthVal -
-                                                  (data.monthlyGaps?.[mIdx]?.previousYearValue ||
-                                                    0);
-                                            const isPositiveGap = monthGap >= 0;
+                                      <div className="analytics-monthly-year3-container">
+                                        <div className="analytics-monthly-year-row">
+                                          {data.monthly[year3].map(
+                                            (monthVal, mIdx) => {
+                                              // Calculate gap: current month vs same month previous year
+                                              const monthGap =
+                                                data.monthlyGaps &&
+                                                data.monthlyGaps[mIdx]
+                                                  ? data.monthlyGaps[mIdx].gap
+                                                  : monthVal -
+                                                    (data.monthlyGaps?.[mIdx]
+                                                      ?.previousYearValue || 0);
+                                              const isPositiveGap =
+                                                monthGap >= 0;
 
-                                            return (
-                                              <span
-                                                key={`${year3}-${mIdx}`}
-                                                className={`analytics-monthly-value ${
-                                                  monthVal > 0 && mIdx <= currentMonth
-                                                    ? isPositiveGap
-                                                      ? 'analytics-monthly-value-year3-positive'
-                                                      : 'analytics-monthly-value-year3-negative'
-                                                    : monthVal > 0
-                                                    ? 'analytics-monthly-value-positive'
-                                                    : 'analytics-monthly-value-empty'
-                                                }`}
-                                                title={`${
-                                                  monthNames[mIdx]
-                                                } ${year3}: ₹${formatCurrency(monthVal)}${
-                                                  mIdx <= currentMonth
-                                                    ? ` (Gap vs Dec ${year2}: ${
-                                                        isPositiveGap ? '+' : ''
-                                                      }₹${formatCurrency(Math.abs(monthGap))})`
-                                                    : ''
-                                                }`}
-                                              >
-                                                {monthVal > 0 ? formatCurrency(monthVal) : '—'}
-                                              </span>
-                                            );
-                                          })}
+                                              return (
+                                                <span
+                                                  key={`${year3}-${mIdx}`}
+                                                  className={`analytics-monthly-value ${
+                                                    monthVal > 0 &&
+                                                    mIdx <= currentMonth
+                                                      ? isPositiveGap
+                                                        ? 'analytics-monthly-value-year3-positive'
+                                                        : 'analytics-monthly-value-year3-negative'
+                                                      : monthVal > 0
+                                                        ? 'analytics-monthly-value-positive'
+                                                        : 'analytics-monthly-value-empty'
+                                                  }`}
+                                                  title={`${
+                                                    monthNames[mIdx]
+                                                  } ${year3}: ₹${formatCurrency(monthVal)}${
+                                                    mIdx <= currentMonth
+                                                      ? ` (Gap vs Dec ${year2}: ${
+                                                          isPositiveGap
+                                                            ? '+'
+                                                            : ''
+                                                        }₹${formatCurrency(Math.abs(monthGap))})`
+                                                      : ''
+                                                  }`}
+                                                >
+                                                  {monthVal > 0
+                                                    ? formatCurrency(monthVal)
+                                                    : '—'}
+                                                </span>
+                                              );
+                                            }
+                                          )}
                                         </div>
                                       </div>
                                     )}

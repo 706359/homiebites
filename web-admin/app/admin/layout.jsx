@@ -4,7 +4,11 @@ import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 /* Admin CSS: loads index (vars, layout) + all modules. Static import so it is in the /admin route chunk and applies before paint. */
 import '../../components/admin/styles/adminStyles.js';
-import { clearAdminFontSize, parseFontSize, applyAdminFontSize } from '../../components/admin/utils/fontSize.js';
+import {
+  clearAdminFontSize,
+  parseFontSize,
+  applyAdminFontSize,
+} from '../../components/admin/utils/fontSize.js';
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();
@@ -18,7 +22,11 @@ export default function AdminLayout({ children }) {
   /* Apply saved font size as early as possible when entering /admin */
   useEffect(() => {
     if (typeof pathname === 'string' && pathname.startsWith('/admin')) {
-      const v = parseFontSize(typeof localStorage !== 'undefined' ? localStorage.getItem('homiebites_font_size') : null);
+      const v = parseFontSize(
+        typeof localStorage !== 'undefined'
+          ? localStorage.getItem('homiebites_font_size')
+          : null
+      );
       applyAdminFontSize(v ?? 16);
     }
   }, [pathname]);
@@ -57,7 +65,9 @@ export default function AdminLayout({ children }) {
   }, [pathname]);
 
   useEffect(() => {
-    return () => { clearAdminFontSize(); };
+    return () => {
+      clearAdminFontSize();
+    };
   }, []);
 
   return <>{children}</>;

@@ -1,6 +1,5 @@
 'use client';
 
-
 import { useParams } from 'next/navigation';
 import NotificationWrapper from '../../../../components/admin/NotificationWrapper.jsx';
 import { NotificationProvider } from '../../../../components/admin/contexts/NotificationContext.jsx';

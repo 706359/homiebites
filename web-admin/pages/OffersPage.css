@@ -4,7 +4,6 @@
 }
 
 .offers-empty-icon {
-  font-size: 48px;
   color: var(--gray);
   margin-bottom: 16px;
 }
@@ -28,21 +27,18 @@
 }
 
 .no-offers-icon {
-  font-size: 4rem;
   color: var(--gray, #999);
   margin-bottom: 1.5rem;
   display: block;
 }
 
 .no-offers-title {
-  font-size: 1.5rem;
   color: var(--text-primary, #333);
   margin-bottom: 1rem;
   font-weight: 600;
 }
 
 .no-offers-text {
-  font-size: 1.1rem;
   color: var(--text-secondary, #666);
   margin-bottom: 2rem;
   line-height: 1.6;

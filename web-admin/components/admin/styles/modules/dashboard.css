@@ -2,6 +2,447 @@
    ADMIN DASHBOARD & CHARTS MODULE
    ======================================================================== */
 
+/* Reviews Tab Styles - Compact (spacing only, not font sizes) */
+.reviews-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.reviews-stats-grid .stat-card {
+  padding: 16px 18px;
+  min-height: auto;
+}
+
+.reviews-stats-grid .stat-card-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.review-stars-inline {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.review-stars-inline .fa-star {
+  font-size: var(--admin-fs-sm);
+  color: #d1d5db;
+}
+
+.review-stars-inline .fa-star.star-filled {
+  color: #fbbf24;
+}
+
+.review-stars-inline .fa-star.star-empty {
+  color: #e5e7eb;
+}
+
+.review-rating-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.review-rating-number {
+  font-size: var(--admin-fs-sm);
+  color: var(--admin-text-secondary, #64748b);
+  font-weight: 600;
+}
+
+.review-customer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.review-customer-name {
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+}
+
+.review-customer-email {
+  font-size: var(--admin-fs-xs);
+  color: var(--admin-text-secondary, #64748b);
+}
+
+.review-comment-cell {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-status-badges {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.action-icon-approve {
+  color: #10b981;
+}
+
+.action-icon-approve:hover {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.action-icon-featured {
+  color: #ef4444;
+}
+
+.action-icon-featured:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Financial Summary Tab Styles - Compact (spacing only, not font sizes) */
+.financial-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.financial-stats-grid .stat-card {
+  padding: 16px 18px;
+  min-height: auto;
+}
+
+.financial-stats-grid .stat-card-icon {
+  width: 40px;
+  height: 40px;
+}
+
+/* Fallback for browsers without :has() support */
+@supports not selector(:has(*)) {
+  .admin-content > .dashboard-card:first-child {
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+  
+  .admin-content > .filter-bar-card:first-of-type {
+    padding: 14px 18px;
+    margin-bottom: 18px;
+  }
+  
+  .admin-content > .filter-bar-card:first-of-type .filter-bar-container {
+    gap: 12px;
+    align-items: flex-end;
+  }
+  
+  .admin-content > .filter-bar-card:first-of-type .filter-field-group-standard {
+    gap: 6px;
+    min-width: 140px;
+  }
+  
+  .admin-content > .filter-bar-card:first-of-type .filter-label-standard {
+    margin-bottom: 0;
+  }
+  
+  .admin-content > .filter-bar-card:first-of-type .input-field {
+    height: 40px;
+    padding: 8px 12px;
+  }
+  
+  .admin-content > .filter-bar-card:first-of-type .btn {
+    height: 40px;
+    padding: 8px 16px;
+    align-self: flex-end;
+  }
+}
+
+.stat-card-primary {
+  border-left: 3px solid var(--admin-accent, #449031);
+}
+
+.stat-card-success {
+  border-left: 3px solid #10b981;
+}
+
+.stat-card-warning {
+  border-left: 3px solid #f59e0b;
+}
+
+.stat-card-info {
+  border-left: 3px solid #3b82f6;
+}
+
+.financial-settings {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.financial-setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.financial-setting-group label {
+  font-size: var(--admin-fs-xs);
+  color: var(--admin-text-secondary, #64748b);
+  font-weight: 500;
+}
+
+.financial-setting-group .input-field-small {
+  padding: 8px 12px;
+}
+
+.profit-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.profit-card {
+  background: var(--admin-bg-secondary, #f8fafc);
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profit-card-highlight {
+  background: linear-gradient(135deg, rgba(68, 144, 49, 0.1) 0%, rgba(68, 144, 49, 0.05) 100%);
+  border-color: var(--admin-accent, #449031);
+}
+
+.profit-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--admin-fs-sm);
+  color: var(--admin-text-secondary, #64748b);
+  font-weight: 600;
+}
+
+.profit-card-header i {
+  font-size: var(--admin-fs-base);
+}
+
+.profit-card-value {
+  font-size: var(--admin-fs-2xl);
+  font-weight: 700;
+  color: var(--admin-text-primary, #1e293b);
+}
+
+.profit-card-expense {
+  color: #ef4444;
+}
+
+.profit-card-profit {
+  color: var(--admin-accent, #449031);
+}
+
+.profit-card-margin {
+  font-size: var(--admin-fs-xs);
+  color: var(--admin-text-secondary, #64748b);
+  margin-top: 2px;
+}
+
+.profit-card-diff {
+  font-size: var(--admin-fs-2xs);
+  color: var(--admin-text-secondary, #64748b);
+  margin-top: 2px;
+}
+
+.payment-methods-table-container,
+.daily-breakdown-table-container {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+.payment-methods-table-container .orders-table th,
+.payment-methods-table-container .orders-table td,
+.daily-breakdown-table-container .orders-table th,
+.daily-breakdown-table-container .orders-table td {
+  padding: 11px 14px;
+}
+
+.percentage-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 80px;
+}
+
+.percentage-bar {
+  height: 6px;
+  background: var(--admin-accent, #449031);
+  border-radius: 3px;
+  min-width: 2px;
+}
+
+.percentage-bar-container span {
+  font-size: var(--admin-fs-xs);
+  color: var(--admin-text-secondary, #64748b);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Compact styles for Reviews and Financial tabs */
+.reviews-stats-grid .stat-card,
+.financial-stats-grid .stat-card {
+  border-radius: 8px;
+}
+
+/* Compact section headers for reviews and financial tabs (spacing only) */
+.reviews-stats-grid ~ .dashboard-card .dashboard-section-header,
+.financial-stats-grid ~ .dashboard-card .dashboard-section-header,
+.reviews-stats-grid ~ .dashboard-card:first-of-type .dashboard-section-header,
+.financial-stats-grid ~ .dashboard-card:first-of-type .dashboard-section-header,
+.dashboard-card:has(.reviews-stats-grid) .dashboard-section-header,
+.dashboard-card:has(.financial-stats-grid) .dashboard-section-header {
+  margin-bottom: 14px;
+}
+
+.reviews-stats-grid ~ .dashboard-card .dashboard-section-title,
+.financial-stats-grid ~ .dashboard-card .dashboard-section-title,
+.reviews-stats-grid ~ .dashboard-card:first-of-type .dashboard-section-title,
+.financial-stats-grid ~ .dashboard-card:first-of-type .dashboard-section-title,
+.dashboard-card:has(.reviews-stats-grid) .dashboard-section-title,
+.dashboard-card:has(.financial-stats-grid) .dashboard-section-title {
+  margin-bottom: 14px;
+}
+
+/* Compact first stats card */
+.reviews-stats-grid,
+.financial-stats-grid {
+  margin-top: 0;
+}
+
+/* Compact the card containing stats grids */
+.dashboard-card .reviews-stats-grid,
+.dashboard-card .financial-stats-grid {
+  margin-bottom: 0;
+}
+
+/* Make parent card compact when it contains stats grid */
+.dashboard-card:first-child .reviews-stats-grid,
+.dashboard-card:first-child .financial-stats-grid {
+  margin-bottom: 0;
+}
+
+/* Compact filter bars for reviews and financial tabs (spacing only) */
+/* Consolidated selectors for both tabs */
+.reviews-stats-grid ~ .filter-bar-card,
+.financial-stats-grid ~ .filter-bar-card,
+.admin-content:has(.reviews-stats-grid) .filter-bar-card:first-of-type,
+.admin-content:has(.financial-stats-grid) .filter-bar-card:first-of-type,
+.admin-content:has(.financial-stats-grid) > .filter-bar-card:first-of-type {
+  padding: 14px 18px;
+  margin-bottom: 18px;
+}
+
+.reviews-stats-grid ~ .filter-bar-card .filter-bar-container,
+.financial-stats-grid ~ .filter-bar-card .filter-bar-container,
+.admin-content:has(.reviews-stats-grid) .filter-bar-card .filter-bar-container,
+.admin-content:has(.financial-stats-grid) .filter-bar-card .filter-bar-container,
+.admin-content:has(.financial-stats-grid) > .filter-bar-card:first-of-type .filter-bar-container {
+  gap: 12px;
+  align-items: flex-end;
+}
+
+/* Compact filter field groups for reviews and financial tabs */
+.reviews-stats-grid ~ .filter-bar-card .filter-field-group-standard,
+.financial-stats-grid ~ .filter-bar-card .filter-field-group-standard,
+.admin-content:has(.reviews-stats-grid) .filter-field-group-standard,
+.admin-content:has(.financial-stats-grid) .filter-field-group-standard,
+.admin-content:has(.financial-stats-grid) > .filter-bar-card:first-of-type .filter-field-group-standard {
+  gap: 6px;
+  min-width: 140px;
+}
+
+.reviews-stats-grid ~ .filter-bar-card .filter-label-standard,
+.financial-stats-grid ~ .filter-bar-card .filter-label-standard,
+.admin-content:has(.reviews-stats-grid) .filter-label-standard,
+.admin-content:has(.financial-stats-grid) .filter-label-standard,
+.admin-content:has(.financial-stats-grid) > .filter-bar-card:first-of-type .filter-label-standard {
+  margin-bottom: 0;
+}
+
+.reviews-stats-grid ~ .filter-bar-card .input-field,
+.financial-stats-grid ~ .filter-bar-card .input-field,
+.admin-content:has(.reviews-stats-grid) .filter-bar-card .input-field,
+.admin-content:has(.financial-stats-grid) .filter-bar-card .input-field,
+.admin-content:has(.financial-stats-grid) > .filter-bar-card:first-of-type .input-field {
+  height: 40px;
+  padding: 8px 12px;
+}
+
+.reviews-stats-grid ~ .filter-bar-card .btn,
+.financial-stats-grid ~ .filter-bar-card .btn,
+.admin-content:has(.reviews-stats-grid) .filter-bar-card .btn,
+.admin-content:has(.financial-stats-grid) .filter-bar-card .btn,
+.admin-content:has(.financial-stats-grid) > .filter-bar-card:first-of-type .btn {
+  height: 40px;
+  padding: 8px 16px;
+  align-self: flex-end;
+}
+
+.reviews-stats-grid ~ .filter-bar-card .table-info-text,
+.financial-stats-grid ~ .filter-bar-card .table-info-text {
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+/* Compact table styles for reviews and financial tabs (spacing only) */
+.reviews-stats-grid ~ .dashboard-card .orders-table th,
+.reviews-stats-grid ~ .dashboard-card .orders-table td,
+.financial-stats-grid ~ .dashboard-card .orders-table th,
+.financial-stats-grid ~ .dashboard-card .orders-table td {
+  padding: 11px 14px;
+}
+
+
+/* Compact dashboard cards for these tabs (spacing only) */
+/* Note: Consolidated with rules above - this is redundant but kept for sibling selector specificity */
+.reviews-stats-grid ~ .dashboard-card,
+.financial-stats-grid ~ .dashboard-card {
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+
+/* Compact pagination for reviews tab (spacing only) */
+.reviews-stats-grid ~ .dashboard-card .pagination-controls {
+  margin-top: 16px;
+  padding-top: 16px;
+  gap: 12px;
+}
+
+/* Compact profit cards spacing */
+.profit-breakdown-grid .profit-card {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .financial-stats-grid,
+  .profit-breakdown-grid,
+  .reviews-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .financial-settings {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .review-comment-cell {
+    max-width: 200px;
+  }
+  
+  .profit-breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Dashboard Layout */
 .dashboard-with-sidebar {
   display: flex;
@@ -19,15 +460,35 @@
   margin-bottom: 28px;
 }
 
+/* Compact sections for reviews and financial tabs */
+.reviews-stats-grid ~ .dashboard-card .dashboard-section,
+.financial-stats-grid ~ .dashboard-card .dashboard-section {
+  margin-bottom: 20px;
+}
+
 /* Dashboard Cards */
 .dashboard-card {
   background: var(--admin-bg, #ffffff);
   border: 1px solid var(--admin-border, #e5e7eb);
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.06);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-bottom: 24px;
+}
+
+/* Compact cards for reviews and financial tabs (spacing only) */
+/* Consolidated rule for all dashboard cards in reviews/financial tabs */
+.admin-content:has(.reviews-stats-grid) .dashboard-card,
+.admin-content:has(.financial-stats-grid) .dashboard-card,
+.dashboard-card:has(.reviews-stats-grid),
+.dashboard-card:has(.financial-stats-grid),
+.admin-content > .dashboard-card:first-child:has(.reviews-stats-grid),
+.admin-content > .dashboard-card:first-child:has(.financial-stats-grid) {
+  padding: 18px 20px;
+  margin-bottom: 18px;
 }
 
 .dashboard-card.widget {
@@ -52,7 +513,11 @@
   align-items: center;
   gap: 12px;
   letter-spacing: -0.02em;
+  text-align: left;
 }
+
+/* Compact section titles for reviews and financial tabs (spacing only) */
+/* Note: Consolidated with rules above at line 320 */
 
 .dashboard-section-title.m-0 {
   margin: 0;
@@ -256,7 +721,11 @@
 
 /* Peak month bar: distinct color (Monthly Revenue Trend) */
 .chart-bar-peak {
-  background: linear-gradient(180deg, var(--admin-chart-peak-start, #b45309) 0%, var(--admin-warning-dark, #92400e) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--admin-chart-peak-start, #b45309) 0%,
+    var(--admin-warning-dark, #92400e) 100%
+  );
   box-shadow: 0 2px 8px rgba(180, 83, 9, 0.4);
 }
 
@@ -598,7 +1067,54 @@
   .table-container-card {
     padding: 12px;
   }
+}
 
+/* Report Cards - Centered Layout */
+.dashboard-card.text-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 20px;
+  min-height: 160px;
+  gap: 16px;
+}
+
+.dashboard-card.text-center .icon-32 {
+  margin-bottom: 0;
+  margin-left: 0;
+  margin-right: 0;
+  flex-shrink: 0;
+}
+
+.dashboard-card.text-center .btn {
+  width: 100%;
+  max-width: 220px;
+  margin-top: 0;
+  white-space: normal;
+  word-wrap: break-word;
+  padding: 12px 16px;
+  min-height: 44px;
+  height: auto;
+}
+
+/* Report Tab Buttons - Active State */
+.flex-start .btn-ghost.active,
+.flex-start .btn.active {
+  background: var(--primary-green) !important;
+  color: var(--admin-text-white) !important;
+  border-color: var(--primary-green) !important;
+  box-shadow: 0 2px 8px rgba(68, 144, 49, 0.25) !important;
+  font-weight: 600 !important;
+}
+
+.flex-start .btn-ghost.active i,
+.flex-start .btn.active i {
+  color: var(--admin-text-white) !important;
+  opacity: 1 !important;
+}
+
+@media (max-width: 480px) {
   .chart-container {
     min-height: 100px;
     padding: 8px 0 12px;
@@ -617,5 +1133,317 @@
   .recent-orders-table td {
     padding: 10px 14px;
     font-size: var(--admin-fs-base);
+  }
+}
+
+/* Reports Tab Compact Design */
+.reports-grid-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.report-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 12px;
+  background: var(--admin-bg, #ffffff);
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  min-height: 90px;
+}
+
+.report-type-card:hover {
+  border-color: var(--admin-accent, #449031);
+  background: var(--admin-bg-secondary, #f8fafc);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(68, 144, 49, 0.15);
+}
+
+.report-type-card i {
+  font-size: var(--admin-fs-2xl);
+  color: var(--admin-accent, #449031);
+  margin-bottom: 4px;
+}
+
+.report-type-card span {
+  font-size: var(--admin-fs-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+}
+
+.reports-side-by-side-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.reports-card-compact {
+  padding: 20px;
+  margin-bottom: 0;
+}
+
+.reports-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.reports-card-header .dashboard-section-title {
+  margin-bottom: 0;
+  font-size: var(--admin-fs-lg, 1.125rem);
+}
+
+.reports-card-header .dashboard-section-title i {
+  font-size: var(--admin-fs-md);
+  margin-right: 8px;
+}
+
+.reports-table-compact {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.reports-table-compact .orders-table {
+  font-size: var(--admin-fs-sm, 0.875rem);
+}
+
+.reports-table-compact .orders-table th,
+.reports-table-compact .orders-table td {
+  padding: 10px 12px;
+}
+
+.badge-small {
+  font-size: 0.65rem !important;
+  padding: 2px 6px !important;
+  margin-left: 6px !important;
+  font-weight: 600 !important;
+}
+
+@media (max-width: 1024px) {
+  .reports-side-by-side-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .reports-grid-compact {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+
+  .report-type-card {
+    padding: 12px 8px;
+    min-height: 80px;
+  }
+
+  .report-type-card i {
+    font-size: var(--admin-fs-xl);
+  }
+
+  .report-type-card span {
+    font-size: 0.8rem;
+  }
+
+  .reports-card-compact {
+    padding: 16px;
+  }
+
+  .reports-table-compact {
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .reports-grid-compact {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Reports Stats Summary */
+.reports-stats-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.reports-stats-summary .stat-card {
+  padding: 20px;
+  min-height: auto;
+}
+
+.reports-stats-summary .stat-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(68, 144, 49, 0.1);
+  color: var(--admin-accent, #449031);
+  font-size: var(--admin-fs-xl);
+  flex-shrink: 0;
+}
+
+.reports-stats-summary .stat-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.reports-stats-summary .stat-card-value {
+  font-size: var(--admin-fs-xl, 1.5rem);
+  font-weight: 700;
+  color: var(--admin-text-primary, #1e293b);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.reports-stats-summary .stat-card-label {
+  font-size: var(--admin-fs-sm, 0.875rem);
+  color: var(--admin-text-secondary, #64748b);
+  font-weight: 500;
+}
+
+/* Date Range Presets */
+.date-range-presets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.date-range-presets .btn {
+  font-size: 0.8rem;
+  padding: 6px 12px;
+}
+
+.date-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.date-range-inputs .input-field {
+  flex: 1;
+}
+
+.date-range-separator {
+  color: var(--admin-text-secondary, #64748b);
+  font-size: var(--admin-fs-sm, 0.875rem);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .reports-stats-summary {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .reports-stats-summary .stat-card {
+    padding: 16px;
+  }
+
+  .reports-stats-summary .stat-card-icon {
+    width: 40px;
+    height: 40px;
+    font-size: var(--admin-fs-lg);
+  }
+
+  .reports-stats-summary .stat-card-value {
+    font-size: 1.25rem;
+  }
+
+  .date-range-inputs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .date-range-separator {
+    display: none;
+  }
+
+  .period-selector-group {
+    width: 100%;
+  }
+
+  .export-buttons-group {
+    width: 100%;
+  }
+
+  .export-buttons-group .btn {
+    flex: 1;
+    min-width: 120px;
+  }
+}
+
+/* Analytics Tab Period Selector */
+.period-selector-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.period-label {
+  font-size: var(--admin-fs-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+  white-space: nowrap;
+}
+
+.period-select {
+  min-width: 150px;
+}
+
+.export-buttons-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Preview Modal Styles */
+.preview-stats {
+  display: flex;
+  gap: 24px;
+  padding: 16px;
+  background: var(--admin-bg-secondary, #f8fafc);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.preview-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.preview-stat-label {
+  font-size: var(--admin-fs-sm, 0.875rem);
+  color: var(--admin-text-secondary, #64748b);
+  font-weight: 500;
+}
+
+.preview-stat-value {
+  font-size: var(--admin-fs-lg, 1.125rem);
+  font-weight: 700;
+  color: var(--admin-text-primary, #1e293b);
+}
+
+@media (max-width: 768px) {
+  .preview-stats {
+    flex-direction: column;
+    gap: 12px;
   }
 }

@@ -1,19 +1,13 @@
-
 import bcrypt from 'bcryptjs';
-
 
 export async function hashPassword(password) {
   if (!password || typeof password !== 'string') {
     throw new Error('Password must be a non-empty string');
   }
 
-  
-  
-  
   const saltRounds = 10;
   return await bcrypt.hash(password, saltRounds);
 }
-
 
 export async function verifyPassword(password, hash) {
   if (!password || !hash) {
@@ -28,18 +22,16 @@ export async function verifyPassword(password, hash) {
   }
 }
 
-
 export function isBcryptHash(str) {
   if (!str || typeof str !== 'string') {
     return false;
   }
-  
-  
-  
+
   if (str.length !== 60) {
     return false;
   }
-  
-  
-  return str.startsWith('$2a$') || str.startsWith('$2b$') || str.startsWith('$2y$');
+
+  return (
+    str.startsWith('$2a$') || str.startsWith('$2b$') || str.startsWith('$2y$')
+  );
 }

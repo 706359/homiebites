@@ -1,7 +1,9 @@
-
 import connectDB from '../../../../lib/db.js';
 import Order from '../../../../lib/models/Order.js';
-import { isAdmin, createErrorResponse } from '../../../../lib/middleware/auth.js';
+import {
+  isAdmin,
+  createErrorResponse,
+} from '../../../../lib/middleware/auth.js';
 
 export async function POST(request) {
   try {
@@ -62,4 +64,3 @@ export async function POST(request) {
     );
   }
 }
-

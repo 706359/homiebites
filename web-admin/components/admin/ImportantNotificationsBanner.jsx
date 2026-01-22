@@ -63,7 +63,9 @@ const ImportantNotificationsBanner = ({
     }
 
     const highValuePending = orders.filter(
-      (order) => isPendingStatus(order.status, order.paymentStatus) && getOrderAmount(order) > 500
+      (order) =>
+        isPendingStatus(order.status, order.paymentStatus) &&
+        getOrderAmount(order) > 500
     );
     if (highValuePending.length > 0) {
       const totalHighValue = getTotalRevenue(highValuePending);
@@ -114,24 +116,28 @@ const ImportantNotificationsBanner = ({
   };
 
   return (
-    <div className='important-notifications-banner'>
+    <div className="important-notifications-banner">
       {importantNotifications.map((notif) => {
         const styles = getNotificationStyles(notif.type);
         return (
-          <div key={notif.id} className='important-notification-item'>
-            <div className='important-notification-content'>
-              <div className='important-notification-icon'>
+          <div key={notif.id} className="important-notification-item">
+            <div className="important-notification-content">
+              <div className="important-notification-icon">
                 <i className={`fa-solid ${notif.icon}`}></i>
               </div>
-              <div className='important-notification-text'>
-                <div className='important-notification-title'>{notif.title}</div>
-                <div className='important-notification-message'>{notif.message}</div>
+              <div className="important-notification-text">
+                <div className="important-notification-title">
+                  {notif.title}
+                </div>
+                <div className="important-notification-message">
+                  {notif.message}
+                </div>
               </div>
             </div>
-            <div className='important-notification-actions'>
+            <div className="important-notification-actions">
               {notif.action === 'viewPending' && onViewPendingAmounts && (
                 <button
-                  className='btn btn-primary btn-small mr-md'
+                  className="btn btn-primary btn-small mr-md"
                   onClick={() => onViewPendingAmounts()}
                 >
                   View Details
@@ -139,11 +145,11 @@ const ImportantNotificationsBanner = ({
               )}
               {onDismiss && (
                 <button
-                  className='btn btn-ghost btn-small'
+                  className="btn btn-ghost btn-small"
                   onClick={() => onDismiss(notif.id)}
-                  title='Dismiss'
+                  title="Dismiss"
                 >
-                  <i className='fa-solid fa-times'></i>
+                  <i className="fa-solid fa-times"></i>
                 </button>
               )}
             </div>

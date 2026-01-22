@@ -1,44 +1,144 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getFormattedPhone, getPhoneLink, getWhatsAppLink } from '../lib/businessConstants';
+import api from '../lib/api';
 import './Hero.css';
 
 const Hero = ({ onOrderClick }) => {
   const { t } = useLanguage();
+  const [stats, setStats] = useState({
+    totalCustomers: null,
+    dailyMeals: null,
+    totalOrders: null,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await api.getStats();
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Hero] Stats response:', response);
+        }
+        if (response && response.success && response.data) {
+          const newStats = {
+            totalCustomers: response.data.totalCustomers || 0,
+            dailyMeals: response.data.dailyMeals || 0,
+            totalOrders: response.data.totalOrders || 0,
+          };
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[Hero] Setting stats:', newStats);
+          }
+          setStats(newStats);
+        } else {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('[Hero] Invalid stats response:', response);
+          }
+        }
+      } catch (error) {
+        console.error('[Hero] Error fetching stats:', error);
+        // Keep default values on error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+    // Refresh stats every 5 minutes
+    const interval = setInterval(fetchStats, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <section className='hero-section'>
-      <div className='hero-overlay'></div>
-      <div className='hero-content'>
-        <div className='hero-badge'>🍛 HomieBites</div>
+    <section className="hero-section">
+      <div className="hero-overlay"></div>
+      <div className="hero-content">
         <h1>{t('hero.title')}</h1>
-        <p className='hero-subtitle'>{t('hero.subtitle')}</p>
-        <p className='hero-description'>{t('hero.description')}</p>
-        <div className='hero-features'>
-          <span className='hero-feature-item'>
-            <i className='fa-solid fa-heart'></i> Made with Love
+        <p className="hero-subtitle">{t('hero.subtitle')}</p>
+        <p className="hero-description">{t('hero.description')}</p>
+
+        <div className="hero-features">
+          <span className="hero-feature-item">
+            <i className="fa-solid fa-heart"></i> {t('hero.feature1') || 'Made with Love'}
           </span>
-          <span className='hero-feature-item'>
-            <i className='fa-solid fa-fire'></i> Fresh Daily
+          <span className="hero-feature-item">
+            <i className="fa-solid fa-fire"></i> {t('hero.feature2') || 'Fresh Daily'}
           </span>
-          <span className='hero-feature-item'>
-            <i className='fa-solid fa-home'></i> Home-like Taste
+          <span className="hero-feature-item">
+            <i className="fa-solid fa-home"></i> {t('hero.feature3') || 'Home-like Taste'}
           </span>
         </div>
-        <div className='hero-actions'>
-          <a
-            href={getWhatsAppLink()}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='btn btn-primary btn-large'
-          >
-            <i className='fa-brands fa-whatsapp'></i> {t('common.orderOnWhatsApp')}
-          </a>
-          <a href={getPhoneLink()} className='btn btn-secondary btn-large'>
-            <i className='fa-solid fa-phone'></i> {t('common.call')} {getFormattedPhone()}
-          </a>
+
+        <div className="hero-benefits">
+          <div className="hero-benefit-item">
+            <i className="fa-solid fa-check-circle"></i>
+            <div>
+              <strong>{t('hero.benefit1Title') || '100% Pure Vegetarian'}</strong>
+              <p>{t('hero.benefit1Desc') || 'Fresh, hygienic vegetarian meals prepared daily'}</p>
+            </div>
+          </div>
+          <div className="hero-benefit-item">
+            <i className="fa-solid fa-check-circle"></i>
+            <div>
+              <strong>{t('hero.benefit2Title') || 'Flexible Delivery Slots'}</strong>
+              <p>{t('hero.benefit2Desc') || 'Morning (7-10 AM), Noon (12-3 PM), Night (7-9 PM)'}</p>
+            </div>
+          </div>
+          <div className="hero-benefit-item hero-benefit-pricing">
+            <i className="fa-solid fa-check-circle"></i>
+            <div>
+              <strong>{t('hero.benefit3Title') || 'Affordable Pricing'}</strong>
+              <p>{t('hero.benefit3Desc') || 'Home delivery on orders ₹100+ | Starting from ₹80'}</p>
+            </div>
+          </div>
         </div>
+
+        <div className="hero-trust-signals">
+          <div className="hero-trust-item">
+            <i className="fa-solid fa-users"></i>
+            <span>
+              {loading || stats.totalCustomers === null
+                ? t('hero.trust1') || '500+ Happy Customers'
+                : `${stats.totalCustomers}+ ${t('hero.trust1Label') || 'Happy Customers'}`}
+            </span>
+          </div>
+          <div className="hero-trust-item">
+            <i className="fa-solid fa-calendar-check"></i>
+            <span>
+              {loading || stats.dailyMeals === null
+                ? t('hero.trust2') || 'Daily Fresh Meals'
+                : `${stats.dailyMeals} ${t('hero.trust2Label') || 'Daily Fresh Meals'}`}
+            </span>
+          </div>
+          <div className="hero-trust-item">
+            <i className="fa-solid fa-shield-halved"></i>
+            <span>
+              {loading || stats.totalOrders === null
+                ? t('hero.trust3') || 'Hygienic Kitchen'
+                : `${stats.totalOrders}+ ${t('hero.trust3Label') || 'Orders Delivered'}`}
+            </span>
+          </div>
+        </div>
+
+        <div className="hero-cta-text">
+          <p>{t('hero.ctaText') || 'Experience authentic home-cooked meals delivered fresh to your doorstep every day!'}</p>
+        </div>
+
+        {/* Mobile-only Order Button */}
+        {onOrderClick && (
+          <div className="hero-mobile-order">
+            <button
+              onClick={onOrderClick}
+              className="btn btn-primary btn-large hero-order-btn-mobile"
+              type="button"
+              aria-label="Order Now"
+            >
+              <i className="fa-brands fa-whatsapp"></i>
+              {t('hero.orderNow') || t('common.orderOnWhatsApp') || 'Order Now'}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -49,15 +49,21 @@ const NotificationsTab = ({
   fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
   fortyFiveDaysAgo.setHours(0, 0, 0, 0);
 
-  const pendingOrders = orders.filter((o) => isPendingStatus(o.status, o.paymentStatus));
+  const pendingOrders = orders.filter((o) =>
+    isPendingStatus(o.status, o.paymentStatus)
+  );
   const overduePayments = pendingOrders
     .map((order) => {
       try {
-        const orderDate = parseOrderDate(order.date || order.order_date || null);
+        const orderDate = parseOrderDate(
+          order.date || order.order_date || null
+        );
         if (!orderDate) return null;
         const orderDateMidnight = new Date(orderDate);
         orderDateMidnight.setHours(0, 0, 0, 0);
-        const daysPending = Math.floor((now - orderDateMidnight) / (1000 * 60 * 60 * 24));
+        const daysPending = Math.floor(
+          (now - orderDateMidnight) / (1000 * 60 * 60 * 24)
+        );
         const isOverdue = orderDateMidnight < fortyFiveDaysAgo;
         const isUrgent = daysPending > 7;
         return { order, orderDate, daysPending, isOverdue, isUrgent };
@@ -71,7 +77,8 @@ const NotificationsTab = ({
 
   overduePayments.forEach(({ order, orderDate, daysPending, isOverdue }) => {
     const timeAgo = getTimeAgo(orderDate);
-    const address = order.deliveryAddress || order.customerAddress || order.address || 'N/A';
+    const address =
+      order.deliveryAddress || order.customerAddress || order.address || 'N/A';
     notifications.push({
       id: `payment-${order._id || order.orderId}`,
       type: 'payment',
@@ -93,7 +100,9 @@ const NotificationsTab = ({
   const recentOrders = sortOrdersByOrderId(
     orders.filter((order) => {
       try {
-        const orderDate = parseOrderDate(order.date || order.order_date || null);
+        const orderDate = parseOrderDate(
+          order.date || order.order_date || null
+        );
         if (!orderDate) return false;
         return orderDate >= sevenDaysAgo;
       } catch (e) {
@@ -127,8 +136,16 @@ const NotificationsTab = ({
     if (a.isOverdue && !b.isOverdue) return -1;
     if (!a.isOverdue && b.isOverdue) return 1;
 
-    const timeA = a.timeAgo.includes('mins') ? 0 : a.timeAgo.includes('hour') ? 1 : 2;
-    const timeB = b.timeAgo.includes('mins') ? 0 : b.timeAgo.includes('hour') ? 1 : 2;
+    const timeA = a.timeAgo.includes('mins')
+      ? 0
+      : a.timeAgo.includes('hour')
+        ? 1
+        : 2;
+    const timeB = b.timeAgo.includes('mins')
+      ? 0
+      : b.timeAgo.includes('hour')
+        ? 1
+        : 2;
     return timeA - timeB;
   });
 
@@ -157,13 +174,15 @@ const NotificationsTab = ({
       newSet.add(id);
       return newSet;
     });
-    if (showNotification) showNotification('Notification marked as read', 'success');
+    if (showNotification)
+      showNotification('Notification marked as read', 'success');
   };
 
   const handleMarkAllAsRead = () => {
     const allIds = notifications.map((n) => n.id);
     setReadNotifications(new Set(allIds));
-    if (showNotification) showNotification('All notifications marked as read', 'success');
+    if (showNotification)
+      showNotification('All notifications marked as read', 'success');
   };
 
   const handleAction = (notif) => {
@@ -192,7 +211,9 @@ const NotificationsTab = ({
         break;
       case 'markAsPaid':
         if (showConfirmation && onMarkAsPaid) {
-          const order = orders.find((o) => (o._id || o.orderId) === notif.orderId);
+          const order = orders.find(
+            (o) => (o._id || o.orderId) === notif.orderId
+          );
           const orderInfo = order
             ? `Order ${order.orderId || notif.orderId} for ${
                 order.deliveryAddress || order.customerAddress || 'N/A'
@@ -247,27 +268,35 @@ const NotificationsTab = ({
 
   if (loading) {
     return (
-      <div className='admin-content'>
-        <PremiumLoader message='Loading notifications...' size='large' />
+      <div className="admin-content">
+        <PremiumLoader message="Loading notifications..." size="large" />
       </div>
     );
   }
 
   return (
-    <div className='admin-content'>
-      <div className='dashboard-header'>
-        <div>{unreadCount > 0 && <h2>Notifications ({unreadCount} unread)</h2>}</div>
-        <div className='action-buttons-group'>
-          <button className='btn btn-secondary btn-small' onClick={handleMarkAllAsRead}>
+    <div className="admin-content">
+      <div className="dashboard-header">
+        <div>
+          {unreadCount > 0 && <h2>Notifications ({unreadCount} unread)</h2>}
+        </div>
+        <div className="action-buttons-group">
+          <button
+            className="btn btn-secondary btn-small"
+            onClick={handleMarkAllAsRead}
+          >
             Mark All as Read
           </button>
-          <button className='btn btn-ghost btn-small' onClick={() => setShowSettingsModal(true)}>
-            <i className='fa-solid fa-cog'></i> Settings
+          <button
+            className="btn btn-ghost btn-small"
+            onClick={() => setShowSettingsModal(true)}
+          >
+            <i className="fa-solid fa-cog"></i> Settings
           </button>
         </div>
       </div>
 
-      <div className='action-bar action-bar-spaced'>
+      <div className="action-bar action-bar-spaced">
         <button
           className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-small`}
           onClick={() => setFilter('all')}
@@ -300,17 +329,17 @@ const NotificationsTab = ({
         </button>
       </div>
 
-      <div className='dashboard-card'>
+      <div className="dashboard-card">
         {filteredNotifications.length === 0 ? (
-          <div className='empty-state notifications-empty-state'>
-            <i className='fa-solid fa-bell-slash notifications-empty-icon'></i>
+          <div className="empty-state notifications-empty-state">
+            <i className="fa-solid fa-bell-slash notifications-empty-icon"></i>
             <p>No notifications</p>
-            <p className='notifications-empty-text'>
+            <p className="notifications-empty-text">
               You&apos;re all caught up!
             </p>
           </div>
         ) : (
-          <div className='notification-grid-4-col list list-group'>
+          <div className="notification-grid-4-col list list-group">
             {filteredNotifications.map((notif) => (
               <div
                 key={notif.id}
@@ -319,32 +348,42 @@ const NotificationsTab = ({
                 }`}
                 onClick={() => handleAction(notif)}
               >
-                <div className='notification-card-grid-header'>
-                  <div className='notification-card-grid-icon'>
+                <div className="notification-card-grid-header">
+                  <div className="notification-card-grid-icon">
                     <i
                       className={`${getNotificationIcon(notif.type)} ${
                         notif.type === 'order'
                           ? 'notification-icon-order'
                           : notif.type === 'payment'
-                          ? 'notification-icon-payment'
-                          : notif.type === 'system'
-                          ? 'notification-icon-system'
-                          : 'notification-icon-default'
+                            ? 'notification-icon-payment'
+                            : notif.type === 'system'
+                              ? 'notification-icon-system'
+                              : 'notification-icon-default'
                       }`}
                     ></i>
                   </div>
-                  {!notif.read && <span className='notification-badge-unread-grid'>New</span>}
+                  {!notif.read && (
+                    <span className="notification-badge-unread-grid">New</span>
+                  )}
                 </div>
-                <div className='notification-card-grid-content'>
-                  <h4 className='notification-card-grid-title'>{notif.title}</h4>
-                  <p className='notification-card-grid-message'>{notif.message}</p>
-                  <p className='notification-card-grid-details'>{notif.details}</p>
-                  <div className='notification-card-grid-footer'>
-                    <span className='notification-card-grid-time'>{notif.timeAgo}</span>
-                    <div className='notification-card-grid-actions'>
+                <div className="notification-card-grid-content">
+                  <h4 className="notification-card-grid-title">
+                    {notif.title}
+                  </h4>
+                  <p className="notification-card-grid-message">
+                    {notif.message}
+                  </p>
+                  <p className="notification-card-grid-details">
+                    {notif.details}
+                  </p>
+                  <div className="notification-card-grid-footer">
+                    <span className="notification-card-grid-time">
+                      {notif.timeAgo}
+                    </span>
+                    <div className="notification-card-grid-actions">
                       {notif.action === 'viewPendingPayments' && (
                         <button
-                          className='btn btn-primary btn-small btn-full'
+                          className="btn btn-primary btn-small btn-full"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleAction(notif);
@@ -355,7 +394,7 @@ const NotificationsTab = ({
                       )}
                       {notif.action === 'viewOrder' && (
                         <button
-                          className='btn btn-primary btn-small btn-full'
+                          className="btn btn-primary btn-small btn-full"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleAction(notif);
@@ -366,7 +405,7 @@ const NotificationsTab = ({
                       )}
                       {notif.action === 'sendReminder' && (
                         <button
-                          className='btn btn-secondary btn-small btn-full'
+                          className="btn btn-secondary btn-small btn-full"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleAction(notif);
@@ -376,14 +415,14 @@ const NotificationsTab = ({
                         </button>
                       )}
                       <button
-                        className='btn btn-ghost btn-small btn-full'
+                        className="btn btn-ghost btn-small btn-full"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleMarkAsRead(notif.id);
                         }}
-                        title='Mark as Read'
+                        title="Mark as Read"
                       >
-                        <i className='fa-solid fa-check'></i> Read
+                        <i className="fa-solid fa-check"></i> Read
                       </button>
                     </div>
                   </div>
@@ -395,25 +434,28 @@ const NotificationsTab = ({
       </div>
 
       {showSettingsModal && (
-        <div className='modal-overlay' onClick={() => setShowSettingsModal(false)}>
-          <div className='modal-container' onClick={(e) => e.stopPropagation()}>
-            <div className='modal-header'>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowSettingsModal(false)}
+        >
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
               <h2>Notification Settings</h2>
               <button
-                className='btn btn-ghost btn-icon modal-close'
+                className="btn btn-ghost btn-icon modal-close"
                 onClick={() => setShowSettingsModal(false)}
               >
-                <i className='fa-solid fa-times'></i>
+                <i className="fa-solid fa-times"></i>
               </button>
             </div>
-            <div className='modal-body'>
-              <div className='form-grid'>
-                <div className='form-group-full'>
-                  <label className='form-label'>Notify me about:</label>
-                  <div className='flex-column'>
-                    <label className='flex-center cursor-pointer'>
+            <div className="modal-body">
+              <div className="form-grid">
+                <div className="form-group-full">
+                  <label className="form-label">Notify me about:</label>
+                  <div className="flex-column">
+                    <label className="flex-center cursor-pointer">
                       <input
-                        type='checkbox'
+                        type="checkbox"
                         checked={notificationSettings.notifyNewOrders}
                         onChange={(e) =>
                           setNotificationSettings({
@@ -424,9 +466,9 @@ const NotificationsTab = ({
                       />
                       <span>New orders</span>
                     </label>
-                    <label className='notifications-checkbox-label'>
+                    <label className="notifications-checkbox-label">
                       <input
-                        type='checkbox'
+                        type="checkbox"
                         checked={notificationSettings.notifyPaymentReceived}
                         onChange={(e) =>
                           setNotificationSettings({
@@ -437,9 +479,9 @@ const NotificationsTab = ({
                       />
                       <span>Payment received</span>
                     </label>
-                    <label className='notifications-checkbox-label'>
+                    <label className="notifications-checkbox-label">
                       <input
-                        type='checkbox'
+                        type="checkbox"
                         checked={notificationSettings.notifyPaymentOverdue}
                         onChange={(e) =>
                           setNotificationSettings({
@@ -450,9 +492,9 @@ const NotificationsTab = ({
                       />
                       <span>Payment overdue (&gt;3 days)</span>
                     </label>
-                    <label className='notifications-checkbox-label'>
+                    <label className="notifications-checkbox-label">
                       <input
-                        type='checkbox'
+                        type="checkbox"
                         checked={notificationSettings.notifyDailySummary}
                         onChange={(e) =>
                           setNotificationSettings({
@@ -463,9 +505,9 @@ const NotificationsTab = ({
                       />
                       <span>Daily summary</span>
                     </label>
-                    <label className='notifications-checkbox-label'>
+                    <label className="notifications-checkbox-label">
                       <input
-                        type='checkbox'
+                        type="checkbox"
                         checked={notificationSettings.notifyWeeklyReport}
                         onChange={(e) =>
                           setNotificationSettings({
@@ -476,9 +518,9 @@ const NotificationsTab = ({
                       />
                       <span>Weekly report</span>
                     </label>
-                    <label className='notifications-checkbox-label'>
+                    <label className="notifications-checkbox-label">
                       <input
-                        type='checkbox'
+                        type="checkbox"
                         checked={notificationSettings.notifyLowOrderDays}
                         onChange={(e) =>
                           setNotificationSettings({
@@ -491,14 +533,14 @@ const NotificationsTab = ({
                     </label>
                   </div>
                 </div>
-                <div className='form-group notifications-settings-form-group'>
-                  <label className='notifications-settings-label'>
+                <div className="form-group notifications-settings-form-group">
+                  <label className="notifications-settings-label">
                     Delivery method:
                   </label>
-                  <div className='notifications-settings-list'>
-                    <label className='notifications-checkbox-label'>
+                  <div className="notifications-settings-list">
+                    <label className="notifications-checkbox-label">
                       <input
-                        type='checkbox'
+                        type="checkbox"
                         checked={notificationSettings.deliveryInApp}
                         onChange={(e) =>
                           setNotificationSettings({
@@ -509,9 +551,9 @@ const NotificationsTab = ({
                       />
                       <span>In-app</span>
                     </label>
-                    <label className='notifications-checkbox-label'>
+                    <label className="notifications-checkbox-label">
                       <input
-                        type='checkbox'
+                        type="checkbox"
                         checked={notificationSettings.deliveryEmail}
                         onChange={(e) =>
                           setNotificationSettings({
@@ -522,9 +564,9 @@ const NotificationsTab = ({
                       />
                       <span>Email</span>
                     </label>
-                    <label className='notifications-checkbox-label'>
+                    <label className="notifications-checkbox-label">
                       <input
-                        type='checkbox'
+                        type="checkbox"
                         checked={notificationSettings.deliverySMS}
                         onChange={(e) =>
                           setNotificationSettings({
@@ -539,18 +581,22 @@ const NotificationsTab = ({
                 </div>
               </div>
             </div>
-            <div className='modal-footer'>
-              <button className='btn btn-ghost' onClick={() => setShowSettingsModal(false)}>
+            <div className="modal-footer">
+              <button
+                className="btn btn-ghost"
+                onClick={() => setShowSettingsModal(false)}
+              >
                 Cancel
               </button>
               <button
-                className='btn btn-primary'
+                className="btn btn-primary"
                 onClick={() => {
-                  if (showNotification) showNotification('Notification settings saved', 'success');
+                  if (showNotification)
+                    showNotification('Notification settings saved', 'success');
                   setShowSettingsModal(false);
                 }}
               >
-                <i className='fa-solid fa-save'></i> Save
+                <i className="fa-solid fa-save"></i> Save
               </button>
             </div>
           </div>

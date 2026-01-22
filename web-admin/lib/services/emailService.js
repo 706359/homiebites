@@ -1,14 +1,17 @@
-
-
-
 export async function sendEmail(to, subject, html, text = null) {
-  
-  if (process.env.NODE_ENV === 'development' && !process.env.ENABLE_EMAIL_IN_DEV) {
-    console.log(`[Email Service] Development mode - Email sending is disabled.`);
-    console.log(`[Email Service] To enable emails in development, set ENABLE_EMAIL_IN_DEV=true in your .env file`);
+  if (
+    process.env.NODE_ENV === 'development' &&
+    !process.env.ENABLE_EMAIL_IN_DEV
+  ) {
+    console.log(
+      `[Email Service] Development mode - Email sending is disabled.`
+    );
+    console.log(
+      `[Email Service] To enable emails in development, set ENABLE_EMAIL_IN_DEV=true in your .env file`
+    );
     console.log(`[Email Service] Email would be sent to ${to}:`);
     console.log(`[Email Service] Subject: ${subject}`);
-    
+
     return { success: true, messageId: 'dev-mode', devMode: true };
   }
 
@@ -20,25 +23,24 @@ export async function sendEmail(to, subject, html, text = null) {
   }
 }
 
-
 async function sendViaGmail(to, subject, html, text) {
   try {
-    
     const nodemailer = await import('nodemailer');
-    
-    
+
     const smtpConfig = {
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true', 
+      secure: process.env.SMTP_SECURE === 'true',
       auth: {
         user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD || process.env.SMTP_APP_PASSWORD, 
+        pass: process.env.SMTP_PASSWORD || process.env.SMTP_APP_PASSWORD,
       },
     };
 
     if (!smtpConfig.auth.user || !smtpConfig.auth.pass) {
-      throw new Error('Gmail SMTP credentials not configured. Please set SMTP_USER and SMTP_PASSWORD (App Password) in your .env file');
+      throw new Error(
+        'Gmail SMTP credentials not configured. Please set SMTP_USER and SMTP_PASSWORD (App Password) in your .env file'
+      );
     }
 
     const transporter = nodemailer.default.createTransport(smtpConfig);
@@ -48,7 +50,7 @@ async function sendViaGmail(to, subject, html, text) {
       to,
       subject,
       html,
-      text: text || html.replace(/<[^>]*>/g, ''), 
+      text: text || html.replace(/<[^>]*>/g, ''),
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -62,7 +64,6 @@ async function sendViaGmail(to, subject, html, text) {
     throw error;
   }
 }
-
 
 export async function sendOTPEmail(email, otp, serviceName = 'HomieBites') {
   const subject = `${serviceName} - Password Recovery OTP`;
@@ -105,7 +106,6 @@ export async function sendOTPEmail(email, otp, serviceName = 'HomieBites') {
 
   return await sendEmail(email, subject, html);
 }
-
 
 export async function sendPasswordResetEmail(to, resetUrl, userName = 'User') {
   const subject = 'Password Reset Request - HomieBites Admin';

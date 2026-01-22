@@ -1,8 +1,16 @@
 import ExcelJS from 'exceljs';
 import { useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
-import { formatDate, formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
-import { getOrderAmount, isPaidStatus, isPendingStatus } from './utils/orderUtils.js';
+import {
+  formatDate,
+  formatDateMonthDay,
+  parseOrderDate,
+} from './utils/dateUtils.js';
+import {
+  getOrderAmount,
+  isPaidStatus,
+  isPendingStatus,
+} from './utils/orderUtils.js';
 
 const ReportsTab = ({
   orders = [],
@@ -21,6 +29,8 @@ const ReportsTab = ({
   const [groupByMode, setGroupByMode] = useState(false);
   const [reportFormat, setReportFormat] = useState('csv');
   const [showGenerator, setShowGenerator] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewData, setPreviewData] = useState(null);
 
   const [scheduledReports, setScheduledReports] = useState([
     {
@@ -67,9 +77,48 @@ const ReportsTab = ({
     return str;
   };
 
+  const handlePreviewReport = () => {
+    if (!selectedReportType) {
+      if (showNotification)
+        showNotification('Please select a report type', 'warning');
+      return;
+    }
+
+    let filteredOrders = [...orders];
+    if (reportDateFrom) {
+      const from = parseOrderDate(reportDateFrom);
+      if (from) {
+        from.setHours(0, 0, 0, 0);
+        filteredOrders = filteredOrders.filter((o) => {
+          const orderDate = parseOrderDate(o.date || o.order_date || null);
+          return orderDate && orderDate >= from;
+        });
+      }
+    }
+    if (reportDateTo) {
+      const to = parseOrderDate(reportDateTo);
+      if (to) {
+        to.setHours(23, 59, 59, 999);
+        filteredOrders = filteredOrders.filter((o) => {
+          const orderDate = parseOrderDate(o.date || o.order_date || null);
+          return orderDate && orderDate <= to;
+        });
+      }
+    }
+
+    setPreviewData({
+      type: selectedReportType,
+      count: filteredOrders.length,
+      orders: filteredOrders.slice(0, 50), // Show first 50 for preview
+      totalRevenue: filteredOrders.reduce((sum, o) => sum + getOrderAmount(o), 0),
+    });
+    setShowPreview(true);
+  };
+
   const handleGenerateReport = async () => {
     if (!selectedReportType) {
-      if (showNotification) showNotification('Please select a report type', 'warning');
+      if (showNotification)
+        showNotification('Please select a report type', 'warning');
       return;
     }
 
@@ -114,7 +163,8 @@ const ReportsTab = ({
           const orderDate = parseOrderDate(o.date || o.order_date || null);
           const dateStr = orderDate ? formatDate(orderDate) : 'N/A';
           const orderId = o.orderId || o._id || 'N/A';
-          const address = o.deliveryAddress || o.customerAddress || o.address || 'N/A';
+          const address =
+            o.deliveryAddress || o.customerAddress || o.address || 'N/A';
           const quantity = o.quantity || 1;
           const unitPrice = parseFloat(o.unitPrice || 0).toFixed(2);
           const totalAmount = getOrderAmount(o).toFixed(2);
@@ -129,10 +179,14 @@ const ReportsTab = ({
           )},${escapeCSV(status)},${escapeCSV(paymentMode)}\n`;
         });
 
-      const totalRevenue = filteredOrders.reduce((sum, o) => sum + getOrderAmount(o), 0);
+      const totalRevenue = filteredOrders.reduce(
+        (sum, o) => sum + getOrderAmount(o),
+        0
+      );
       const totalOrders = filteredOrders.length;
-      const paidOrders = filteredOrders.filter((o) => isPaidStatus(o.status, o.paymentStatus))
-        .length;
+      const paidOrders = filteredOrders.filter((o) =>
+        isPaidStatus(o.status, o.paymentStatus)
+      ).length;
       const unpaidOrders = filteredOrders.filter((o) =>
         isPendingStatus(o.status, o.paymentStatus)
       ).length;
@@ -205,11 +259,13 @@ const ReportsTab = ({
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         if (!orderDate) return;
 
-        const monthKey = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(
-          2,
-          '0'
-        )}`;
-        const monthName = orderDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        const monthKey = `${orderDate.getFullYear()}-${String(
+          orderDate.getMonth() + 1
+        ).padStart(2, '0')}`;
+        const monthName = orderDate.toLocaleDateString('en-US', {
+          month: 'long',
+          year: 'numeric',
+        });
 
         if (!monthStats[monthKey]) {
           monthStats[monthKey] = {
@@ -246,7 +302,9 @@ const ReportsTab = ({
         })
         .forEach((stat) => {
           const avgOrderValue =
-            stat.totalOrders > 0 ? (stat.totalRevenue / stat.totalOrders).toFixed(2) : '0.00';
+            stat.totalOrders > 0
+              ? (stat.totalRevenue / stat.totalOrders).toFixed(2)
+              : '0.00';
           csvContent += `${escapeCSV(stat.month)},${escapeCSV(stat.year)},${escapeCSV(
             stat.totalOrders
           )},${escapeCSV(stat.totalRevenue.toFixed(2))},${escapeCSV(stat.paidOrders)},${escapeCSV(
@@ -261,7 +319,8 @@ const ReportsTab = ({
 
       const areaStats = {};
       filteredOrders.forEach((o) => {
-        const addr = o.deliveryAddress || o.customerAddress || o.address || 'Unknown';
+        const addr =
+          o.deliveryAddress || o.customerAddress || o.address || 'Unknown';
         if (!areaStats[addr]) {
           areaStats[addr] = {
             address: addr,
@@ -293,7 +352,9 @@ const ReportsTab = ({
         .sort((a, b) => b.totalRevenue - a.totalRevenue)
         .forEach((stat) => {
           const avgOrderValue =
-            stat.totalOrders > 0 ? (stat.totalRevenue / stat.totalOrders).toFixed(2) : '0.00';
+            stat.totalOrders > 0
+              ? (stat.totalRevenue / stat.totalOrders).toFixed(2)
+              : '0.00';
           csvContent += `${escapeCSV(stat.address)},${escapeCSV(stat.totalOrders)},${escapeCSV(
             stat.totalRevenue.toFixed(2)
           )},${escapeCSV(stat.paidOrders)},${escapeCSV(stat.paidAmount.toFixed(2))},${escapeCSV(
@@ -306,7 +367,8 @@ const ReportsTab = ({
 
       const customerStats = {};
       filteredOrders.forEach((o) => {
-        const addr = o.deliveryAddress || o.customerAddress || o.address || 'Unknown';
+        const addr =
+          o.deliveryAddress || o.customerAddress || o.address || 'Unknown';
         if (!customerStats[addr]) {
           customerStats[addr] = {
             address: addr,
@@ -334,7 +396,10 @@ const ReportsTab = ({
           ) {
             customerStats[addr].firstOrderDate = orderDate;
           }
-          if (!customerStats[addr].lastOrderDate || orderDate > customerStats[addr].lastOrderDate) {
+          if (
+            !customerStats[addr].lastOrderDate ||
+            orderDate > customerStats[addr].lastOrderDate
+          ) {
             customerStats[addr].lastOrderDate = orderDate;
           }
         }
@@ -351,9 +416,15 @@ const ReportsTab = ({
         .sort((a, b) => b.totalSpent - a.totalSpent)
         .forEach((stat) => {
           const avgOrderValue =
-            stat.totalOrders > 0 ? (stat.totalSpent / stat.totalOrders).toFixed(2) : '0.00';
-          const firstOrder = stat.firstOrderDate ? formatDate(stat.firstOrderDate) : 'N/A';
-          const lastOrder = stat.lastOrderDate ? formatDate(stat.lastOrderDate) : 'N/A';
+            stat.totalOrders > 0
+              ? (stat.totalSpent / stat.totalOrders).toFixed(2)
+              : '0.00';
+          const firstOrder = stat.firstOrderDate
+            ? formatDate(stat.firstOrderDate)
+            : 'N/A';
+          const lastOrder = stat.lastOrderDate
+            ? formatDate(stat.lastOrderDate)
+            : 'N/A';
 
           csvContent += `${escapeCSV(stat.address)},${escapeCSV(stat.totalOrders)},${escapeCSV(
             stat.totalSpent.toFixed(2)
@@ -372,10 +443,9 @@ const ReportsTab = ({
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         if (!orderDate) return;
 
-        const monthKey = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(
-          2,
-          '0'
-        )}`;
+        const monthKey = `${orderDate.getFullYear()}-${String(
+          orderDate.getMonth() + 1
+        ).padStart(2, '0')}`;
 
         if (!monthStats[monthKey]) {
           monthStats[monthKey] = {
@@ -399,13 +469,20 @@ const ReportsTab = ({
         const prevStat = idx > 0 ? sortedMonths[idx - 1] : null;
         const revenueGrowth =
           prevStat && prevStat.revenue > 0
-            ? (((stat.revenue - prevStat.revenue) / prevStat.revenue) * 100).toFixed(2)
+            ? (
+                ((stat.revenue - prevStat.revenue) / prevStat.revenue) *
+                100
+              ).toFixed(2)
             : '0.00';
         const ordersGrowth =
           prevStat && prevStat.orders > 0
-            ? (((stat.orders - prevStat.orders) / prevStat.orders) * 100).toFixed(2)
+            ? (
+                ((stat.orders - prevStat.orders) / prevStat.orders) *
+                100
+              ).toFixed(2)
             : '0.00';
-        const avgOrderValue = stat.orders > 0 ? (stat.revenue / stat.orders).toFixed(2) : '0.00';
+        const avgOrderValue =
+          stat.orders > 0 ? (stat.revenue / stat.orders).toFixed(2) : '0.00';
 
         csvContent += `${escapeCSV(stat.month)},${escapeCSV(stat.year)},${escapeCSV(
           stat.orders
@@ -414,7 +491,8 @@ const ReportsTab = ({
         )},${escapeCSV(avgOrderValue)}\n`;
       });
     } else if (groupByMode) {
-      csvContent = 'Mode,Total Orders,Total Revenue (₹),Average Order Value (₹)\n';
+      csvContent =
+        'Mode,Total Orders,Total Revenue (₹),Average Order Value (₹)\n';
 
       const modeStats = {};
       filteredOrders.forEach((o) => {
@@ -429,7 +507,8 @@ const ReportsTab = ({
       Object.values(modeStats)
         .sort((a, b) => b.revenue - a.revenue)
         .forEach((stat) => {
-          const avgOrderValue = stat.orders > 0 ? (stat.revenue / stat.orders).toFixed(2) : '0.00';
+          const avgOrderValue =
+            stat.orders > 0 ? (stat.revenue / stat.orders).toFixed(2) : '0.00';
           csvContent += `${escapeCSV(stat.mode)},${escapeCSV(stat.orders)},${escapeCSV(
             stat.revenue.toFixed(2)
           )},${escapeCSV(avgOrderValue)}\n`;
@@ -450,7 +529,8 @@ const ReportsTab = ({
           const orderDate = parseOrderDate(o.date || o.order_date || null);
           const dateStr = orderDate ? formatDate(orderDate) : 'N/A';
           const orderId = o.orderId || o._id || 'N/A';
-          const address = o.deliveryAddress || o.customerAddress || o.address || 'N/A';
+          const address =
+            o.deliveryAddress || o.customerAddress || o.address || 'N/A';
           const quantity = o.quantity || 1;
           const unitPrice = parseFloat(o.unitPrice || 0).toFixed(2);
           const totalAmount = getOrderAmount(o).toFixed(2);
@@ -474,7 +554,9 @@ const ReportsTab = ({
     } else {
       // CSV export (default)
       const BOM = '\uFEFF';
-      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([BOM + csvContent], {
+        type: 'text/csv;charset=utf-8;',
+      });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = `${selectedReportType.toLowerCase().replace(/\s+/g, '_')}_${reportDate}.csv`;
@@ -497,7 +579,8 @@ const ReportsTab = ({
       ...reportHistory,
     ]);
 
-    if (showNotification) showNotification('Report generated successfully', 'success');
+    if (showNotification)
+      showNotification('Report generated successfully', 'success');
     setShowGenerator(false);
   };
 
@@ -548,10 +631,14 @@ const ReportsTab = ({
           });
 
         // Add summary
-        const totalRevenue = filteredOrders.reduce((sum, o) => sum + getOrderAmount(o), 0);
+        const totalRevenue = filteredOrders.reduce(
+          (sum, o) => sum + getOrderAmount(o),
+          0
+        );
         const totalOrders = filteredOrders.length;
-        const paidOrders = filteredOrders.filter((o) => isPaidStatus(o.status, o.paymentStatus))
-          .length;
+        const paidOrders = filteredOrders.filter((o) =>
+          isPaidStatus(o.status, o.paymentStatus)
+        ).length;
         const unpaidOrders = filteredOrders.filter((o) =>
           isPendingStatus(o.status, o.paymentStatus)
         ).length;
@@ -681,7 +768,10 @@ const ReportsTab = ({
     } catch (error) {
       console.error('[ReportsTab] Excel export error:', error);
       if (showNotification) {
-        showNotification('Failed to generate Excel report. Please try CSV format.', 'error');
+        showNotification(
+          'Failed to generate Excel report. Please try CSV format.',
+          'error'
+        );
       }
     }
   };
@@ -737,7 +827,9 @@ const ReportsTab = ({
                       <td>${o.orderId || o._id || 'N/A'}</td>
                       <td>${
                         parseOrderDate(o.date || o.order_date || null)
-                          ? formatDate(parseOrderDate(o.date || o.order_date || null))
+                          ? formatDate(
+                              parseOrderDate(o.date || o.order_date || null)
+                            )
                           : 'N/A'
                       }</td>
                       <td>${o.deliveryAddress || o.customerAddress || o.address || 'N/A'}</td>
@@ -765,35 +857,38 @@ const ReportsTab = ({
     } catch (error) {
       console.error('[ReportsTab] PDF export error:', error);
       if (showNotification) {
-        showNotification('Failed to generate PDF. Please use CSV or Excel format.', 'error');
+        showNotification(
+          'Failed to generate PDF. Please use CSV or Excel format.',
+          'error'
+        );
       }
     }
   };
 
   if (loading) {
     return (
-      <div className='admin-content'>
-        <PremiumLoader message='Loading reports...' size='large' />
+      <div className="admin-content">
+        <PremiumLoader message="Loading reports..." size="large" />
       </div>
     );
   }
 
   return (
-    <div className='admin-content'>
-      <div className='action-bar'>
-        <div className='action-buttons-group'>
+    <div className="admin-content">
+      <div className="action-bar">
+        <div className="action-buttons-group">
           {onLoadExcelFile && (
             <button
-              className='btn btn-secondary btn-small'
+              className="btn btn-secondary btn-small"
               onClick={onLoadExcelFile}
-              title='Upload CSV'
+              title="Upload CSV"
             >
-              <i className='fa-solid fa-upload'></i> Upload CSV
+              <i className="fa-solid fa-upload"></i> Upload CSV
             </button>
           )}
           {onClearAllData && (
             <button
-              className='btn btn-special danger btn-small'
+              className="btn btn-special danger btn-small"
               onClick={() => {
                 if (showConfirmation) {
                   showConfirmation({
@@ -810,212 +905,304 @@ const ReportsTab = ({
                   onClearAllData(true);
                 }
               }}
-              title='Delete All Orders'
+              title="Delete All Orders"
             >
-              <i className='fa-solid fa-trash'></i> Delete All
+              <i className="fa-solid fa-trash"></i> Delete All
             </button>
           )}
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowGenerator(true)}
+          >
+            <i className="fa-solid fa-file-alt"></i>
+            Generate Report
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={handleGenerateReport}
+            disabled={!selectedReportType}
+          >
+            <i className="fa-solid fa-download"></i>
+            Download Report
+          </button>
+          <button
+            className={`btn btn-ghost ${selectedReportType === 'Sales Report' ? 'active' : ''}`}
+            onClick={() => {
+              setSelectedReportType('Sales Report');
+              setShowGenerator(true);
+            }}
+          >
+            <i className="fa-solid fa-chart-bar"></i>
+            Sales Report
+          </button>
+          <button
+            className={`btn btn-ghost ${selectedReportType === 'Payment Report' ? 'active' : ''}`}
+            onClick={() => {
+              setSelectedReportType('Payment Report');
+              setShowGenerator(true);
+            }}
+          >
+            <i className="fa-solid fa-money-bill-wave"></i>
+            Payment Report
+          </button>
         </div>
       </div>
 
-      <div className='flex-start gap-12 mb-24 flex-wrap'>
-        <button className='btn btn-primary' onClick={() => setShowGenerator(true)}>
-          <i className='fa-solid fa-file-alt'></i>
-          Generate Report
-        </button>
+      {/* Quick Stats Summary */}
+      <div className="reports-stats-summary mb-24">
+        <div className="stat-card">
+          <div className="stat-card-icon">
+            <i className="fa-solid fa-shopping-cart"></i>
+          </div>
+          <div className="stat-card-content">
+            <div className="stat-card-value">
+              {orders.length.toLocaleString()}
+            </div>
+            <div className="stat-card-label">Total Orders</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-card-icon">
+            <i className="fa-solid fa-indian-rupee-sign"></i>
+          </div>
+          <div className="stat-card-content">
+            <div className="stat-card-value">
+              ₹{orders
+                .reduce((sum, o) => sum + getOrderAmount(o), 0)
+                .toLocaleString('en-IN', {
+                  maximumFractionDigits: 0,
+                })}
+            </div>
+            <div className="stat-card-label">Total Revenue</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-card-icon">
+            <i className="fa-solid fa-check-circle"></i>
+          </div>
+          <div className="stat-card-content">
+            <div className="stat-card-value">
+              {orders.filter((o) =>
+                isPaidStatus(o.status, o.paymentStatus)
+              ).length.toLocaleString()}
+            </div>
+            <div className="stat-card-label">Paid Orders</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-card-icon">
+            <i className="fa-solid fa-clock"></i>
+          </div>
+          <div className="stat-card-content">
+            <div className="stat-card-value">
+              {orders.filter((o) =>
+                isPendingStatus(o.status, o.paymentStatus)
+              ).length.toLocaleString()}
+            </div>
+            <div className="stat-card-label">Pending Orders</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="reports-grid-compact mb-24">
         <button
-          className='btn btn-secondary'
-          onClick={handleGenerateReport}
-          disabled={!selectedReportType}
-        >
-          <i className='fa-solid fa-download'></i>
-          Download Report
-        </button>
-        <button
-          className='btn btn-ghost'
+          className="report-type-card"
           onClick={() => {
             setSelectedReportType('Sales Report');
             setShowGenerator(true);
           }}
         >
-          <i className='fa-solid fa-chart-bar'></i>
-          Sales Report
+          <i className="fa-solid fa-chart-bar"></i>
+          <span>Sales Report</span>
         </button>
         <button
-          className='btn btn-ghost'
+          className="report-type-card"
           onClick={() => {
             setSelectedReportType('Payment Report');
             setShowGenerator(true);
           }}
         >
-          <i className='fa-solid fa-money-bill-wave'></i>
-          Payment Report
+          <i className="fa-solid fa-money-bill-wave"></i>
+          <span>Payment Report</span>
+        </button>
+        <button
+          className="report-type-card"
+          onClick={() => {
+            setSelectedReportType('Monthly Statement');
+            setShowGenerator(true);
+          }}
+        >
+          <i className="fa-solid fa-calendar-alt"></i>
+          <span>Monthly Statement</span>
+        </button>
+        <button
+          className="report-type-card"
+          onClick={() => {
+            setSelectedReportType('Area-wise Report');
+            setGroupByArea(true);
+            setShowGenerator(true);
+          }}
+        >
+          <i className="fa-solid fa-map-marker-alt"></i>
+          <span>Area-wise Report</span>
+        </button>
+        <button
+          className="report-type-card"
+          onClick={() => {
+            setSelectedReportType('Customer Report');
+            setShowGenerator(true);
+          }}
+        >
+          <i className="fa-solid fa-users"></i>
+          <span>Customer Report</span>
+        </button>
+        <button
+          className="report-type-card"
+          onClick={() => {
+            setSelectedReportType('Growth Report');
+            setShowGenerator(true);
+          }}
+        >
+          <i className="fa-solid fa-chart-line"></i>
+          <span>Growth Report</span>
         </button>
       </div>
 
-      <div className='dashboard-grid-layout mb-32'>
-        <div className='dashboard-grid-item third-width'>
-          <div className='dashboard-card text-center'>
-            <i className='fa-solid fa-chart-bar icon-32 stat-card-icon-accent icon-mb-12'></i>
-            <button
-              className='btn btn-primary '
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedReportType('Sales Report');
-                setShowGenerator(true);
-              }}
-            >
-              Sales Report
-            </button>
-          </div>
-        </div>
-
-        <div className='dashboard-grid-item third-width'>
-          <div className='dashboard-card text-center'>
-            <i className='fa-solid fa-money-bill-wave icon-32 stat-card-icon-success icon-mb-12'></i>
-            <button
-              className='btn btn-primary'
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedReportType('Payment Report');
-                setShowGenerator(true);
-              }}
-            >
-              Payment Report
-            </button>
-          </div>
-        </div>
-
-        <div className='dashboard-grid-item third-width'>
-          <div className='dashboard-card text-center'>
-            <i className='fa-solid fa-calendar-alt icon-32 stat-card-icon-secondary icon-mb-12'></i>
-            <button
-              className='btn btn-primary'
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedReportType('Monthly Statement');
-                setShowGenerator(true);
-              }}
-            >
-              Monthly Statement
-            </button>
-          </div>
-        </div>
-
-        <div className='dashboard-grid-item third-width'>
-          <div className='dashboard-card text-center'>
-            <i className='fa-solid fa-map-marker-alt icon-32 stat-card-icon-accent icon-mb-12'></i>
-            <button
-              className='btn btn-primary'
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedReportType('Area-wise Report');
-                setGroupByArea(true);
-                setShowGenerator(true);
-              }}
-            >
-              Area-wise Report
-            </button>
-          </div>
-        </div>
-
-        <div className='dashboard-grid-item third-width'>
-          <div className='dashboard-card text-center'>
-            <i className='fa-solid fa-users icon-32 stat-card-icon-accent icon-mb-12'></i>
-            <button
-              className='btn btn-primary'
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedReportType('Customer Report');
-                setShowGenerator(true);
-              }}
-            >
-              Customer Report
-            </button>
-          </div>
-        </div>
-
-        <div className='dashboard-grid-item third-width'>
-          <div className='dashboard-card text-center'>
-            <i className='fa-solid fa-chart-line icon-32 stat-card-icon-success icon-mb-12'></i>
-            <button
-              className='btn btn-primary'
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedReportType('Growth Report');
-                setShowGenerator(true);
-              }}
-            >
-              Growth Report
-            </button>
-          </div>
-        </div>
-      </div>
-
       {showGenerator && (
-        <div className='modal-overlay' onClick={() => setShowGenerator(false)}>
-          <div className='modal-container' onClick={(e) => e.stopPropagation()}>
-            <div className='modal-header'>
+        <div className="modal-overlay" onClick={() => setShowGenerator(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
               <h2>Generate Report</h2>
               <button
-                className='btn btn-ghost btn-icon modal-close'
+                className="btn btn-ghost btn-icon modal-close"
                 onClick={() => setShowGenerator(false)}
               >
-                <i className='fa-solid fa-times'></i>
+                <i className="fa-solid fa-times"></i>
               </button>
             </div>
-            <div className='modal-body'>
-              <div className='form-grid report-generator-grid'>
-                <div className='form-group'>
+            <div className="modal-body">
+              <div className="form-grid report-generator-grid">
+                <div className="form-group">
                   <label>Report Type</label>
                   <select
-                    className='input-field'
+                    className="input-field"
                     value={selectedReportType}
                     onChange={(e) => setSelectedReportType(e.target.value)}
                   >
-                    <option value=''>Select Report Type</option>
-                    <option value='Sales Report'>Sales Report</option>
-                    <option value='Payment Report'>Payment Report</option>
-                    <option value='Monthly Statement'>Monthly Statement</option>
-                    <option value='Area-wise Report'>Area-wise Report</option>
-                    <option value='Customer Report'>Customer Report</option>
-                    <option value='Growth Report'>Growth Report</option>
+                    <option value="">Select Report Type</option>
+                    <option value="Sales Report">Sales Report</option>
+                    <option value="Payment Report">Payment Report</option>
+                    <option value="Monthly Statement">Monthly Statement</option>
+                    <option value="Area-wise Report">Area-wise Report</option>
+                    <option value="Customer Report">Customer Report</option>
+                    <option value="Growth Report">Growth Report</option>
                   </select>
                 </div>
 
-                <div className='form-group'>
+                <div className="form-group">
                   <label>Date Range</label>
-                  <input
-                    type='date'
-                    className='input-field'
-                    value={reportDateFrom}
-                    onChange={(e) => setReportDateFrom(e.target.value)}
-                    placeholder='mm/dd/y'
-                  />
+                  <div className="date-range-presets mb-12">
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-small"
+                      onClick={() => {
+                        const today = new Date();
+                        setReportDateFrom(today.toISOString().split('T')[0]);
+                        setReportDateTo(today.toISOString().split('T')[0]);
+                      }}
+                    >
+                      Today
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-small"
+                      onClick={() => {
+                        const today = new Date();
+                        const weekAgo = new Date(today);
+                        weekAgo.setDate(today.getDate() - 7);
+                        setReportDateFrom(weekAgo.toISOString().split('T')[0]);
+                        setReportDateTo(today.toISOString().split('T')[0]);
+                      }}
+                    >
+                      Last 7 Days
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-small"
+                      onClick={() => {
+                        const today = new Date();
+                        const thirtyDaysAgo = new Date(today);
+                        thirtyDaysAgo.setDate(today.getDate() - 30);
+                        setReportDateFrom(thirtyDaysAgo.toISOString().split('T')[0]);
+                        setReportDateTo(today.toISOString().split('T')[0]);
+                      }}
+                    >
+                      Last 30 Days
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-small"
+                      onClick={() => {
+                        const today = new Date();
+                        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                        setReportDateFrom(firstDay.toISOString().split('T')[0]);
+                        setReportDateTo(today.toISOString().split('T')[0]);
+                      }}
+                    >
+                      This Month
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-small"
+                      onClick={() => {
+                        setReportDateFrom('');
+                        setReportDateTo('');
+                      }}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <div className="date-range-inputs">
+                    <input
+                      type="date"
+                      className="input-field"
+                      value={reportDateFrom}
+                      onChange={(e) => setReportDateFrom(e.target.value)}
+                      placeholder="From Date"
+                    />
+                    <span className="date-range-separator">to</span>
+                    <input
+                      type="date"
+                      className="input-field"
+                      value={reportDateTo}
+                      onChange={(e) => setReportDateTo(e.target.value)}
+                      placeholder="To Date"
+                    />
+                  </div>
                 </div>
 
-                <div className='form-group'>
+                <div className="form-group">
                   <label>Filters</label>
-                  <div className='report-filters-group'>
-                    <label className='form-label-inline'>
+                  <div className="report-filters-group">
+                    <label className="form-label-inline">
                       <input
-                        type='checkbox'
+                        type="checkbox"
                         checked={includeCharts}
                         onChange={(e) => setIncludeCharts(e.target.checked)}
                       />
                       <span>Include Charts</span>
                     </label>
-                    <label className='form-label-inline'>
+                    <label className="form-label-inline">
                       <input
-                        type='checkbox'
+                        type="checkbox"
                         checked={includeSummary}
                         onChange={(e) => setIncludeSummary(e.target.checked)}
                       />
                       <span>Include Summary</span>
                     </label>
-                    <label className='form-label-inline'>
+                    <label className="form-label-inline">
                       <input
-                        type='checkbox'
+                        type="checkbox"
                         checked={groupByArea}
                         onChange={(e) => {
                           setGroupByArea(e.target.checked);
@@ -1024,9 +1211,9 @@ const ReportsTab = ({
                       />
                       <span>Group by Area</span>
                     </label>
-                    <label className='form-label-inline'>
+                    <label className="form-label-inline">
                       <input
-                        type='checkbox'
+                        type="checkbox"
                         checked={groupByMode}
                         onChange={(e) => {
                           setGroupByMode(e.target.checked);
@@ -1038,34 +1225,34 @@ const ReportsTab = ({
                   </div>
                 </div>
 
-                <div className='form-group'>
+                <div className="form-group">
                   <label>Format</label>
-                  <div className='report-format-group'>
-                    <label className='form-label-inline'>
+                  <div className="report-format-group">
+                    <label className="form-label-inline">
                       <input
-                        type='radio'
-                        name='format'
-                        value='pdf'
+                        type="radio"
+                        name="format"
+                        value="pdf"
                         checked={reportFormat === 'pdf'}
                         onChange={(e) => setReportFormat(e.target.value)}
                       />
                       <span>PDF</span>
                     </label>
-                    <label className='form-label-inline'>
+                    <label className="form-label-inline">
                       <input
-                        type='radio'
-                        name='format'
-                        value='excel'
+                        type="radio"
+                        name="format"
+                        value="excel"
                         checked={reportFormat === 'excel'}
                         onChange={(e) => setReportFormat(e.target.value)}
                       />
                       <span>Excel</span>
                     </label>
-                    <label className='form-label-inline'>
+                    <label className="form-label-inline">
                       <input
-                        type='radio'
-                        name='format'
-                        value='csv'
+                        type="radio"
+                        name="format"
+                        value="csv"
                         checked={reportFormat === 'csv'}
                         onChange={(e) => setReportFormat(e.target.value)}
                       />
@@ -1075,38 +1262,48 @@ const ReportsTab = ({
                 </div>
               </div>
             </div>
-            <div className='modal-footer'>
-              <button className='btn btn-ghost' onClick={() => setShowGenerator(false)}>
+            <div className="modal-footer">
+              <button
+                className="btn btn-ghost"
+                onClick={() => setShowGenerator(false)}
+              >
                 Cancel
               </button>
-              <button className='btn btn-secondary' onClick={handleGenerateReport}>
-                <i className='fa-solid fa-file-alt'></i> Preview
+              <button
+                className="btn btn-secondary"
+                onClick={handlePreviewReport}
+              >
+                <i className="fa-solid fa-file-alt"></i> Preview
               </button>
-              <button className='btn btn-primary' onClick={handleGenerateReport}>
-                <i className='fa-solid fa-download'></i> Download
+              <button
+                className="btn btn-primary"
+                onClick={handleGenerateReport}
+              >
+                <i className="fa-solid fa-download"></i> Download
               </button>
             </div>
           </div>
         </div>
       )}
 
-      <div className='reports-side-by-side-container'>
-        <div className='dashboard-card'>
-          <div className='flex-between mb-16'>
-            <div>
-              <h3 className='dashboard-section-title mb-0'>
-                <i className='fa-solid fa-clock opacity-70'></i>
-                Automated Reports
-                <span className='badge badge-warning' style={{ marginLeft: 8, fontSize: '0.7rem', fontWeight: 600 }}>Coming soon</span>
-              </h3>
-              <p className='text-muted' style={{ fontSize: 'var(--admin-fs-sm)', marginTop: 4, marginBottom: 0 }}>Scheduled reports will be available in a future update.</p>
-            </div>
-            <button className='btn btn-primary btn-small' disabled title='Coming soon'>
-              <i className='fa-solid fa-plus'></i> Add Scheduled Report
+      <div className="reports-side-by-side-container">
+        <div className="dashboard-card reports-card-compact">
+          <div className="reports-card-header">
+            <h3 className="dashboard-section-title mb-0">
+              <i className="fa-solid fa-clock"></i>
+              Automated Reports
+              <span className="badge badge-warning badge-small">Coming soon</span>
+            </h3>
+            <button
+              className="btn btn-primary btn-small"
+              disabled
+              title="Coming soon"
+            >
+              <i className="fa-solid fa-plus"></i> Add
             </button>
           </div>
-          <div className='orders-table-container' style={{ opacity: 0.7 }}>
-            <table className='orders-table'>
+          <div className="reports-table-compact">
+            <table className="orders-table">
               <thead>
                 <tr>
                   <th>Report</th>
@@ -1122,15 +1319,18 @@ const ReportsTab = ({
                     <td>{report.schedule}</td>
                     <td>{report.format}</td>
                     <td>
-                      <div className='flex-start gap-8'>
-                        <button className='btn btn-ghost btn-icon action-icon-edit' title='Edit'>
-                          <i className='fa-solid fa-pencil'></i>
+                      <div className="flex-start gap-8">
+                        <button
+                          className="btn btn-ghost btn-icon action-icon-edit"
+                          title="Edit"
+                        >
+                          <i className="fa-solid fa-pencil"></i>
                         </button>
                         <button
-                          className='btn btn-ghost btn-icon action-icon-delete'
-                          title='Delete'
+                          className="btn btn-ghost btn-icon action-icon-delete"
+                          title="Delete"
                         >
-                          <i className='fa-solid fa-trash'></i>
+                          <i className="fa-solid fa-trash"></i>
                         </button>
                       </div>
                     </td>
@@ -1141,17 +1341,16 @@ const ReportsTab = ({
           </div>
         </div>
 
-        <div className='dashboard-card'>
-          <div>
-            <h3 className='dashboard-section-title'>
-              <i className='fa-solid fa-history opacity-70'></i>
+        <div className="dashboard-card reports-card-compact">
+          <div className="reports-card-header">
+            <h3 className="dashboard-section-title mb-0">
+              <i className="fa-solid fa-history"></i>
               Recent Reports (Last 30 days)
-              <span className='badge badge-warning' style={{ marginLeft: 8, fontSize: '0.7rem', fontWeight: 600 }}>Coming soon</span>
+              <span className="badge badge-warning badge-small">Coming soon</span>
             </h3>
-            <p className='text-muted' style={{ fontSize: 'var(--admin-fs-sm)', marginTop: 4, marginBottom: 0 }}>Report history will be available in a future update.</p>
           </div>
-          <div className='orders-table-container' style={{ opacity: 0.7 }}>
-            <table className='orders-table'>
+          <div className="reports-table-compact">
+            <table className="orders-table">
               <thead>
                 <tr>
                   <th>Date</th>
@@ -1163,9 +1362,9 @@ const ReportsTab = ({
               <tbody>
                 {reportHistory.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className='text-center'>
-                      <div className='empty-state'>
-                        <i className='fa-solid fa-inbox empty-state-icon'></i>
+                    <td colSpan={4} className="text-center">
+                      <div className="empty-state">
+                        <i className="fa-solid fa-inbox empty-state-icon"></i>
                         <p>No reports generated yet</p>
                       </div>
                     </td>
@@ -1177,8 +1376,11 @@ const ReportsTab = ({
                       <td>{report.type}</td>
                       <td>{report.period}</td>
                       <td>
-                        <button className='btn btn-ghost btn-icon' title='Download'>
-                          <i className='fa-solid fa-download'></i>
+                        <button
+                          className="btn btn-ghost btn-icon"
+                          title="Download"
+                        >
+                          <i className="fa-solid fa-download"></i>
                         </button>
                       </td>
                     </tr>
@@ -1189,6 +1391,100 @@ const ReportsTab = ({
           </div>
         </div>
       </div>
+
+      {/* Preview Modal */}
+      {showPreview && previewData && (
+        <div className="modal-overlay" onClick={() => setShowPreview(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <i className="fa-solid fa-eye"></i> Preview: {previewData.type}
+              </h2>
+              <button
+                className="btn btn-ghost btn-icon modal-close"
+                onClick={() => setShowPreview(false)}
+              >
+                <i className="fa-solid fa-times"></i>
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="preview-stats mb-16">
+                <div className="preview-stat-item">
+                  <span className="preview-stat-label">Total Records:</span>
+                  <span className="preview-stat-value">{previewData.count}</span>
+                </div>
+                <div className="preview-stat-item">
+                  <span className="preview-stat-label">Total Revenue:</span>
+                  <span className="preview-stat-value">
+                    ₹{previewData.totalRevenue.toLocaleString('en-IN', {
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+                <div className="preview-stat-item">
+                  <span className="preview-stat-label">Showing:</span>
+                  <span className="preview-stat-value">
+                    {Math.min(previewData.orders.length, 50)} of{' '}
+                    {previewData.count}
+                  </span>
+                </div>
+              </div>
+              <div className="orders-table-container" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                <table className="orders-table">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Date</th>
+                      <th>Address</th>
+                      <th>Amount (₹)</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewData.orders.map((o, idx) => (
+                      <tr key={o._id || o.orderId || idx}>
+                        <td>{o.orderId || o._id || 'N/A'}</td>
+                        <td>
+                          {parseOrderDate(o.date || o.order_date || null)
+                            ? formatDate(
+                                parseOrderDate(o.date || o.order_date || null)
+                              )
+                            : 'N/A'}
+                        </td>
+                        <td>
+                          {o.deliveryAddress ||
+                            o.customerAddress ||
+                            o.address ||
+                            'N/A'}
+                        </td>
+                        <td>{getOrderAmount(o).toFixed(2)}</td>
+                        <td>{o.status || 'N/A'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="btn btn-ghost"
+                onClick={() => setShowPreview(false)}
+              >
+                Close
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setShowPreview(false);
+                  handleGenerateReport();
+                }}
+              >
+                <i className="fa-solid fa-download"></i> Download Full Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

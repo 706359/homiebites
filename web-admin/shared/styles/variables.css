@@ -109,6 +109,36 @@
   /* Single source for all UI font; change in Settings → Appearance to apply platform-wide. Exception: .cursorrules allows --font-* for this. */
   --font-primary: 'Baloo 2', sans-serif;
   --font-display: var(--font-primary);
-  --font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Fira Mono', 'Droid Sans Mono',
-    'Source Code Pro', monospace;
+  --font-mono:
+    'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Fira Mono',
+    'Droid Sans Mono', 'Source Code Pro', monospace;
+}
+
+/* ========== Dark theme (website only; admin forces light) ========== */
+html.dark-theme {
+  --admin-bg: #1a1f1c;
+  --admin-bg-secondary: #151a17;
+  --admin-bg-tertiary: #121614;
+  --admin-text-primary: #e5e7eb;
+  --admin-text-secondary: #9ca3af;
+  --admin-border: #374151;
+  --text-primary: #e5e7eb;
+  --text-secondary: #9ca3af;
+  --text-light: #6b7280;
+  --bg-white: #1a1f1c;
+  --bg-gray: #151a17;
+  --light-gray: #1f2522;
+  --border-color: #374151;
+  --border-light: #2d3431;
+  --border-dark: #4b5563;
+  --shadow-color: rgba(0, 0, 0, 0.35);
+  --shadow-dark: rgba(0, 0, 0, 0.4);
+  --glass-bg: rgba(26, 31, 28, 0.9);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --gray-lighter: #4b5563;
+  --bg-orange: #1f1a17;
+  --bg-green: #0f1a14;
+  --neutral-200: #374151;
+  --neutral-300: #4b5563;
+  --neutral-900: #e5e7eb;
 }

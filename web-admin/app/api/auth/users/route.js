@@ -1,8 +1,9 @@
-
 import connectDB from '../../../../lib/db.js';
-import { createErrorResponse, isAdmin } from '../../../../lib/middleware/auth.js';
+import {
+  createErrorResponse,
+  isAdmin,
+} from '../../../../lib/middleware/auth.js';
 import User from '../../../../lib/models/User.js';
-
 
 export async function GET(request) {
   try {

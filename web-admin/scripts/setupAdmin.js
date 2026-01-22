@@ -13,7 +13,8 @@ dotenv.config({ path: join(__dirname, '..', '.env') });
 
 const setupAdmin = async () => {
   try {
-    const mongoUri = process.env.MONGOURI || process.env.MONGODB_URI || process.env.MONGO_URI;
+    const mongoUri =
+      process.env.MONGOURI || process.env.MONGODB_URI || process.env.MONGO_URI;
     if (!mongoUri) {
       console.error('❌ Error: MONGOURI not found in environment variables');
       process.exit(1);
@@ -31,7 +32,9 @@ const setupAdmin = async () => {
       console.log('   Name:', existingAdmin.name);
       console.log('   Role:', existingAdmin.role);
       if (existingAdmin.isTemporaryPassword) {
-        console.log('   ⚠️  Temporary password is still active - user needs to change password');
+        console.log(
+          '   ⚠️  Temporary password is still active - user needs to change password'
+        );
       }
       await mongoose.disconnect();
       process.exit(0);
@@ -61,7 +64,9 @@ const setupAdmin = async () => {
     console.log('   Email:', admin.email);
     console.log('   Phone:', admin.phone);
     console.log('   Temporary Password:', tempPassword);
-    console.log('   ⚠️  IMPORTANT: You MUST change this password on first login!');
+    console.log(
+      '   ⚠️  IMPORTANT: You MUST change this password on first login!'
+    );
 
     await mongoose.disconnect();
     process.exit(0);

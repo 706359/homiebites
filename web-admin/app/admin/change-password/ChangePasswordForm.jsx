@@ -24,21 +24,18 @@ export default function ChangePasswordForm({ isTemporary }) {
     hasSpecialChar: false,
   });
 
-  
   useAutoKeyboardAvoidance({
     containerSelector: '.change-password-form',
     inputSelector: 'input, textarea, select',
   });
 
   useEffect(() => {
-    
     const token = localStorage.getItem('homiebites_token');
     if (!token) {
       router.push('/admin');
       return;
     }
 
-    
     const verifyToken = async () => {
       try {
         const response = await fetch('/api/auth/verify', {
@@ -83,7 +80,6 @@ export default function ChangePasswordForm({ isTemporary }) {
     e.preventDefault();
     setLoading(true);
 
-    
     if (formData.newPassword !== formData.confirmPassword) {
       showError('New passwords do not match');
       setLoading(false);
@@ -135,92 +131,126 @@ export default function ChangePasswordForm({ isTemporary }) {
   };
 
   return (
-    <div className='change-password-page'>
-      <div className='change-password-container'>
-        <div className='change-password-header'>
-          <h2 className='change-password-title'>
+    <div className="change-password-page">
+      <div className="change-password-container">
+        <div className="change-password-header">
+          <h2 className="change-password-title">
             {isTemporary ? '🔐 Create New Password' : 'Change Password'}
           </h2>
           {isTemporary && (
-            <div className='temp-password-warning'>
-              <p>⚠️ You're using a temporary password. Please create a new secure password to continue.</p>
+            <div className="temp-password-warning">
+              <p>
+                ⚠️ You're using a temporary password. Please create a new secure
+                password to continue.
+              </p>
             </div>
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className='change-password-form'>
+        <form onSubmit={handleSubmit} className="change-password-form">
           {!isTemporary && (
-            <div className='form-field'>
+            <div className="form-field">
               <label>Current Password</label>
               <input
-                type='password'
-                name='currentPassword'
+                type="password"
+                name="currentPassword"
                 value={formData.currentPassword}
                 onChange={handleChange}
                 required
-                placeholder='Enter current password'
+                placeholder="Enter current password"
               />
             </div>
           )}
 
-          <div className='form-field'>
+          <div className="form-field">
             <label>New Password</label>
             <input
-              type='password'
-              name='newPassword'
+              type="password"
+              name="newPassword"
               value={formData.newPassword}
               onChange={handleChange}
               required
-              placeholder='Enter new password'
+              placeholder="Enter new password"
             />
           </div>
 
-          <div className='form-field'>
+          <div className="form-field">
             <label>Confirm New Password</label>
             <input
-              type='password'
-              name='confirmPassword'
+              type="password"
+              name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
               required
-              placeholder='Confirm new password'
+              placeholder="Confirm new password"
             />
           </div>
 
-          <div className='password-requirements'>
-            <p className='requirements-title'>Password Requirements:</p>
-            <div className='requirements-list'>
-              <div className={passwordStrength.hasLength ? 'requirement-met' : 'requirement-unmet'}>
+          <div className="password-requirements">
+            <p className="requirements-title">Password Requirements:</p>
+            <div className="requirements-list">
+              <div
+                className={
+                  passwordStrength.hasLength
+                    ? 'requirement-met'
+                    : 'requirement-unmet'
+                }
+              >
                 {passwordStrength.hasLength ? '✓' : '○'} At least 8 characters
               </div>
-              <div className={passwordStrength.hasUpperCase ? 'requirement-met' : 'requirement-unmet'}>
+              <div
+                className={
+                  passwordStrength.hasUpperCase
+                    ? 'requirement-met'
+                    : 'requirement-unmet'
+                }
+              >
                 {passwordStrength.hasUpperCase ? '✓' : '○'} One uppercase letter
               </div>
-              <div className={passwordStrength.hasLowerCase ? 'requirement-met' : 'requirement-unmet'}>
+              <div
+                className={
+                  passwordStrength.hasLowerCase
+                    ? 'requirement-met'
+                    : 'requirement-unmet'
+                }
+              >
                 {passwordStrength.hasLowerCase ? '✓' : '○'} One lowercase letter
               </div>
-              <div className={passwordStrength.hasNumber ? 'requirement-met' : 'requirement-unmet'}>
+              <div
+                className={
+                  passwordStrength.hasNumber
+                    ? 'requirement-met'
+                    : 'requirement-unmet'
+                }
+              >
                 {passwordStrength.hasNumber ? '✓' : '○'} One number
               </div>
-              <div className={passwordStrength.hasSpecialChar ? 'requirement-met' : 'requirement-unmet'}>
-                {passwordStrength.hasSpecialChar ? '✓' : '○'} One special character (!@#$%^&*...)
+              <div
+                className={
+                  passwordStrength.hasSpecialChar
+                    ? 'requirement-met'
+                    : 'requirement-unmet'
+                }
+              >
+                {passwordStrength.hasSpecialChar ? '✓' : '○'} One special
+                character (!@#$%^&*...)
               </div>
             </div>
           </div>
 
           <button
-            type='submit'
+            type="submit"
             disabled={loading}
-            className='btn btn-primary btn-full'
+            className="btn btn-primary btn-full"
           >
             {loading ? 'Changing Password...' : 'Change Password'}
           </button>
 
           {!isTemporary && (
             <button
-              type='button'
+              type="button"
               onClick={() => router.push('/admin/dashboard')}
-              className='btn btn-ghost btn-full'
+              className="btn btn-ghost btn-full"
             >
               Cancel
             </button>

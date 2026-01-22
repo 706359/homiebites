@@ -1,25 +1,20 @@
-
-
 class DataSyncManager {
   constructor() {
-    this.pendingRequests = new Map(); 
-    this.syncQueue = []; 
-    this.debounceTimers = new Map(); 
-    this.optimisticUpdates = new Map(); 
+    this.pendingRequests = new Map();
+    this.syncQueue = [];
+    this.debounceTimers = new Map();
+    this.optimisticUpdates = new Map();
     this.isProcessing = false;
-    
-    
+
     this.config = {
-      debounceDelay: 300, 
+      debounceDelay: 300,
       maxRetries: 3,
-      retryDelay: 1000, 
-      batchSize: 50, 
+      retryDelay: 1000,
+      batchSize: 50,
     };
   }
 
-  
   createRequest(key, requestFn) {
-    
     this.cancelRequest(key);
 
     const abortController = new AbortController();
@@ -30,7 +25,6 @@ class DataSyncManager {
       timestamp: Date.now(),
     };
 
-    
     request.promise = requestFn(abortController.signal)
       .then((result) => {
         this.pendingRequests.delete(key);
@@ -48,7 +42,6 @@ class DataSyncManager {
     return request.promise;
   }
 
-  
   cancelRequest(key) {
     const request = this.pendingRequests.get(key);
     if (request) {
@@ -57,7 +50,6 @@ class DataSyncManager {
     }
   }
 
-  
   cancelAllRequests() {
     this.pendingRequests.forEach((request) => {
       request.abortController.abort();
@@ -65,16 +57,13 @@ class DataSyncManager {
     this.pendingRequests.clear();
   }
 
-  
   debouncedSync(key, syncFn, delay = null) {
     const delayMs = delay || this.config.debounceDelay;
-    
-    
+
     if (this.debounceTimers.has(key)) {
       clearTimeout(this.debounceTimers.get(key));
     }
 
-    
     this.cancelRequest(key);
 
     return new Promise((resolve, reject) => {
@@ -92,18 +81,14 @@ class DataSyncManager {
     });
   }
 
-  
   async optimisticUpdate(key, updateFn, syncFn, rollbackFn = null) {
-    
     let originalState = null;
     if (rollbackFn) {
       originalState = rollbackFn();
     }
 
-    
     const optimisticResult = updateFn();
 
-    
     this.optimisticUpdates.set(key, {
       originalState,
       rollbackFn,
@@ -111,40 +96,33 @@ class DataSyncManager {
     });
 
     try {
-      
       const syncResult = await this.createRequest(key, syncFn);
-      
-      
+
       this.optimisticUpdates.delete(key);
-      
+
       return { success: true, data: syncResult, optimistic: true };
     } catch (error) {
-      
       if (rollbackFn && originalState !== null) {
         rollbackFn(originalState);
       }
-      
-      
+
       this.optimisticUpdates.delete(key);
-      
+
       throw error;
     }
   }
 
-  
   queueSync(operation) {
     this.syncQueue.push({
       ...operation,
       timestamp: Date.now(),
     });
 
-    
     if (!this.isProcessing) {
       this.processQueue();
     }
   }
 
-  
   async processQueue() {
     if (this.isProcessing || this.syncQueue.length === 0) {
       return;
@@ -153,15 +131,10 @@ class DataSyncManager {
     this.isProcessing = true;
 
     try {
-      
       const batch = this.syncQueue.splice(0, this.config.batchSize);
-      
-      
-      const results = await Promise.allSettled(
-        batch.map((op) => op.execute())
-      );
 
-      
+      const results = await Promise.allSettled(batch.map((op) => op.execute()));
+
       results.forEach((result, index) => {
         const operation = batch[index];
         if (result.status === 'rejected' && operation.onError) {
@@ -175,25 +148,21 @@ class DataSyncManager {
     } finally {
       this.isProcessing = false;
 
-      
       if (this.syncQueue.length > 0) {
         setTimeout(() => this.processQueue(), 100);
       }
     }
   }
 
-  
   clearDebounceTimers() {
     this.debounceTimers.forEach((timer) => clearTimeout(timer));
     this.debounceTimers.clear();
   }
 
-  
   getPendingCount() {
     return this.pendingRequests.size;
   }
 
-  
   hasPendingOperations() {
     return (
       this.pendingRequests.size > 0 ||
@@ -202,7 +171,6 @@ class DataSyncManager {
     );
   }
 
-  
   cleanup() {
     this.cancelAllRequests();
     this.clearDebounceTimers();
@@ -212,8 +180,6 @@ class DataSyncManager {
   }
 }
 
-
 const dataSyncManager = new DataSyncManager();
 
 export default dataSyncManager;
-

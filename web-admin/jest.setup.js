@@ -1,6 +1,6 @@
 /**
  * Jest Setup File
- * 
+ *
  * Global test setup and mocks
  */
 

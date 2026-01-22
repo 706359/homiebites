@@ -57,7 +57,10 @@ const TopNav = ({
   const handleSearch = (query) => {
     if (!query.trim()) return;
 
-    const updated = [query, ...recentSearches.filter((s) => s !== query)].slice(0, 5);
+    const updated = [query, ...recentSearches.filter((s) => s !== query)].slice(
+      0,
+      5
+    );
     setRecentSearches(updated);
     localStorage.setItem('homiebites_recent_searches', JSON.stringify(updated));
 
@@ -65,7 +68,10 @@ const TopNav = ({
       setActiveTab('allOrdersData');
     } else if (query.toLowerCase().includes('customer')) {
       setActiveTab('customers');
-    } else if (query.toLowerCase().includes('payment') || query.toLowerCase().includes('pending')) {
+    } else if (
+      query.toLowerCase().includes('payment') ||
+      query.toLowerCase().includes('pending')
+    ) {
       setActiveTab('pendingAmounts');
     } else if (query.toLowerCase().includes('report')) {
       setActiveTab('reports');
@@ -133,92 +139,101 @@ const TopNav = ({
 
   return (
     <>
-      <div className='admin-top-nav'>
-        <div className='top-nav-left'>
+      <div className="admin-top-nav">
+        <div className="top-nav-left">
           <button
-            className='top-nav-toggle'
+            className="top-nav-toggle"
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            aria-label='Toggle sidebar'
+            aria-label="Toggle sidebar"
           >
-            <i className='fa-solid fa-bars'></i>
+            <i className="fa-solid fa-bars"></i>
           </button>
           {tabTitle ? (
-            <div className='top-nav-tab-info'>
-              <h1 className='top-nav-title'>{tabTitle}</h1>
-              {tabSubtitle && <p className='top-nav-subtitle'>{tabSubtitle}</p>}
+            <div className="top-nav-tab-info">
+              <h1 className="top-nav-title">{tabTitle}</h1>
+              {tabSubtitle && <p className="top-nav-subtitle">{tabSubtitle}</p>}
             </div>
           ) : (
-            <h1 className='top-nav-title'>Admin Dashboard</h1>
+            <h1 className="top-nav-title">Admin Dashboard</h1>
           )}
         </div>
-        <div className='top-nav-center'>
-          {tabAction && <div className='top-nav-action'>{tabAction}</div>}
+        <div className="top-nav-center">
+          {tabAction && <div className="top-nav-action">{tabAction}</div>}
         </div>
-        <div className='top-nav-right'>
+        <div className="top-nav-right">
           {onRefresh && (
             <button
               className={`top-nav-search-btn tooltip-wrapper ${refreshing ? 'opacity-70' : ''}`}
               onClick={handleRefresh}
-              title='Refresh'
-              aria-label='Refresh'
+              title="Refresh"
+              aria-label="Refresh"
             >
               {refreshing ? (
-                <i className='fa-solid fa-spinner fa-spin'></i>
+                <i className="fa-solid fa-spinner fa-spin"></i>
               ) : (
-                <i className='fa-solid fa-rotate'></i>
+                <i className="fa-solid fa-rotate"></i>
               )}
-              <span className='tooltip'>Refresh</span>
+              <span className="tooltip">Refresh</span>
             </button>
           )}
           {onNewOrder && (
             <button
-              className='top-nav-search-btn tooltip-wrapper'
+              className="top-nav-search-btn tooltip-wrapper"
               onClick={() => onNewOrder()}
-              title='Add New Order'
-              aria-label='Add New Order'
+              title="Add New Order"
+              aria-label="Add New Order"
             >
-              <i className='fa-solid fa-plus'></i>
-              <span className='tooltip'>Add New Order</span>
+              <i className="fa-solid fa-plus"></i>
+              <span className="tooltip">Add New Order</span>
             </button>
           )}
           <button
-            className='top-nav-search-btn tooltip-wrapper'
+            className="top-nav-search-btn tooltip-wrapper"
             onClick={() => setShowSearchModal(true)}
-            title='Search'
-            aria-label='Search'
+            title="Search"
+            aria-label="Search"
           >
-            <i className='fa-solid fa-search'></i>
-            <span className='tooltip'>Search</span>
+            <i className="fa-solid fa-search"></i>
+            <span className="tooltip">Search</span>
           </button>
           <button
-            className='top-nav-notification-btn tooltip-wrapper'
+            className="top-nav-notification-btn tooltip-wrapper"
             onClick={() => setActiveTab('notifications')}
             title={`Notifications${
               unreadNotifications > 0 ? ` (${unreadNotifications} unread)` : ''
             }`}
-            aria-label='Notifications'
+            aria-label="Notifications"
           >
-            <i className='fa-solid fa-bell'></i>
+            <i className="fa-solid fa-bell"></i>
             {unreadNotifications > 0 && (
-              <span className='top-nav-badge'>
+              <span className="top-nav-badge">
                 {unreadNotifications > 99 ? '99+' : unreadNotifications}
               </span>
             )}
-            <span className='tooltip'>
-              Notifications{unreadNotifications > 0 ? ` (${unreadNotifications} unread)` : ''}
+            <span className="tooltip">
+              Notifications
+              {unreadNotifications > 0
+                ? ` (${unreadNotifications} unread)`
+                : ''}
             </span>
           </button>
         </div>
       </div>
 
       {showSearchModal && (
-        <div className='modal-overlay' onClick={() => setShowSearchModal(false)}>
-          <div className='modal-container global-search-modal' onClick={(e) => e.stopPropagation()}>
-            <div className='global-search-header'>
-              <div className='global-search-input-wrapper'>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowSearchModal(false)}
+        >
+          <div
+            className="modal-container global-search-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="global-search-header">
+              <div className="global-search-input-wrapper">
                 <input
-                  type='text'
-                  placeholder='Search everywhere...'
+                  type="text"
+                  placeholder="Search everywhere..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
@@ -227,42 +242,42 @@ const TopNav = ({
                     }
                   }}
                   autoFocus
-                  className='global-search-input'
+                  className="global-search-input"
                 />
               </div>
               <button
-                className='btn btn-ghost btn-icon modal-close global-search-close'
+                className="btn btn-ghost btn-icon modal-close global-search-close"
                 onClick={() => setShowSearchModal(false)}
-                aria-label='Close search'
+                aria-label="Close search"
               >
-                <i className='fa-solid fa-times'></i>
+                <i className="fa-solid fa-times"></i>
               </button>
             </div>
-            <div className='global-search-content'>
+            <div className="global-search-content">
               {recentSearches.length > 0 && (
-                <div className='global-search-section'>
+                <div className="global-search-section">
                   <h4>Recent Searches</h4>
-                  <div className='global-search-list'>
+                  <div className="global-search-list">
                     {recentSearches.map((search, idx) => (
                       <button
                         key={idx}
-                        className='global-search-item'
+                        className="global-search-item"
                         onClick={() => handleSearch(search)}
                       >
-                        <i className='fa-solid fa-clock-rotate-left'></i>
+                        <i className="fa-solid fa-clock-rotate-left"></i>
                         {search}
                       </button>
                     ))}
                   </div>
                 </div>
               )}
-              <div className='global-search-section'>
+              <div className="global-search-section">
                 <h4>Quick Actions</h4>
-                <div className='global-search-list'>
+                <div className="global-search-list">
                   {quickActions.map((action, idx) => (
                     <button
                       key={idx}
-                      className='global-search-item'
+                      className="global-search-item"
                       onClick={() => {
                         action.action();
                         setShowSearchModal(false);

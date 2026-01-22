@@ -10,7 +10,6 @@ export default function Login() {
   const router = useRouter();
 
   useEffect(() => {
-    
     const admin = localStorage.getItem('homiebites_admin');
     const user = localStorage.getItem('homiebites_user');
     if (admin === 'true' || (user && JSON.parse(user).role === 'admin')) {

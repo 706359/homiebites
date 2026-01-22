@@ -1,8 +1,9 @@
-
 import connectDB from '../../../../lib/db.js';
 import Gallery from '../../../../lib/models/Gallery.js';
-import { isAdmin, createErrorResponse } from '../../../../lib/middleware/auth.js';
-
+import {
+  isAdmin,
+  createErrorResponse,
+} from '../../../../lib/middleware/auth.js';
 
 export async function PUT(request) {
   try {
@@ -37,4 +38,3 @@ export async function PUT(request) {
     );
   }
 }
-

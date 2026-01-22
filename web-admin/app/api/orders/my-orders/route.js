@@ -1,14 +1,15 @@
-
 import connectDB from '../../../../lib/db.js';
 import Order from '../../../../lib/models/Order.js';
-import { authenticate, createErrorResponse } from '../../../../lib/middleware/auth.js';
-
+import {
+  authenticate,
+  createErrorResponse,
+} from '../../../../lib/middleware/auth.js';
 
 export async function GET(request) {
   try {
     await connectDB();
     const user = await authenticate(request);
-    
+
     if (!user || !user.id) {
       return Response.json(
         { success: false, error: 'Unauthorized' },
@@ -16,7 +17,7 @@ export async function GET(request) {
       );
     }
 
-    const userId = user.id === 'admin' ? null : user.id; 
+    const userId = user.id === 'admin' ? null : user.id;
     const orders = await Order.find(userId ? { user: userId } : {});
 
     return Response.json({ success: true, data: orders });
@@ -30,4 +31,3 @@ export async function GET(request) {
     );
   }
 }
-

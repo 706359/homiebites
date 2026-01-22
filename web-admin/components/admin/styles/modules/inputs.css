@@ -124,7 +124,7 @@
 .global-search-input-wrapper:focus-within {
   background: var(--admin-bg, #ffffff);
   border-color: var(--admin-accent, #449031);
-  box-shadow: 
+  box-shadow:
     0 0 0 3px rgba(68, 144, 49, 0.1),
     0 2px 8px rgba(68, 144, 49, 0.1);
 }
@@ -195,7 +195,9 @@
 .input-field:focus {
   outline: none;
   border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1), 0 2px 8px rgba(68, 144, 49, 0.15);
+  box-shadow:
+    0 0 0 3px rgba(68, 144, 49, 0.1),
+    0 2px 8px rgba(68, 144, 49, 0.15);
 }
 
 /* Dropdown selects: center selected text (filter-select, premium-select only; text-align-last avoided for Safari) */
@@ -239,4 +241,22 @@
 
 .premium-select:focus {
   outline: none;
+}
+
+/* Make placeholder option text smaller in all admin select dropdowns */
+.input-field option[value=""],
+.filter-select option[value=""],
+.premium-select option[value=""],
+select option[value=""] {
+  font-size: 0.85rem !important;
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Style select when placeholder is selected */
+.input-field.placeholder-selected,
+.filter-select.placeholder-selected,
+.premium-select.placeholder-selected,
+select.placeholder-selected {
+  color: rgba(0, 0, 0, 0.5) !important;
+  font-size: 0.85rem !important;
 }

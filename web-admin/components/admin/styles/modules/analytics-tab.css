@@ -86,13 +86,24 @@
   background-color: var(--admin-accent-light);
 }
 
-.analytics-delivery-table thead th.analytics-th-sortable span {
-  display: inline-block;
-  margin-left: 4px;
-  font-size: var(--admin-fs-base);
-  color: var(--admin-accent);
+.analytics-delivery-table thead th.analytics-th-sortable span,
+.analytics-delivery-table thead th.analytics-th-sortable > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  font-size: var(--admin-fs-sm);
+  color: var(--admin-text-white);
   font-weight: 700;
   vertical-align: middle;
+  line-height: 1;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  border-radius: 50%;
+  background: var(--admin-accent);
+  padding: 0;
 }
 
 /* ============================================
@@ -200,7 +211,9 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .analytics-trend-icon-up {
@@ -250,7 +263,10 @@
   white-space: nowrap;
   font-weight: 600;
   border: 1px solid transparent;
-  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
   cursor: help;
   min-height: 20px;
   display: flex;
@@ -462,7 +478,6 @@
     background: var(--admin-bg-secondary);
     border-bottom: 1px solid var(--admin-text-primary);
   }
-
 }
 
 /* ============================================
@@ -476,7 +491,6 @@
   .analytics-delivery-table thead th.analytics-th-sortable {
     transition: none;
   }
-
 }
 
 /* High Contrast Mode */
@@ -723,7 +737,20 @@
 }
 
 .analytics-th-sort-indicator {
-  margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  line-height: 1;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--admin-accent);
+  color: var(--admin-text-white);
+  font-size: var(--admin-fs-sm);
+  font-weight: 700;
+  padding: 0;
+  text-align: center;
 }
 
 .analytics-top-days-container {

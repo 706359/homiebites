@@ -1,4 +1,3 @@
-
 import mongoose from 'mongoose';
 
 const ReviewSchema = new mongoose.Schema(
@@ -10,7 +9,7 @@ const ReviewSchema = new mongoose.Schema(
     rating: { type: Number, required: true, min: 1, max: 5, default: 5 },
     comment: { type: String, required: true },
     featured: { type: Boolean, default: false },
-    isApproved: { type: Boolean, default: false }, 
+    isApproved: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

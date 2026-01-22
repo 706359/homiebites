@@ -1,17 +1,23 @@
 'use client';
 
-import { createContext, useCallback, useContext, useRef, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+} from 'react';
 
 const NotificationContext = createContext(null);
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const timeoutsRef = useRef(new Map());
-  const lastNotificationRef = useRef(new Map()); 
+  const lastNotificationRef = useRef(new Map());
 
   const removeNotification = useCallback((id) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
-    
+
     const timeoutId = timeoutsRef.current.get(id);
     if (timeoutId) {
       clearTimeout(timeoutId);
@@ -25,9 +31,8 @@ export const NotificationProvider = ({ children }) => {
       const key = `${message}-${type}`;
       const lastTime = lastNotificationRef.current.get(key);
 
-      
       if (lastTime && now - lastTime < 2000) {
-        return null; 
+        return null;
       }
 
       lastNotificationRef.current.set(key, now);
@@ -36,16 +41,14 @@ export const NotificationProvider = ({ children }) => {
       const notification = {
         id,
         message: typeof message === 'string' ? message : String(message),
-        type, 
-        duration: duration > 0 ? duration : 0, 
+        type,
+        duration: duration > 0 ? duration : 0,
       };
 
       setNotifications((prev) => {
-        
         const maxNotifications = 5;
         const updated = [...prev, notification];
         if (updated.length > maxNotifications) {
-          
           const oldest = updated.shift();
           const timeoutId = timeoutsRef.current.get(oldest.id);
           if (timeoutId) {
@@ -98,13 +101,19 @@ export const NotificationProvider = ({ children }) => {
     info,
   };
 
-  return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>;
+  return (
+    <NotificationContext.Provider value={value}>
+      {children}
+    </NotificationContext.Provider>
+  );
 };
 
 export const useNotification = () => {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error('useNotification must be used within a NotificationProvider');
+    throw new Error(
+      'useNotification must be used within a NotificationProvider'
+    );
   }
   return context;
 };

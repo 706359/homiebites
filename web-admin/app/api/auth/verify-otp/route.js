@@ -1,4 +1,3 @@
-
 import connectDB from '../../../../lib/db.js';
 import User from '../../../../lib/models/User.js';
 import jwt from 'jsonwebtoken';
@@ -15,11 +14,14 @@ export async function POST(request) {
   try {
     const ok = rateLimit(15, 15 * 60 * 1000)(request);
     if (!ok) {
-      return Response.json({ success: false, error: 'Too many requests. Please try again later.' }, { status: 429 });
+      return Response.json(
+        { success: false, error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
     }
 
     await connectDB();
-    
+
     const body = await request.json();
     const { email, otp } = body;
 
@@ -40,7 +42,6 @@ export async function POST(request) {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedOTP = otp.trim();
 
-    
     const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
@@ -50,27 +51,27 @@ export async function POST(request) {
       );
     }
 
-    
     if (!user.otp || !user.otpExpiresAt) {
       return Response.json(
-        { success: false, error: 'OTP not found or expired. Please request a new OTP.' },
+        {
+          success: false,
+          error: 'OTP not found or expired. Please request a new OTP.',
+        },
         { status: 401 }
       );
     }
 
     if (new Date() > user.otpExpiresAt) {
-      
       user.otp = null;
       user.otpExpiresAt = null;
       await user.save();
-      
+
       return Response.json(
         { success: false, error: 'OTP has expired. Please request a new OTP.' },
         { status: 401 }
       );
     }
 
-    
     if (user.otp !== normalizedOTP) {
       return Response.json(
         { success: false, error: 'Invalid OTP' },
@@ -78,7 +79,6 @@ export async function POST(request) {
       );
     }
 
-    
     const adminCreds = getAdminCredentials();
     const verificationToken = jwt.sign(
       {
@@ -87,13 +87,12 @@ export async function POST(request) {
         purpose: 'password-reset-verification',
       },
       adminCreds.JWT_SECRET,
-      { expiresIn: '30m' } 
+      { expiresIn: '30m' }
     );
 
-    
     user.verificationToken = verificationToken;
-    user.verificationTokenExpiresAt = new Date(Date.now() + 30 * 60 * 1000); 
-    
+    user.verificationTokenExpiresAt = new Date(Date.now() + 30 * 60 * 1000);
+
     user.otp = null;
     user.otpExpiresAt = null;
     await user.save();
@@ -104,23 +103,26 @@ export async function POST(request) {
       verificationToken,
     });
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') console.error('[Verify OTP API] Error:', error);
+    if (process.env.NODE_ENV === 'development')
+      console.error('[Verify OTP API] Error:', error);
     if (error.message && error.message.includes('connect')) {
       return Response.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Database connection failed. Please try again later.',
-          details: process.env.NODE_ENV === 'development' ? error.message : undefined
+          details:
+            process.env.NODE_ENV === 'development' ? error.message : undefined,
         },
         { status: 503 }
       );
     }
 
     return Response.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: error.message || 'Failed to verify OTP. Please try again.',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
       { status: 500 }
     );

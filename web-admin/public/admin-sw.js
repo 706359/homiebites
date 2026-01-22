@@ -10,13 +10,15 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) =>
-      Promise.all(
-        cacheNames
-          .filter((name) => name.startsWith('homiebites-admin-'))
-          .map((name) => caches.delete(name))
+    caches
+      .keys()
+      .then((cacheNames) =>
+        Promise.all(
+          cacheNames
+            .filter((name) => name.startsWith('homiebites-admin-'))
+            .map((name) => caches.delete(name))
+        )
       )
-    )
   );
   self.clients.claim();
 });

@@ -1,11 +1,12 @@
-
 import connectDB from '../../../../lib/db.js';
 import User from '../../../../lib/models/User.js';
-import { hashPassword, verifyPassword } from '../../../../lib/utils/password.js';
+import {
+  hashPassword,
+  verifyPassword,
+} from '../../../../lib/utils/password.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'homiebites_secret';
-
 
 function authenticateToken(authHeader) {
   if (!authHeader) {
@@ -29,7 +30,6 @@ export async function POST(request) {
   try {
     await connectDB();
 
-    
     const authHeader = request.headers.get('authorization');
     let decoded;
     try {
@@ -44,18 +44,16 @@ export async function POST(request) {
     const body = await request.json();
     const { currentPassword, newPassword } = body;
 
-    
     if (!newPassword || newPassword.length < 8) {
       return Response.json(
         {
           success: false,
-          error: 'Password must be at least 8 characters long'
+          error: 'Password must be at least 8 characters long',
         },
         { status: 400 }
       );
     }
 
-    
     const hasUpperCase = /[A-Z]/.test(newPassword);
     const hasLowerCase = /[a-z]/.test(newPassword);
     const hasNumbers = /\d/.test(newPassword);
@@ -65,7 +63,8 @@ export async function POST(request) {
       return Response.json(
         {
           success: false,
-          error: 'Password must contain uppercase, lowercase, number, and special character'
+          error:
+            'Password must contain uppercase, lowercase, number, and special character',
         },
         { status: 400 }
       );
@@ -78,19 +77,18 @@ export async function POST(request) {
       return Response.json(
         {
           success: false,
-          error: 'User not found'
+          error: 'User not found',
         },
         { status: 404 }
       );
     }
 
-    
     if (!user.isTemporaryPassword) {
       if (!currentPassword) {
         return Response.json(
           {
             success: false,
-            error: 'Current password is required'
+            error: 'Current password is required',
           },
           { status: 400 }
         );
@@ -100,7 +98,7 @@ export async function POST(request) {
         return Response.json(
           {
             success: false,
-            error: 'No password set. Please use password reset.'
+            error: 'No password set. Please use password reset.',
           },
           { status: 400 }
         );
@@ -111,17 +109,15 @@ export async function POST(request) {
         return Response.json(
           {
             success: false,
-            error: 'Current password is incorrect'
+            error: 'Current password is incorrect',
           },
           { status: 401 }
         );
       }
     }
 
-    
     const hashedPassword = await hashPassword(newPassword);
 
-    
     user.password = hashedPassword;
     user.isTemporaryPassword = false;
     user.lastPasswordChange = new Date();
@@ -129,28 +125,29 @@ export async function POST(request) {
 
     return Response.json({
       success: true,
-      message: 'Password changed successfully'
+      message: 'Password changed successfully',
     });
-
   } catch (error) {
     console.error('[Change Password API] Error:', error);
-    
+
     if (error.message && error.message.includes('connect')) {
       return Response.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Database connection failed. Please try again later.',
-          details: process.env.NODE_ENV === 'development' ? error.message : undefined
+          details:
+            process.env.NODE_ENV === 'development' ? error.message : undefined,
         },
         { status: 503 }
       );
     }
 
     return Response.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: error.message || 'Server error during password change',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
       { status: error.status || 500 }
     );

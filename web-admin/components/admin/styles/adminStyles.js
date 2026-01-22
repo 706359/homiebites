@@ -19,6 +19,7 @@ import './modules/utilities.css';
 import './modules/dashboard.css';
 import './modules/pending-amounts.css';
 import './modules/menu-price.css';
+import './modules/offers.css';
 import './modules/notifications-grid.css';
 import './modules/settings.css';
 import './modules/csv-upload-modal.css';

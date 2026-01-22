@@ -16,13 +16,13 @@ The HomieBites admin dashboard is a **Next.js 16 (App Router)** SPA for order ma
 
 ### 2.1 Routes
 
-| Route | Page | Purpose |
-|-------|------|---------|
-| `/admin` | `app/admin/page.jsx` | Login; redirects to `/admin/dashboard` if `homiebites_admin === 'true'` |
-| `/admin/dashboard` | `app/admin/dashboard/page.jsx` | Main dashboard (AdminDashboard) |
-| `/admin/change-password` | `app/admin/change-password/page.jsx` | Change password form |
-| `/admin/forgot-password` | `app/admin/forgot-password/page.jsx` | Forgot password |
-| `/admin/reset-password/[token]` | `app/admin/reset-password/[token]/page.jsx` | Reset password with token |
+| Route                           | Page                                        | Purpose                                                                 |
+| ------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------- |
+| `/admin`                        | `app/admin/page.jsx`                        | Login; redirects to `/admin/dashboard` if `homiebites_admin === 'true'` |
+| `/admin/dashboard`              | `app/admin/dashboard/page.jsx`              | Main dashboard (AdminDashboard)                                         |
+| `/admin/change-password`        | `app/admin/change-password/page.jsx`        | Change password form                                                    |
+| `/admin/forgot-password`        | `app/admin/forgot-password/page.jsx`        | Forgot password                                                         |
+| `/admin/reset-password/[token]` | `app/admin/reset-password/[token]/page.jsx` | Reset password with token                                               |
 
 ### 2.2 Dashboard Page (`/admin/dashboard`)
 
@@ -48,18 +48,18 @@ The HomieBites admin dashboard is a **Next.js 16 (App Router)** SPA for order ma
 
 ### 3.2 Tabs (from `getTabInfo` + `renderActiveTab`)
 
-| Tab Key | Title | Subtitle | Notes |
-|---------|-------|----------|-------|
-| `dashboard` | Dashboard | Overview of your business metrics | KPI cards, revenue/payment charts, recent orders |
-| `allOrdersData` | All Orders Data | View and manage all orders | Filters, pagination, Excel load, clear-all, edit/delete/status |
-| `currentMonthOrders` | Current Month Orders | Manage orders for the current billing month | Add/Edit/Delete, `OrderModal`, month lock |
-| `analytics` | Analytics | Business insights and performance metrics | Period (month/year/custom), day-details → All Orders |
-| `customers` | Customers | Manage and analyze customer data | AllAddressesTab, view orders by address |
-| `reports` | Reports | Generate and manage business reports | Excel/CSV, date range, clear-all |
-| `pendingAmounts` | Payment Management | Track and manage payment collections | Overdue/urgent, Mark paid, Send reminder |
-| `settings` | Settings | Configure your application settings | 6 sub-tabs: General, Orders, Notifications, Data, Profile, Appearance |
-| `notifications` | Notifications | Stay updated with your business activities | Overdue/pending/recent, view order, mark paid, reminders |
-| `menuPrice` | Menu & Price | Manage your menu items, categories, and pricing | CRUD menu, categories, `api.getMenu` / `api.updateMenu` |
+| Tab Key              | Title                | Subtitle                                        | Notes                                                                 |
+| -------------------- | -------------------- | ----------------------------------------------- | --------------------------------------------------------------------- |
+| `dashboard`          | Dashboard            | Overview of your business metrics               | KPI cards, revenue/payment charts, recent orders                      |
+| `allOrdersData`      | All Orders Data      | View and manage all orders                      | Filters, pagination, Excel load, clear-all, edit/delete/status        |
+| `currentMonthOrders` | Current Month Orders | Manage orders for the current billing month     | Add/Edit/Delete, `OrderModal`, month lock                             |
+| `analytics`          | Analytics            | Business insights and performance metrics       | Period (month/year/custom), day-details → All Orders                  |
+| `customers`          | Customers            | Manage and analyze customer data                | AllAddressesTab, view orders by address                               |
+| `reports`            | Reports              | Generate and manage business reports            | Excel/CSV, date range, clear-all                                      |
+| `pendingAmounts`     | Payment Management   | Track and manage payment collections            | Overdue/urgent, Mark paid, Send reminder                              |
+| `settings`           | Settings             | Configure your application settings             | 6 sub-tabs: General, Orders, Notifications, Data, Profile, Appearance |
+| `notifications`      | Notifications        | Stay updated with your business activities      | Overdue/pending/recent, view order, mark paid, reminders              |
+| `menuPrice`          | Menu & Price         | Manage your menu items, categories, and pricing | CRUD menu, categories, `api.getMenu` / `api.updateMenu`               |
 
 ### 3.3 Modals & Global UI
 
@@ -220,13 +220,13 @@ The HomieBites admin dashboard is a **Next.js 16 (App Router)** SPA for order ma
 
 ### 8.2 Endpoints Used by Dashboard
 
-| Area | Endpoints |
-|------|-----------|
-| Auth | `/api/auth/login`, `forgot-password`, `verify-otp`, `verify-identity`, `reset-password`, `verify`, `users` |
-| Orders | `/api/orders` (GET, POST), `/api/orders/[id]` (PUT, DELETE), `/api/orders/manual`, `bulk-import`, `cleanup-duplicates`, `clear-all`, `upload-excel` |
-| Menu | `/api/menu` (GET, PUT, DELETE) |
-| Settings | `/api/settings`, `/api/settings/full` (GET, PUT) |
-| Others | `/api/offers`, `/api/reviews`, `/api/gallery`, `/api/health` |
+| Area     | Endpoints                                                                                                                                           |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth     | `/api/auth/login`, `forgot-password`, `verify-otp`, `verify-identity`, `reset-password`, `verify`, `users`                                          |
+| Orders   | `/api/orders` (GET, POST), `/api/orders/[id]` (PUT, DELETE), `/api/orders/manual`, `bulk-import`, `cleanup-duplicates`, `clear-all`, `upload-excel` |
+| Menu     | `/api/menu` (GET, PUT, DELETE)                                                                                                                      |
+| Settings | `/api/settings`, `/api/settings/full` (GET, PUT)                                                                                                    |
+| Others   | `/api/offers`, `/api/reviews`, `/api/gallery`, `/api/health`                                                                                        |
 
 ---
 
@@ -257,30 +257,30 @@ The HomieBites admin dashboard is a **Next.js 16 (App Router)** SPA for order ma
 
 ### 9.4 File Sizes (lines, approximate)
 
-| File | Lines |
-|------|-------|
-| index.css | 228 |
-| sidebar.css | 676 |
-| analytics-tab.css | 782 |
-| dashboard.css | 602 |
-| tables.css | 490 |
-| modals.css | 404 |
-| settings.css | 421 |
-| admin-login.css | 418 |
-| topnav.css | 358 |
-| filters.css | 319 |
-| notifications.css | 319 |
-| pending-amounts.css | 212 |
-| forms.css | 152 |
-| menu-price.css | 149 |
-| inputs.css | 259 |
-| cards.css | 168 |
-| csv-upload-modal.css | 258 |
-| admin-forgot-password.css | 344 |
-| notifications-grid.css | 104 |
-| empty-states.css | 61 |
-| badges.css | 39 |
-| utilities.css | 91 |
+| File                        | Lines      |
+| --------------------------- | ---------- |
+| index.css                   | 228        |
+| sidebar.css                 | 676        |
+| analytics-tab.css           | 782        |
+| dashboard.css               | 602        |
+| tables.css                  | 490        |
+| modals.css                  | 404        |
+| settings.css                | 421        |
+| admin-login.css             | 418        |
+| topnav.css                  | 358        |
+| filters.css                 | 319        |
+| notifications.css           | 319        |
+| pending-amounts.css         | 212        |
+| forms.css                   | 152        |
+| menu-price.css              | 149        |
+| inputs.css                  | 259        |
+| cards.css                   | 168        |
+| csv-upload-modal.css        | 258        |
+| admin-forgot-password.css   | 344        |
+| notifications-grid.css      | 104        |
+| empty-states.css            | 61         |
+| badges.css                  | 39         |
+| utilities.css               | 91         |
 | **Total (index + modules)** | **~6,854** |
 
 ---
@@ -318,43 +318,43 @@ The HomieBites admin dashboard is a **Next.js 16 (App Router)** SPA for order ma
 
 ### 12.1 Critical
 
-| # | Issue | Location | Recommendation |
-|---|--------|----------|----------------|
-| 1 | **API base URL empty** | `lib/api-admin.js`: `resolvedApiUrl = ''` | If backend is on another origin, set `resolvedApiUrl` from `NEXT_PUBLIC_API_URL` or `API_URL` and document in `.env.example`. |
-| 2 | **Backup/Restore not implemented** | `handleBackup`, `handleRestore` in AdminDashboard; Settings Data tab | Implement export/import (e.g. JSON or Excel) and/or backend endpoints; wire buttons to real logic. |
-| 3 | **Duplicate `process.env.NODE_ENV` checks** | e.g. AdminDashboard `if (process.env.NODE_ENV === 'development') { if (process.env.NODE_ENV === 'development') {` | Remove inner duplicate. |
-| 4 | **ConfirmationModal `onCancelCallback` never used** | AdminDashboard sets `onCancelCallback` in `confirmationModal`; `onCancel` only runs `setConfirmationModal(..., show: false)` | Either call `onCancelCallback` from `onCancel` or remove `onCancelCallback`. |
+| #   | Issue                                               | Location                                                                                                                     | Recommendation                                                                                                                |
+| --- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **API base URL empty**                              | `lib/api-admin.js`: `resolvedApiUrl = ''`                                                                                    | If backend is on another origin, set `resolvedApiUrl` from `NEXT_PUBLIC_API_URL` or `API_URL` and document in `.env.example`. |
+| 2   | **Backup/Restore not implemented**                  | `handleBackup`, `handleRestore` in AdminDashboard; Settings Data tab                                                         | Implement export/import (e.g. JSON or Excel) and/or backend endpoints; wire buttons to real logic.                            |
+| 3   | **Duplicate `process.env.NODE_ENV` checks**         | e.g. AdminDashboard `if (process.env.NODE_ENV === 'development') { if (process.env.NODE_ENV === 'development') {`            | Remove inner duplicate.                                                                                                       |
+| 4   | **ConfirmationModal `onCancelCallback` never used** | AdminDashboard sets `onCancelCallback` in `confirmationModal`; `onCancel` only runs `setConfirmationModal(..., show: false)` | Either call `onCancelCallback` from `onCancel` or remove `onCancelCallback`.                                                  |
 
 ### 12.2 High
 
-| # | Issue | Location | Recommendation |
-|---|--------|----------|----------------|
-| 5 | **`getOrderAmount`-style logic repeated** | DashboardTab, AnalyticsTab, PendingAmountsTab, ReportsTab, ImportantNotificationsBanner, AllAddressesTab | Extract to `orderUtils.getOrderAmount(order)` and reuse. |
-| 6 | **45-day overdue / 7-day urgent repeated** | PendingAmountsTab, NotificationsTab, ImportantNotificationsBanner, `unreadNotifications` in AdminDashboard | Extract to e.g. `orderUtils.getOverdueUrgentCounts(orders)` or a small module. |
-| 7 | **Scheduled reports & Report history are mock** | ReportsTab `scheduledReports`, `reportHistory` | Either remove, or implement with API and persistence. |
-| 8 | **Notification settings in NotificationsTab are local only** | `notificationSettings` state, Settings modal | Persist via `api.updateSettings({ notificationPrefs })` or a dedicated endpoint and load from settings. |
-| 9 | **`MenuPriceTab` uses `ConfirmModal` import** | `import ConfirmModal from './ConfirmationModal.jsx'` | Align name: use `ConfirmationModal` everywhere. |
-| 10 | **DashboardTab `data-revenue` / `data-expected` on stat cards** | e.g. `data-revenue={allTimeRevenue} data-expected='374345'` | Remove test/debug attributes or move to tests. |
+| #   | Issue                                                           | Location                                                                                                   | Recommendation                                                                                          |
+| --- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| 5   | **`getOrderAmount`-style logic repeated**                       | DashboardTab, AnalyticsTab, PendingAmountsTab, ReportsTab, ImportantNotificationsBanner, AllAddressesTab   | Extract to `orderUtils.getOrderAmount(order)` and reuse.                                                |
+| 6   | **45-day overdue / 7-day urgent repeated**                      | PendingAmountsTab, NotificationsTab, ImportantNotificationsBanner, `unreadNotifications` in AdminDashboard | Extract to e.g. `orderUtils.getOverdueUrgentCounts(orders)` or a small module.                          |
+| 7   | **Scheduled reports & Report history are mock**                 | ReportsTab `scheduledReports`, `reportHistory`                                                             | Either remove, or implement with API and persistence.                                                   |
+| 8   | **Notification settings in NotificationsTab are local only**    | `notificationSettings` state, Settings modal                                                               | Persist via `api.updateSettings({ notificationPrefs })` or a dedicated endpoint and load from settings. |
+| 9   | **`MenuPriceTab` uses `ConfirmModal` import**                   | `import ConfirmModal from './ConfirmationModal.jsx'`                                                       | Align name: use `ConfirmationModal` everywhere.                                                         |
+| 10  | **DashboardTab `data-revenue` / `data-expected` on stat cards** | e.g. `data-revenue={allTimeRevenue} data-expected='374345'`                                                | Remove test/debug attributes or move to tests.                                                          |
 
 ### 12.3 Medium
 
-| # | Issue | Location | Recommendation |
-|---|--------|----------|----------------|
-| 11 | **Spacing/type scale** | Per DASHBOARD_DESIGN_AUDIT_REPORT.md: 49 padding, 13 margin, 12 gap, 16 font-size values | Adopt a small scale (e.g. 4,8,12,16,24) and rem/design tokens; refactor in passes. |
-| 12 | **`html.admin-active`** | index.css, `clearAdminFontSize` | Ensure `admin-active` is added/removed on enter/leave `/admin` so font-size and overflow rules apply only in admin. |
-| 13 | **OrderModal date formats** | DD/MM/YYYY vs ISO; `persistedDateRef`, `datePickerRef` | Standardize on one format in state and `parseOrderDate`; simplify refs. |
-| 14 | **`onClearExcelData` no-op** | AllOrdersDataTab: `onClearExcelData={() => {}}` | Implement (e.g. clear imported Excel-backed view) or remove prop. |
-| 15 | **`CSVUploadModal` `onUploadSuccess={(_data) => {}}`** | AdminDashboard | Use `_data` if needed (e.g. to show import summary) or remove parameter. |
-| 16 | **Debug `console.log` in production** | e.g. `DashboardTab`, `useAdminData`, `MenuPriceTab` | ✅ Done: removed per-render log in MenuPriceTab; useAdminData, AnalyticsTab, AdminLogin already guarded. |
+| #   | Issue                                                  | Location                                                                                 | Recommendation                                                                                                      |
+| --- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| 11  | **Spacing/type scale**                                 | Per DASHBOARD_DESIGN_AUDIT_REPORT.md: 49 padding, 13 margin, 12 gap, 16 font-size values | Adopt a small scale (e.g. 4,8,12,16,24) and rem/design tokens; refactor in passes.                                  |
+| 12  | **`html.admin-active`**                                | index.css, `clearAdminFontSize`                                                          | Ensure `admin-active` is added/removed on enter/leave `/admin` so font-size and overflow rules apply only in admin. |
+| 13  | **OrderModal date formats**                            | DD/MM/YYYY vs ISO; `persistedDateRef`, `datePickerRef`                                   | Standardize on one format in state and `parseOrderDate`; simplify refs.                                             |
+| 14  | **`onClearExcelData` no-op**                           | AllOrdersDataTab: `onClearExcelData={() => {}}`                                          | Implement (e.g. clear imported Excel-backed view) or remove prop.                                                   |
+| 15  | **`CSVUploadModal` `onUploadSuccess={(_data) => {}}`** | AdminDashboard                                                                           | Use `_data` if needed (e.g. to show import summary) or remove parameter.                                            |
+| 16  | **Debug `console.log` in production**                  | e.g. `DashboardTab`, `useAdminData`, `MenuPriceTab`                                      | ✅ Done: removed per-render log in MenuPriceTab; useAdminData, AnalyticsTab, AdminLogin already guarded.            |
 
 ### 12.4 Low / Nice-to-have
 
-| # | Issue | Location | Recommendation |
-|---|--------|----------|----------------|
-| 17 | **Sidebar `users` key for Pending Amounts** | adminConfig: `users` → `pendingAmounts` | ✅ Done: renamed to `pendingAmounts` in adminConfig and Sidebar. |
-| 18 | **Profile dropdown duplicate Logout** | Sidebar: dropdown Logout + footer Logout button | ✅ Done: footer Logout only when collapsed; dropdown Logout when expanded. |
-| 19 | **`suppressHydrationWarning` on Sidebar** | `admin-sidebar` div | ✅ Done: removed (no hydration mismatch). |
-| 20 | **Accessibility** | Modals, Confirmations, tables | ✅ Done (ConfirmationModal): `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, `aria-describedby`. Remainder: focus trap, other modals, tables. |
+| #   | Issue                                       | Location                                        | Recommendation                                                                                                                                         |
+| --- | ------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 17  | **Sidebar `users` key for Pending Amounts** | adminConfig: `users` → `pendingAmounts`         | ✅ Done: renamed to `pendingAmounts` in adminConfig and Sidebar.                                                                                       |
+| 18  | **Profile dropdown duplicate Logout**       | Sidebar: dropdown Logout + footer Logout button | ✅ Done: footer Logout only when collapsed; dropdown Logout when expanded.                                                                             |
+| 19  | **`suppressHydrationWarning` on Sidebar**   | `admin-sidebar` div                             | ✅ Done: removed (no hydration mismatch).                                                                                                              |
+| 20  | **Accessibility**                           | Modals, Confirmations, tables                   | ✅ Done (ConfirmationModal): `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, `aria-describedby`. Remainder: focus trap, other modals, tables. |
 
 ---
 
@@ -386,10 +386,10 @@ The HomieBites admin dashboard is a **Next.js 16 (App Router)** SPA for order ma
 
 ## 15. Document History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | Jan 2025 | Initial full audit: routes, layout, shell, tabs, modals, data, API, styles, utils, issues, recommendations. |
+| Version | Date     | Changes                                                                                                     |
+| ------- | -------- | ----------------------------------------------------------------------------------------------------------- |
+| 1.0     | Jan 2025 | Initial full audit: routes, layout, shell, tabs, modals, data, API, styles, utils, issues, recommendations. |
 
 ---
 
-*End of report.*
+_End of report._

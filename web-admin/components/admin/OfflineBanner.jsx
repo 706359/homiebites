@@ -2,9 +2,15 @@
 
 import { useEffect, useState } from 'react';
 
-const NETWORK_ERROR_PATTERN = /network|connect|unable to connect|not available|fetch|internet|connection refused|failed to fetch/i;
+const NETWORK_ERROR_PATTERN =
+  /network|connect|unable to connect|not available|fetch|internet|connection refused|failed to fetch/i;
 
-const OfflineBanner = ({ connectionError, onRetry, onBackOnline, showNotification }) => {
+const OfflineBanner = ({
+  connectionError,
+  onRetry,
+  onBackOnline,
+  showNotification,
+}) => {
   const [isOffline, setIsOffline] = useState(
     typeof navigator !== 'undefined' ? !navigator.onLine : false
   );
@@ -31,20 +37,20 @@ const OfflineBanner = ({ connectionError, onRetry, onBackOnline, showNotificatio
     };
   }, [isOffline, onBackOnline, showNotification]);
 
-  const showConnectionError = connectionError && NETWORK_ERROR_PATTERN.test(connectionError);
+  const showConnectionError =
+    connectionError && NETWORK_ERROR_PATTERN.test(connectionError);
   const visible = isOffline || showConnectionError;
   if (!visible) return null;
 
   const isOfflineState = isOffline;
 
   return (
-    <div
-      className='offline-banner'
-      role='alert'
-      aria-live='polite'
-    >
-      <div className='offline-banner__inner'>
-        <i className={`fa-solid ${isOfflineState ? 'fa-wifi' : 'fa-cloud-exclamation'}`} aria-hidden />
+    <div className="offline-banner" role="alert" aria-live="polite">
+      <div className="offline-banner__inner">
+        <i
+          className={`fa-solid ${isOfflineState ? 'fa-wifi' : 'fa-cloud-exclamation'}`}
+          aria-hidden
+        />
         <span>
           {isOfflineState
             ? "You're offline. Some features may be unavailable."
@@ -52,11 +58,11 @@ const OfflineBanner = ({ connectionError, onRetry, onBackOnline, showNotificatio
         </span>
         {showConnectionError && !isOfflineState && onRetry && (
           <button
-            type='button'
-            className='btn btn-ghost btn-small offline-banner__retry'
+            type="button"
+            className="btn btn-ghost btn-small offline-banner__retry"
             onClick={() => onRetry()}
           >
-            <i className='fa-solid fa-rotate-right' aria-hidden /> Retry
+            <i className="fa-solid fa-rotate-right" aria-hidden /> Retry
           </button>
         )}
       </div>

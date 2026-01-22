@@ -10,6 +10,17 @@
   font-size: var(--admin-fs-base);
 }
 
+.pending-payments-count-info {
+  font-size: var(--admin-fs-sm);
+  color: var(--admin-text-secondary, #6b7280);
+  padding: 8px 12px;
+  background: var(--admin-bg-secondary, #f9fafb);
+  border-radius: 8px;
+  margin-top: 12px;
+  text-align: center;
+  font-weight: 500;
+}
+
 .pending-table-empty-message {
   text-align: center;
   padding: 48px 24px;

@@ -1,5 +1,5 @@
-import { useLanguage } from "../contexts/LanguageContext";
-import "./About.css";
+import { useLanguage } from '../contexts/LanguageContext';
+import './About.css';
 
 const About = () => {
   const { t } = useLanguage();
@@ -8,28 +8,30 @@ const About = () => {
     <section id="about" className="about-section">
       <div className="section-container">
         <div className="about-header">
-          <span className="about-kicker">{t("about.kicker") || "Our story"}</span>
-          <h2 className="about-title">{t("about.title")}</h2>
+          <span className="about-kicker">
+            {t('about.kicker') || 'Our story'}
+          </span>
+          <h2 className="about-title">{t('about.title')}</h2>
         </div>
         <div className="about-content">
           <p>
-            {t("about.description1")} <strong>{t("about.location")}</strong>{" "}
-            {t("about.description2")}
+            {t('about.description1')} <strong>{t('about.location')}</strong>{' '}
+            {t('about.description2')}
           </p>
-          <p>{t("about.description3")}</p>
+          <p>{t('about.description3')}</p>
           <p>
-            {t("about.description4")} <strong>{t("about.founded")}</strong>{" "}
-            {t("about.description5")}
+            {t('about.description4')} <strong>{t('about.founded')}</strong>{' '}
+            {t('about.description5')}
           </p>
         </div>
 
         <div className="why-choose-section">
           <h3 className="why-choose-heading">
-            {t("about.whyChoose") || "Why Choose HomieBites"}
+            {t('about.whyChoose') || 'Why Choose HomieBites'}
           </h3>
           <p className="why-choose-intro">
-            {t("about.whyChooseIntro") ||
-              "At HomieBites, we understand that your daily meals should be more than just food—they should be a source of comfort, nutrition, and joy. Our commitment goes beyond cooking; we create experiences that bring the warmth of home to your table every single day."}
+            {t('about.whyChooseIntro') ||
+              'At HomieBites, we understand that your daily meals should be more than just food—they should be a source of comfort, nutrition, and joy. Our commitment goes beyond cooking; we create experiences that bring the warmth of home to your table every single day.'}
           </p>
         </div>
       </div>

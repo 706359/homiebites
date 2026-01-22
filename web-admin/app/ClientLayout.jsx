@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { usePathname } from "next/navigation";
-import FontSettingsLoader from "../components/FontSettingsLoader";
-import { LanguageProvider, useLanguage } from "../contexts/LanguageContext";
-import { NotificationProvider } from "../contexts/NotificationContext";
+import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import FontSettingsLoader from '../components/FontSettingsLoader';
+import { LanguageProvider, useLanguage } from '../contexts/LanguageContext';
+import { NotificationProvider } from '../contexts/NotificationContext';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 function ScrollToTop() {
   const pathname = usePathname();
 
   useEffect(() => {
-    
     const hash = window.location.hash;
-    if (!hash || hash === "#") {
+    if (!hash || hash === '#') {
       window.scrollTo({
         top: 0,
-        behavior: "instant",
+        behavior: 'instant',
       });
     }
   }, [pathname]);
@@ -27,11 +27,9 @@ function HashScrollHandler() {
   const pathname = usePathname();
 
   useEffect(() => {
-    
-    if (pathname === "/") {
+    if (pathname === '/') {
       const hash = window.location.hash;
-      if (hash && hash !== "#") {
-        
+      if (hash && hash !== '#') {
         const scrollToHash = () => {
           const targetElement = document.querySelector(hash);
           if (targetElement) {
@@ -42,14 +40,13 @@ function HashScrollHandler() {
 
             window.scrollTo({
               top: offsetPosition,
-              behavior: "smooth",
+              behavior: 'smooth',
             });
             return true;
           }
           return false;
         };
 
-        
         if (!scrollToHash()) {
           setTimeout(() => {
             if (!scrollToHash()) {
@@ -68,8 +65,7 @@ function LanguageHandler() {
   const { language } = useLanguage();
 
   useEffect(() => {
-    
-    document.documentElement.lang = language === "hi" ? "hi" : "en";
+    document.documentElement.lang = language === 'hi' ? 'hi' : 'en';
   }, [language]);
 
   return null;
@@ -77,13 +73,15 @@ function LanguageHandler() {
 
 function ClientLayoutContent({ children }) {
   return (
-    <NotificationProvider>
-      <FontSettingsLoader />
-      <LanguageHandler />
-      <ScrollToTop />
-      <HashScrollHandler />
-      {children}
-    </NotificationProvider>
+    <ErrorBoundary>
+      <NotificationProvider>
+        <FontSettingsLoader />
+        <LanguageHandler />
+        <ScrollToTop />
+        <HashScrollHandler />
+        {children}
+      </NotificationProvider>
+    </ErrorBoundary>
   );
 }
 

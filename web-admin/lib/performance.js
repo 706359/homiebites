@@ -1,6 +1,6 @@
 /**
  * Performance Utilities
- * 
+ *
  * Utilities for performance optimization, lazy loading, and code splitting
  */
 
@@ -118,8 +118,14 @@ export function isMobile() {
  */
 export function isSlowConnection() {
   if (typeof navigator === 'undefined' || !navigator.connection) return false;
-  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-  return connection?.effectiveType === 'slow-2g' || connection?.effectiveType === '2g';
+  const connection =
+    navigator.connection ||
+    navigator.mozConnection ||
+    navigator.webkitConnection;
+  return (
+    connection?.effectiveType === 'slow-2g' ||
+    connection?.effectiveType === '2g'
+  );
 }
 
 /**

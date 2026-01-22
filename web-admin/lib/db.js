@@ -1,10 +1,8 @@
-
 import mongoose from 'mongoose';
 
 const MONGOURI = process.env.MONGOURI;
 
 if (!MONGOURI && typeof window === 'undefined') {
-  
   if (
     process.env.NODE_ENV !== 'production' ||
     process.env.NEXT_PHASE !== 'phase-production-build'
@@ -14,7 +12,6 @@ if (!MONGOURI && typeof window === 'undefined') {
     );
   }
 }
-
 
 let cached = global.mongoose;
 
@@ -31,11 +28,9 @@ async function connectDB() {
   }
 
   if (cached.conn) {
-    
     if (mongoose.connection.readyState === 1) {
       return cached.conn;
     } else {
-      
       cached.conn = null;
       cached.promise = null;
     }
@@ -44,9 +39,9 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 10000, 
-      socketTimeoutMS: 45000, 
-      connectTimeoutMS: 10000, 
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 10000,
     };
 
     cached.promise = mongoose
@@ -67,8 +62,11 @@ async function connectDB() {
     cached.conn = await cached.promise;
   } catch (e) {
     cached.promise = null;
-    
-    if (e.message.includes('ECONNREFUSED') || e.message.includes('connection refused')) {
+
+    if (
+      e.message.includes('ECONNREFUSED') ||
+      e.message.includes('connection refused')
+    ) {
       throw new Error(
         'Cannot connect to MongoDB server. Please check if the MongoDB server is running and the connection string is correct.'
       );

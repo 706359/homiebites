@@ -7,7 +7,6 @@ export default function MenuPage() {
   const router = useRouter();
 
   useEffect(() => {
-    
     router.replace('/#gallery');
   }, [router]);
 

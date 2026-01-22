@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap');
+/* Font is loaded dynamically by FontSettingsLoader based on admin settings */
+/* @import removed - font loading is now handled by FontSettingsLoader component */
 
 /* variables.css is loaded from app/layout.jsx before this file */
 

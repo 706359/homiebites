@@ -20,7 +20,10 @@ export function roundToStep(v, step = ADMIN_FONT_SIZE_STEP) {
   const n = Number(v);
   if (Number.isNaN(n)) return ADMIN_FONT_SIZE_DEFAULT;
   const ticks = Math.round(n / step) * step;
-  return Math.max(ADMIN_FONT_SIZE_MIN, Math.min(ADMIN_FONT_SIZE_MAX, Math.round(ticks * 100) / 100));
+  return Math.max(
+    ADMIN_FONT_SIZE_MIN,
+    Math.min(ADMIN_FONT_SIZE_MAX, Math.round(ticks * 100) / 100)
+  );
 }
 
 /**
@@ -30,7 +33,8 @@ export function roundToStep(v, step = ADMIN_FONT_SIZE_STEP) {
 export function parseFontSize(v) {
   if (v == null) return null;
   const n = parseFloat(String(v).trim());
-  if (!Number.isNaN(n) && n >= ADMIN_FONT_SIZE_MIN && n <= ADMIN_FONT_SIZE_MAX) return n;
+  if (!Number.isNaN(n) && n >= ADMIN_FONT_SIZE_MIN && n <= ADMIN_FONT_SIZE_MAX)
+    return n;
   const legacy = LEGACY_MAP[String(v).toLowerCase()];
   return legacy ?? null;
 }
@@ -69,5 +73,7 @@ export function clearAdminFontSize() {
 export function formatFontSizeDisplay(v) {
   const n = Number(v);
   if (Number.isNaN(n)) return String(ADMIN_FONT_SIZE_DEFAULT);
-  return n % 1 === 0 ? String(Math.round(n)) : String(Math.round(n * 100) / 100);
+  return n % 1 === 0
+    ? String(Math.round(n))
+    : String(Math.round(n * 100) / 100);
 }

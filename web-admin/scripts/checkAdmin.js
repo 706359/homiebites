@@ -13,7 +13,8 @@ dotenv.config({ path: join(__dirname, '..', '.env') });
 
 const checkAdmin = async () => {
   try {
-    const mongoUri = process.env.MONGOURI || process.env.MONGODB_URI || process.env.MONGO_URI;
+    const mongoUri =
+      process.env.MONGOURI || process.env.MONGODB_URI || process.env.MONGO_URI;
     if (!mongoUri) {
       console.error('❌ Error: MONGOURI not found in environment variables');
       process.exit(1);
@@ -31,7 +32,9 @@ const checkAdmin = async () => {
     if (!admin) {
       console.log('❌ Admin user NOT FOUND!');
       console.log(`   Email: ${email}`);
-      console.log('\n💡 Solution: Run "node scripts/setupAdmin.js" to create the admin user.\n');
+      console.log(
+        '\n💡 Solution: Run "node scripts/setupAdmin.js" to create the admin user.\n'
+      );
       await mongoose.disconnect();
       process.exit(1);
     }
@@ -50,10 +53,14 @@ const checkAdmin = async () => {
       const isLocked = admin.lockUntil > Date.now();
       console.log(
         '   Lock Status:',
-        isLocked ? `🔒 LOCKED until ${admin.lockUntil.toISOString()}` : '✅ Not locked'
+        isLocked
+          ? `🔒 LOCKED until ${admin.lockUntil.toISOString()}`
+          : '✅ Not locked'
       );
       if (isLocked) {
-        const minutesLeft = Math.ceil((admin.lockUntil.getTime() - Date.now()) / 60000);
+        const minutesLeft = Math.ceil(
+          (admin.lockUntil.getTime() - Date.now()) / 60000
+        );
         console.log('   Minutes Left:', minutesLeft);
       }
     } else {
@@ -69,7 +76,9 @@ const checkAdmin = async () => {
           console.log('✅ Password "TempPass@123" is CORRECT!');
         } else {
           console.log('❌ Password "TempPass@123" is INCORRECT!');
-          console.log('   The password in the database does not match "TempPass@123"');
+          console.log(
+            '   The password in the database does not match "TempPass@123"'
+          );
           console.log('\n💡 Solution: Reset the admin password by running:');
           console.log('   node scripts/resetAdminPassword.js\n');
         }
@@ -78,7 +87,9 @@ const checkAdmin = async () => {
       }
     } else {
       console.log('\n❌ WARNING: Admin user has NO PASSWORD set!');
-      console.log('💡 Solution: Run "node scripts/setupAdmin.js" to set the password.\n');
+      console.log(
+        '💡 Solution: Run "node scripts/setupAdmin.js" to set the password.\n'
+      );
     }
 
     await mongoose.disconnect();

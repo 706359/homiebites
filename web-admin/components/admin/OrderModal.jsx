@@ -28,7 +28,7 @@ const OrderModal = ({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState(null);
   const [formErrors, setFormErrors] = useState({});
-  const [touchedFields, setTouchedFields] = useState({}); 
+  const [touchedFields, setTouchedFields] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [autoPopulatedAddress, setAutoPopulatedAddress] = useState(null);
@@ -36,32 +36,28 @@ const OrderModal = ({
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const dropdownRef = useRef(null);
   const selectedAddressRef = useRef(null);
-  const suggestionButtonRefs = useRef([]); 
+  const suggestionButtonRefs = useRef([]);
   const addressDebounceTimerRef = useRef(null);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
-  const persistedDateRef = useRef(null); 
-  const lastOrderIdRef = useRef(null); 
+  const persistedDateRef = useRef(null);
+  const lastOrderIdRef = useRef(null);
 
-  
   useAutoKeyboardAvoidance({
     containerSelector: '.modal-container',
     inputSelector: 'input, textarea, select',
   });
 
-  
-  
-  
-  
   const generateOrderIdPreview = () => {
     if (editingOrder) return editingOrder.orderId || 'N/A';
     if (!newOrder.date) return 'HB-XXX-XX-XXXXXX';
 
     try {
-      
       let date;
-      if (typeof newOrder.date === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(newOrder.date)) {
-        
+      if (
+        typeof newOrder.date === 'string' &&
+        /^\d{2}\/\d{2}\/\d{4}$/.test(newOrder.date)
+      ) {
         const [day, month, year] = newOrder.date.split('/').map(Number);
         date = new Date(year, month - 1, day);
       } else {
@@ -74,18 +70,14 @@ const OrderModal = ({
 
       const monthAbbr = date.toLocaleString('en-US', { month: 'short' });
       const year = date.getFullYear().toString().slice(-2);
-      const monthNum = String(date.getMonth() + 1).padStart(2, '0'); 
+      const monthNum = String(date.getMonth() + 1).padStart(2, '0');
 
-      
-      
       const currentOrders = orders || [];
       if (currentOrders.length > 0) {
         let maxSequence = 0;
 
-        
         currentOrders.forEach((order) => {
           if (order.orderId) {
-            
             const match = order.orderId.match(/HB-\w+'?\d{2}-\d{2}-(\d+)$/);
             if (match && match[1]) {
               const seq = parseInt(match[1], 10);
@@ -108,7 +100,6 @@ const OrderModal = ({
     }
   };
 
-  
   useEffect(() => {
     if (!show || editingOrder || !newOrder.date || !newOrder.deliveryAddress) {
       setDuplicateWarning(null);
@@ -129,7 +120,8 @@ const OrderModal = ({
           oDate >= startOfDay &&
           oDate <= endOfDay &&
           addr &&
-          addr.toLowerCase().trim() === newOrder.deliveryAddress.toLowerCase().trim()
+          addr.toLowerCase().trim() ===
+            newOrder.deliveryAddress.toLowerCase().trim()
         );
       } catch (e) {
         return false;
@@ -146,7 +138,6 @@ const OrderModal = ({
     }
   }, [show, editingOrder, newOrder.date, newOrder.deliveryAddress, orders]);
 
-  
   useEffect(() => {
     return () => {
       if (addressDebounceTimerRef.current) {
@@ -155,23 +146,17 @@ const OrderModal = ({
     };
   }, []);
 
-  
   useEffect(() => {
     if (!show || editingOrder) {
-      
       setAutoPopulatedAddress(null);
-      
+
       if (addressDebounceTimerRef.current) {
         clearTimeout(addressDebounceTimerRef.current);
       }
       return;
     }
-
-    
-    
   }, [show, editingOrder]);
 
-  
   const validateForm = useCallback(
     (orderToValidate = null) => {
       const errors = {};
@@ -181,20 +166,23 @@ const OrderModal = ({
         errors.date = 'Date is required';
       } else {
         let dateToValidate = order.date;
-        if (typeof order.date === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(order.date)) {
-          
+        if (
+          typeof order.date === 'string' &&
+          /^\d{2}\/\d{2}\/\d{4}$/.test(order.date)
+        ) {
           dateToValidate = parseDateFromInput(order.date);
           if (!dateToValidate) {
-            errors.date = 'Invalid date format. Please use DD/MM/YYYY format (e.g., 01/08/2026)';
+            errors.date =
+              'Invalid date format. Please use DD/MM/YYYY format (e.g., 01/08/2026)';
           }
         }
 
         if (dateToValidate) {
           const date = parseOrderDate(dateToValidate);
           if (!date || isNaN(date.getTime())) {
-            errors.date = 'Invalid date format. Please use DD/MM/YYYY format (e.g., 01/08/2026)';
+            errors.date =
+              'Invalid date format. Please use DD/MM/YYYY format (e.g., 01/08/2026)';
           } else {
-            
             const today = new Date();
             today.setHours(23, 59, 59, 999);
             if (date > today) {
@@ -223,7 +211,10 @@ const OrderModal = ({
       }
 
       const calculatedTotal = (order.quantity || 1) * (order.unitPrice || 0);
-      if (order.totalAmount && Math.abs(order.totalAmount - calculatedTotal) > 0.01) {
+      if (
+        order.totalAmount &&
+        Math.abs(order.totalAmount - calculatedTotal) > 0.01
+      ) {
         errors.totalAmount = 'Total amount mismatch';
       }
 
@@ -238,9 +229,13 @@ const OrderModal = ({
         errors.status = 'Status must be either Paid or Unpaid';
       }
 
-      
-      const normalizedPaymentMode = order.paymentMode ? String(order.paymentMode).trim() : '';
-      if (normalizedPaymentMode && !['None', 'Cash', 'Online'].includes(normalizedPaymentMode)) {
+      const normalizedPaymentMode = order.paymentMode
+        ? String(order.paymentMode).trim()
+        : '';
+      if (
+        normalizedPaymentMode &&
+        !['None', 'Cash', 'Online'].includes(normalizedPaymentMode)
+      ) {
         errors.paymentMode = 'Payment mode must be None, Cash, or Online';
       }
 
@@ -250,7 +245,6 @@ const OrderModal = ({
     [editingOrder, newOrder]
   );
 
-  
   useEffect(() => {
     if (!show) {
       setFormErrors({});
@@ -263,7 +257,6 @@ const OrderModal = ({
       return;
     }
 
-    
     const timer = setTimeout(() => {
       const errors = {};
       const orderToValidate = order;
@@ -273,7 +266,10 @@ const OrderModal = ({
       }
 
       if (touchedFields.deliveryAddress) {
-        if (!orderToValidate.deliveryAddress || orderToValidate.deliveryAddress.trim().length < 3) {
+        if (
+          !orderToValidate.deliveryAddress ||
+          orderToValidate.deliveryAddress.trim().length < 3
+        ) {
           errors.deliveryAddress = 'Address must be at least 3 characters';
         } else if (!/^[A-Z0-9\-/\s]+$/i.test(orderToValidate.deliveryAddress)) {
           errors.deliveryAddress = 'Invalid address format';
@@ -332,11 +328,15 @@ const OrderModal = ({
     newOrder?.status,
   ]);
 
-  
   useEffect(() => {
     if (show && !editingOrder) {
       setHasUnsavedChanges(
-        !!(newOrder.date || newOrder.deliveryAddress || newOrder.quantity || newOrder.unitPrice)
+        !!(
+          newOrder.date ||
+          newOrder.deliveryAddress ||
+          newOrder.quantity ||
+          newOrder.unitPrice
+        )
       );
     }
   }, [show, editingOrder, newOrder]);
@@ -361,7 +361,11 @@ const OrderModal = ({
           },
         });
       } else {
-        if (window.confirm('You have unsaved changes. Are you sure you want to close?')) {
+        if (
+          window.confirm(
+            'You have unsaved changes. Are you sure you want to close?'
+          )
+        ) {
           setHasUnsavedChanges(false);
           setFormErrors({});
           setTouchedFields({});
@@ -382,24 +386,26 @@ const OrderModal = ({
   };
 
   const handleSave = async () => {
-    
     if (isSaving) {
       return;
     }
 
-    
-    
-    
     const orderToValidate = editingOrder || newOrder;
-    
-    
-    const normalizedOrder = editingOrder ? { ...editingOrder } : { ...newOrder };
-    
-    
-    if (normalizedOrder.quantity === null || normalizedOrder.quantity === undefined) {
+
+    const normalizedOrder = editingOrder
+      ? { ...editingOrder }
+      : { ...newOrder };
+
+    if (
+      normalizedOrder.quantity === null ||
+      normalizedOrder.quantity === undefined
+    ) {
       normalizedOrder.quantity = 1;
     }
-    if (normalizedOrder.unitPrice === null || normalizedOrder.unitPrice === undefined) {
+    if (
+      normalizedOrder.unitPrice === null ||
+      normalizedOrder.unitPrice === undefined
+    ) {
       normalizedOrder.unitPrice = 0;
     }
     if (!normalizedOrder.mode) {
@@ -411,42 +417,60 @@ const OrderModal = ({
     if (normalizedOrder.date === null || normalizedOrder.date === undefined) {
       normalizedOrder.date = '';
     }
-    if (normalizedOrder.deliveryAddress === null || normalizedOrder.deliveryAddress === undefined) {
+    if (
+      normalizedOrder.deliveryAddress === null ||
+      normalizedOrder.deliveryAddress === undefined
+    ) {
       normalizedOrder.deliveryAddress = '';
     }
-    if (normalizedOrder.paymentMode === null || normalizedOrder.paymentMode === undefined) {
+    if (
+      normalizedOrder.paymentMode === null ||
+      normalizedOrder.paymentMode === undefined
+    ) {
       normalizedOrder.paymentMode = '';
     }
-    if (normalizedOrder.orderId === null || normalizedOrder.orderId === undefined) {
+    if (
+      normalizedOrder.orderId === null ||
+      normalizedOrder.orderId === undefined
+    ) {
       normalizedOrder.orderId = '';
     }
 
-    
     if (normalizedOrder.status) {
       normalizedOrder.status = String(normalizedOrder.status).trim();
-      
-      if (normalizedOrder.status === 'Paid' || normalizedOrder.status.toLowerCase() === 'paid') {
+
+      if (
+        normalizedOrder.status === 'Paid' ||
+        normalizedOrder.status.toLowerCase() === 'paid'
+      ) {
         normalizedOrder.paymentStatus = 'Paid';
       } else if (
         normalizedOrder.status === 'Unpaid' ||
         normalizedOrder.status.toLowerCase() === 'unpaid'
       ) {
-        normalizedOrder.paymentStatus = 'Pending'; 
+        normalizedOrder.paymentStatus = 'Pending';
       } else {
-        normalizedOrder.paymentStatus = normalizedOrder.paymentStatus || 'Pending';
+        normalizedOrder.paymentStatus =
+          normalizedOrder.paymentStatus || 'Pending';
       }
     }
 
-    
-    if (normalizedOrder.paymentMode !== undefined && normalizedOrder.paymentMode !== null) {
-      if (normalizedOrder.paymentMode === '' || normalizedOrder.paymentMode === 'None') {
-        normalizedOrder.paymentMode = ''; 
+    if (
+      normalizedOrder.paymentMode !== undefined &&
+      normalizedOrder.paymentMode !== null
+    ) {
+      if (
+        normalizedOrder.paymentMode === '' ||
+        normalizedOrder.paymentMode === 'None'
+      ) {
+        normalizedOrder.paymentMode = '';
       } else {
-        normalizedOrder.paymentMode = String(normalizedOrder.paymentMode).trim();
+        normalizedOrder.paymentMode = String(
+          normalizedOrder.paymentMode
+        ).trim();
       }
     }
 
-    
     let finalDate = normalizedOrder.date;
     if (
       normalizedOrder.date &&
@@ -458,33 +482,31 @@ const OrderModal = ({
         finalDate = backendDate;
         normalizedOrder.date = backendDate;
       }
-    } else if (normalizedOrder.date && typeof normalizedOrder.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(normalizedOrder.date)) {
+    } else if (
+      normalizedOrder.date &&
+      typeof normalizedOrder.date === 'string' &&
+      /^\d{4}-\d{2}-\d{2}$/.test(normalizedOrder.date)
+    ) {
       finalDate = normalizedOrder.date;
     }
-    
+
     normalizedOrder.date = finalDate;
 
-    
-    
     if (!editingOrder) {
-      
       const currentOrders = orders || [];
       let generatedId = generateOrderIdPreview();
 
       if (generatedId && generatedId !== 'HB-XXX-XX-XXXXXX') {
-        
         let idExists = currentOrders.some((o) => o.orderId === generatedId);
 
-        
         if (idExists) {
           const match = generatedId.match(/^(HB-\w+'?\d{2}-\d{2}-)(\d+)$/);
           if (match) {
             const prefix = match[1];
             let currentSeq = parseInt(match[2], 10);
             let attempts = 0;
-            const maxAttempts = 1000; 
+            const maxAttempts = 1000;
 
-            
             while (idExists && attempts < maxAttempts) {
               currentSeq++;
               generatedId = `${prefix}${String(currentSeq).padStart(6, '0')}`;
@@ -493,16 +515,19 @@ const OrderModal = ({
             }
 
             if (attempts >= maxAttempts) {
-              throw new Error('Unable to generate unique order ID. Please try again.');
+              throw new Error(
+                'Unable to generate unique order ID. Please try again.'
+              );
             }
           }
         }
 
-        
         normalizedOrder.orderId = generatedId;
         onNewOrderChange('orderId', generatedId);
       } else {
-        throw new Error('Unable to generate order ID. Please check the date field.');
+        throw new Error(
+          'Unable to generate order ID. Please check the date field.'
+        );
       }
     }
 
@@ -516,7 +541,6 @@ const OrderModal = ({
       paymentMode: true,
     });
 
-    
     if (!validateForm(normalizedOrder)) {
       return;
     }
@@ -556,13 +580,9 @@ const OrderModal = ({
     setSaveSuccess(false);
 
     try {
-      
       if (editingOrder) {
         const cleanOrderData = {};
 
-        
-        
-        
         const allowedFields = {
           orderId: normalizedOrder.orderId,
           date: normalizedOrder.date,
@@ -578,12 +598,9 @@ const OrderModal = ({
           addressId: normalizedOrder.addressId,
         };
 
-        
         Object.keys(allowedFields).forEach((key) => {
           const value = allowedFields[key];
-          
-          
-          
+
           if (value !== undefined) {
             if (
               key === 'paymentMode' ||
@@ -591,22 +608,22 @@ const OrderModal = ({
               key === 'customerName' ||
               key === 'addressId'
             ) {
-              
               cleanOrderData[key] = value === null ? '' : String(value);
             } else if (key === 'orderId') {
-              
               cleanOrderData[key] = value || '';
             } else {
-              
               cleanOrderData[key] = value;
             }
-          } else if (key === 'paymentMode' || key === 'notes' || key === 'customerName' || key === 'addressId') {
-            
+          } else if (
+            key === 'paymentMode' ||
+            key === 'notes' ||
+            key === 'customerName' ||
+            key === 'addressId'
+          ) {
             cleanOrderData[key] = '';
           }
         });
 
-        
         const editOrderDate = parseOrderDate(normalizedOrder.date);
         if (editOrderDate) {
           cleanOrderData.billingMonth = extractBillingMonth(editOrderDate);
@@ -625,32 +642,28 @@ const OrderModal = ({
         cleanOrderData.totalAmount = calculatedTotal;
 
         await onSave(editingOrder.orderId || editingOrder._id, cleanOrderData);
-        
+
         setSaveSuccess(true);
         setIsSaving(false);
-        
-        
+
         onClose();
       } else {
-        
         if (!normalizedOrder.orderId) {
           throw new Error('Order ID is required. Please try again.');
         }
 
-        
         const currentOrders = orders || [];
-        const finalIdCheck = currentOrders.some((o) => o.orderId === normalizedOrder.orderId);
+        const finalIdCheck = currentOrders.some(
+          (o) => o.orderId === normalizedOrder.orderId
+        );
         if (finalIdCheck) {
           throw new Error('Order ID already exists. Please try again.');
         }
 
         await onSave(normalizedOrder);
 
-        
         setSaveSuccess(true);
 
-        
-        
         setTimeout(() => {
           setSaveSuccess(false);
           setIsSaving(false);
@@ -665,19 +678,14 @@ const OrderModal = ({
       setIsSaving(false);
       setSaveSuccess(false);
 
-      
       if (error.message) {
         alert(error.message);
       }
 
-      
-      setTimeout(() => {
-        
-      }, 2000);
+      setTimeout(() => {}, 2000);
     }
   };
 
-  
   useEffect(() => {
     if (!show) return;
 
@@ -699,21 +707,18 @@ const OrderModal = ({
 
   if (!show) return null;
 
-  
-  
   const getAddressSuggestions = (query) => {
     const queryLower = (query || '').trim().toLowerCase();
 
-    
     const addressFrequency = {};
     orders.forEach((order) => {
-      const addr = order.deliveryAddress || order.customerAddress || order.address;
+      const addr =
+        order.deliveryAddress || order.customerAddress || order.address;
       if (addr && addr.trim()) {
         addressFrequency[addr] = (addressFrequency[addr] || 0) + 1;
       }
     });
 
-    
     if (!queryLower) {
       return Object.entries(addressFrequency)
         .sort((a, b) => b[1] - a[1])
@@ -721,7 +726,6 @@ const OrderModal = ({
         .map(([addr]) => addr);
     }
 
-    
     const allAddresses = Object.keys(addressFrequency);
     const filtered = allAddresses
       .filter((addr) => {
@@ -730,11 +734,11 @@ const OrderModal = ({
       })
       .map((addr) => {
         const addrLower = addr.toLowerCase().trim();
-        
+
         const exactMatch = addrLower === queryLower ? 1000 : 0;
         const startsWith = addrLower.startsWith(queryLower) ? 500 : 0;
         const frequency = addressFrequency[addr] || 0;
-        
+
         const lengthBonus = Math.max(0, 100 - addr.length);
 
         return {
@@ -745,14 +749,10 @@ const OrderModal = ({
       .sort((a, b) => b.score - a.score)
       .map((item) => item.address);
 
-    
-    
     return filtered;
   };
 
   const handleAddressChange = (value) => {
-    
-    
     if (isClickingSuggestion && value.trim().length > 0) {
       return;
     }
@@ -763,25 +763,20 @@ const OrderModal = ({
       onEditingOrderChange('deliveryAddress', value);
     } else {
       onNewOrderChange('deliveryAddress', value);
-      
-      
+
       const suggestions = getAddressSuggestions(value);
       setAddressSuggestions(suggestions);
-      
+
       setShowAddressSuggestions(suggestions.length > 0);
       setHighlightedIndex(-1);
 
-      
-      
       if (addressDebounceTimerRef.current) {
         clearTimeout(addressDebounceTimerRef.current);
       }
 
-      
       addressDebounceTimerRef.current = setTimeout(() => {
         const normalizedValue = value.trim().toLowerCase();
 
-        
         if (normalizedValue.length < 3) {
           if (autoPopulatedAddress) {
             setAutoPopulatedAddress(null);
@@ -790,35 +785,32 @@ const OrderModal = ({
         }
 
         if (normalizedValue !== autoPopulatedAddress) {
-          
           const lastOrder = getLastOrderForAddress(orders, normalizedValue);
           if (lastOrder) {
-            
             const lastOrderAddress = String(
-              lastOrder.deliveryAddress || lastOrder.customerAddress || lastOrder.address || ''
+              lastOrder.deliveryAddress ||
+                lastOrder.customerAddress ||
+                lastOrder.address ||
+                ''
             )
               .trim()
               .toLowerCase();
 
             if (lastOrderAddress === normalizedValue) {
-              
               setAutoPopulatedAddress(normalizedValue);
-              
             }
           } else {
-            
             if (autoPopulatedAddress) {
               setAutoPopulatedAddress(null);
             }
           }
         }
-      }, 800); 
+      }, 800);
     }
   };
 
   const handleAddressFocus = () => {
     if (!editingOrder) {
-      
       const query = String(newOrder.deliveryAddress || '').trim();
       const suggestions = getAddressSuggestions(query);
       setAddressSuggestions(suggestions);
@@ -830,30 +822,31 @@ const OrderModal = ({
   const handleAddressBlur = () => {
     setTouchedFields((prev) => ({ ...prev, deliveryAddress: true }));
 
-    
-    
     setTimeout(() => {
       if (!isClickingSuggestion) {
         setShowAddressSuggestions(false);
         setHighlightedIndex(-1);
 
-        
         if (!editingOrder && newOrder.deliveryAddress) {
           const normalizedValue = newOrder.deliveryAddress.trim().toLowerCase();
 
-          if (normalizedValue.length >= 3 && normalizedValue !== autoPopulatedAddress) {
+          if (
+            normalizedValue.length >= 3 &&
+            normalizedValue !== autoPopulatedAddress
+          ) {
             const lastOrder = getLastOrderForAddress(orders, normalizedValue);
             if (lastOrder) {
-              
               const lastOrderAddress = String(
-                lastOrder.deliveryAddress || lastOrder.customerAddress || lastOrder.address || ''
+                lastOrder.deliveryAddress ||
+                  lastOrder.customerAddress ||
+                  lastOrder.address ||
+                  ''
               )
                 .trim()
                 .toLowerCase();
 
               if (lastOrderAddress === normalizedValue) {
                 setAutoPopulatedAddress(normalizedValue);
-                
               }
             }
           }
@@ -866,38 +859,30 @@ const OrderModal = ({
     const normalizedAddr = addr.trim().toLowerCase();
     const trimmedAddr = addr.trim();
 
-    
     selectedAddressRef.current = trimmedAddr;
 
-    
     setIsClickingSuggestion(true);
     onNewOrderChange('deliveryAddress', trimmedAddr);
 
     setAutoPopulatedAddress(normalizedAddr);
     setHighlightedIndex(-1);
 
-    
     const input = document.getElementById('delivery-address-input');
     if (input) {
-      
       input.focus();
     }
 
-    
-    
     setTimeout(() => {
       setShowAddressSuggestions(false);
 
-      
       if (input && selectedAddressRef.current) {
         const currentValue = editingOrder
           ? editingOrder.deliveryAddress || ''
           : newOrder.deliveryAddress || '';
 
-        
         if (!currentValue || currentValue !== selectedAddressRef.current) {
           onNewOrderChange('deliveryAddress', selectedAddressRef.current);
-          
+
           if (input) {
             input.value = selectedAddressRef.current;
           }
@@ -905,7 +890,6 @@ const OrderModal = ({
       }
     }, 150);
 
-    
     setTimeout(() => {
       setIsClickingSuggestion(false);
     }, 500);
@@ -915,7 +899,6 @@ const OrderModal = ({
     selectSuggestion(addr);
   };
 
-  
   const getAddressOrderInfo = (addr) => {
     const addressOrders = orders.filter(
       (o) => (o.deliveryAddress || o.customerAddress || o.address) === addr
@@ -924,10 +907,13 @@ const OrderModal = ({
     return {
       count: addressOrders.length,
       lastPrice: lastOrder
-        ? lastOrder.unitPrice || lastOrder.totalAmount / (lastOrder.quantity || 1)
+        ? lastOrder.unitPrice ||
+          lastOrder.totalAmount / (lastOrder.quantity || 1)
         : null,
-      
-      lastDate: lastOrder ? lastOrder.date || lastOrder.order_date || null : null,
+
+      lastDate: lastOrder
+        ? lastOrder.date || lastOrder.order_date || null
+        : null,
     };
   };
 
@@ -948,14 +934,15 @@ const OrderModal = ({
     }
   };
 
-  
   const formatDateForInput = (dateValue) => {
     if (!dateValue) return '';
     try {
       const date = parseOrderDate(dateValue);
       if (!date) {
-        
-        if (typeof dateValue === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(dateValue)) {
+        if (
+          typeof dateValue === 'string' &&
+          /^\d{2}\/\d{2}\/\d{4}$/.test(dateValue)
+        ) {
           return dateValue;
         }
         return '';
@@ -969,58 +956,69 @@ const OrderModal = ({
     }
   };
 
-  
   const parseDateFromInput = (dateStr) => {
     if (!dateStr) return '';
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
       const [day, month, year] = dateStr.split('/').map(Number);
-      if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 2000 && year <= 2100) {
+      if (
+        day >= 1 &&
+        day <= 31 &&
+        month >= 1 &&
+        month <= 12 &&
+        year >= 2000 &&
+        year <= 2100
+      ) {
         return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       }
     }
-    
+
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
       return dateStr;
     }
     return '';
   };
 
-  
-  
   useEffect(() => {
     if (show) {
-      const currentOrderId = editingOrder ? (editingOrder._id || editingOrder.orderId) : null;
-      
-      
+      const currentOrderId = editingOrder
+        ? editingOrder._id || editingOrder.orderId
+        : null;
+
       if (currentOrderId && lastOrderIdRef.current !== currentOrderId) {
         lastOrderIdRef.current = currentOrderId;
-        persistedDateRef.current = null; 
+        persistedDateRef.current = null;
       }
-      
-      
-      
-      if (persistedDateRef.current === null || persistedDateRef.current === undefined || persistedDateRef.current === '') {
+
+      if (
+        persistedDateRef.current === null ||
+        persistedDateRef.current === undefined ||
+        persistedDateRef.current === ''
+      ) {
         if (editingOrder) {
           if (editingOrder.date) {
-            
-            if (typeof editingOrder.date === 'string' && editingOrder.date.includes('/')) {
+            if (
+              typeof editingOrder.date === 'string' &&
+              editingOrder.date.includes('/')
+            ) {
               persistedDateRef.current = editingOrder.date;
             } else {
-              
               persistedDateRef.current = formatDateForInput(editingOrder.date);
             }
           } else if (editingOrder.order_date) {
-            persistedDateRef.current = formatDateForInput(editingOrder.order_date);
+            persistedDateRef.current = formatDateForInput(
+              editingOrder.order_date
+            );
           } else {
             persistedDateRef.current = formatDateForInput(new Date());
           }
         } else {
           if (newOrder.date) {
-            
-            if (typeof newOrder.date === 'string' && newOrder.date.includes('/')) {
+            if (
+              typeof newOrder.date === 'string' &&
+              newOrder.date.includes('/')
+            ) {
               persistedDateRef.current = newOrder.date;
             } else {
-              
               persistedDateRef.current = formatDateForInput(newOrder.date);
             }
           } else {
@@ -1029,28 +1027,25 @@ const OrderModal = ({
         }
       }
     } else {
-      
       persistedDateRef.current = null;
       lastOrderIdRef.current = null;
     }
-  }, [show, editingOrder?._id, editingOrder?.orderId]); 
+  }, [show, editingOrder?._id, editingOrder?.orderId]);
 
-  
-  
   const getCurrentDateValue = () => {
-    
     if (persistedDateRef.current) {
       return persistedDateRef.current;
     }
 
-    
     if (editingOrder) {
       if (editingOrder.date) {
-        
-        if (typeof editingOrder.date === 'string' && editingOrder.date.includes('/')) {
+        if (
+          typeof editingOrder.date === 'string' &&
+          editingOrder.date.includes('/')
+        ) {
           return editingOrder.date;
         }
-        
+
         return formatDateForInput(editingOrder.date);
       }
       if (editingOrder.order_date) {
@@ -1059,23 +1054,20 @@ const OrderModal = ({
       return formatDateForInput(new Date());
     } else {
       if (newOrder.date) {
-        
         if (typeof newOrder.date === 'string' && newOrder.date.includes('/')) {
           return newOrder.date;
         }
-        
+
         return formatDateForInput(newOrder.date);
       }
       return formatDateForInput(new Date());
     }
   };
 
-  
   const getOrderDateForCalculation = () => {
     if (editingOrder) {
       return parseOrderDate(editingOrder.date || editingOrder.order_date);
     } else {
-      
       const dateStr = newOrder.date;
       if (dateStr && /^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
         const backendDate = parseDateFromInput(dateStr);
@@ -1089,27 +1081,32 @@ const OrderModal = ({
   const billingMonth = orderDate ? extractBillingMonth(orderDate) : null;
   const billingYear = orderDate ? extractBillingYear(orderDate) : null;
   const billingMonthFormatted =
-    billingMonth && billingYear ? formatBillingMonth(billingMonth, billingYear) : '';
+    billingMonth && billingYear
+      ? formatBillingMonth(billingMonth, billingYear)
+      : '';
 
   return (
-    <div className='modal-overlay' onClick={onClose}>
-      <div className='modal-container' onClick={(e) => e.stopPropagation()}>
-        <div className='modal-header'>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
           <h2>{editingOrder ? 'Edit Order' : 'Add New Order'}</h2>
-          <button className='btn btn-ghost btn-icon modal-close' onClick={onClose}>
-            <i className='fa-solid fa-times'></i>
+          <button
+            className="btn btn-ghost btn-icon modal-close"
+            onClick={onClose}
+          >
+            <i className="fa-solid fa-times"></i>
           </button>
         </div>
-        <div className='modal-body'>
-          <div className='form-row'>
-            <div className='form-group'>
+        <div className="modal-body">
+          <div className="form-row">
+            <div className="form-group">
               <label>
-                <i className='fa-solid fa-hashtag mr-2'></i>
+                <i className="fa-solid fa-hashtag mr-2"></i>
                 Order ID
               </label>
               {editingOrder ? (
                 <input
-                  type='text'
+                  type="text"
                   className={`input-field ${formErrors.orderId ? 'error' : ''}`}
                   value={editingOrder.orderId || ''}
                   onChange={(e) =>
@@ -1119,49 +1116,58 @@ const OrderModal = ({
                 />
               ) : (
                 <input
-                  type='text'
-                  className='input-field order-id-preview'
+                  type="text"
+                  className="input-field order-id-preview"
                   value={generateOrderIdPreview()}
                   readOnly
-                  title='Auto-generated on save'
+                  title="Auto-generated on save"
                 />
               )}
-              <span className='helper-text'>
+              <span className="helper-text">
                 {editingOrder ? '(Editable)' : '(Auto-generated)'}
               </span>
-              {formErrors.orderId && <span className='error-text'>{formErrors.orderId}</span>}
+              {formErrors.orderId && (
+                <span className="error-text">{formErrors.orderId}</span>
+              )}
             </div>
-            <div className='form-group'>
-              <label className={editingOrder?.dateNeedsReview ? 'required error' : 'required'}>
-                <i className='fa-solid fa-calendar mr-2'></i>
+            <div className="form-group">
+              <label
+                className={
+                  editingOrder?.dateNeedsReview ? 'required error' : 'required'
+                }
+              >
+                <i className="fa-solid fa-calendar mr-2"></i>
                 Date
                 {editingOrder?.dateNeedsReview && (
-                  <span className='error-text ml-2'>⚠️ Invalid Date Format - Please Correct</span>
+                  <span className="error-text ml-2">
+                    ⚠️ Invalid Date Format - Please Correct
+                  </span>
                 )}
               </label>
-              {editingOrder?.dateNeedsReview && editingOrder?.originalDateString && (
-                <div className='badge badge-warning mb-2 p-3'>
-                  <strong>Original Invalid Date:</strong> {editingOrder.originalDateString}
-                  <br />
-                  <span className='helper-text mt-1 block'>
-                    Please select the correct date below. This will clear the error flag.
-                  </span>
-                </div>
-              )}
-              <div className='date-input-wrapper'>
+              {editingOrder?.dateNeedsReview &&
+                editingOrder?.originalDateString && (
+                  <div className="badge badge-warning mb-2 p-3">
+                    <strong>Original Invalid Date:</strong>{' '}
+                    {editingOrder.originalDateString}
+                    <br />
+                    <span className="helper-text mt-1 block">
+                      Please select the correct date below. This will clear the
+                      error flag.
+                    </span>
+                  </div>
+                )}
+              <div className="date-input-wrapper">
                 <input
                   ref={dateInputRef}
-                  type='text'
+                  type="text"
                   className={`input-field ${editingOrder?.dateNeedsReview ? 'error' : ''}`}
                   value={getCurrentDateValue()}
                   onChange={(e) => {
                     const inputValue = e.target.value;
-                    
-                    
+
                     if (inputValue === '') {
-                      
                       persistedDateRef.current = '';
-                      
+
                       if (editingOrder) {
                         onEditingOrderChange('date', '');
                         onEditingOrderChange('dateNeedsReview', false);
@@ -1172,50 +1178,43 @@ const OrderModal = ({
                       return;
                     }
 
-                    
-                    
                     const cleaned = inputValue.replace(/[^\d/]/g, '');
 
-                    
                     let formatted = cleaned;
-                    
-                    
+
                     if (cleaned.length > 2 && !cleaned.includes('/')) {
                       formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2);
                     }
-                    if (formatted.length > 5 && formatted.split('/').length === 2) {
-                      formatted = formatted.slice(0, 5) + '/' + formatted.slice(5, 9);
+                    if (
+                      formatted.length > 5 &&
+                      formatted.split('/').length === 2
+                    ) {
+                      formatted =
+                        formatted.slice(0, 5) + '/' + formatted.slice(5, 9);
                     }
 
-                    
                     if (formatted.length <= 10) {
-                      
                       persistedDateRef.current = formatted;
-                      
+
                       if (editingOrder) {
-                        
-                        
                         const backendDate = parseDateFromInput(formatted);
-                        onEditingOrderChange('date', backendDate || formatted); 
+                        onEditingOrderChange('date', backendDate || formatted);
                         onEditingOrderChange('dateNeedsReview', false);
                         onEditingOrderChange('originalDateString', undefined);
                       } else {
-                        
                         onNewOrderChange('date', formatted);
                       }
                     }
                   }}
                   onBlur={(e) => {
-                    
                     const inputValue = e.target.value.trim();
                     if (inputValue) {
                       const backendDate = parseDateFromInput(inputValue);
                       if (backendDate) {
-                        
                         const formatted = formatDateForInput(backendDate);
-                        
+
                         persistedDateRef.current = formatted;
-                        
+
                         if (editingOrder) {
                           onEditingOrderChange('date', backendDate);
                           onEditingOrderChange('dateNeedsReview', false);
@@ -1223,57 +1222,60 @@ const OrderModal = ({
                           onNewOrderChange('date', formatted);
                         }
                       } else {
-                        
                         persistedDateRef.current = inputValue;
-                        
+
                         if (editingOrder) {
                           onEditingOrderChange('dateNeedsReview', true);
-                          onEditingOrderChange('originalDateString', inputValue);
+                          onEditingOrderChange(
+                            'originalDateString',
+                            inputValue
+                          );
                         }
                       }
                     } else {
-                      
                       persistedDateRef.current = '';
                     }
                   }}
-                  placeholder='DD/MM/YYYY'
+                  placeholder="DD/MM/YYYY"
                   required
                   maxLength={10}
-                  pattern='\\d{2}/\\d{2}/\\d{4}'
+                  pattern="\\d{2}/\\d{2}/\\d{4}"
                 />
                 <input
                   ref={datePickerRef}
-                  type='date'
-                  className='date-picker-input'
+                  type="date"
+                  className="date-picker-input"
                   value={(() => {
                     const currentValue = getCurrentDateValue();
-                    if (currentValue && /^\d{2}\/\d{2}\/\d{4}$/.test(currentValue)) {
+                    if (
+                      currentValue &&
+                      /^\d{2}\/\d{2}\/\d{4}$/.test(currentValue)
+                    ) {
                       const backendDate = parseDateFromInput(currentValue);
                       return backendDate || '';
                     }
                     return '';
                   })()}
                   max={new Date().toISOString().split('T')[0]}
-                onChange={(e) => {
-                  const selectedDate = e.target.value;
-                  if (selectedDate) {
-                    
-                    const formatted = formatDateForInput(selectedDate);
-                    
-                    persistedDateRef.current = formatted;
-                    
-                    if (editingOrder) {
-                      onEditingOrderChange('date', selectedDate);
-                      onEditingOrderChange('dateNeedsReview', false);
-                      onEditingOrderChange('originalDateString', undefined);
-                    } else {
-                      onNewOrderChange('date', formatted);
+                  onChange={(e) => {
+                    const selectedDate = e.target.value;
+                    if (selectedDate) {
+                      const formatted = formatDateForInput(selectedDate);
+
+                      persistedDateRef.current = formatted;
+
+                      if (editingOrder) {
+                        onEditingOrderChange('date', selectedDate);
+                        onEditingOrderChange('dateNeedsReview', false);
+                        onEditingOrderChange('originalDateString', undefined);
+                      } else {
+                        onNewOrderChange('date', formatted);
+                      }
                     }
-                  }
-                }}
+                  }}
                 />
                 <button
-                  type='button'
+                  type="button"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -1291,32 +1293,35 @@ const OrderModal = ({
                     e.stopPropagation();
                   }}
                   className="order-modal-calendar-btn"
-                  title='Choose date from calendar'
+                  title="Choose date from calendar"
                 >
-                  <i className='fa-solid fa-calendar-days'></i>
+                  <i className="fa-solid fa-calendar-days"></i>
                 </button>
               </div>
-              <span className='helper-text'>Format: DD/MM/YYYY</span>
-              {formErrors.date && <span className='error-text'>{formErrors.date}</span>}
+              <span className="helper-text">Format: DD/MM/YYYY</span>
+              {formErrors.date && (
+                <span className="error-text">{formErrors.date}</span>
+              )}
             </div>
           </div>
 
-          <div className='form-row'>
-            <div className='form-group form-group-relative'>
-              <label className='required'>
-                <i className='fa-solid fa-home mr-2'></i>
+          <div className="form-row">
+            <div className="form-group form-group-relative">
+              <label className="required">
+                <i className="fa-solid fa-home mr-2"></i>
                 Delivery Address
               </label>
               <input
-                type='text'
+                type="text"
                 className={`input-field ${formErrors.deliveryAddress ? 'error' : ''}`}
                 value={
                   editingOrder
                     ? editingOrder.deliveryAddress || ''
-                    : newOrder.deliveryAddress || selectedAddressRef.current || ''
+                    : newOrder.deliveryAddress ||
+                      selectedAddressRef.current ||
+                      ''
                 }
                 onChange={(e) => {
-                  
                   if (!isClickingSuggestion) {
                     selectedAddressRef.current = null;
                   }
@@ -1325,7 +1330,11 @@ const OrderModal = ({
                 onFocus={handleAddressFocus}
                 onBlur={handleAddressBlur}
                 onKeyDown={(e) => {
-                  if (!showAddressSuggestions || addressSuggestions.length === 0 || editingOrder) {
+                  if (
+                    !showAddressSuggestions ||
+                    addressSuggestions.length === 0 ||
+                    editingOrder
+                  ) {
                     if (e.key === 'Escape' && showAddressSuggestions) {
                       e.preventDefault();
                       setShowAddressSuggestions(false);
@@ -1339,7 +1348,8 @@ const OrderModal = ({
                       e.preventDefault();
                       e.stopPropagation();
                       setHighlightedIndex((prev) => {
-                        const nextIndex = prev < addressSuggestions.length - 1 ? prev + 1 : 0;
+                        const nextIndex =
+                          prev < addressSuggestions.length - 1 ? prev + 1 : 0;
                         scrollIntoView(nextIndex);
                         return nextIndex;
                       });
@@ -1361,8 +1371,12 @@ const OrderModal = ({
                     case 'Enter':
                       e.preventDefault();
                       e.stopPropagation();
-                      if (highlightedIndex >= 0 && highlightedIndex < addressSuggestions.length) {
-                        const selectedAddr = addressSuggestions[highlightedIndex];
+                      if (
+                        highlightedIndex >= 0 &&
+                        highlightedIndex < addressSuggestions.length
+                      ) {
+                        const selectedAddr =
+                          addressSuggestions[highlightedIndex];
                         if (selectedAddr) {
                           selectSuggestion(selectedAddr);
                         }
@@ -1380,8 +1394,12 @@ const OrderModal = ({
                       setHighlightedIndex(-1);
                       break;
                     case 'Tab':
-                      if (highlightedIndex >= 0 && highlightedIndex < addressSuggestions.length) {
-                        const selectedAddr = addressSuggestions[highlightedIndex];
+                      if (
+                        highlightedIndex >= 0 &&
+                        highlightedIndex < addressSuggestions.length
+                      ) {
+                        const selectedAddr =
+                          addressSuggestions[highlightedIndex];
                         if (selectedAddr) {
                           selectSuggestion(selectedAddr);
                         }
@@ -1391,130 +1409,156 @@ const OrderModal = ({
                       break;
                   }
                 }}
-                placeholder='Start typing address (e.g., A3-1206)'
+                placeholder="Start typing address (e.g., A3-1206)"
                 required
-                autoComplete='off'
-                id='delivery-address-input'
-                aria-autocomplete='list'
+                autoComplete="off"
+                id="delivery-address-input"
+                aria-autocomplete="list"
                 aria-expanded={showAddressSuggestions}
-                aria-controls='address-suggestions-list'
+                aria-controls="address-suggestions-list"
                 aria-activedescendant={
-                  highlightedIndex >= 0 ? `address-suggestion-${highlightedIndex}` : undefined
+                  highlightedIndex >= 0
+                    ? `address-suggestion-${highlightedIndex}`
+                    : undefined
                 }
-                aria-label='Delivery Address'
-                aria-describedby={formErrors.deliveryAddress ? 'delivery-address-error' : undefined}
-                role='combobox'
+                aria-label="Delivery Address"
+                aria-describedby={
+                  formErrors.deliveryAddress
+                    ? 'delivery-address-error'
+                    : undefined
+                }
+                role="combobox"
               />
-              {showAddressSuggestions && addressSuggestions.length > 0 && !editingOrder && (
-                <div
-                  ref={dropdownRef}
-                  id='address-suggestions-list'
-                  className='address-suggestions-dropdown positioned'
-                  role='listbox'
-                  aria-label='Address suggestions'
-                  aria-live='polite'
-                  aria-atomic='false'
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                  }}
-                >
-                  <div className='address-suggestions-header' role='status' aria-live='polite'>
-                    <i className='fa-solid fa-lightbulb mr-2' aria-hidden='true'></i>
-                    <span>
-                      {addressSuggestions.length} suggestion{addressSuggestions.length !== 1 ? 's' : ''}{' '}
-                      found
-                    </span>
-                  </div>
-                  {addressSuggestions.map((addr, idx) => {
-                    const info = getAddressOrderInfo(addr);
-                    const isHighlighted = idx === highlightedIndex;
-                    return (
-                      <button
-                        key={`${addr}-${idx}`}
-                        id={`address-suggestion-${idx}`}
-                        ref={(el) => {
-                          suggestionButtonRefs.current[idx] = el;
-                        }}
-                        type='button'
-                        role='option'
-                        aria-selected={isHighlighted}
-                        aria-label={`${addr}, ${info.count} previous orders, last order ₹${info.lastPrice || 0}`}
-                        tabIndex={-1}
-                        onMouseDown={(e) => {
-                          setIsClickingSuggestion(true);
-                          e.preventDefault();
-                        }}
-                        onMouseEnter={() => {
-                          setHighlightedIndex(idx);
-                        }}
-                        onMouseLeave={() => {
-                          setHighlightedIndex((prev) => (prev === idx ? -1 : prev));
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleSuggestionClick(addr);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
+              {showAddressSuggestions &&
+                addressSuggestions.length > 0 &&
+                !editingOrder && (
+                  <div
+                    ref={dropdownRef}
+                    id="address-suggestions-list"
+                    className="address-suggestions-dropdown positioned"
+                    role="listbox"
+                    aria-label="Address suggestions"
+                    aria-live="polite"
+                    aria-atomic="false"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                    }}
+                  >
+                    <div
+                      className="address-suggestions-header"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <i
+                        className="fa-solid fa-lightbulb mr-2"
+                        aria-hidden="true"
+                      ></i>
+                      <span>
+                        {addressSuggestions.length} suggestion
+                        {addressSuggestions.length !== 1 ? 's' : ''} found
+                      </span>
+                    </div>
+                    {addressSuggestions.map((addr, idx) => {
+                      const info = getAddressOrderInfo(addr);
+                      const isHighlighted = idx === highlightedIndex;
+                      return (
+                        <button
+                          key={`${addr}-${idx}`}
+                          id={`address-suggestion-${idx}`}
+                          ref={(el) => {
+                            suggestionButtonRefs.current[idx] = el;
+                          }}
+                          type="button"
+                          role="option"
+                          aria-selected={isHighlighted}
+                          aria-label={`${addr}, ${info.count} previous orders, last order ₹${info.lastPrice || 0}`}
+                          tabIndex={-1}
+                          onMouseDown={(e) => {
+                            setIsClickingSuggestion(true);
+                            e.preventDefault();
+                          }}
+                          onMouseEnter={() => {
+                            setHighlightedIndex(idx);
+                          }}
+                          onMouseLeave={() => {
+                            setHighlightedIndex((prev) =>
+                              prev === idx ? -1 : prev
+                            );
+                          }}
+                          onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
                             handleSuggestionClick(addr);
-                          }
-                        }}
-                        className={`address-suggestion-item button-style order-modal-address-suggestion ${
-                          isHighlighted ? 'address-suggestion-highlighted' : ''
-                        }`}
-                      >
-                        <div className='address-suggestion-content'>
-                          <i className='fa-solid fa-map-marker-alt address-suggestion-icon'></i>
-                          <div className='address-suggestion-content-wrapper'>
-                            <div className='address-suggestion-title'>
-                              {addr}
-                            </div>
-                            <div className='address-suggestion-info'>
-                              {info.count > 0 && (
-                                <span>
-                                  <i className='fa-solid fa-shopping-cart'></i>
-                                  {info.count} order{info.count !== 1 ? 's' : ''}
-                                </span>
-                              )}
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleSuggestionClick(addr);
+                            }
+                          }}
+                          className={`address-suggestion-item button-style order-modal-address-suggestion ${
+                            isHighlighted
+                              ? 'address-suggestion-highlighted'
+                              : ''
+                          }`}
+                        >
+                          <div className="address-suggestion-content">
+                            <i className="fa-solid fa-map-marker-alt address-suggestion-icon"></i>
+                            <div className="address-suggestion-content-wrapper">
+                              <div className="address-suggestion-title">
+                                {addr}
+                              </div>
+                              <div className="address-suggestion-info">
+                                {info.count > 0 && (
+                                  <span>
+                                    <i className="fa-solid fa-shopping-cart"></i>
+                                    {info.count} order
+                                    {info.count !== 1 ? 's' : ''}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className='address-suggestion-right'>
-                          {info.lastPrice && (
-                            <span className='address-suggestion-last-price'>
-                              Rs Last: ₹{info.lastPrice}
-                            </span>
-                          )}
-                          <i className='fa-solid fa-chevron-right address-suggestion-chevron'></i>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+                          <div className="address-suggestion-right">
+                            {info.lastPrice && (
+                              <span className="address-suggestion-last-price">
+                                Rs Last: ₹{info.lastPrice}
+                              </span>
+                            )}
+                            <i className="fa-solid fa-chevron-right address-suggestion-chevron"></i>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               {touchedFields.deliveryAddress && formErrors.deliveryAddress && (
-                <span className='error-text'>{formErrors.deliveryAddress}</span>
+                <span className="error-text">{formErrors.deliveryAddress}</span>
               )}
               {duplicateWarning && (
-                <div className='badge badge-warning mt-2 p-3'>
-                  <strong>⚠️ Warning:</strong> {duplicateWarning.address} already has an order today (
-                  {duplicateWarning.mode})
+                <div className="badge badge-warning mt-2 p-3">
+                  <strong>⚠️ Warning:</strong> {duplicateWarning.address}{' '}
+                  already has an order today ({duplicateWarning.mode})
                   <br />
-                  <span className='helper-text mt-1 block'>Do you want to add another order?</span>
+                  <span className="helper-text mt-1 block">
+                    Do you want to add another order?
+                  </span>
                 </div>
               )}
             </div>
-            <div className='form-group'>
-              <label className='required'>
-                <i className='fa-solid fa-utensils mr-2'></i>
+            <div className="form-group">
+              <label className="required">
+                <i className="fa-solid fa-utensils mr-2"></i>
                 Mode
               </label>
               <select
                 className={`input-field ${formErrors.mode ? 'error' : ''}`}
-                value={editingOrder ? editingOrder.mode || 'Lunch' : newOrder.mode || 'Lunch'}
+                value={
+                  editingOrder
+                    ? editingOrder.mode || 'Lunch'
+                    : newOrder.mode || 'Lunch'
+                }
                 onChange={(e) =>
                   editingOrder
                     ? onEditingOrderChange('mode', e.target.value)
@@ -1522,42 +1566,53 @@ const OrderModal = ({
                 }
                 required
               >
-                <option value='Lunch'>Lunch</option>
-                <option value='Dinner'>Dinner</option>
-                <option value='Breakfast'>Breakfast</option>
+                <option value="Lunch">Lunch</option>
+                <option value="Dinner">Dinner</option>
+                <option value="Breakfast">Breakfast</option>
               </select>
-              {formErrors.mode && <span className='error-text'>{formErrors.mode}</span>}
+              {formErrors.mode && (
+                <span className="error-text">{formErrors.mode}</span>
+              )}
             </div>
           </div>
 
-          <div className='form-row'>
-            <div className='form-group'>
-              <label className='required'>
-                <i className='fa-solid fa-hashtag mr-2'></i>
+          <div className="form-row">
+            <div className="form-group">
+              <label className="required">
+                <i className="fa-solid fa-hashtag mr-2"></i>
                 Quantity
               </label>
               <input
-                type='number'
+                type="number"
                 className={`input-field ${formErrors.quantity ? 'error' : ''}`}
                 value={editingOrder ? editingOrder.quantity : newOrder.quantity}
                 onChange={(e) =>
                   editingOrder
-                    ? onEditingOrderChange('quantity', parseInt(e.target.value) || 1)
+                    ? onEditingOrderChange(
+                        'quantity',
+                        parseInt(e.target.value) || 1
+                      )
                     : onNewOrderChange('quantity', e.target.value)
                 }
-                min='1'
-                max='50'
+                min="1"
+                max="50"
               />
-              {formErrors.quantity && <span className='error-text'>{formErrors.quantity}</span>}
+              {formErrors.quantity && (
+                <span className="error-text">{formErrors.quantity}</span>
+              )}
             </div>
-            <div className='form-group'>
-              <label className='required'>
-                <i className='fa-solid fa-check-circle mr-2'></i>
+            <div className="form-group">
+              <label className="required">
+                <i className="fa-solid fa-check-circle mr-2"></i>
                 Status
               </label>
               <select
                 className={`input-field ${formErrors.status ? 'error' : ''}`}
-                value={editingOrder ? editingOrder.status || 'Unpaid' : newOrder.status || 'Unpaid'}
+                value={
+                  editingOrder
+                    ? editingOrder.status || 'Unpaid'
+                    : newOrder.status || 'Unpaid'
+                }
                 onChange={(e) =>
                   editingOrder
                     ? onEditingOrderChange('status', e.target.value)
@@ -1565,95 +1620,114 @@ const OrderModal = ({
                 }
                 required
               >
-                <option value=''>Select Status</option>
-                <option value='Unpaid'>Unpaid</option>
-                <option value='Paid'>Paid</option>
+                <option value="">Select Status</option>
+                <option value="Unpaid">Unpaid</option>
+                <option value="Paid">Paid</option>
               </select>
-              {formErrors.status && <span className='error-text'>{formErrors.status}</span>}
+              {formErrors.status && (
+                <span className="error-text">{formErrors.status}</span>
+              )}
             </div>
           </div>
 
-          <div className='form-row'>
-            <div className='form-group'>
-              <label className='required'>
-                <i className='fa-solid fa-rupee-sign mr-2'></i>
+          <div className="form-row">
+            <div className="form-group">
+              <label className="required">
+                <i className="fa-solid fa-rupee-sign mr-2"></i>
                 Unit Price (₹)
               </label>
               <input
-                type='number'
+                type="number"
                 className={`input-field ${formErrors.unitPrice ? 'error' : ''}`}
-                value={editingOrder ? editingOrder.unitPrice : newOrder.unitPrice}
+                value={
+                  editingOrder ? editingOrder.unitPrice : newOrder.unitPrice
+                }
                 onChange={(e) =>
                   editingOrder
-                    ? onEditingOrderChange('unitPrice', parseFloat(e.target.value) || 0)
+                    ? onEditingOrderChange(
+                        'unitPrice',
+                        parseFloat(e.target.value) || 0
+                      )
                     : onNewOrderChange('unitPrice', e.target.value)
                 }
-                min='10'
-                max='1000'
-                step='0.01'
+                min="10"
+                max="1000"
+                step="0.01"
               />
-              {formErrors.unitPrice && <span className='error-text'>{formErrors.unitPrice}</span>}
+              {formErrors.unitPrice && (
+                <span className="error-text">{formErrors.unitPrice}</span>
+              )}
             </div>
-            <div className='form-group'>
+            <div className="form-group">
               <label>
-                <i className='fa-solid fa-credit-card mr-2'></i>
+                <i className="fa-solid fa-credit-card mr-2"></i>
                 Payment Mode
               </label>
               <select
                 className={`input-field ${formErrors.paymentMode ? 'error' : ''}`}
-                value={editingOrder ? editingOrder.paymentMode || '' : newOrder.paymentMode || ''}
+                value={
+                  editingOrder
+                    ? editingOrder.paymentMode || ''
+                    : newOrder.paymentMode || ''
+                }
                 onChange={(e) =>
                   editingOrder
                     ? onEditingOrderChange('paymentMode', e.target.value)
                     : onNewOrderChange('paymentMode', e.target.value)
                 }
               >
-                <option value=''>-- Select Payment Mode --</option>
-                <option value='None'>None</option>
-                <option value='Cash'>Cash</option>
-                <option value='Online'>Online</option>
+                <option value="">-- Select Payment Mode --</option>
+                <option value="None">None</option>
+                <option value="Cash">Cash</option>
+                <option value="Online">Online</option>
               </select>
               {formErrors.paymentMode && (
-                <span className='error-text'>{formErrors.paymentMode}</span>
+                <span className="error-text">{formErrors.paymentMode}</span>
               )}
             </div>
           </div>
         </div>
-        <div className='order-form-total'>
-          <span className='order-form-total-label'>
-            Total Amount
-          </span>
-          <span className='order-form-total-value'>
+        <div className="order-form-total">
+          <span className="order-form-total-label">Total Amount</span>
+          <span className="order-form-total-value">
             ₹
             {formatCurrency(
               calculateTotalAmount(
-                editingOrder ? editingOrder.quantity || 1 : newOrder.quantity || 1,
-                editingOrder ? editingOrder.unitPrice || 0 : newOrder.unitPrice || 0
+                editingOrder
+                  ? editingOrder.quantity || 1
+                  : newOrder.quantity || 1,
+                editingOrder
+                  ? editingOrder.unitPrice || 0
+                  : newOrder.unitPrice || 0
               )
             )}
           </span>
         </div>
-        <div className='modal-footer'>
+        <div className="modal-footer">
           <button
-            className='btn btn-primary'
+            className="btn btn-primary"
             onClick={handleSave}
-            disabled={Object.keys(formErrors).length > 0 || isSaving || saveSuccess}
+            disabled={
+              Object.keys(formErrors).length > 0 || isSaving || saveSuccess
+            }
           >
             {isSaving ? (
               <>
-                <i className='fa-solid fa-spinner fa-spin'></i> Saving...
+                <i className="fa-solid fa-spinner fa-spin"></i> Saving...
               </>
             ) : saveSuccess ? (
               <>
-                <i className='fa-solid fa-check'></i> Order {editingOrder ? 'Updated' : 'Added'}!
+                <i className="fa-solid fa-check"></i> Order{' '}
+                {editingOrder ? 'Updated' : 'Added'}!
               </>
             ) : (
               <>
-                <i className='fa-solid fa-save'></i> {editingOrder ? 'Update Order' : 'Save Order'}
+                <i className="fa-solid fa-save"></i>{' '}
+                {editingOrder ? 'Update Order' : 'Save Order'}
               </>
             )}
           </button>
-          <button className='btn btn-ghost' onClick={handleClose}>
+          <button className="btn btn-ghost" onClick={handleClose}>
             Cancel
           </button>
         </div>

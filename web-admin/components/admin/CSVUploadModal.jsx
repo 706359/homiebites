@@ -39,10 +39,15 @@ const CSVUploadModal = ({
 
     if (
       !validTypes.includes(selectedFile.type) &&
-      !validExtensions.some((ext) => selectedFile.name.toLowerCase().endsWith(ext))
+      !validExtensions.some((ext) =>
+        selectedFile.name.toLowerCase().endsWith(ext)
+      )
     ) {
       if (showNotification) {
-        showNotification('Invalid file type. Please upload CSV or Excel file.', 'error');
+        showNotification(
+          'Invalid file type. Please upload CSV or Excel file.',
+          'error'
+        );
       }
       return;
     }
@@ -59,7 +64,10 @@ const CSVUploadModal = ({
     setValidationErrors([]);
     setPreviewData(null);
 
-    if (selectedFile.type === 'text/csv' || selectedFile.name.toLowerCase().endsWith('.csv')) {
+    if (
+      selectedFile.type === 'text/csv' ||
+      selectedFile.name.toLowerCase().endsWith('.csv')
+    ) {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
@@ -90,10 +98,14 @@ const CSVUploadModal = ({
               return result;
             };
 
-            const headers = parseCSVLine(lines[0]).map((h) => h.replace(/^"|"$/g, '').trim());
+            const headers = parseCSVLine(lines[0]).map((h) =>
+              h.replace(/^"|"$/g, '').trim()
+            );
 
             const previewRows = lines.slice(1, 2).map((line) => {
-              const values = parseCSVLine(line).map((v) => v.replace(/^"|"$/g, '').trim());
+              const values = parseCSVLine(line).map((v) =>
+                v.replace(/^"|"$/g, '').trim()
+              );
               return headers.reduce((obj, header, idx) => {
                 obj[header] = values[idx] || '';
                 return obj;
@@ -115,7 +127,10 @@ const CSVUploadModal = ({
         } catch (error) {
           console.error('Error parsing CSV:', error);
           if (showNotification) {
-            showNotification('Error parsing CSV file. Please check the file format.', 'error');
+            showNotification(
+              'Error parsing CSV file. Please check the file format.',
+              'error'
+            );
           }
           setPreviewData({ headers: [], rows: [], totalRows: 0 });
         }
@@ -138,7 +153,10 @@ const CSVUploadModal = ({
       });
 
       if (showNotification) {
-        showNotification('Excel file selected. File will be validated during upload.', 'info');
+        showNotification(
+          'Excel file selected. File will be validated during upload.',
+          'info'
+        );
       }
     }
   };
@@ -156,7 +174,10 @@ const CSVUploadModal = ({
     ];
 
     const missingColumns = requiredColumns.filter(
-      (col) => !headers.some((h) => h.toLowerCase().includes(col.toLowerCase().split(' ')[0]))
+      (col) =>
+        !headers.some((h) =>
+          h.toLowerCase().includes(col.toLowerCase().split(' ')[0])
+        )
     );
     if (missingColumns.length > 0) {
       errors.push(`Missing required columns: ${missingColumns.join(', ')}`);
@@ -184,7 +205,8 @@ const CSVUploadModal = ({
       /^\d{1,2}-[A-Za-z]{3}-\d{2,4}$/,
     ];
     return (
-      formats.some((format) => format.test(dateString)) || !isNaN(new Date(dateString).getTime())
+      formats.some((format) => format.test(dateString)) ||
+      !isNaN(new Date(dateString).getTime())
     );
   };
 
@@ -232,7 +254,10 @@ const CSVUploadModal = ({
 
     if (validationErrors.length > 0) {
       if (showNotification) {
-        showNotification('Please fix validation errors before uploading', 'error');
+        showNotification(
+          'Please fix validation errors before uploading',
+          'error'
+        );
       }
       return;
     }
@@ -265,7 +290,9 @@ const CSVUploadModal = ({
             setUploadProgress(progress);
 
             if (totalRows > 0) {
-              const estimatedRecords = Math.floor((fileProgress / 90) * totalRows);
+              const estimatedRecords = Math.floor(
+                (fileProgress / 90) * totalRows
+              );
               setUploadedRecords(Math.min(totalRows, estimatedRecords));
             }
           } else {
@@ -287,19 +314,22 @@ const CSVUploadModal = ({
                   xhr.status === 401 || xhr.status === 403
                     ? 'Authentication failed. Please login again.'
                     : xhr.status === 413
-                    ? 'File too large. Maximum size is 10MB.'
-                    : `Upload failed: Server returned status ${xhr.status}`;
+                      ? 'File too large. Maximum size is 10MB.'
+                      : `Upload failed: Server returned status ${xhr.status}`;
                 showNotification(errorMsg, 'error');
               }
               return;
             }
 
             if (xhr.status === 200 || xhr.status === 201) {
-              const importedCount = response.data?.imported || response.imported || 0;
+              const importedCount =
+                response.data?.imported || response.imported || 0;
               const updatedCount = response.data?.updated || 0;
               const skippedCount = response.data?.skipped || 0;
               const totalCount =
-                response.data?.total || response.data?.imported + updatedCount || importedCount;
+                response.data?.total ||
+                response.data?.imported + updatedCount ||
+                importedCount;
 
               if (previewData?.isExcel && totalCount > 0) {
                 setTotalRecords(totalCount);
@@ -363,7 +393,10 @@ const CSVUploadModal = ({
             setUploadStatus('error');
             console.error('Error processing upload response:', error);
             if (showNotification) {
-              showNotification(error.message || 'Error processing upload response', 'error');
+              showNotification(
+                error.message || 'Error processing upload response',
+                'error'
+              );
             }
           } finally {
             setIsUploading(false);
@@ -384,7 +417,9 @@ const CSVUploadModal = ({
         });
 
         const token =
-          typeof window !== 'undefined' ? localStorage.getItem('homiebites_token') : null;
+          typeof window !== 'undefined'
+            ? localStorage.getItem('homiebites_token')
+            : null;
 
         const apiUrl = api.baseURL || '';
         xhr.open('POST', `${apiUrl}/api/orders/upload-excel`);
@@ -487,32 +522,40 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
   if (!show) return null;
 
   return (
-    <div className='modal-overlay' onClick={handleClose}>
-      <div className='modal-container max-w-800' onClick={(e) => e.stopPropagation()}>
-        <div className='modal-header'>
+    <div className="modal-overlay" onClick={handleClose}>
+      <div
+        className="modal-container max-w-800"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-header">
           <h2>Upload Orders (CSV/Excel)</h2>
-          <button className='btn btn-ghost btn-icon modal-close' onClick={handleClose}>
-            <i className='fa-solid fa-times'></i>
+          <button
+            className="btn btn-ghost btn-icon modal-close"
+            onClick={handleClose}
+          >
+            <i className="fa-solid fa-times"></i>
           </button>
         </div>
-        <div className='modal-body'>
+        <div className="modal-body">
           {!file && (
             <div
-              className='dashboard-card file-upload file-upload-container'
+              className="dashboard-card file-upload file-upload-container"
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
             >
-              <div className='file-upload-label'>
-                <i className='fa-solid fa-cloud-upload-alt file-upload-icon file-upload-icon-style'></i>
-                <h3 className='file-upload-text file-upload-title'>Drag & Drop CSV/Excel file</h3>
-                <p className='file-upload-or'>or</p>
-                <button className='btn btn-primary'>
-                  <i className='fa-solid fa-folder-open'></i> Browse Files
+              <div className="file-upload-label">
+                <i className="fa-solid fa-cloud-upload-alt file-upload-icon file-upload-icon-style"></i>
+                <h3 className="file-upload-text file-upload-title">
+                  Drag & Drop CSV/Excel file
+                </h3>
+                <p className="file-upload-or">or</p>
+                <button className="btn btn-primary">
+                  <i className="fa-solid fa-folder-open"></i> Browse Files
                 </button>
-                <p className='file-upload-hint file-upload-hint-style'>
+                <p className="file-upload-hint file-upload-hint-style">
                   Supported formats: .csv, .xlsx, .xls
                   <br />
                   Max file size: 10 MB
@@ -523,16 +566,18 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
 
           {file && !isUploading && uploadStatus !== 'success' && (
             <>
-              <div className='dashboard-card margin-bottom-24'>
-                <div className='csv-file-info'>
+              <div className="dashboard-card margin-bottom-24">
+                <div className="csv-file-info">
                   <div>
-                    <h3 className='csv-file-name'>
-                      <i className='fa-solid fa-file'></i> {file.name}
+                    <h3 className="csv-file-name">
+                      <i className="fa-solid fa-file"></i> {file.name}
                     </h3>
-                    <p className='csv-file-size'>{(file.size / 1024).toFixed(2)} KB</p>
+                    <p className="csv-file-size">
+                      {(file.size / 1024).toFixed(2)} KB
+                    </p>
                   </div>
                   <button
-                    className='btn btn-ghost btn-small'
+                    className="btn btn-ghost btn-small"
                     onClick={() => {
                       setFile(null);
                       setPreviewData(null);
@@ -540,15 +585,17 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                       if (fileInputRef.current) fileInputRef.current.value = '';
                     }}
                   >
-                    <i className='fa-solid fa-times'></i> Remove
+                    <i className="fa-solid fa-times"></i> Remove
                   </button>
                 </div>
 
                 {previewData && (
                   <div>
-                    <h4 className='csv-preview-title'>Preview (First row with headers):</h4>
-                    <div className='orders-table-container csv-preview-container'>
-                      <table className='orders-table'>
+                    <h4 className="csv-preview-title">
+                      Preview (First row with headers):
+                    </h4>
+                    <div className="orders-table-container csv-preview-container">
+                      <table className="orders-table">
                         <thead>
                           <tr>
                             {previewData.headers.map((header, idx) => (
@@ -567,7 +614,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                         </tbody>
                       </table>
                     </div>
-                    <p className='csv-preview-note'>
+                    <p className="csv-preview-note">
                       {previewData.isExcel
                         ? 'Excel file detected. Row count will be determined during upload.'
                         : `Total rows detected: ${previewData.totalRows || 0}`}
@@ -576,15 +623,15 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                 )}
 
                 {validationErrors.length > 0 && (
-                  <div className='alert alert-danger'>
-                    <div className='alert-icon'>
-                      <i className='fa-solid fa-exclamation-triangle'></i>
+                  <div className="alert alert-danger">
+                    <div className="alert-icon">
+                      <i className="fa-solid fa-exclamation-triangle"></i>
                     </div>
-                    <div className='alert-content'>
-                      <div className='alert-title'>Validation Errors:</div>
-                      <ul className='csv-error-list'>
+                    <div className="alert-content">
+                      <div className="alert-title">Validation Errors:</div>
+                      <ul className="csv-error-list">
                         {validationErrors.map((error, idx) => (
-                          <li key={idx} className='csv-error-item'>
+                          <li key={idx} className="csv-error-item">
                             {error}
                           </li>
                         ))}
@@ -594,18 +641,21 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                 )}
 
                 {validationErrors.length === 0 && previewData && (
-                  <div className='alert alert-success'>
-                    <div className='alert-icon'>
-                      <i className='fa-solid fa-circle-check'></i>
+                  <div className="alert alert-success">
+                    <div className="alert-icon">
+                      <i className="fa-solid fa-circle-check"></i>
                     </div>
-                    <div className='alert-content'>
-                      <div className='alert-title'>File Validated Successfully</div>
-                      <div className='alert-message'>
-                        <ul className='csv-success-list'>
+                    <div className="alert-content">
+                      <div className="alert-title">
+                        File Validated Successfully
+                      </div>
+                      <div className="alert-message">
+                        <ul className="csv-success-list">
                           <li>All required columns present</li>
                           <li>Date format correct</li>
                           <li>
-                            Total Amount will be calculated automatically (Quantity × Unit Price)
+                            Total Amount will be calculated automatically
+                            (Quantity × Unit Price)
                           </li>
                           <li>No duplicate Order IDs detected</li>
                         </ul>
@@ -614,46 +664,59 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                   </div>
                 )}
 
-                <div className='csv-upload-options'>
-                  <h4 className='csv-upload-options-title'>Upload Options:</h4>
-                  <div className='csv-upload-options-list'>
-                    <label className='csv-upload-option-label'>
+                <div className="csv-upload-options">
+                  <h4 className="csv-upload-options-title">Upload Options:</h4>
+                  <div className="csv-upload-options-list">
+                    <label className="csv-upload-option-label">
                       <input
-                        type='checkbox'
+                        type="checkbox"
                         checked={uploadOptions.updateExisting}
                         onChange={(e) =>
-                          setUploadOptions({ ...uploadOptions, updateExisting: e.target.checked })
+                          setUploadOptions({
+                            ...uploadOptions,
+                            updateExisting: e.target.checked,
+                          })
                         }
                       />
                       <span>
-                        <strong>Replace existing records</strong> (if Order ID matches)
+                        <strong>Replace existing records</strong> (if Order ID
+                        matches)
                         <br />
-                        <span className='csv-upload-option-hint'>
-                          When checked, orders with matching Order IDs will be updated instead of
-                          creating duplicates
+                        <span className="csv-upload-option-hint">
+                          When checked, orders with matching Order IDs will be
+                          updated instead of creating duplicates
                         </span>
                       </span>
                     </label>
-                    <label className='csv-upload-option-label'>
+                    <label className="csv-upload-option-label">
                       <input
-                        type='checkbox'
+                        type="checkbox"
                         checked={uploadOptions.skipDuplicates}
                         onChange={(e) =>
-                          setUploadOptions({ ...uploadOptions, skipDuplicates: e.target.checked })
+                          setUploadOptions({
+                            ...uploadOptions,
+                            skipDuplicates: e.target.checked,
+                          })
                         }
                       />
                       <span>
                         Skip duplicate addresses (same day)
                         <br />
-                        <span className='csv-upload-option-hint'>
+                        <span className="csv-upload-option-hint">
                           Only applies when Order ID is not present
                         </span>
                       </span>
                     </label>
-                    <label className='csv-upload-option-label'>
-                      <input type='checkbox' checked={false} disabled={true} readOnly />
-                      <span className='csv-upload-option-disabled'>
-                        Auto-generate Order IDs (disabled - Order IDs must be provided in your data)
+                    <label className="csv-upload-option-label">
+                      <input
+                        type="checkbox"
+                        checked={false}
+                        disabled={true}
+                        readOnly
+                      />
+                      <span className="csv-upload-option-disabled">
+                        Auto-generate Order IDs (disabled - Order IDs must be
+                        provided in your data)
                       </span>
                     </label>
                   </div>
@@ -663,42 +726,48 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
           )}
 
           {isUploading && !isProgressMinimized && (
-            <div className='dashboard-card csv-upload-progress-container'>
+            <div className="dashboard-card csv-upload-progress-container">
               <button
                 onClick={() => setIsProgressMinimized(true)}
-                title='Minimize and continue in background'
-                className='csv-upload-minimize-btn tooltip-wrapper'
+                title="Minimize and continue in background"
+                className="csv-upload-minimize-btn tooltip-wrapper"
               >
-                <i className='fa-solid fa-window-minimize'></i>
-                <span className='tooltip'>Minimize and continue in background</span>
+                <i className="fa-solid fa-window-minimize"></i>
+                <span className="tooltip">
+                  Minimize and continue in background
+                </span>
               </button>
-              <h3 className='csv-upload-progress-title'>Uploading Orders</h3>
-              <div className='csv-upload-progress-info'>
-                <div className='csv-upload-progress-header'>
-                  <span className='csv-upload-progress-label'>
+              <h3 className="csv-upload-progress-title">Uploading Orders</h3>
+              <div className="csv-upload-progress-info">
+                <div className="csv-upload-progress-header">
+                  <span className="csv-upload-progress-label">
                     {totalRecords > 0
                       ? `Processing ${uploadedRecords} of ${totalRecords} records`
                       : 'Uploading file'}
                   </span>
-                  <span className='csv-upload-progress-count'>
+                  <span className="csv-upload-progress-count">
                     {uploadedRecords > 0 && totalRecords > 0
                       ? `${uploadedRecords} / ${totalRecords}`
                       : `${Math.round(uploadProgress)}%`}
                   </span>
                 </div>
-                <div className='progress progress-bar-container csv-upload-progress-bar-container'>
-                  <div className='progress-bar progress-fill csv-upload-progress-bar-fill' />
+                <div className="progress progress-bar-container csv-upload-progress-bar-container">
+                  <div className="progress-bar progress-fill csv-upload-progress-bar-fill" />
                 </div>
               </div>
-              <div className='csv-upload-progress-actions'>
+              <div className="csv-upload-progress-actions">
                 <button
-                  className='btn btn-ghost btn-small'
+                  className="btn btn-ghost btn-small"
                   onClick={() => setIsProgressMinimized(true)}
                 >
-                  <i className='fa-solid fa-arrow-down'></i> Continue in Background
+                  <i className="fa-solid fa-arrow-down"></i> Continue in
+                  Background
                 </button>
-                <button className='btn btn-special danger btn-small' onClick={handleCancelUpload}>
-                  <i className='fa-solid fa-times'></i> Cancel Upload
+                <button
+                  className="btn btn-special danger btn-small"
+                  onClick={handleCancelUpload}
+                >
+                  <i className="fa-solid fa-times"></i> Cancel Upload
                 </button>
               </div>
             </div>
@@ -706,86 +775,88 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
 
           {isUploading && isProgressMinimized && (
             <div
-              className='dashboard-card csv-upload-progress-card'
+              className="dashboard-card csv-upload-progress-card"
               onClick={() => setIsProgressMinimized(false)}
             >
-              <div className='csv-upload-progress-card-content'>
-                <div className='avatar csv-upload-progress-avatar'>
-                  <i className='fa-solid fa-cloud-upload-alt'></i>
+              <div className="csv-upload-progress-card-content">
+                <div className="avatar csv-upload-progress-avatar">
+                  <i className="fa-solid fa-cloud-upload-alt"></i>
                 </div>
-                <div className='csv-upload-progress-details'>
-                  <div className='progress-label'>
-                    <span className='csv-upload-progress-label-text'>
+                <div className="csv-upload-progress-details">
+                  <div className="progress-label">
+                    <span className="csv-upload-progress-label-text">
                       Uploading in background...
                     </span>
-                    <span className='progress-percentage csv-upload-progress-percentage'>
+                    <span className="progress-percentage csv-upload-progress-percentage">
                       {uploadedRecords > 0 && totalRecords > 0
                         ? `${uploadedRecords} / ${totalRecords}`
                         : `${Math.round(uploadProgress)}%`}
                     </span>
                   </div>
-                  <div className='progress progress-bar-container'>
-                    <div className='progress-bar progress-fill' />
+                  <div className="progress progress-bar-container">
+                    <div className="progress-bar progress-fill" />
                   </div>
                 </div>
               </div>
-              <div className='csv-upload-progress-actions-mini'>
+              <div className="csv-upload-progress-actions-mini">
                 <button
-                  className='btn btn-special danger btn-small'
+                  className="btn btn-special danger btn-small"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleCancelUpload();
                   }}
-                  title='Cancel Upload'
+                  title="Cancel Upload"
                 >
-                  <i className='fa-solid fa-times'></i>
+                  <i className="fa-solid fa-times"></i>
                 </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsProgressMinimized(false);
                   }}
-                  className='csv-upload-maximize-btn'
-                  title='Show full progress'
+                  className="csv-upload-maximize-btn"
+                  title="Show full progress"
                 >
-                  <i className='fa-solid fa-window-maximize'></i>
+                  <i className="fa-solid fa-window-maximize"></i>
                 </button>
               </div>
             </div>
           )}
 
           {uploadStatus === 'success' && (
-            <div className='dashboard-card csv-upload-success'>
-              <i className='fa-solid fa-check-circle csv-upload-success-icon'></i>
-              <h3 className='csv-upload-success-title'>Upload Complete!</h3>
-              <p className='margin-bottom-24 csv-text-primary'>
+            <div className="dashboard-card csv-upload-success">
+              <i className="fa-solid fa-check-circle csv-upload-success-icon"></i>
+              <h3 className="csv-upload-success-title">Upload Complete!</h3>
+              <p className="margin-bottom-24 csv-text-primary">
                 Your orders have been successfully imported.
               </p>
             </div>
           )}
 
           {!file && (
-            <div className='dashboard-card csv-format-requirements'>
-              <h4 className='csv-format-requirements-title'>
-                <i className='fa-solid fa-info-circle'></i> CSV Format Requirements:
+            <div className="dashboard-card csv-format-requirements">
+              <h4 className="csv-format-requirements-title">
+                <i className="fa-solid fa-info-circle"></i> CSV Format
+                Requirements:
               </h4>
-              <ul className='csv-format-requirements-list'>
+              <ul className="csv-format-requirements-list">
                 <li>
-                  <strong>Required Columns:</strong> Date, Delivery Address, Quantity, Unit Price,
-                  Mode, Status, Payment Mode
+                  <strong>Required Columns:</strong> Date, Delivery Address,
+                  Quantity, Unit Price, Mode, Status, Payment Mode
                 </li>
                 <li>
-                  <strong>Optional Columns:</strong> Order ID, Billing Month, Year, Customer Name,
-                  Phone
+                  <strong>Optional Columns:</strong> Order ID, Billing Month,
+                  Year, Customer Name, Phone
                 </li>
                 <li>
-                  <strong>Date format (RECOMMENDED):</strong> YYYY-MM-DD (e.g., 2025-01-15) or
-                  format Excel cells as Date type. Also supports: DD-MMM-YYYY, DD/MM/YYYY,
-                  DD-MM-YYYY (e.g., 15-Jan-2025, 15/01/2025)
+                  <strong>Date format (RECOMMENDED):</strong> YYYY-MM-DD (e.g.,
+                  2025-01-15) or format Excel cells as Date type. Also supports:
+                  DD-MMM-YYYY, DD/MM/YYYY, DD-MM-YYYY (e.g., 15-Jan-2025,
+                  15/01/2025)
                 </li>
                 <li>
-                  <strong>Total Amount:</strong> Will be automatically calculated as Quantity × Unit
-                  Price (you can omit this column)
+                  <strong>Total Amount:</strong> Will be automatically
+                  calculated as Quantity × Unit Price (you can omit this column)
                 </li>
                 <li>
                   <strong>Mode:</strong> Lunch, Dinner, Morning, Breakfast, etc.
@@ -794,50 +865,59 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                   <strong>Status:</strong> Paid, Pending, Unpaid, Delivered
                 </li>
                 <li>
-                  <strong>Payment Mode:</strong> Online, Cash, UPI, Bank Transfer
+                  <strong>Payment Mode:</strong> Online, Cash, UPI, Bank
+                  Transfer
                 </li>
                 <li>No empty rows</li>
                 <li>First row should contain column headers</li>
               </ul>
               <button
-                className='btn btn-secondary btn-small csv-margin-top-16'
+                className="btn btn-secondary btn-small csv-margin-top-16"
                 onClick={handleDownloadTemplate}
               >
-                <i className='fa-solid fa-download'></i> Download Sample CSV Template
+                <i className="fa-solid fa-download"></i> Download Sample CSV
+                Template
               </button>
             </div>
           )}
         </div>
-        <div className='modal-footer'>
+        <div className="modal-footer">
           <input
             ref={fileInputRef}
-            type='file'
-            accept='.csv,.xlsx,.xls'
-            className='csv-file-input-hidden'
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            className="csv-file-input-hidden"
             onChange={(e) => handleFileSelect(e.target.files[0])}
           />
           <button
-            className='btn btn-ghost'
+            className="btn btn-ghost"
             onClick={handleClose}
             disabled={isUploading && !isProgressMinimized}
             title={
-              isUploading && !isProgressMinimized ? 'Upload in progress. Minimize to close.' : ''
+              isUploading && !isProgressMinimized
+                ? 'Upload in progress. Minimize to close.'
+                : ''
             }
           >
-            {uploadStatus === 'success' ? 'Close' : isUploading ? 'Minimize' : 'Cancel'}
+            {uploadStatus === 'success'
+              ? 'Close'
+              : isUploading
+                ? 'Minimize'
+                : 'Cancel'}
           </button>
           {file && !isUploading && uploadStatus !== 'success' && (
             <button
-              className='btn btn-primary'
+              className="btn btn-primary"
               onClick={handleUpload}
               disabled={validationErrors.length > 0}
             >
-              <i className='fa-solid fa-upload'></i> Upload{' '}
+              <i className="fa-solid fa-upload"></i> Upload{' '}
               {previewData?.isExcel
                 ? 'Orders'
-                : previewData?.totalRows !== null && previewData?.totalRows !== undefined
-                ? `${previewData.totalRows} Orders`
-                : '0 Orders'}
+                : previewData?.totalRows !== null &&
+                    previewData?.totalRows !== undefined
+                  ? `${previewData.totalRows} Orders`
+                  : '0 Orders'}
             </button>
           )}
         </div>

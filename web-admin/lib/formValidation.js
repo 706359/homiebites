@@ -16,7 +16,8 @@ export const validateOrder = (orderData) => {
   } else if (orderData.deliveryAddress.trim().length < 5) {
     errors.deliveryAddress = 'Delivery address must be at least 5 characters';
   } else if (orderData.deliveryAddress.trim().length > 500) {
-    errors.deliveryAddress = 'Delivery address must be less than 500 characters';
+    errors.deliveryAddress =
+      'Delivery address must be less than 500 characters';
   }
 
   // Quantity validation
@@ -51,7 +52,10 @@ export const validateOrder = (orderData) => {
   }
 
   // Status validation
-  if (!orderData.status || !['Paid', 'Unpaid', 'Pending', 'Delivered'].includes(orderData.status)) {
+  if (
+    !orderData.status ||
+    !['Paid', 'Unpaid', 'Pending', 'Delivered'].includes(orderData.status)
+  ) {
     errors.status = 'Please select a valid status';
   }
 

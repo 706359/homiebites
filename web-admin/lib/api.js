@@ -1,14 +1,8 @@
-
-
-
-
-
 const API_BASE_URL =
   (typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL : null) ||
   process.env.API_URL ||
   process.env.VITE_API_URL ||
   '';
-
 
 let resolvedApiUrl = API_BASE_URL;
 
@@ -17,7 +11,10 @@ export const api = {
 
   async request(endpoint, options = {}) {
     const url = `${resolvedApiUrl}${endpoint}`;
-    const token = typeof window !== 'undefined' ? localStorage.getItem('homiebites_token') : null;
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('homiebites_token')
+        : null;
 
     const config = {
       ...options,
@@ -26,13 +23,13 @@ export const api = {
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
-      
+      // Support abort signal for request cancellation
+      signal: options.signal,
     };
 
     try {
       const response = await fetch(url, config);
 
-      
       let data;
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
@@ -43,8 +40,11 @@ export const api = {
         }
       } else {
         const text = await response.text();
-        
-        if (text.trim().startsWith('<!doctype') || text.trim().startsWith('<!DOCTYPE')) {
+
+        if (
+          text.trim().startsWith('<!doctype') ||
+          text.trim().startsWith('<!DOCTYPE')
+        ) {
           console.error(
             `[API] Got HTML instead of JSON from ${url}. Backend server may not be running or API URL is incorrect.`
           );
@@ -56,25 +56,22 @@ export const api = {
       }
 
       if (!response.ok) {
-        
         if (response.status === 401 || response.status === 403) {
-          
           const isLoginRequest = endpoint.includes('/auth/login');
 
-          
           if (typeof window !== 'undefined' && !isLoginRequest) {
             localStorage.removeItem('homiebites_token');
             localStorage.removeItem('homiebites_admin');
             localStorage.removeItem('homiebites_user');
 
-            
             if (window.location.pathname.startsWith('/admin')) {
-              console.warn('[API] Authentication failed. Redirecting to login...');
+              console.warn(
+                '[API] Authentication failed. Redirecting to login...'
+              );
               window.location.href = '/admin';
             }
           }
 
-          
           if (isLoginRequest && data && data.error) {
             throw new Error(data.error);
           }
@@ -91,7 +88,7 @@ export const api = {
       return data;
     } catch (error) {
       console.error(`[API] Request failed for ${url}:`, error.message);
-      
+
       if (error instanceof TypeError && error.message.includes('fetch')) {
         throw new Error(
           `Network error: Unable to connect to backend server at ${resolvedApiUrl}. Please check if the backend is running.`
@@ -101,9 +98,7 @@ export const api = {
     }
   },
 
-  
   async login(emailOrUsername, password) {
-    
     const loginData = {
       email: emailOrUsername?.trim() || emailOrUsername,
       username: emailOrUsername?.trim() || emailOrUsername,
@@ -122,7 +117,6 @@ export const api = {
     });
   },
 
-  
   async getMenu() {
     return this.request('/api/menu');
   },
@@ -134,7 +128,6 @@ export const api = {
     });
   },
 
-  
   async createOrder(orderData) {
     return this.request('/api/orders', {
       method: 'POST',
@@ -142,7 +135,6 @@ export const api = {
     });
   },
 
-  
   async createManualOrder(orderData) {
     return this.request('/api/orders/manual', {
       method: 'POST',
@@ -150,7 +142,6 @@ export const api = {
     });
   },
 
-  
   async getAllOrders(filters = {}) {
     const params = new URLSearchParams();
     if (filters.status) params.append('status', filters.status);
@@ -175,7 +166,6 @@ export const api = {
   },
 
   async bulkImportOrders(orders) {
-    
     if (!Array.isArray(orders)) {
       throw new Error('Orders must be an array');
     }
@@ -194,7 +184,14 @@ export const api = {
     });
   },
 
-  
+  async checkExistingReview(userName, userPhone) {
+    const params = new URLSearchParams();
+    params.append('checkExisting', 'true');
+    params.append('userName', userName);
+    params.append('userPhone', userPhone);
+    return this.request(`/api/reviews?${params.toString()}`);
+  },
+
   async createReview(reviewData) {
     return this.request('/api/reviews', {
       method: 'POST',
@@ -209,7 +206,6 @@ export const api = {
     return this.request(`/api/reviews?${params.toString()}`);
   },
 
-  
   async getOffers() {
     return this.request('/api/offers');
   },
@@ -221,7 +217,6 @@ export const api = {
     });
   },
 
-  
   async forgotPassword(email) {
     return this.request('/api/auth/forgot-password', {
       method: 'POST',
@@ -250,12 +245,10 @@ export const api = {
     });
   },
 
-  
   async getAllUsers() {
     return this.request('/api/auth/users');
   },
 
-  
   async getGallery() {
     return this.request('/api/gallery');
   },
@@ -277,6 +270,19 @@ export const api = {
   async deleteGalleryItem(id) {
     return this.request(`/api/gallery/${id}`, {
       method: 'DELETE',
+    });
+  },
+
+  async getStats() {
+    return this.request('/api/stats');
+  },
+
+  async getAddressSuggestions(query = '', signal = null) {
+    const params = new URLSearchParams();
+    if (query) params.append('q', query);
+    const queryString = params.toString();
+    return this.request(`/api/addresses/suggestions${queryString ? `?${queryString}` : ''}`, {
+      signal,
     });
   },
 };

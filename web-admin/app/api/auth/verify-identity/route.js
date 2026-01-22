@@ -1,4 +1,3 @@
-
 import connectDB from '../../../../lib/db.js';
 import User from '../../../../lib/models/User.js';
 import jwt from 'jsonwebtoken';
@@ -10,7 +9,9 @@ function getAdminCredentials() {
   }
   return {
     JWT_SECRET: process.env.JWT_SECRET || 'homiebites_secret',
-    ADMIN_EMAIL: process.env.ADMIN_EMAIL || (process.env.NODE_ENV === 'production' ? '' : '706359@gmail.com'),
+    ADMIN_EMAIL:
+      process.env.ADMIN_EMAIL ||
+      (process.env.NODE_ENV === 'production' ? '' : '706359@gmail.com'),
     ADMIN_ID: process.env.ADMIN_ID,
     ADMIN_PAN_CARD: process.env.ADMIN_PAN_CARD,
   };
@@ -20,11 +21,14 @@ export async function POST(request) {
   try {
     const ok = rateLimit(10, 15 * 60 * 1000)(request);
     if (!ok) {
-      return Response.json({ success: false, error: 'Too many requests. Please try again later.' }, { status: 429 });
+      return Response.json(
+        { success: false, error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
     }
 
     await connectDB();
-    
+
     const body = await request.json();
     const { email, verificationToken, panCard, adminId } = body;
 
@@ -60,16 +64,17 @@ export async function POST(request) {
     const normalizedPanCard = panCard.trim().toUpperCase();
     const normalizedAdminId = adminId.trim();
 
-    
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     if (!panRegex.test(normalizedPanCard)) {
       return Response.json(
-        { success: false, error: 'Invalid PAN card format. Format: ABCDE1234F' },
+        {
+          success: false,
+          error: 'Invalid PAN card format. Format: ABCDE1234F',
+        },
         { status: 400 }
       );
     }
 
-    
     const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
@@ -79,22 +84,28 @@ export async function POST(request) {
       );
     }
 
-    
     if (!user.verificationToken || !user.verificationTokenExpiresAt) {
       return Response.json(
-        { success: false, error: 'Verification token not found or expired. Please start the process again.' },
+        {
+          success: false,
+          error:
+            'Verification token not found or expired. Please start the process again.',
+        },
         { status: 401 }
       );
     }
 
     if (new Date() > user.verificationTokenExpiresAt) {
-      
       user.verificationToken = null;
       user.verificationTokenExpiresAt = null;
       await user.save();
-      
+
       return Response.json(
-        { success: false, error: 'Verification token has expired. Please start the process again.' },
+        {
+          success: false,
+          error:
+            'Verification token has expired. Please start the process again.',
+        },
         { status: 401 }
       );
     }
@@ -106,13 +117,11 @@ export async function POST(request) {
       );
     }
 
-    
     const adminCreds = getAdminCredentials();
-    const isAdminEmail = normalizedEmail === adminCreds.ADMIN_EMAIL.toLowerCase();
+    const isAdminEmail =
+      normalizedEmail === adminCreds.ADMIN_EMAIL.toLowerCase();
 
-    
     if (isAdminEmail) {
-      
       const expectedAdminId = adminCreds.ADMIN_ID || user.adminId;
       const expectedPanCard = adminCreds.ADMIN_PAN_CARD || user.panCard;
 
@@ -123,14 +132,16 @@ export async function POST(request) {
         );
       }
 
-      if (expectedPanCard && expectedPanCard.toUpperCase() !== normalizedPanCard) {
+      if (
+        expectedPanCard &&
+        expectedPanCard.toUpperCase() !== normalizedPanCard
+      ) {
         return Response.json(
           { success: false, error: 'Invalid PAN card' },
           { status: 401 }
         );
       }
 
-      
       if (!user.adminId && normalizedAdminId) {
         user.adminId = normalizedAdminId;
       }
@@ -138,7 +149,6 @@ export async function POST(request) {
         user.panCard = normalizedPanCard;
       }
     } else {
-      
       if (user.adminId && user.adminId !== normalizedAdminId) {
         return Response.json(
           { success: false, error: 'Invalid Admin ID' },
@@ -153,7 +163,6 @@ export async function POST(request) {
         );
       }
 
-      
       if (!user.adminId && normalizedAdminId) {
         user.adminId = normalizedAdminId;
       }
@@ -162,7 +171,6 @@ export async function POST(request) {
       }
     }
 
-    
     const resetToken = jwt.sign(
       {
         email: user.email,
@@ -170,13 +178,12 @@ export async function POST(request) {
         purpose: 'password-reset',
       },
       adminCreds.JWT_SECRET,
-      { expiresIn: '1h' } 
+      { expiresIn: '1h' }
     );
 
-    
     user.resetToken = resetToken;
-    user.resetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000); 
-    
+    user.resetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
     user.verificationToken = null;
     user.verificationTokenExpiresAt = null;
     await user.save();
@@ -187,23 +194,26 @@ export async function POST(request) {
       resetToken,
     });
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') console.error('[Verify Identity API] Error:', error);
+    if (process.env.NODE_ENV === 'development')
+      console.error('[Verify Identity API] Error:', error);
     if (error.message && error.message.includes('connect')) {
       return Response.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Database connection failed. Please try again later.',
-          details: process.env.NODE_ENV === 'development' ? error.message : undefined
+          details:
+            process.env.NODE_ENV === 'development' ? error.message : undefined,
         },
         { status: 503 }
       );
     }
 
     return Response.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: error.message || 'Failed to verify identity. Please try again.',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
       { status: 500 }
     );

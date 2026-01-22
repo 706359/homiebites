@@ -71,12 +71,12 @@ const NotificationWrapper = () => {
 
   return (
     <div
-      className='admin-notification-container toast-container'
+      className="admin-notification-container toast-container"
       ref={containerRef}
-      role='region'
-      aria-label='Notifications'
-      aria-live='polite'
-      aria-atomic='false'
+      role="region"
+      aria-label="Notifications"
+      aria-live="polite"
+      aria-atomic="false"
     >
       {notifications.map((notification) => (
         <div
@@ -89,7 +89,7 @@ const NotificationWrapper = () => {
             }
           }}
           className={`admin-notification admin-notification-${notification.type} toast toast-${notification.type}`}
-          role='alert'
+          role="alert"
           aria-live={notification.type === 'error' ? 'assertive' : 'polite'}
           onClick={() => handleNotificationClick(notification.id)}
           onKeyDown={(e) => {
@@ -103,16 +103,18 @@ const NotificationWrapper = () => {
           tabIndex={0}
           aria-label={`${getTypeLabel(notification.type)} notification: ${notification.message}`}
         >
-          <div className='admin-notification-content'>
-            <div className='admin-notification-icon' aria-hidden='true'>
+          <div className="admin-notification-content">
+            <div className="admin-notification-icon" aria-hidden="true">
               <i className={`fa-solid ${getIcon(notification.type)}`}></i>
             </div>
-            <div className='admin-notification-body'>
-              <div className='admin-notification-message'>{notification.message}</div>
+            <div className="admin-notification-body">
+              <div className="admin-notification-message">
+                {notification.message}
+              </div>
             </div>
           </div>
           <button
-            className='admin-notification-close'
+            className="admin-notification-close"
             onClick={(e) => {
               e.stopPropagation();
               removeNotification(notification.id);
@@ -125,13 +127,13 @@ const NotificationWrapper = () => {
               }
             }}
             aria-label={`Close ${getTypeLabel(notification.type)} notification`}
-            type='button'
+            type="button"
           >
-            <i className='fa-solid fa-xmark' aria-hidden='true'></i>
+            <i className="fa-solid fa-xmark" aria-hidden="true"></i>
           </button>
           {notification.duration > 0 && (
-            <div className='admin-notification-progress' aria-hidden='true'>
-              <div className='admin-notification-progress-bar' />
+            <div className="admin-notification-progress" aria-hidden="true">
+              <div className="admin-notification-progress-bar" />
             </div>
           )}
         </div>

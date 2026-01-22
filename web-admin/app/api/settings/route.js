@@ -1,8 +1,6 @@
-
 import connectDB from '../../../lib/db.js';
 import { createErrorResponse, isAdmin } from '../../../lib/middleware/auth.js';
 import Settings from '../../../lib/models/Settings.js';
-
 
 export async function GET() {
   try {
@@ -27,8 +25,13 @@ export async function GET() {
         orderIdPrefix: settings.orderIdPrefix || 'HB-',
         autoGenerateOrderId: settings.autoGenerateOrderId !== false,
         allowDuplicateAddress: settings.allowDuplicateAddress !== false,
-        requirePaymentConfirmation: settings.requirePaymentConfirmation || false,
-        statusOptions: settings.statusOptions || ['Paid', 'Pending', 'Cancelled'],
+        requirePaymentConfirmation:
+          settings.requirePaymentConfirmation || false,
+        statusOptions: settings.statusOptions || [
+          'Paid',
+          'Pending',
+          'Cancelled',
+        ],
         emailDailySummary: settings.emailDailySummary !== false,
         emailNewOrderAlert: settings.emailNewOrderAlert !== false,
         emailPaymentReceived: settings.emailPaymentReceived !== false,
@@ -43,7 +46,6 @@ export async function GET() {
       },
     });
   } catch (error) {
-    
     if (error.message && error.message.includes('Settings not found')) {
       return Response.json({
         success: true,
@@ -76,13 +78,13 @@ export async function GET() {
       {
         success: false,
         error: error.message || 'Failed to fetch settings',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        details:
+          process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
       { status: error.status || 500 }
     );
   }
 }
-
 
 export async function PUT(request) {
   try {
@@ -106,7 +108,8 @@ export async function PUT(request) {
         settings.businessName = updates.businessInfo.businessName;
       if (updates.businessInfo.contact !== undefined)
         settings.contact = updates.businessInfo.contact;
-      if (updates.businessInfo.email !== undefined) settings.email = updates.businessInfo.email;
+      if (updates.businessInfo.email !== undefined)
+        settings.email = updates.businessInfo.email;
       if (updates.businessInfo.address !== undefined)
         settings.address = updates.businessInfo.address;
     }
@@ -126,28 +129,37 @@ export async function PUT(request) {
       if (updates.orderSettings.orderIdPrefix !== undefined)
         settings.orderIdPrefix = updates.orderSettings.orderIdPrefix;
       if (updates.orderSettings.autoGenerateOrderId !== undefined)
-        settings.autoGenerateOrderId = updates.orderSettings.autoGenerateOrderId;
+        settings.autoGenerateOrderId =
+          updates.orderSettings.autoGenerateOrderId;
       if (updates.orderSettings.allowDuplicateAddress !== undefined)
-        settings.allowDuplicateAddress = updates.orderSettings.allowDuplicateAddress;
+        settings.allowDuplicateAddress =
+          updates.orderSettings.allowDuplicateAddress;
       if (updates.orderSettings.requirePaymentConfirmation !== undefined)
-        settings.requirePaymentConfirmation = updates.orderSettings.requirePaymentConfirmation;
+        settings.requirePaymentConfirmation =
+          updates.orderSettings.requirePaymentConfirmation;
       if (updates.orderSettings.statusOptions !== undefined)
         settings.statusOptions = updates.orderSettings.statusOptions;
     }
 
     if (updates.notificationPrefs) {
       if (updates.notificationPrefs.emailDailySummary !== undefined)
-        settings.emailDailySummary = updates.notificationPrefs.emailDailySummary;
+        settings.emailDailySummary =
+          updates.notificationPrefs.emailDailySummary;
       if (updates.notificationPrefs.emailNewOrderAlert !== undefined)
-        settings.emailNewOrderAlert = updates.notificationPrefs.emailNewOrderAlert;
+        settings.emailNewOrderAlert =
+          updates.notificationPrefs.emailNewOrderAlert;
       if (updates.notificationPrefs.emailPaymentReceived !== undefined)
-        settings.emailPaymentReceived = updates.notificationPrefs.emailPaymentReceived;
+        settings.emailPaymentReceived =
+          updates.notificationPrefs.emailPaymentReceived;
       if (updates.notificationPrefs.emailLowOrderDayWarning !== undefined)
-        settings.emailLowOrderDayWarning = updates.notificationPrefs.emailLowOrderDayWarning;
+        settings.emailLowOrderDayWarning =
+          updates.notificationPrefs.emailLowOrderDayWarning;
       if (updates.notificationPrefs.smsPaymentReminders !== undefined)
-        settings.smsPaymentReminders = updates.notificationPrefs.smsPaymentReminders;
+        settings.smsPaymentReminders =
+          updates.notificationPrefs.smsPaymentReminders;
       if (updates.notificationPrefs.smsOrderConfirmations !== undefined)
-        settings.smsOrderConfirmations = updates.notificationPrefs.smsOrderConfirmations;
+        settings.smsOrderConfirmations =
+          updates.notificationPrefs.smsOrderConfirmations;
     }
 
     if (updates.dataSettings) {
@@ -158,9 +170,12 @@ export async function PUT(request) {
     }
 
     if (updates.userProfile) {
-      if (updates.userProfile.name !== undefined) settings.userName = updates.userProfile.name;
-      if (updates.userProfile.email !== undefined) settings.userEmail = updates.userProfile.email;
-      if (updates.userProfile.phone !== undefined) settings.userPhone = updates.userProfile.phone;
+      if (updates.userProfile.name !== undefined)
+        settings.userName = updates.userProfile.name;
+      if (updates.userProfile.email !== undefined)
+        settings.userEmail = updates.userProfile.email;
+      if (updates.userProfile.phone !== undefined)
+        settings.userPhone = updates.userProfile.phone;
     }
 
     if (updates.themeSettings) {
@@ -172,14 +187,14 @@ export async function PUT(request) {
         settings.primaryColor = updates.themeSettings.primaryColor;
       if (updates.themeSettings.secondaryColor !== undefined)
         settings.secondaryColor = updates.themeSettings.secondaryColor;
-      if (updates.themeSettings.theme !== undefined) settings.theme = updates.themeSettings.theme;
+      if (updates.themeSettings.theme !== undefined)
+        settings.theme = updates.themeSettings.theme;
     }
 
     await settings.save();
 
     return Response.json({ success: true, data: settings });
   } catch (error) {
-    
     if (error.name === 'ValidationError') {
       return Response.json(
         {
@@ -192,15 +207,19 @@ export async function PUT(request) {
         { status: 400 }
       );
     }
-    
+
     if (error.status === 401 || error.status === 403) {
-      return createErrorResponse(error.status, error.message || 'Authentication failed');
+      return createErrorResponse(
+        error.status,
+        error.message || 'Authentication failed'
+      );
     }
     return Response.json(
       {
         success: false,
         error: error.message || 'Failed to update settings',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        details:
+          process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
       { status: error.status || 500 }
     );

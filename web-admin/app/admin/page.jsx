@@ -19,7 +19,8 @@ export default function Admin() {
     const user = localStorage.getItem('homiebites_user');
 
     const userRole = user ? JSON.parse(user).role : null;
-    const isAdminRole = userRole && (userRole.toLowerCase() === 'admin' || userRole === 'Admin');
+    const isAdminRole =
+      userRole && (userRole.toLowerCase() === 'admin' || userRole === 'Admin');
     if (admin === 'true' || isAdminRole) {
       router.replace('/admin/dashboard');
     }

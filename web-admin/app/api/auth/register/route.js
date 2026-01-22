@@ -1,4 +1,3 @@
-
 import connectDB from '../../../../lib/db.js';
 import User from '../../../../lib/models/User.js';
 import jwt from 'jsonwebtoken';
@@ -17,14 +16,16 @@ export async function POST(request) {
   try {
     const ok = rateLimit(10, 15 * 60 * 1000)(request);
     if (!ok) {
-      return Response.json({ success: false, error: 'Too many requests. Please try again later.' }, { status: 429 });
+      return Response.json(
+        { success: false, error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
     }
 
     await connectDB();
     const body = await request.json();
     const { name, email, password, phone } = body;
 
-    
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return Response.json(
@@ -33,18 +34,16 @@ export async function POST(request) {
       );
     }
 
-    
     const user = new User({
       name,
       email,
-      password, 
+      password,
       phone,
       role: 'user',
     });
 
     await user.save();
 
-    
     const adminCreds = getAdminCredentials();
     const token = jwt.sign(
       {
@@ -73,4 +72,3 @@ export async function POST(request) {
     );
   }
 }
-

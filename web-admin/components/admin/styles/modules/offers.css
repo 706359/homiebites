@@ -1,0 +1,375 @@
+/* Offers Tab Styles */
+
+.offers-tab {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 1.5rem;
+}
+
+.tab-header-content {
+  flex: 1;
+}
+
+.tab-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.tab-subtitle {
+  font-size: 1rem;
+  color: var(--admin-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.offers-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--admin-bg-white);
+  border: 1px solid var(--admin-border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.stat-card-success {
+  border-color: var(--primary-green);
+  background: rgba(68, 144, 49, 0.05);
+}
+
+.stat-card-warning {
+  border-color: var(--primary-orange);
+  background: rgba(196, 92, 45, 0.05);
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.stat-card-success .stat-value {
+  color: var(--primary-green);
+}
+
+.stat-card-warning .stat-value {
+  color: var(--primary-orange);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--admin-text-secondary);
+  font-weight: 500;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--admin-bg-white);
+  border: 2px dashed var(--admin-border-color);
+  border-radius: 12px;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  color: var(--admin-text-secondary);
+  margin-bottom: 1.5rem;
+  opacity: 0.5;
+}
+
+.empty-state-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-state-message {
+  font-size: 1rem;
+  color: var(--admin-text-secondary);
+  margin: 0 0 2rem 0;
+}
+
+.offers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.offer-card {
+  background: var(--admin-bg-white);
+  border: 1px solid var(--admin-border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.offer-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.offer-card-expired {
+  opacity: 0.6;
+  border-color: var(--admin-text-secondary);
+}
+
+.offer-card-inactive {
+  opacity: 0.7;
+  border-color: var(--admin-text-secondary);
+}
+
+.offer-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.offer-card-title-section {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.offer-card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  margin: 0;
+}
+
+.offer-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: var(--primary-green);
+  color: var(--white);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.offer-status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.offer-status-active {
+  background: rgba(68, 144, 49, 0.15);
+  color: var(--primary-green);
+  border: 1px solid rgba(68, 144, 49, 0.3);
+}
+
+.offer-status-expired {
+  background: rgba(156, 163, 175, 0.15);
+  color: var(--admin-text-secondary);
+  border: 1px solid rgba(156, 163, 175, 0.3);
+}
+
+.offer-status-inactive {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.offer-card-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--admin-border-color);
+  border-radius: 8px;
+  color: var(--admin-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.btn-icon:hover {
+  background: var(--admin-bg-light);
+  border-color: var(--primary-green);
+  color: var(--primary-green);
+}
+
+.btn-icon-danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.offer-card-body {
+  margin-top: 1rem;
+}
+
+.offer-description {
+  font-size: 1rem;
+  color: var(--admin-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
+.offer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.offer-detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.offer-detail-label {
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  min-width: 100px;
+  font-size: 0.9rem;
+}
+
+.offer-detail-value {
+  color: var(--admin-text-secondary);
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.offer-terms-list {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: var(--admin-text-secondary);
+}
+
+.offer-terms-list li {
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Modal Styles */
+.offer-modal {
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.form-term-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  align-items: center;
+}
+
+.form-term-row input {
+  flex: 1;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.required {
+  color: #ef4444;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .offers-tab {
+    padding: 1.5rem 1rem;
+  }
+
+  .tab-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .offers-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .offer-card-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .offer-card-actions {
+    justify-content: flex-end;
+  }
+
+  .offer-detail-item {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .offer-detail-label {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .offers-tab {
+    padding: 1rem 0.75rem;
+  }
+
+  .tab-title {
+    font-size: 1.5rem;
+  }
+
+  .offer-card {
+    padding: 1rem;
+  }
+
+  .offer-card-title {
+    font-size: 1.25rem;
+  }
+}

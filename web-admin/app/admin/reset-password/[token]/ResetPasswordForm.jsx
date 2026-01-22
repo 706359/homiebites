@@ -23,7 +23,6 @@ export default function ResetPasswordForm({ token }) {
     hasSpecialChar: false,
   });
 
-  
   useAutoKeyboardAvoidance({
     containerSelector: '.reset-password-form',
     inputSelector: 'input, textarea, select',
@@ -33,8 +32,7 @@ export default function ResetPasswordForm({ token }) {
     if (!token) {
       showError('Invalid reset link. Please request a new password reset.');
     }
-    
-  }, [token]); 
+  }, [token]);
 
   const checkPasswordStrength = (password) => {
     setPasswordStrength({
@@ -105,15 +103,17 @@ export default function ResetPasswordForm({ token }) {
 
   if (!token) {
     return (
-      <div className='reset-password-page'>
-        <div className='reset-password-container'>
-          <div className='reset-password-header'>
-            <h2 className='reset-password-title'>Invalid Reset Link</h2>
-            <p className='reset-password-subtitle'>Please request a new password reset</p>
+      <div className="reset-password-page">
+        <div className="reset-password-container">
+          <div className="reset-password-header">
+            <h2 className="reset-password-title">Invalid Reset Link</h2>
+            <p className="reset-password-subtitle">
+              Please request a new password reset
+            </p>
           </div>
           <button
             onClick={() => router.push('/admin/forgot-password')}
-            className='btn btn-primary btn-full'
+            className="btn btn-primary btn-full"
           >
             Go to Forgot Password
           </button>
@@ -123,75 +123,104 @@ export default function ResetPasswordForm({ token }) {
   }
 
   return (
-    <div className='reset-password-page'>
-      <div className='reset-password-container'>
-        <div className='reset-password-header'>
-          <h2 className='reset-password-title'>Reset Password</h2>
-          <p className='reset-password-subtitle'>Create a new secure password</p>
+    <div className="reset-password-page">
+      <div className="reset-password-container">
+        <div className="reset-password-header">
+          <h2 className="reset-password-title">Reset Password</h2>
+          <p className="reset-password-subtitle">
+            Create a new secure password
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className='reset-password-form'>
-          <div className='form-field'>
+        <form onSubmit={handleSubmit} className="reset-password-form">
+          <div className="form-field">
             <label>New Password</label>
             <input
-              type='password'
-              name='newPassword'
+              type="password"
+              name="newPassword"
               value={formData.newPassword}
               onChange={handleChange}
               required
-              placeholder='Enter new password'
+              placeholder="Enter new password"
             />
           </div>
 
-          <div className='form-field'>
+          <div className="form-field">
             <label>Confirm Password</label>
             <input
-              type='password'
-              name='confirmPassword'
+              type="password"
+              name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
               required
-              placeholder='Confirm new password'
+              placeholder="Confirm new password"
             />
           </div>
 
-          <div className='password-requirements'>
-            <p className='requirements-title'>Password Requirements:</p>
-            <div className='requirements-list'>
-              <div className={passwordStrength.hasLength ? 'requirement-met' : 'requirement-unmet'}>
+          <div className="password-requirements">
+            <p className="requirements-title">Password Requirements:</p>
+            <div className="requirements-list">
+              <div
+                className={
+                  passwordStrength.hasLength
+                    ? 'requirement-met'
+                    : 'requirement-unmet'
+                }
+              >
                 {passwordStrength.hasLength ? '✓' : '○'} At least 8 characters
               </div>
               <div
-                className={passwordStrength.hasUpperCase ? 'requirement-met' : 'requirement-unmet'}
+                className={
+                  passwordStrength.hasUpperCase
+                    ? 'requirement-met'
+                    : 'requirement-unmet'
+                }
               >
                 {passwordStrength.hasUpperCase ? '✓' : '○'} One uppercase letter
               </div>
               <div
-                className={passwordStrength.hasLowerCase ? 'requirement-met' : 'requirement-unmet'}
+                className={
+                  passwordStrength.hasLowerCase
+                    ? 'requirement-met'
+                    : 'requirement-unmet'
+                }
               >
                 {passwordStrength.hasLowerCase ? '✓' : '○'} One lowercase letter
               </div>
-              <div className={passwordStrength.hasNumber ? 'requirement-met' : 'requirement-unmet'}>
+              <div
+                className={
+                  passwordStrength.hasNumber
+                    ? 'requirement-met'
+                    : 'requirement-unmet'
+                }
+              >
                 {passwordStrength.hasNumber ? '✓' : '○'} One number
               </div>
               <div
                 className={
-                  passwordStrength.hasSpecialChar ? 'requirement-met' : 'requirement-unmet'
+                  passwordStrength.hasSpecialChar
+                    ? 'requirement-met'
+                    : 'requirement-unmet'
                 }
               >
-                {passwordStrength.hasSpecialChar ? '✓' : '○'} One special character
+                {passwordStrength.hasSpecialChar ? '✓' : '○'} One special
+                character
               </div>
             </div>
           </div>
 
-          <button type='submit' disabled={loading} className='btn btn-primary btn-full'>
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn btn-primary btn-full"
+          >
             {loading ? 'Resetting...' : 'Reset Password'}
           </button>
 
           <button
-            type='button'
+            type="button"
             onClick={() => router.push('/admin')}
-            className='btn btn-ghost btn-full'
+            className="btn btn-ghost btn-full"
           >
             Back to Login
           </button>

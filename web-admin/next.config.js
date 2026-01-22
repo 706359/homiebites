@@ -9,7 +9,7 @@ const nextConfig = {
 
   // Performance Optimizations
   compress: true,
-  
+
   // Image Optimization
   images: {
     remotePatterns: [
@@ -57,66 +57,70 @@ const nextConfig = {
   // Headers for Security and Performance
   async headers() {
     const isDev = process.env.NODE_ENV === 'development';
-    
+
     return [
       {
         source: '/:path*',
         headers: [
           {
             key: 'X-DNS-Prefetch-Control',
-            value: 'on'
+            value: 'on',
           },
           {
             key: 'X-Frame-Options',
-            value: 'DENY'
+            value: 'DENY',
           },
           {
             key: 'X-Content-Type-Options',
-            value: 'nosniff'
+            value: 'nosniff',
           },
           {
             key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
+            value: 'strict-origin-when-cross-origin',
           },
         ],
       },
       // Disable caching for CSS files in development
-      ...(isDev ? [
-        {
-          source: '/_next/static/css/:path*',
-          headers: [
+      ...(isDev
+        ? [
             {
-              key: 'Cache-Control',
-              value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0'
+              source: '/_next/static/css/:path*',
+              headers: [
+                {
+                  key: 'Cache-Control',
+                  value:
+                    'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+                },
+                {
+                  key: 'Pragma',
+                  value: 'no-cache',
+                },
+                {
+                  key: 'Expires',
+                  value: '0',
+                },
+              ],
             },
             {
-              key: 'Pragma',
-              value: 'no-cache'
+              source: '/:path*.css',
+              headers: [
+                {
+                  key: 'Cache-Control',
+                  value:
+                    'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+                },
+                {
+                  key: 'Pragma',
+                  value: 'no-cache',
+                },
+                {
+                  key: 'Expires',
+                  value: '0',
+                },
+              ],
             },
-            {
-              key: 'Expires',
-              value: '0'
-            },
-          ],
-        },
-        {
-          source: '/:path*.css',
-          headers: [
-            {
-              key: 'Cache-Control',
-              value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0'
-            },
-            {
-              key: 'Pragma',
-              value: 'no-cache'
-            },
-            {
-              key: 'Expires',
-              value: '0'
-            },
-          ],
-        },
-      ] : []),
+          ]
+        : []),
     ];
   },
 };

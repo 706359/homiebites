@@ -6,14 +6,37 @@ import ConfirmationModal from './ConfirmationModal.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
 import { formatCurrency } from './utils/orderUtils.js';
 
-const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = false }) => {
+const MenuPriceTab = ({
+  settings,
+  showNotification,
+  showConfirmation,
+  loading = false,
+}) => {
   const [menuItems, setMenuItems] = useState([]);
   const [originalCategories, setOriginalCategories] = useState([]);
-  const [categories, setCategories] = useState(['Breakfast', 'Lunch', 'Dinner']);
+  // Predefined categories from menuData.js
+  const predefinedCategories = [
+    'Breakfast',
+    'Lunch',
+    'Dinner',
+    'Full Tiffin',
+    'Mix & Match Tiffin',
+    'Khichdi Tiffin',
+    'Rotis & Parathas',
+    'Add-ons',
+    'Pickup Option',
+    'Breakfast Combos',
+    'Lunch Combos',
+    'Dinner Combos',
+  ];
+
+  const [categories, setCategories] = useState(predefinedCategories);
   const [loadingMenu, setLoadingMenu] = useState(false);
+  const [togglingItemId, setTogglingItemId] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
@@ -32,21 +55,66 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     isAvailable: true,
     imageUrl: '',
     category: '',
+    mainCategory: '',
+    subcategory: '',
   });
+
+  // Main categories (Breakfast, Lunch, Dinner, Lunch & Dinner)
+  const mainCategories = ['Breakfast', 'Lunch', 'Dinner', 'Lunch & Dinner'];
+
+  // Subcategories for each main category
+  const subcategoriesByMainCategory = {
+    Breakfast: [
+      'Mix & Match Tiffin',
+      'Full Tiffin',
+      'Khichdi Tiffin',
+      'Rotis & Parathas',
+      'Add-ons',
+      'Breakfast Combos',
+    ],
+    Lunch: [
+      'Mix & Match Tiffin',
+      'Full Tiffin',
+      'Khichdi Tiffin',
+      'Rotis & Parathas',
+      'Add-ons',
+      'Lunch Combos',
+    ],
+    Dinner: [
+      'Mix & Match Tiffin',
+      'Full Tiffin',
+      'Khichdi Tiffin',
+      'Rotis & Parathas',
+      'Add-ons',
+      'Dinner Combos',
+    ],
+    'Lunch & Dinner': [
+      'Mix & Match Tiffin',
+      'Full Tiffin',
+      'Khichdi Tiffin',
+      'Rotis & Parathas',
+      'Add-ons',
+      'Lunch Combos',
+      'Dinner Combos',
+    ],
+  };
 
   useEffect(() => {
     loadMenuItems();
   }, []);
 
   useEffect(() => {
-    const defaultCategories = ['Breakfast', 'Lunch', 'Dinner'];
+    // Ensure predefined categories are always present
     if (
       categories.length === 0 ||
-      !categories.includes('Breakfast') ||
-      !categories.includes('Dinner')
+      !categories.some((cat) => predefinedCategories.includes(cat))
     ) {
-      if (process.env.NODE_ENV === 'development') console.log('[Categories] Ensuring default categories are present. Current:', categories);
-      const merged = [...new Set([...defaultCategories, ...categories])];
+      if (process.env.NODE_ENV === 'development')
+        console.log(
+          '[Categories] Ensuring predefined categories are present. Current:',
+          categories
+        );
+      const merged = [...new Set([...predefinedCategories, ...categories])];
       setCategories(merged);
     }
   }, [categories]);
@@ -54,23 +122,29 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
   const loadMenuItems = async () => {
     setLoadingMenu(true);
     try {
-      if (process.env.NODE_ENV === 'development') console.log('[Menu Load] Starting to load menu items...');
+      if (process.env.NODE_ENV === 'development')
+        console.log('[Menu Load] Starting to load menu items...');
       const response = await api.getMenu();
 
-      if (process.env.NODE_ENV === 'development') console.log('[Menu Load] Backend response:', {
-        success: response?.success,
-        hasData: !!response?.data,
-        isArray: Array.isArray(response?.data),
-        dataLength: response?.data?.length || 0,
-        responseData: response?.data,
-      });
+      if (process.env.NODE_ENV === 'development')
+        console.log('[Menu Load] Backend response:', {
+          success: response?.success,
+          hasData: !!response?.data,
+          isArray: Array.isArray(response?.data),
+          dataLength: response?.data?.length || 0,
+          responseData: response?.data,
+        });
 
       if (response.success && response.data && Array.isArray(response.data)) {
-        const totalItems = response.data.reduce((sum, cat) => sum + (cat.items?.length || 0), 0);
-        if (process.env.NODE_ENV === 'development') console.log('[Menu Load] Loaded categories:', {
-          categoriesCount: response.data.length,
-          totalItems: totalItems,
-        });
+        const totalItems = response.data.reduce(
+          (sum, cat) => sum + (cat.items?.length || 0),
+          0
+        );
+        if (process.env.NODE_ENV === 'development')
+          console.log('[Menu Load] Loaded categories:', {
+            categoriesCount: response.data.length,
+            totalItems: totalItems,
+          });
 
         setOriginalCategories(response.data);
 
@@ -90,46 +164,60 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           }
         });
 
-        if (process.env.NODE_ENV === 'development') console.log('[Menu Load] Flattened items:', {
-          itemsCount: flattenedItems.length,
-          categories: [...new Set(flattenedItems.map((item) => item.category))],
-        });
+        if (process.env.NODE_ENV === 'development')
+          console.log('[Menu Load] Flattened items:', {
+            itemsCount: flattenedItems.length,
+            categories: [
+              ...new Set(flattenedItems.map((item) => item.category)),
+            ],
+          });
 
-        if (process.env.NODE_ENV === 'development') console.log('[Menu Load] Setting menu items:', {
-          itemsCount: flattenedItems.length,
-          items: flattenedItems.map((item) => ({ name: item.name, category: item.category })),
-        });
+        if (process.env.NODE_ENV === 'development')
+          console.log('[Menu Load] Setting menu items:', {
+            itemsCount: flattenedItems.length,
+            items: flattenedItems.map((item) => ({
+              name: item.name,
+              category: item.category,
+            })),
+          });
 
         setMenuItems(flattenedItems);
 
-        const defaultCategories = ['Breakfast', 'Lunch', 'Dinner'];
+        const uniqueCategories = [
+          ...new Set(flattenedItems.map((item) => item.category)),
+        ];
 
-        const uniqueCategories = [...new Set(flattenedItems.map((item) => item.category))];
+        if (process.env.NODE_ENV === 'development')
+          console.log('[Menu Load] Category processing:', {
+            predefinedCategories,
+            uniqueCategoriesFromItems: uniqueCategories,
+          });
 
-        if (process.env.NODE_ENV === 'development') console.log('[Menu Load] Category processing:', {
-          defaultCategories,
-          uniqueCategoriesFromItems: uniqueCategories,
-        });
-
-        const allCategories = [...new Set([...defaultCategories, ...uniqueCategories])];
+        // Merge predefined categories with categories from existing items
+        const allCategories = [
+          ...new Set([...predefinedCategories, ...uniqueCategories]),
+        ];
         setCategories(allCategories);
-        
-        if (process.env.NODE_ENV === 'development') console.log('[Menu Load] Menu loaded successfully:', {
-          totalItems: flattenedItems.length,
-          categories: allCategories,
-        });
+
+        if (process.env.NODE_ENV === 'development')
+          console.log('[Menu Load] Menu loaded successfully:', {
+            totalItems: flattenedItems.length,
+            categories: allCategories,
+          });
       } else {
-        if (process.env.NODE_ENV === 'development') console.warn('[Menu Load] Invalid response structure:', response);
-        if (process.env.NODE_ENV === 'development') console.warn('[Menu Load] Response details:', {
-          response: response,
-          success: response?.success,
-          data: response?.data,
-          dataType: typeof response?.data,
-        });
-        setMenuItems([]);
-        setOriginalCategories([]);
-        setCategories(['Breakfast', 'Lunch', 'Dinner']);
-        
+        if (process.env.NODE_ENV === 'development')
+          console.warn('[Menu Load] Invalid response structure:', response);
+        if (process.env.NODE_ENV === 'development')
+          console.warn('[Menu Load] Response details:', {
+            response: response,
+            success: response?.success,
+            data: response?.data,
+            dataType: typeof response?.data,
+          });
+          setMenuItems([]);
+          setOriginalCategories([]);
+          setCategories(predefinedCategories);
+
         if (showNotification) {
           showNotification(
             'No menu items found. Click "Import Menu Items" to add sample items, or add items manually.',
@@ -139,13 +227,19 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       }
     } catch (error) {
       console.error('[Menu Load] Error loading menu items:', error);
-      if (process.env.NODE_ENV === 'development') console.error('[Menu Load] Error details:', { message: error.message, stack: error.stack });
+      if (process.env.NODE_ENV === 'development')
+        console.error('[Menu Load] Error details:', {
+          message: error.message,
+          stack: error.stack,
+        });
       setMenuItems([]);
       setCategories(['Breakfast', 'Lunch', 'Dinner']);
-      
+
       if (showNotification) {
         showNotification(
-          'Error loading menu items: ' + (error.message || 'Unknown error') + '. Please try refreshing the page.',
+          'Error loading menu items: ' +
+            (error.message || 'Unknown error') +
+            '. Please try refreshing the page.',
           'error'
         );
       }
@@ -184,7 +278,11 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         } else {
           categoryName = 'Lunch';
         }
-        if (process.env.NODE_ENV === 'development') console.log('[Convert Categories] Assigned category to item:', { itemName: item.name, assignedCategory: categoryName });
+        if (process.env.NODE_ENV === 'development')
+          console.log('[Convert Categories] Assigned category to item:', {
+            itemName: item.name,
+            assignedCategory: categoryName,
+          });
       }
 
       if (!categoriesMap[categoryName]) {
@@ -193,31 +291,57 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         );
 
         categoriesMap[categoryName] = {
-          id: existingItemInCategory?.categoryId || item.categoryId || Date.now(),
+          id:
+            existingItemInCategory?.categoryId || item.categoryId || Date.now(),
           category: categoryName,
-          icon: existingItemInCategory?.categoryIcon || item.categoryIcon || 'fa-utensils',
+          icon:
+            existingItemInCategory?.categoryIcon ||
+            item.categoryIcon ||
+            'fa-utensils',
           tag: existingItemInCategory?.categoryTag || item.categoryTag || '',
           description:
-            existingItemInCategory?.categoryDescription || item.categoryDescription || '',
+            existingItemInCategory?.categoryDescription ||
+            item.categoryDescription ||
+            '',
           items: [],
         };
       }
 
-      const { category, categoryId, categoryIcon, categoryTag, categoryDescription, ...itemData } =
-        item;
+      const {
+        category,
+        categoryId,
+        categoryIcon,
+        categoryTag,
+        categoryDescription,
+        ...itemData
+      } = item;
       categoriesMap[categoryName].items.push(itemData);
     });
 
     const result = Object.values(categoriesMap);
-    const totalItems = result.reduce((sum, cat) => sum + (cat.items?.length || 0), 0);
+    const totalItems = result.reduce(
+      (sum, cat) => sum + (cat.items?.length || 0),
+      0
+    );
 
-    if (process.env.NODE_ENV === 'development') console.log('[Convert Categories] Converted to categories:', { categoriesCount: result.length, totalItems });
+    if (process.env.NODE_ENV === 'development')
+      console.log('[Convert Categories] Converted to categories:', {
+        categoriesCount: result.length,
+        totalItems,
+      });
 
-    const categoriesWithItems = result.filter((cat) => cat.items && cat.items.length > 0);
+    const categoriesWithItems = result.filter(
+      (cat) => cat.items && cat.items.length > 0
+    );
 
     if (categoriesWithItems.length === 0) {
-      if (process.env.NODE_ENV === 'development') console.error('[Convert Categories] Error: No categories with items found after conversion');
-      throw new Error('No menu items found. Please add at least one menu item.');
+      if (process.env.NODE_ENV === 'development')
+        console.error(
+          '[Convert Categories] Error: No categories with items found after conversion'
+        );
+      throw new Error(
+        'No menu items found. Please add at least one menu item.'
+      );
     }
 
     return categoriesWithItems;
@@ -286,7 +410,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
     for (const image of publicImages) {
       const imageName = normalizeName(image.replace(/\.(jpg|jpeg|png)$/i, ''));
-      if (imageName.includes(normalizedName) || normalizedName.includes(imageName)) {
+      if (
+        imageName.includes(normalizedName) ||
+        normalizedName.includes(imageName)
+      ) {
         return '/' + image;
       }
     }
@@ -299,7 +426,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       const imageUrl = item.imageUrl.trim();
       if (imageUrl.startsWith('/')) {
         return imageUrl;
-      } else if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      } else if (
+        imageUrl.startsWith('http://') ||
+        imageUrl.startsWith('https://')
+      ) {
         return imageUrl;
       } else {
         return '/' + imageUrl;
@@ -311,19 +441,33 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
   const syncMenuItemsToGallery = async (items, showNotification = null) => {
     try {
-      if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Starting sync for', items.length, 'menu items');
+      if (process.env.NODE_ENV === 'development')
+        console.log(
+          '[Gallery Sync] Starting sync for',
+          items.length,
+          'menu items'
+        );
 
       let galleryResponse;
       try {
         galleryResponse = await api.getGallery();
-        if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Fetched', galleryResponse?.data?.length || 0, 'existing gallery items');
+        if (process.env.NODE_ENV === 'development')
+          console.log(
+            '[Gallery Sync] Fetched',
+            galleryResponse?.data?.length || 0,
+            'existing gallery items'
+          );
       } catch (error) {
         console.error('[Gallery Sync] Error fetching gallery:', error);
-        throw new Error('Failed to fetch gallery: ' + (error.message || 'Unknown error'));
+        throw new Error(
+          'Failed to fetch gallery: ' + (error.message || 'Unknown error')
+        );
       }
 
       const existingGalleryItems =
-        galleryResponse.success && galleryResponse.data ? galleryResponse.data : [];
+        galleryResponse.success && galleryResponse.data
+          ? galleryResponse.data
+          : [];
 
       const itemsToSync = items
         .map((item) => {
@@ -353,9 +497,16 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           return hasImage && hasPrice && isAvailable;
         });
 
-      if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Filtering items for gallery:', { totalItems: items.length, itemsWithImageAndPrice: itemsToSync.length });
+      if (process.env.NODE_ENV === 'development')
+        console.log('[Gallery Sync] Filtering items for gallery:', {
+          totalItems: items.length,
+          itemsWithImageAndPrice: itemsToSync.length,
+        });
 
-      if (itemsToSync.length === 0 && process.env.NODE_ENV === 'development') console.warn('[Gallery Sync] No items to sync - items need imageUrl and price to appear in gallery');
+      if (itemsToSync.length === 0 && process.env.NODE_ENV === 'development')
+        console.warn(
+          '[Gallery Sync] No items to sync - items need imageUrl and price to appear in gallery'
+        );
 
       let created = 0;
       let updated = 0;
@@ -363,7 +514,8 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       for (const item of itemsToSync) {
         const finalImageUrl = item.imageUrl;
 
-        if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Syncing item:', { name: item.name });
+        if (process.env.NODE_ENV === 'development')
+          console.log('[Gallery Sync] Syncing item:', { name: item.name });
 
         const galleryItemData = {
           name: item.name,
@@ -373,31 +525,54 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           price: item.price,
           category: item.category || 'Menu',
           details:
-            item.details && Array.isArray(item.details) && item.details.length > 0
+            item.details &&
+            Array.isArray(item.details) &&
+            item.details.length > 0
               ? item.details
               : [],
           order: item.order || 0,
           isActive: item.isAvailable !== false,
         };
 
-        const existingItem = existingGalleryItems.find((gi) => gi.name === item.name);
+        const existingItem = existingGalleryItems.find(
+          (gi) => gi.name === item.name
+        );
 
         if (existingItem) {
           try {
-            await api.updateGalleryItem(existingItem._id || existingItem.id, galleryItemData);
+            await api.updateGalleryItem(
+              existingItem._id || existingItem.id,
+              galleryItemData
+            );
             updated++;
-            if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Updated gallery item:', item.name);
+            if (process.env.NODE_ENV === 'development')
+              console.log('[Gallery Sync] Updated gallery item:', item.name);
           } catch (error) {
-            console.error('[Gallery Sync] Error updating gallery item', item.name, ':', error);
+            console.error(
+              '[Gallery Sync] Error updating gallery item',
+              item.name,
+              ':',
+              error
+            );
             throw error;
           }
         } else {
           try {
             await api.createGalleryItem(galleryItemData);
             created++;
-            if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Created gallery item:', item.name, '- Now visible on website gallery');
+            if (process.env.NODE_ENV === 'development')
+              console.log(
+                '[Gallery Sync] Created gallery item:',
+                item.name,
+                '- Now visible on website gallery'
+              );
           } catch (error) {
-            console.error('[Gallery Sync] Error creating gallery item', item.name, ':', error);
+            console.error(
+              '[Gallery Sync] Error creating gallery item',
+              item.name,
+              ':',
+              error
+            );
             throw error;
           }
         }
@@ -408,12 +583,20 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       let deactivated = 0;
       for (const galleryItem of existingGalleryItems) {
         if (!menuItemNames.has(galleryItem.name) && galleryItem.isActive) {
-          await api.updateGalleryItem(galleryItem._id || galleryItem.id, { isActive: false });
+          await api.updateGalleryItem(galleryItem._id || galleryItem.id, {
+            isActive: false,
+          });
           deactivated++;
         }
       }
 
-      if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Sync complete:', { created, updated, deactivated, totalActive: created + updated });
+      if (process.env.NODE_ENV === 'development')
+        console.log('[Gallery Sync] Sync complete:', {
+          created,
+          updated,
+          deactivated,
+          totalActive: created + updated,
+        });
 
       try {
         if (typeof window !== 'undefined') {
@@ -421,10 +604,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
           localStorage.setItem('gallery-last-update', Date.now().toString());
 
-          if (process.env.NODE_ENV === 'development') console.log('[Gallery Sync] Triggered gallery refresh event');
+          if (process.env.NODE_ENV === 'development')
+            console.log('[Gallery Sync] Triggered gallery refresh event');
         }
       } catch (e) {
-        if (process.env.NODE_ENV === 'development') console.warn('[Gallery Sync] Could not trigger refresh event:', e);
+        if (process.env.NODE_ENV === 'development')
+          console.warn('[Gallery Sync] Could not trigger refresh event:', e);
       }
 
       if (showNotification && (created > 0 || updated > 0)) {
@@ -434,7 +619,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         );
       }
     } catch (error) {
-      console.error('[Gallery Sync] Error syncing menu items to gallery:', error);
+      console.error(
+        '[Gallery Sync] Error syncing menu items to gallery:',
+        error
+      );
       if (showNotification) {
         showNotification(
           'Error syncing to gallery: ' + (error.message || 'Unknown error'),
@@ -451,11 +639,17 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       }
 
       if (items.length === 0) {
-        if (process.env.NODE_ENV === 'development') console.warn('[Menu Save] Attempting to save empty menu items array');
+        if (process.env.NODE_ENV === 'development')
+          console.warn('[Menu Save] Attempting to save empty menu items array');
         if (showNotification) {
-          showNotification('Cannot save empty menu. Please add at least one menu item.', 'error');
+          showNotification(
+            'Cannot save empty menu. Please add at least one menu item.',
+            'error'
+          );
         }
-        throw new Error('Cannot save empty menu. Please add at least one menu item.');
+        throw new Error(
+          'Cannot save empty menu. Please add at least one menu item.'
+        );
       }
 
       const categories = convertItemsToCategories(items);
@@ -465,14 +659,27 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
         0
       );
       if (totalItemsInCategories === 0) {
-        if (process.env.NODE_ENV === 'development') console.warn('[Menu Save] Warning: No items to save after conversion');
-        throw new Error('No menu items to save. Please add at least one menu item.');
+        if (process.env.NODE_ENV === 'development')
+          console.warn(
+            '[Menu Save] Warning: No items to save after conversion'
+          );
+        throw new Error(
+          'No menu items to save. Please add at least one menu item.'
+        );
       }
 
-      if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Sending categories to backend:', { categoriesCount: categories.length, itemsCount: items.length });
+      if (process.env.NODE_ENV === 'development')
+        console.log('[Menu Save] Sending categories to backend:', {
+          categoriesCount: categories.length,
+          itemsCount: items.length,
+        });
 
       const response = await api.updateMenu(categories);
-      if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Backend response:', { success: response?.success, dataLength: response?.data?.length || 0 });
+      if (process.env.NODE_ENV === 'development')
+        console.log('[Menu Save] Backend response:', {
+          success: response?.success,
+          dataLength: response?.data?.length || 0,
+        });
 
       if (!response) {
         console.error('[Menu Save] No response from server');
@@ -486,45 +693,27 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       }
 
       if (!response.data || !Array.isArray(response.data)) {
-        if (process.env.NODE_ENV === 'development') console.warn('[Menu Save] Backend response missing valid data:', response);
-      } else if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Successfully saved menu with', response.data.length, 'categories');
-
-      if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Starting gallery sync for', items.length, 'items...');
-      try {
-        await syncMenuItemsToGallery(items, null);
-        if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Gallery sync completed - items should now be visible on website');
-      } catch (syncError) {
-        console.error('[Menu Save] Gallery sync failed:', syncError);
-
-        showNotification(
-          'Menu saved, but gallery sync failed: ' + (syncError.message || 'Unknown error'),
-          'warning'
+        if (process.env.NODE_ENV === 'development')
+          console.warn(
+            '[Menu Save] Backend response missing valid data:',
+            response
+          );
+      } else if (process.env.NODE_ENV === 'development')
+        console.log(
+          '[Menu Save] Successfully saved menu with',
+          response.data.length,
+          'categories'
         );
-      }
 
-      if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Reloading menu items after save...');
-      try {
-        await loadMenuItems();
-        if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Menu items reloaded successfully');
-
-        const reloadedResponse = await api.getMenu();
-        if (reloadedResponse.success && reloadedResponse.data) {
-          const totalLoadedItems = reloadedResponse.data.reduce((sum, cat) => sum + (cat.items?.length || 0), 0);
-          if (process.env.NODE_ENV === 'development') console.log('[Menu Save] Verification - Total items in database:', totalLoadedItems);
-
-          if (totalLoadedItems === 0) {
-            console.error('[Menu Save] WARNING: Items were saved but database shows 0 items!');
-            if (showNotification) {
-              showNotification(
-                'Warning: Items may not have saved correctly. Please check the database.',
-                'error'
-              );
-            }
-          }
-        }
-      } catch (reloadError) {
-        console.error('[Menu Save] Error reloading menu items:', reloadError);
-      }
+      // Sync to gallery in background (non-blocking, fire and forget)
+      // This runs asynchronously and doesn't block the save operation
+      syncMenuItemsToGallery(items, null).catch((syncError) => {
+        if (process.env.NODE_ENV === 'development')
+          console.warn(
+            '[Menu Save] Gallery sync failed (non-critical):',
+            syncError
+          );
+      });
 
       if (showNotification) {
         showNotification('Menu saved successfully', 'success');
@@ -533,8 +722,16 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       return true;
     } catch (error) {
       console.error('[Menu Save] Error saving menu to backend:', error);
-      if (process.env.NODE_ENV === 'development') console.error('[Menu Save] Error details:', { message: error.message, stack: error.stack });
-      if (showNotification) showNotification('Error saving menu: ' + (error.message || 'Unknown error'), 'error');
+      if (process.env.NODE_ENV === 'development')
+        console.error('[Menu Save] Error details:', {
+          message: error.message,
+          stack: error.stack,
+        });
+      if (showNotification)
+        showNotification(
+          'Error saving menu: ' + (error.message || 'Unknown error'),
+          'error'
+        );
       throw error;
     }
   };
@@ -600,6 +797,15 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           itemCategory = menuItems[0].category;
         }
 
+        // Determine final category: use mainCategory if provided, otherwise use category field
+        let finalCategory = formData.mainCategory || formData.category || itemCategory;
+        
+        // If both mainCategory and subcategory are provided, use mainCategory (subcategory is for organization)
+        // The category field will be the main category (Breakfast, Lunch, or Dinner)
+        if (formData.mainCategory) {
+          finalCategory = formData.mainCategory;
+        }
+        
         const newItem = {
           id: Date.now(),
           name: formData.name.trim(),
@@ -607,40 +813,48 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           price: parseFloat(formData.price),
           imageUrl: formData.imageUrl || '',
           isAvailable: formData.isAvailable !== false,
-          category: formData.category || itemCategory,
+          category: finalCategory,
         };
 
-        if (process.env.NODE_ENV === 'development') console.log('[Add Item] New item created:', {
-          name: newItem.name,
-          category: newItem.category,
-          price: newItem.price,
-        });
+        if (process.env.NODE_ENV === 'development')
+          console.log('[Add Item] New item created:', {
+            name: newItem.name,
+            category: newItem.category,
+            price: newItem.price,
+          });
 
         const updatedItems = [...menuItems, newItem];
 
-        if (process.env.NODE_ENV === 'development') console.log('[Add Item] Saving new item to backend:', {
-          itemName: newItem.name,
-          category: newItem.category,
-          price: newItem.price,
-          totalItemsBefore: menuItems.length,
-          totalItemsAfter: updatedItems.length,
-          allItemsBefore: menuItems.map((i) => ({ name: i.name, id: i.id })),
-          allItemsAfter: updatedItems.map((i) => ({ name: i.name, id: i.id })),
-        });
+        if (process.env.NODE_ENV === 'development')
+          console.log('[Add Item] Saving new item to backend:', {
+            itemName: newItem.name,
+            category: newItem.category,
+            price: newItem.price,
+            totalItemsBefore: menuItems.length,
+            totalItemsAfter: updatedItems.length,
+            allItemsBefore: menuItems.map((i) => ({ name: i.name, id: i.id })),
+            allItemsAfter: updatedItems.map((i) => ({
+              name: i.name,
+              id: i.id,
+            })),
+          });
 
         try {
+          // Optimistically update local state first for instant feedback
+          setMenuItems(updatedItems);
+          
+          // Save to backend
           await saveMenuItemsToBackend(updatedItems);
-          if (process.env.NODE_ENV === 'development') console.log('[Add Item] Successfully saved to backend, now reloading from backend...');
-
-          await loadMenuItems();
-          if (process.env.NODE_ENV === 'development') console.log('[Add Item] Reloaded menu items from backend - should now be in sync');
+          
+          // Reload in background to ensure sync (non-blocking)
+          loadMenuItems().catch((reloadError) => {
+            console.error('[Add Item] Background reload failed:', reloadError);
+            // If reload fails, we still have the optimistic update
+          });
         } catch (error) {
           console.error('[Add Item] Failed to save to backend:', error);
-          try {
-            await loadMenuItems();
-          } catch (reloadError) {
-            console.error('[Add Item] Failed to reload after error:', reloadError);
-          }
+          // Revert optimistic update on error
+          await loadMenuItems();
           throw error;
         }
 
@@ -652,10 +866,13 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           isAvailable: true,
           imageUrl: '',
           category: '',
+          mainCategory: '',
+          subcategory: '',
         });
       } catch (error) {
         console.error('Error adding menu item:', error);
-        if (showNotification) showNotification('Error adding menu item', 'error');
+        if (showNotification)
+          showNotification('Error adding menu item', 'error');
       }
     };
 
@@ -688,7 +905,8 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
             const currentMenuResponse = await api.getMenu();
             const existingCategories =
-              currentMenuResponse.success && Array.isArray(currentMenuResponse.data)
+              currentMenuResponse.success &&
+              Array.isArray(currentMenuResponse.data)
                 ? currentMenuResponse.data
                 : [];
 
@@ -700,8 +918,11 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
               );
 
               if (existingIndex >= 0) {
-                const existingItems = mergedCategories[existingIndex].items || [];
-                const existingItemNames = new Set(existingItems.map((item) => item.name));
+                const existingItems =
+                  mergedCategories[existingIndex].items || [];
+                const existingItemNames = new Set(
+                  existingItems.map((item) => item.name)
+                );
 
                 newCategory.items.forEach((newItem) => {
                   if (!existingItemNames.has(newItem.name)) {
@@ -747,7 +968,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
             }
           } catch (error) {
             console.error('Error importing menu items:', error);
-            if (showNotification) showNotification('Error importing menu items: ' + (error.message || 'Unknown error'), 'error');
+            if (showNotification)
+              showNotification(
+                'Error importing menu items: ' +
+                  (error.message || 'Unknown error'),
+                'error'
+              );
           } finally {
             setLoadingMenu(false);
           }
@@ -766,6 +992,14 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
     const performUpdate = async () => {
       try {
+        // Determine final category: use mainCategory if provided, otherwise use category field
+        let finalCategory = formData.mainCategory || formData.category || selectedItem.category || '';
+        
+        // If mainCategory is provided, use it as the category
+        if (formData.mainCategory) {
+          finalCategory = formData.mainCategory;
+        }
+        
         const updatedItem = {
           ...selectedItem,
           name: formData.name.trim(),
@@ -773,23 +1007,32 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           price: parseFloat(formData.price),
           imageUrl: formData.imageUrl || '',
           isAvailable: formData.isAvailable !== false,
-          category: formData.category || selectedItem.category || '',
+          category: finalCategory,
         };
 
         const updatedItems = menuItems.map((item) =>
           item.id === selectedItem.id ? updatedItem : item
         );
 
-        if (process.env.NODE_ENV === 'development') console.log('[Edit Item] Updating item:', {
-          itemId: selectedItem.id,
-          itemName: updatedItem.name,
-          totalItems: updatedItems.length,
-          allItems: updatedItems.map((i) => ({ name: i.name, id: i.id })),
-        });
+        if (process.env.NODE_ENV === 'development')
+          console.log('[Edit Item] Updating item:', {
+            itemId: selectedItem.id,
+            itemName: updatedItem.name,
+            totalItems: updatedItems.length,
+            allItems: updatedItems.map((i) => ({ name: i.name, id: i.id })),
+          });
 
+        // Optimistically update local state first for instant feedback
+        setMenuItems(updatedItems);
+        
+        // Save to backend
         await saveMenuItemsToBackend(updatedItems);
-
-        await loadMenuItems();
+        
+        // Reload in background to ensure sync (non-blocking)
+        loadMenuItems().catch((reloadError) => {
+          console.error('[Edit Item] Background reload failed:', reloadError);
+          // If reload fails, we still have the optimistic update
+        });
 
         setShowEditModal(false);
         setSelectedItem(null);
@@ -800,10 +1043,13 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           isAvailable: true,
           imageUrl: '',
           category: '',
+          mainCategory: '',
+          subcategory: '',
         });
       } catch (error) {
         console.error('Error updating menu item:', error);
-        if (showNotification) showNotification('Error updating menu item', 'error');
+        if (showNotification)
+          showNotification('Error updating menu item', 'error');
       }
     };
 
@@ -822,44 +1068,171 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
 
   const handleDeleteItem = async () => {
     try {
-      const updatedItems = menuItems.filter((item) => item.id !== selectedItem.id);
+      const updatedItems = menuItems.filter(
+        (item) => item.id !== selectedItem.id
+      );
 
-      if (process.env.NODE_ENV === 'development') console.log('[Delete Item] Deleting item:', {
-        itemId: selectedItem.id,
-        itemName: selectedItem.name,
-        totalItemsBefore: menuItems.length,
-        totalItemsAfter: updatedItems.length,
-        remainingItems: updatedItems.map((i) => ({ name: i.name, id: i.id })),
-      });
+      if (process.env.NODE_ENV === 'development')
+        console.log('[Delete Item] Deleting item:', {
+          itemId: selectedItem.id,
+          itemName: selectedItem.name,
+          totalItemsBefore: menuItems.length,
+          totalItemsAfter: updatedItems.length,
+          remainingItems: updatedItems.map((i) => ({ name: i.name, id: i.id })),
+        });
 
+      // Optimistically update local state first for instant feedback
+      setMenuItems(updatedItems);
+      
+      // Save to backend
       await saveMenuItemsToBackend(updatedItems);
-
-      await loadMenuItems();
+      
+      // Reload in background to ensure sync (non-blocking)
+      loadMenuItems().catch((reloadError) => {
+        console.error('[Delete Item] Background reload failed:', reloadError);
+        // If reload fails, we still have the optimistic update
+      });
 
       setShowDeleteModal(false);
       setSelectedItem(null);
     } catch (error) {
       console.error('Error deleting menu item:', error);
-      if (showNotification) showNotification('Error deleting menu item', 'error');
+      if (showNotification)
+        showNotification('Error deleting menu item', 'error');
     }
   };
 
   const handleToggleAvailability = async (item) => {
+    // Prevent multiple clicks
+    if (togglingItemId === item.id) return;
+
+    setTogglingItemId(item.id);
+    
+    // Show notification about status change
+    if (showNotification) {
+      showNotification(
+        `Changing item status to ${!item.isAvailable ? 'Available' : 'Unavailable'}...`,
+        'info'
+      );
+    }
+
     try {
       const updatedItem = { ...item, isAvailable: !item.isAvailable };
-      const updatedItems = menuItems.map((i) => (i.id === item.id ? updatedItem : i));
+      const updatedItems = menuItems.map((i) =>
+        i.id === item.id ? updatedItem : i
+      );
 
+      // Optimistically update local state first for instant feedback
+      setMenuItems(updatedItems);
+      
+      // Save to backend
       await saveMenuItemsToBackend(updatedItems);
+      
+      // Reload in background to ensure sync (non-blocking)
+      loadMenuItems().catch((reloadError) => {
+        console.error('[Toggle Status] Background reload failed:', reloadError);
+        // If reload fails, we still have the optimistic update
+      });
 
-      await loadMenuItems();
+      // Show success notification
+      if (showNotification) {
+        showNotification(
+          `Item status changed to ${updatedItem.isAvailable ? 'Available' : 'Unavailable'}`,
+          'success'
+        );
+      }
     } catch (error) {
       console.error('Error toggling availability:', error);
-      if (showNotification) showNotification('Error updating item', 'error');
+      if (showNotification) {
+        showNotification('Error updating item status', 'error');
+      }
+    } finally {
+      setTogglingItemId(null);
     }
   };
 
   const openEditModal = (item) => {
     setSelectedItem(item);
+    
+    // Parse category to extract main category and subcategory
+    const itemCategory = item.category || '';
+    let mainCategory = '';
+    let subcategory = '';
+    
+    // Check if category is a main category (Breakfast, Lunch, Dinner)
+    const mainCat = mainCategories.find(
+      (cat) => cat.toLowerCase() === itemCategory.toLowerCase()
+    );
+    
+    if (mainCat) {
+      mainCategory = mainCat;
+      // Try to detect subcategory from item name
+      const itemName = (item.name || '').toLowerCase();
+      const allSubcategories = [
+        ...subcategoriesByMainCategory.Breakfast,
+        ...subcategoriesByMainCategory.Lunch,
+        ...subcategoriesByMainCategory.Dinner,
+      ];
+      const uniqueSubcategories = [...new Set(allSubcategories)];
+      
+      for (const subcat of uniqueSubcategories) {
+        const subcatLower = subcat.toLowerCase();
+        if (
+          itemName.includes('mix') &&
+          itemName.includes('match') &&
+          subcatLower.includes('mix') &&
+          subcatLower.includes('match')
+        ) {
+          subcategory = subcat;
+          break;
+        } else if (
+          (itemName.includes('full') || itemName.includes('thali')) &&
+          subcatLower.includes('full')
+        ) {
+          subcategory = subcat;
+          break;
+        } else if (
+          itemName.includes('khichdi') &&
+          subcatLower.includes('khichdi')
+        ) {
+          subcategory = subcat;
+          break;
+        } else if (
+          (itemName.includes('roti') || itemName.includes('paratha')) &&
+          subcatLower.includes('roti')
+        ) {
+          subcategory = subcat;
+          break;
+        } else if (
+          (itemName.includes('add') || itemName.includes('curd')) &&
+          subcatLower.includes('add')
+        ) {
+          subcategory = subcat;
+          break;
+        } else if (
+          itemName.includes('combo') &&
+          subcatLower.includes('combo')
+        ) {
+          subcategory = subcat;
+          break;
+        }
+      }
+    } else if (itemCategory) {
+      // If category is not a main category, it might be a subcategory
+      // Try to find which main category it belongs to
+      for (const mainCat of mainCategories) {
+        if (subcategoriesByMainCategory[mainCat].includes(itemCategory)) {
+          mainCategory = mainCat;
+          subcategory = itemCategory;
+          break;
+        }
+      }
+      // If not found, use category as subcategory and try to infer main category
+      if (!mainCategory) {
+        subcategory = itemCategory;
+      }
+    }
+    
     setFormData({
       name: item.name || '',
       description: item.description || '',
@@ -867,6 +1240,8 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       isAvailable: item.isAvailable !== false,
       imageUrl: item.imageUrl || '',
       category: item.category || '',
+      mainCategory: mainCategory,
+      subcategory: subcategory,
     });
     setShowEditModal(true);
   };
@@ -876,20 +1251,25 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
     setShowDeleteModal(true);
   };
 
+  const openViewModal = (item) => {
+    setSelectedItem(item);
+    setShowViewModal(true);
+  };
+
   if (loading || loadingMenu) {
     return (
-      <div className='admin-content'>
-        <PremiumLoader message='Loading menu...' size='large' />
+      <div className="admin-content">
+        <PremiumLoader message="Loading menu..." size="large" />
       </div>
     );
   }
 
   return (
-    <div className='admin-content'>
-      <div className='dashboard-header'>
-        <div className='action-buttons-group'>
+    <div className="admin-content">
+      <div className="dashboard-header">
+        <div className="action-buttons-group">
           <button
-            className='btn btn-primary btn-small'
+            className="btn btn-primary btn-small"
             onClick={() => {
               setFormData({
                 name: '',
@@ -902,11 +1282,11 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
               setShowAddModal(true);
             }}
           >
-            <i className='fa-solid fa-plus'></i> Add Menu Item
+            <i className="fa-solid fa-plus"></i> Add Menu Item
           </button>
           {menuItems.length > 0 && (
             <button
-              className='btn btn-special danger btn-small'
+              className="btn btn-special danger btn-small"
               onClick={async () => {
                 if (showConfirmation) {
                   showConfirmation({
@@ -929,61 +1309,108 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                         }
                       } catch (error) {
                         console.error('Error deleting menu:', error);
-                        if (showNotification) showNotification('Error deleting menu: ' + (error.message || 'Unknown error'), 'error');
+                        if (showNotification)
+                          showNotification(
+                            'Error deleting menu: ' +
+                              (error.message || 'Unknown error'),
+                            'error'
+                          );
                       }
                     },
                   });
                 }
               }}
-              title='Delete all menu items and remove default record from database'
+              title="Delete all menu items and remove default record from database"
             >
-              <i className='fa-solid fa-trash'></i> Clear All
+              <i className="fa-solid fa-trash"></i> Clear All
             </button>
           )}
           <button
-            className='btn btn-secondary btn-small'
+            className="btn btn-secondary btn-small"
             onClick={async () => {
               try {
                 showNotification('Syncing menu items to gallery...', 'info');
                 await syncMenuItemsToGallery(menuItems, showNotification);
               } catch (error) {
                 console.error('[Manual Sync] Error:', error);
-                showNotification('Gallery sync failed: ' + (error.message || 'Unknown error'), 'error');
+                showNotification(
+                  'Gallery sync failed: ' + (error.message || 'Unknown error'),
+                  'error'
+                );
               }
             }}
-            title='Sync all menu items with images to website gallery'
+            title="Sync all menu items with images to website gallery"
           >
-            <i className='fa-solid fa-sync-alt'></i> Sync to Gallery
+            <i className="fa-solid fa-sync-alt"></i> Sync to Gallery
           </button>
           <button
-            className='btn btn-special btn-small'
+            className="btn btn-special btn-small"
             onClick={handleImportMenuItems}
-            title='Import predefined menu items (adds to existing items)'
+            title="Import predefined menu items (adds to existing items)"
           >
-            <i className='fa-solid fa-download'></i> Import Menu Items
+            <i className="fa-solid fa-download"></i> Import Menu Items
+          </button>
+          <button
+            className="btn btn-secondary btn-small"
+            onClick={() => {
+              const escapeCSV = (value) => {
+                if (value === null || value === undefined) return '';
+                const str = String(value);
+                if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                  return `"${str.replace(/"/g, '""')}"`;
+                }
+                return str;
+              };
+
+              let csvContent =
+                'Name,Description,Price (₹),Category,Available,Image URL\n';
+              filteredMenuItems.forEach((item) => {
+                csvContent += `${escapeCSV(item.name)},${escapeCSV(
+                  item.description || ''
+                )},${escapeCSV(item.price || 0)},${escapeCSV(
+                  item.category || ''
+                )},${escapeCSV(item.isAvailable !== false ? 'Yes' : 'No')},${escapeCSV(
+                  item.imageUrl || ''
+                )}\n`;
+              });
+
+              const BOM = '\uFEFF';
+              const blob = new Blob([BOM + csvContent], {
+                type: 'text/csv;charset=utf-8;',
+              });
+              const link = document.createElement('a');
+              link.href = URL.createObjectURL(blob);
+              link.download = `menu_items_export_${new Date().toISOString().split('T')[0]}.csv`;
+              link.click();
+              if (showNotification)
+                showNotification('Menu items exported successfully', 'success');
+            }}
+            title="Export Menu Items to CSV"
+          >
+            <i className="fa-solid fa-file-export"></i> Export Menu
           </button>
         </div>
       </div>
 
-      <div className='dashboard-card dashboard-card-spaced'>
-        <div className='filter-container'>
-          <div className='search-input-wrapper search-input-wrapper-flex'>
+      <div className="dashboard-card dashboard-card-spaced">
+        <div className="filter-container">
+          <div className="search-input-wrapper search-input-wrapper-flex">
             <input
-              type='text'
-              className='input-field search-input-with-icon'
-              placeholder='Search menu items...'
+              type="text"
+              className="input-field search-input-with-icon"
+              placeholder="Search menu items..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className='filter-field-group-standard min-width-140'>
-            <label className='filter-label-standard'>Category</label>
+          <div className="filter-field-group-standard min-width-140">
+            <label className="filter-label-standard">Category</label>
             <select
-              className='input-field filter-input-standard'
+              className="input-field filter-input-standard"
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
             >
-              <option value=''>All Categories</option>
+              <option value="">All Categories</option>
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
@@ -991,10 +1418,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
               ))}
             </select>
           </div>
-          <div className='filter-field-group-standard min-width-160'>
-            <label className='filter-label-standard'>Sort By</label>
+          <div className="filter-field-group-standard min-width-160">
+            <label className="filter-label-standard">Sort By</label>
             <select
-              className='input-field filter-input-standard'
+              className="input-field filter-input-standard"
               value={`${sortBy}-${sortOrder}`}
               onChange={(e) => {
                 const [by, order] = e.target.value.split('-');
@@ -1002,24 +1429,24 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                 setSortOrder(order);
               }}
             >
-              <option value='name-asc'>Name (A-Z)</option>
-              <option value='name-desc'>Name (Z-A)</option>
-              <option value='price-asc'>Price (Low to High)</option>
-              <option value='price-desc'>Price (High to Low)</option>
-              <option value='category-asc'>Category (A-Z)</option>
-              <option value='category-desc'>Category (Z-A)</option>
+              <option value="name-asc">Name (A-Z)</option>
+              <option value="name-desc">Name (Z-A)</option>
+              <option value="price-asc">Price (Low to High)</option>
+              <option value="price-desc">Price (High to Low)</option>
+              <option value="category-asc">Category (A-Z)</option>
+              <option value="category-desc">Category (Z-A)</option>
             </select>
           </div>
           {(searchQuery || filterCategory) && (
             <button
-              className='btn btn-ghost btn-small'
+              className="btn btn-ghost btn-small"
               onClick={() => {
                 setSearchQuery('');
                 setFilterCategory('');
               }}
-              className='form-label-small'
+              className="form-label-small"
             >
-              <i className='fa-solid fa-xmark icon-margin-right-sm'></i>
+              <i className="fa-solid fa-xmark icon-margin-right-sm"></i>
               Clear Filters
             </button>
           )}
@@ -1027,17 +1454,17 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       </div>
 
       {filteredMenuItems.length === 0 ? (
-        <div className='empty-state-container'>
-          <i className='fa-solid fa-utensils empty-state-icon'></i>
-          <h3 className='mb-md'>No Menu Items</h3>
-          <p className='mb-xl empty-state-text'>
+        <div className="empty-state-container">
+          <i className="fa-solid fa-utensils empty-state-icon"></i>
+          <h3 className="mb-md">No Menu Items</h3>
+          <p className="mb-xl empty-state-text">
             {searchQuery || filterCategory
               ? 'No items match your filters'
               : 'Get started by adding your first menu item'}
           </p>
           {!searchQuery && !filterCategory && (
             <button
-              className='btn btn-primary'
+              className="btn btn-primary"
               onClick={() => {
                 setFormData({
                   name: '',
@@ -1050,12 +1477,12 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                 setShowAddModal(true);
               }}
             >
-              <i className='fa-solid fa-plus'></i> Add Menu Item
+              <i className="fa-solid fa-plus"></i> Add Menu Item
             </button>
           )}
         </div>
       ) : (
-        <div className='dashboard-grid-layout menu-items-grid'>
+        <div className="dashboard-grid-layout menu-items-grid">
           {filteredMenuItems.map((item, index) => {
             const getImageUrl = () => {
               const publicImages = [
@@ -1119,8 +1546,13 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                 }
 
                 for (const image of publicImages) {
-                  const imageName = normalizeName(image.replace(/\.(jpg|jpeg|png)$/i, ''));
-                  if (imageName.includes(normalizedName) || normalizedName.includes(imageName)) {
+                  const imageName = normalizeName(
+                    image.replace(/\.(jpg|jpeg|png)$/i, '')
+                  );
+                  if (
+                    imageName.includes(normalizedName) ||
+                    normalizedName.includes(imageName)
+                  ) {
                     return '/' + image;
                   }
                 }
@@ -1132,7 +1564,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
                 const imageUrl = item.imageUrl.trim();
                 if (imageUrl.startsWith('/')) {
                   return imageUrl;
-                } else if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+                } else if (
+                  imageUrl.startsWith('http://') ||
+                  imageUrl.startsWith('https://')
+                ) {
                   return imageUrl;
                 } else {
                   return '/' + imageUrl;
@@ -1167,77 +1602,111 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
             };
 
             return (
-              <div key={`${item.id}-${item.name}-${index}`} className='menu-item-card-enhanced'>
-                <div className='menu-item-card-header'>
-                  <div className='menu-item-image-wrapper'>
+              <div
+                key={`${item.id}-${item.name}-${index}`}
+                className="menu-item-card-enhanced"
+              >
+                <div className="menu-item-card-header">
+                  <div className="menu-item-image-wrapper">
                     <img
                       src={getImageUrl()}
                       alt={item.name || 'Menu item'}
-                      className='menu-item-image'
+                      className="menu-item-image"
                       onError={(e) => {
                         const fallback = '/food.jpeg';
-                        if (e.target.src !== fallback && !e.target.src.includes(fallback)) {
+                        if (
+                          e.target.src !== fallback &&
+                          !e.target.src.includes(fallback)
+                        ) {
                           e.target.src = fallback;
                         }
                       }}
-                      loading='lazy'
+                      loading="lazy"
                     />
-                    <div className='menu-item-availability-badge'>
+                    <div className="menu-item-availability-badge">
                       <i
                         className={`fa-solid ${
-                          item.isAvailable ? 'fa-check-circle' : 'fa-times-circle'
+                          item.isAvailable
+                            ? 'fa-check-circle'
+                            : 'fa-times-circle'
                         }`}
                       ></i>
-                      <span>{item.isAvailable ? 'Available' : 'Unavailable'}</span>
+                      <span>
+                        {item.isAvailable ? 'Available' : 'Unavailable'}
+                      </span>
                     </div>
-                    <div className='menu-item-category-badge'>
+                    <div className="menu-item-category-badge">
                       <i className={`fa-solid ${categoryStyle.icon}`}></i>
                       <span>{item.category || 'Uncategorized'}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className='menu-item-card-body'>
-                  <div className='menu-item-title-section'>
-                    <h3 className='menu-item-title'>{item.name}</h3>
+                <div className="menu-item-card-body">
+                  <div className="menu-item-title-section">
+                    <h3 className="menu-item-title">{item.name}</h3>
                     {item.description && (
-                      <p className='menu-item-description'>{item.description}</p>
+                      <p className="menu-item-description">
+                        {item.description}
+                      </p>
                     )}
                   </div>
 
-                  <div className='menu-item-footer'>
-                    <div className='menu-item-price-section'>
-                      <span className='menu-item-price-label'>Price</span>
-                      <div className='menu-item-price'>
-                        <span className='menu-item-price-symbol'>₹</span>
-                        <span className='menu-item-price-amount'>
+                  <div className="menu-item-footer">
+                    <div className="menu-item-price-section">
+                      <span className="menu-item-price-label">Price</span>
+                      <div className="menu-item-price">
+                        <span className="menu-item-price-symbol">₹</span>
+                        <span className="menu-item-price-amount">
                           {formatCurrency(item.price || 0)}
                         </span>
                       </div>
                     </div>
-                    <div className='menu-item-actions'>
+                    <div className="menu-item-actions">
                       <button
-                        className='menu-item-action-btn menu-item-action-toggle'
+                        className="menu-item-action-btn menu-item-action-view"
+                        onClick={() => openViewModal(item)}
+                        title="View Item Details"
+                      >
+                        <i className="fa-solid fa-eye"></i>
+                      </button>
+                      <button
+                        className={`menu-item-action-btn menu-item-action-toggle ${
+                          togglingItemId === item.id ? 'toggling' : ''
+                        }`}
                         onClick={() => handleToggleAvailability(item)}
-                        title={item.isAvailable ? 'Mark as Unavailable' : 'Mark as Available'}
+                        disabled={togglingItemId === item.id}
+                        title={
+                          togglingItemId === item.id
+                            ? 'Changing status...'
+                            : item.isAvailable
+                            ? 'Mark as Unavailable'
+                            : 'Mark as Available'
+                        }
                       >
-                        <i
-                          className={`fa-solid ${item.isAvailable ? 'fa-eye-slash' : 'fa-eye'}`}
-                        ></i>
+                        {togglingItemId === item.id ? (
+                          <i className="fa-solid fa-spinner fa-spin"></i>
+                        ) : (
+                          <i
+                            className={`fa-solid ${
+                              item.isAvailable ? 'fa-toggle-on' : 'fa-toggle-off'
+                            }`}
+                          ></i>
+                        )}
                       </button>
                       <button
-                        className='menu-item-action-btn menu-item-action-edit'
+                        className="menu-item-action-btn menu-item-action-edit"
                         onClick={() => openEditModal(item)}
-                        title='Edit Item'
+                        title="Edit Item"
                       >
-                        <i className='fa-solid fa-pencil'></i>
+                        <i className="fa-solid fa-pencil"></i>
                       </button>
                       <button
-                        className='menu-item-action-btn menu-item-action-delete'
+                        className="menu-item-action-btn menu-item-action-delete"
                         onClick={() => openDeleteModal(item)}
-                        title='Delete Item'
+                        title="Delete Item"
                       >
-                        <i className='fa-solid fa-trash'></i>
+                        <i className="fa-solid fa-trash"></i>
                       </button>
                     </div>
                   </div>
@@ -1249,119 +1718,160 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       )}
 
       {showAddModal && (
-        <div className='modal-overlay'>
-          <div className='modal-container max-width-540'>
-            <div className='modal-header-compact'>
-              <h2 className='modal-header-title'>Add Menu Item</h2>
+        <div className="modal-overlay">
+          <div className="modal-container max-width-540">
+            <div className="modal-header-compact">
+              <h2 className="modal-header-title">Add Menu Item</h2>
               <button
-                className='btn btn-ghost btn-icon modal-close'
+                className="btn btn-ghost btn-icon modal-close"
                 onClick={() => setShowAddModal(false)}
               >
-                <i className='fa-solid fa-times'></i>
+                <i className="fa-solid fa-times"></i>
               </button>
             </div>
-            <div className='modal-body-compact'>
-              <div className='form-grid menu-form-grid'>
-                <div className='form-group-full'>
-                  <label className='form-label-small'>Item Name *</label>
+            <div className="modal-body-compact">
+              <div className="form-grid menu-form-grid">
+                <div className="form-group-full">
+                  <label className="form-label-small">Item Name *</label>
                   <input
-                    type='text'
-                    className='input-field form-input-small'
+                    type="text"
+                    className="input-field form-input-small"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder='e.g., Lunch Combo'
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    placeholder="e.g., Lunch Combo"
                     required
                   />
                 </div>
-                <div className='form-group-full'>
-                  <label className='form-label-small'>Description</label>
+                <div className="form-group-full">
+                  <label className="form-label-small">Description</label>
                   <textarea
-                    className='input-field form-textarea'
+                    className="input-field form-textarea"
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder='Item description...'
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    placeholder="Item description..."
                     rows={2}
                   />
                 </div>
-                <div className='form-group-full'>
-                  <label className='form-label-small'>Price (₹) *</label>
+                <div className="form-group-full">
+                  <label className="form-label-small">Price (₹) *</label>
                   <input
-                    type='number'
-                    className='input-field form-input-small'
+                    type="number"
+                    className="input-field form-input-small"
                     value={formData.price}
                     onChange={(e) =>
-                      setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })
+                      setFormData({
+                        ...formData,
+                        price: parseFloat(e.target.value) || 0,
+                      })
                     }
-                    placeholder='0.00'
-                    min='0'
-                    step='0.01'
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
                     required
-                    className='menu-form-input'
+                    className="menu-form-input"
                   />
                 </div>
-                <div className='form-group menu-form-group-full'>
-                  <label className='menu-form-label'>
-                    Category <span className='menu-form-label-optional'>(Optional)</span>
+                <div className="form-group menu-form-group-full">
+                  <label className="menu-form-label">
+                    Main Category{' '}
+                    <span className="menu-form-label-optional">(Optional)</span>
                   </label>
                   <select
-                    className='input-field'
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className='menu-form-input'
+                    className="input-field menu-form-input"
+                    value={formData.mainCategory}
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        mainCategory: e.target.value,
+                        subcategory: '', // Reset subcategory when main category changes
+                      });
+                    }}
                   >
-                    <option value=''>Select Category</option>
-                    {categories && categories.length > 0 ? (
-                      categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))
-                    ) : (
-                      <>
-                        <option value='Breakfast'>Breakfast</option>
-                        <option value='Lunch'>Lunch</option>
-                        <option value='Dinner'>Dinner</option>
-                      </>
-                    )}
+                    <option value="">Select Main Category</option>
+                    {mainCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
                   </select>
                 </div>
-                <div className='form-group menu-form-group-full'>
-                  <label className='menu-form-label'>
-                    Image URL <span className='menu-form-label-optional'>(Optional)</span>
+                {formData.mainCategory && (
+                  <div className="form-group menu-form-group-full">
+                    <label className="menu-form-label">
+                      Subcategory / Package{' '}
+                      <span className="menu-form-label-optional">(Optional)</span>
+                    </label>
+                    <select
+                      className="input-field menu-form-input"
+                      value={formData.subcategory}
+                      onChange={(e) =>
+                        setFormData({ ...formData, subcategory: e.target.value })
+                      }
+                    >
+                      <option value="">Select Subcategory</option>
+                      {subcategoriesByMainCategory[formData.mainCategory]?.map(
+                        (subcat) => (
+                          <option key={subcat} value={subcat}>
+                            {subcat}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </div>
+                )}
+                <div className="form-group menu-form-group-full">
+                  <label className="menu-form-label">
+                    Image URL{' '}
+                    <span className="menu-form-label-optional">(Optional)</span>
                   </label>
                   <input
-                    type='text'
-                    className='input-field menu-form-input'
+                    type="text"
+                    className="input-field menu-form-input"
                     value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    placeholder='/food.jpeg or https://example.com/image.jpg'
+                    onChange={(e) =>
+                      setFormData({ ...formData, imageUrl: e.target.value })
+                    }
+                    placeholder="/food.jpeg or https://example.com/image.jpg"
                   />
-                  <small className='menu-form-helper-text'>
-                    Use /filename.jpg for public folder, or full URL for external images
+                  <small className="menu-form-helper-text">
+                    Use /filename.jpg for public folder, or full URL for
+                    external images
                   </small>
                 </div>
-                <div className='form-group menu-form-group-full-mt'>
-                  <label className='menu-checkbox-label'>
+                <div className="form-group menu-form-group-full-mt">
+                  <label className="menu-checkbox-label">
                     <input
-                      type='checkbox'
-                      className='menu-checkbox-input'
+                      type="checkbox"
+                      className="menu-checkbox-input"
                       checked={formData.isAvailable}
-                      onChange={(e) => setFormData({ ...formData, isAvailable: e.target.checked })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          isAvailable: e.target.checked,
+                        })
+                      }
                     />
                     <span>Available for ordering</span>
                   </label>
                 </div>
               </div>
             </div>
-            <div className='modal-footer menu-modal-footer'>
+            <div className="modal-footer menu-modal-footer">
               <button
-                className='btn btn-ghost menu-modal-btn'
+                className="btn btn-ghost menu-modal-btn"
                 onClick={() => setShowAddModal(false)}
               >
                 Cancel
               </button>
-              <button className='btn btn-primary menu-modal-btn' onClick={handleAddItem}>
-                <i className='fa-solid fa-plus'></i> Add Item
+              <button
+                className="btn btn-primary menu-modal-btn"
+                onClick={handleAddItem}
+              >
+                <i className="fa-solid fa-plus"></i> Add Item
               </button>
             </div>
           </div>
@@ -1369,126 +1879,357 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
       )}
 
       {showEditModal && selectedItem && (
-        <div className='modal-overlay'>
-          <div className='modal-container menu-edit-modal-container'>
-            <div className='modal-header menu-edit-modal-header'>
+        <div className="modal-overlay">
+          <div className="modal-container menu-edit-modal-container">
+            <div className="modal-header menu-edit-modal-header">
               <h2>Edit Menu Item</h2>
               <button
-                className='btn btn-ghost btn-icon modal-close'
+                className="btn btn-ghost btn-icon modal-close"
                 onClick={() => setShowEditModal(false)}
               >
-                <i className='fa-solid fa-times'></i>
+                <i className="fa-solid fa-times"></i>
               </button>
             </div>
-            <div className='modal-body menu-edit-modal-body'>
-              <div className='form-grid menu-form-grid'>
-                <div className='form-group menu-form-group-full'>
-                  <label className='menu-form-label'>Item Name *</label>
+            <div className="modal-body menu-edit-modal-body">
+              <div className="form-grid menu-form-grid">
+                <div className="form-group menu-form-group-full">
+                  <label className="menu-form-label">Item Name *</label>
                   <input
-                    type='text'
-                    className='input-field'
+                    type="text"
+                    className="input-field"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder='e.g., Lunch Combo'
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    placeholder="e.g., Lunch Combo"
                     required
-                    className='menu-form-input'
+                    className="menu-form-input"
                   />
                 </div>
-                <div className='form-group menu-form-group-full'>
-                  <label className='menu-form-label'>Description</label>
+                <div className="form-group menu-form-group-full">
+                  <label className="menu-form-label">Description</label>
                   <textarea
-                    className='input-field'
+                    className="input-field"
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder='Item description...'
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    placeholder="Item description..."
                     rows={2}
-                    className='menu-form-input'
-                    className='menu-form-textarea'
+                    className="menu-form-input"
+                    className="menu-form-textarea"
                   />
                 </div>
-                <div className='form-group menu-form-group-full'>
-                  <label className='menu-form-label'>Price (₹) *</label>
+                <div className="form-group menu-form-group-full">
+                  <label className="menu-form-label">Price (₹) *</label>
                   <input
-                    type='number'
-                    className='input-field'
+                    type="number"
+                    className="input-field"
                     value={formData.price}
                     onChange={(e) =>
-                      setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })
+                      setFormData({
+                        ...formData,
+                        price: parseFloat(e.target.value) || 0,
+                      })
                     }
-                    placeholder='0.00'
-                    min='0'
-                    step='0.01'
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
                     required
-                    className='menu-form-input'
+                    className="menu-form-input"
                   />
                 </div>
-                <div className='form-group menu-form-group-full'>
-                  <label className='menu-form-label'>
-                    Category <span className='menu-form-label-optional'>(Optional)</span>
+                <div className="form-group menu-form-group-full">
+                  <label className="menu-form-label">
+                    Main Category{' '}
+                    <span className="menu-form-label-optional">(Optional)</span>
                   </label>
                   <select
-                    className='input-field'
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className='menu-form-input'
+                    className="input-field menu-form-input"
+                    value={formData.mainCategory}
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        mainCategory: e.target.value,
+                        subcategory: '', // Reset subcategory when main category changes
+                      });
+                    }}
                   >
-                    <option value=''>Select Category</option>
-                    {categories && categories.length > 0 ? (
-                      categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))
-                    ) : (
-                      <>
-                        <option value='Breakfast'>Breakfast</option>
-                        <option value='Lunch'>Lunch</option>
-                        <option value='Dinner'>Dinner</option>
-                      </>
-                    )}
+                    <option value="">Select Main Category</option>
+                    {mainCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
                   </select>
                 </div>
-                <div className='form-group menu-form-group-full'>
-                  <label className='menu-form-label'>
-                    Image URL <span className='menu-form-label-optional'>(Optional)</span>
+                {formData.mainCategory && (
+                  <div className="form-group menu-form-group-full">
+                    <label className="menu-form-label">
+                      Subcategory / Package{' '}
+                      <span className="menu-form-label-optional">(Optional)</span>
+                    </label>
+                    <select
+                      className="input-field menu-form-input"
+                      value={formData.subcategory}
+                      onChange={(e) =>
+                        setFormData({ ...formData, subcategory: e.target.value })
+                      }
+                    >
+                      <option value="">Select Subcategory</option>
+                      {subcategoriesByMainCategory[formData.mainCategory]?.map(
+                        (subcat) => (
+                          <option key={subcat} value={subcat}>
+                            {subcat}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </div>
+                )}
+                <div className="form-group menu-form-group-full">
+                  <label className="menu-form-label">
+                    Image URL{' '}
+                    <span className="menu-form-label-optional">(Optional)</span>
                   </label>
                   <input
-                    type='text'
-                    className='input-field menu-form-input'
+                    type="text"
+                    className="input-field menu-form-input"
                     value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    placeholder='Leave empty to auto-match, or enter /filename.jpg'
+                    onChange={(e) =>
+                      setFormData({ ...formData, imageUrl: e.target.value })
+                    }
+                    placeholder="Leave empty to auto-match, or enter /filename.jpg"
                   />
-                  <small className='menu-form-helper-text'>
+                  <small className="menu-form-helper-text">
                     {formData.imageUrl ? (
                       <>Custom: {formData.imageUrl}</>
                     ) : (
-                      <>Auto-matching: Finds image from public folder based on item name</>
+                      <>
+                        Auto-matching: Finds image from public folder based on
+                        item name
+                      </>
                     )}
                   </small>
                 </div>
-                <div className='form-group menu-form-group-full-mt'>
-                  <label className='menu-checkbox-label'>
+                <div className="form-group menu-form-group-full-mt">
+                  <label className="menu-checkbox-label">
                     <input
-                      type='checkbox'
-                      className='menu-checkbox-input'
+                      type="checkbox"
+                      className="menu-checkbox-input"
                       checked={formData.isAvailable}
-                      onChange={(e) => setFormData({ ...formData, isAvailable: e.target.checked })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          isAvailable: e.target.checked,
+                        })
+                      }
                     />
                     <span>Available for ordering</span>
                   </label>
                 </div>
               </div>
             </div>
-            <div className='modal-footer menu-modal-footer'>
+            <div className="modal-footer menu-modal-footer">
               <button
-                className='btn btn-ghost menu-modal-btn'
+                className="btn btn-ghost menu-modal-btn"
                 onClick={() => setShowEditModal(false)}
               >
                 Cancel
               </button>
-              <button className='btn btn-primary menu-modal-btn' onClick={handleEditItem}>
-                <i className='fa-solid fa-save'></i> Save Changes
+              <button
+                className="btn btn-primary menu-modal-btn"
+                onClick={handleEditItem}
+              >
+                <i className="fa-solid fa-save"></i> Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showViewModal && selectedItem && (
+        <div className="modal-overlay">
+          <div className="modal-container max-width-540">
+            <div className="modal-header-compact">
+              <h2 className="modal-header-title">View Menu Item</h2>
+              <button
+                className="btn btn-ghost btn-icon modal-close"
+                onClick={() => {
+                  setShowViewModal(false);
+                  setSelectedItem(null);
+                }}
+              >
+                <i className="fa-solid fa-times"></i>
+              </button>
+            </div>
+            <div className="modal-body-compact">
+              <div className="menu-view-content">
+                <div className="menu-view-image-wrapper">
+                  {(() => {
+                    const getImageUrl = () => {
+                      if (selectedItem.imageUrl && selectedItem.imageUrl.trim() !== '') {
+                        const imageUrl = selectedItem.imageUrl.trim();
+                        if (imageUrl.startsWith('/')) {
+                          return imageUrl;
+                        } else if (
+                          imageUrl.startsWith('http://') ||
+                          imageUrl.startsWith('https://')
+                        ) {
+                          return imageUrl;
+                        } else {
+                          return '/' + imageUrl;
+                        }
+                      }
+                      // Try to find image by name
+                      const normalizeName = (name) => {
+                        return name
+                          .toLowerCase()
+                          .replace(/\s+/g, '')
+                          .replace(/[^a-z0-9]/g, '')
+                          .trim();
+                      };
+                      const findImageByName = (itemName) => {
+                        if (!itemName) return '/food.jpeg';
+                        const normalizedName = normalizeName(itemName);
+                        const commonMatches = {
+                          chhole: 'Amritsarichhole.png',
+                          chole: 'Amritsarichhole.png',
+                          chana: 'kalachana.jpg',
+                          dal: 'MoondDalKhichdi.jpg',
+                          khichdi: 'MoondDalKhichdi.jpg',
+                          paratha: 'DeliciousAaluParatha.jpg',
+                          aloo: 'DeliciousAaluParatha.jpg',
+                          thali: 'DesiThali.jpeg',
+                          rajma: 'rajma.jpg',
+                          roti: 'RotiSabji.png',
+                          sabji: 'RotiSabji.png',
+                          pakora: 'kadhipakora.jpg',
+                          kadhi: 'kadhipakora.jpg',
+                          lobhiya: 'lobhiya.jpg',
+                          kofta: 'lokikofte.jpg',
+                          koofte: 'lokikofte.jpg',
+                          curd: 'Curd.jpg',
+                          dahi: 'Curd.jpg',
+                          tiffin: 'FullTiffin.jpg',
+                          full: 'FullTiffin.jpg',
+                        };
+                        for (const [key, imageFile] of Object.entries(commonMatches)) {
+                          if (normalizedName.includes(key)) {
+                            return '/' + imageFile;
+                          }
+                        }
+                        return '/food.jpeg';
+                      };
+                      return findImageByName(selectedItem.name);
+                    };
+                    const imageUrl = getImageUrl();
+                    return (
+                      <img
+                        src={imageUrl}
+                        alt={selectedItem.name || 'Menu item'}
+                        className="menu-view-image"
+                        onError={(e) => {
+                          const fallback = '/food.jpeg';
+                          if (
+                            e.target.src !== fallback &&
+                            !e.target.src.includes(fallback)
+                          ) {
+                            e.target.src = fallback;
+                          }
+                        }}
+                      />
+                    );
+                  })()}
+                </div>
+                <div className="menu-view-details">
+                  <div className="menu-view-detail-row">
+                    <span className="menu-view-label">Item Name:</span>
+                    <span className="menu-view-value">{selectedItem.name}</span>
+                  </div>
+                  {selectedItem.description && (
+                    <div className="menu-view-detail-row">
+                      <span className="menu-view-label">Description:</span>
+                      <span className="menu-view-value">
+                        {selectedItem.description}
+                      </span>
+                    </div>
+                  )}
+                  <div className="menu-view-detail-row">
+                    <span className="menu-view-label">Price:</span>
+                    <span className="menu-view-value">
+                      ₹{formatCurrency(selectedItem.price || 0)}
+                    </span>
+                  </div>
+                  <div className="menu-view-detail-row">
+                    <span className="menu-view-label">Category:</span>
+                    <span className="menu-view-value">
+                      {(() => {
+                        const itemCategory = selectedItem.category || '';
+                        // Check if category is a main category
+                        const mainCat = mainCategories.find(
+                          (cat) => cat.toLowerCase() === itemCategory.toLowerCase()
+                        );
+                        if (mainCat) {
+                          return mainCat;
+                        }
+                        // If not a main category, check if it's a subcategory and find its main category
+                        for (const mainCat of mainCategories) {
+                          if (subcategoriesByMainCategory[mainCat]?.includes(itemCategory)) {
+                            return `${mainCat} - ${itemCategory}`;
+                          }
+                        }
+                        // Fallback to original category or Uncategorized
+                        return itemCategory || 'Uncategorized';
+                      })()}
+                    </span>
+                  </div>
+                  <div className="menu-view-detail-row">
+                    <span className="menu-view-label">Status:</span>
+                    <span
+                      className={`menu-view-status ${
+                        selectedItem.isAvailable ? 'available' : 'unavailable'
+                      }`}
+                    >
+                      <i
+                        className={`fa-solid ${
+                          selectedItem.isAvailable
+                            ? 'fa-check-circle'
+                            : 'fa-times-circle'
+                        }`}
+                      ></i>
+                      <span>{selectedItem.isAvailable ? 'Available' : 'Unavailable'}</span>
+                    </span>
+                  </div>
+                  {selectedItem.imageUrl && selectedItem.imageUrl.trim() && (
+                    <div className="menu-view-detail-row">
+                      <span className="menu-view-label">Image URL:</span>
+                      <span className="menu-view-value menu-view-url">
+                        {selectedItem.imageUrl}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer menu-modal-footer">
+              <button
+                className="btn btn-ghost menu-modal-btn"
+                onClick={() => {
+                  setShowViewModal(false);
+                  setSelectedItem(null);
+                }}
+              >
+                Close
+              </button>
+              <button
+                className="btn btn-primary menu-modal-btn"
+                onClick={() => {
+                  setShowViewModal(false);
+                  openEditModal(selectedItem);
+                }}
+              >
+                <i className="fa-solid fa-pencil"></i> Edit Item
               </button>
             </div>
           </div>
@@ -1500,10 +2241,10 @@ const MenuPriceTab = ({ settings, showNotification, showConfirmation, loading = 
           show={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDeleteItem}
-          title='Delete Menu Item'
+          title="Delete Menu Item"
           message={`Are you sure you want to delete "${selectedItem.name}"? This action cannot be undone.`}
-          confirmText='Delete'
-          confirmType='danger'
+          confirmText="Delete"
+          confirmType="danger"
         />
       )}
     </div>

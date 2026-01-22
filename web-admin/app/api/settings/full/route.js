@@ -1,8 +1,9 @@
-
 import connectDB from '../../../../lib/db.js';
 import Settings from '../../../../lib/models/Settings.js';
-import { isAdmin, createErrorResponse } from '../../../../lib/middleware/auth.js';
-
+import {
+  isAdmin,
+  createErrorResponse,
+} from '../../../../lib/middleware/auth.js';
 
 export async function GET(request) {
   try {
@@ -20,4 +21,3 @@ export async function GET(request) {
     );
   }
 }
-

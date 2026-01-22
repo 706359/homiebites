@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 
-
 export const useKeyboardAvoidance = (options = {}) => {
   const {
     enabled = true,
@@ -21,31 +20,28 @@ export const useKeyboardAvoidance = (options = {}) => {
       if (!isMobile() || !input) return;
 
       const scrollInputIntoView = () => {
-        
         if (window.visualViewport) {
           const viewport = window.visualViewport;
           const inputRect = input.getBoundingClientRect();
           const viewportHeight = viewport.height;
-          
-          
+
           if (inputRect.bottom > viewportHeight) {
             const scrollDelay = delay !== null ? delay : 100;
             setTimeout(() => {
               input.scrollIntoView({
                 behavior: scrollBehavior,
                 block: block,
-                inline: 'nearest'
+                inline: 'nearest',
               });
             }, scrollDelay);
           }
         } else {
-          
           const scrollDelay = delay !== null ? delay : 300;
           setTimeout(() => {
             input.scrollIntoView({
               behavior: scrollBehavior,
               block: block,
-              inline: 'nearest'
+              inline: 'nearest',
             });
           }, scrollDelay);
         }
@@ -54,7 +50,6 @@ export const useKeyboardAvoidance = (options = {}) => {
       scrollInputIntoView();
     };
 
-    
     const inputs = inputRefs.current.filter(Boolean);
     const focusHandlers = inputs.map((input) => {
       const handler = () => handleInputFocus(input);
@@ -63,26 +58,22 @@ export const useKeyboardAvoidance = (options = {}) => {
     });
 
     return () => {
-      
       focusHandlers.forEach(({ input, handler }) => {
         input.removeEventListener('focus', handler);
       });
     };
   }, [enabled, mobileBreakpoint, scrollBehavior, block, delay]);
 
-  
   const registerInput = (input) => {
     if (input && !inputRefs.current.includes(input)) {
       inputRefs.current.push(input);
     }
   };
 
-  
   const unregisterInput = (input) => {
     inputRefs.current = inputRefs.current.filter((ref) => ref !== input);
   };
 
-  
   const createInputRef = () => {
     return (input) => {
       if (input) {
@@ -99,7 +90,6 @@ export const useKeyboardAvoidance = (options = {}) => {
   };
 };
 
-
 export const useAutoKeyboardAvoidance = (options = {}) => {
   const {
     containerSelector = 'form',
@@ -110,7 +100,8 @@ export const useAutoKeyboardAvoidance = (options = {}) => {
   useEffect(() => {
     if (!restOptions.enabled && restOptions.enabled !== undefined) return;
 
-    const isMobile = () => window.innerWidth <= (restOptions.mobileBreakpoint || 768);
+    const isMobile = () =>
+      window.innerWidth <= (restOptions.mobileBreakpoint || 768);
 
     const handleInputFocus = (input) => {
       if (!isMobile() || !input) return;
@@ -120,14 +111,14 @@ export const useAutoKeyboardAvoidance = (options = {}) => {
           const viewport = window.visualViewport;
           const inputRect = input.getBoundingClientRect();
           const viewportHeight = viewport.height;
-          
+
           if (inputRect.bottom > viewportHeight) {
             const delay = restOptions.delay !== null ? restOptions.delay : 100;
             setTimeout(() => {
               input.scrollIntoView({
                 behavior: restOptions.scrollBehavior || 'smooth',
                 block: restOptions.block || 'center',
-                inline: 'nearest'
+                inline: 'nearest',
               });
             }, delay);
           }
@@ -137,7 +128,7 @@ export const useAutoKeyboardAvoidance = (options = {}) => {
             input.scrollIntoView({
               behavior: restOptions.scrollBehavior || 'smooth',
               block: restOptions.block || 'center',
-              inline: 'nearest'
+              inline: 'nearest',
             });
           }, delay);
         }
@@ -146,7 +137,6 @@ export const useAutoKeyboardAvoidance = (options = {}) => {
       scrollInputIntoView();
     };
 
-    
     const containers = document.querySelectorAll(containerSelector);
     const allHandlers = [];
 
@@ -164,5 +154,13 @@ export const useAutoKeyboardAvoidance = (options = {}) => {
         input.removeEventListener('focus', handler);
       });
     };
-  }, [containerSelector, inputSelector, restOptions.enabled, restOptions.mobileBreakpoint, restOptions.scrollBehavior, restOptions.block, restOptions.delay]);
+  }, [
+    containerSelector,
+    inputSelector,
+    restOptions.enabled,
+    restOptions.mobileBreakpoint,
+    restOptions.scrollBehavior,
+    restOptions.block,
+    restOptions.delay,
+  ]);
 };

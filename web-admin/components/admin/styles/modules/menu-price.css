@@ -145,5 +145,219 @@
   color: var(--admin-accent, #449031);
 }
 
+.menu-item-action-view {
+}
+
 .menu-item-action-toggle {
+  color: var(--admin-text-secondary, #6b7280);
+  position: relative;
+}
+
+.menu-item-action-toggle:hover:not(:disabled) {
+  background: rgba(68, 144, 49, 0.1);
+  border-color: var(--admin-accent, #449031);
+  color: var(--admin-accent, #449031);
+}
+
+.menu-item-action-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.menu-item-action-toggle.toggling {
+  background: rgba(68, 144, 49, 0.1);
+  border-color: var(--admin-accent, #449031);
+  color: var(--admin-accent, #449031);
+}
+
+.menu-item-action-toggle i.fa-toggle-on {
+  color: var(--admin-accent, #449031);
+}
+
+.menu-item-action-toggle i.fa-toggle-off {
+  color: var(--admin-text-secondary, #6b7280);
+}
+
+.menu-item-action-toggle i.fa-spinner {
+  color: var(--admin-accent, #449031);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* View Modal Styles */
+.menu-view-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Modal body padding for view and edit modals */
+.admin-dashboard .modal-body-compact {
+  padding: 2rem;
+}
+
+.admin-dashboard .menu-edit-modal-body {
+  padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .admin-dashboard .modal-body-compact {
+    padding: 1.5rem;
+  }
+
+  .admin-dashboard .menu-edit-modal-body {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-dashboard .modal-body-compact {
+    padding: 1.25rem;
+  }
+
+  .admin-dashboard .menu-edit-modal-body {
+    padding: 1.25rem;
+  }
+}
+
+.menu-view-image-wrapper {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--admin-bg-secondary, #f9fafb);
+  border: 1px solid var(--admin-border, #e5e7eb);
+  margin-bottom: 0.5rem;
+}
+
+.menu-view-image {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+.menu-view-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.menu-view-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--admin-border-light, #f1f5f9);
+}
+
+.menu-view-detail-row:first-child {
+  padding-top: 0;
+}
+
+.menu-view-detail-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.menu-view-label {
+  font-size: var(--admin-fs-xs, 0.75rem);
+  font-weight: 700;
+  color: var(--admin-text-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.menu-view-value {
+  font-size: var(--admin-fs-base, 1rem);
+  color: var(--admin-text-primary, #1e293b);
+  font-weight: 500;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+.menu-view-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: var(--admin-fs-sm, 0.875rem);
+  width: fit-content;
+}
+
+.menu-view-status.available {
+  background: rgba(68, 144, 49, 0.1);
+  color: var(--admin-accent, #449031);
+}
+
+.menu-view-status.unavailable {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.menu-view-status i {
+  font-size: var(--admin-fs-sm, 0.875rem);
+  flex-shrink: 0;
+}
+
+.menu-view-status span {
+  font-size: var(--admin-fs-sm, 0.875rem);
+}
+
+.menu-view-url {
+  font-family: 'Courier New', monospace;
+  font-size: var(--admin-fs-sm);
+  color: var(--admin-text-secondary, #6b7280);
+  background: var(--admin-bg-secondary, #f9fafb);
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--admin-border, #e5e7eb);
+  word-break: break-all;
+}
+
+@media (max-width: 768px) {
+  .menu-view-content {
+    gap: 1rem;
+  }
+
+  .menu-view-image {
+    max-height: 250px;
+  }
+
+  .menu-view-detail-row {
+    padding: 0.75rem 0;
+  }
+
+  .menu-view-label {
+    font-size: var(--admin-fs-2xs, 0.7rem);
+    margin-bottom: 0.25rem;
+  }
+
+  .menu-view-value {
+    font-size: var(--admin-fs-sm, 0.875rem);
+  }
+
+  .menu-view-status {
+    padding: 0.4rem 0.875rem;
+    font-size: var(--admin-fs-xs, 0.75rem);
+  }
+
+  .menu-view-status i {
+    font-size: var(--admin-fs-xs, 0.75rem);
+  }
+
+  .menu-view-status span {
+    font-size: var(--admin-fs-xs, 0.75rem);
+  }
 }

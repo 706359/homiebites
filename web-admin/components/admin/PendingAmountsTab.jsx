@@ -24,12 +24,18 @@ const PendingAmountsTab = ({
   const [filterUrgency, setFilterUrgency] = useState('all');
   const [filterDaysPending, setFilterDaysPending] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(25);
 
   const now = new Date();
 
   const summaryStats = useMemo(() => {
-    const paidOrders = orders.filter((o) => isPaidStatus(o.status, o.paymentStatus));
-    const pendingOrders = orders.filter((o) => isPendingStatus(o.status, o.paymentStatus));
+    const paidOrders = orders.filter((o) =>
+      isPaidStatus(o.status, o.paymentStatus)
+    );
+    const pendingOrders = orders.filter((o) =>
+      isPendingStatus(o.status, o.paymentStatus)
+    );
     const overdueOrders = getOverdueOrders(orders);
     const currentMonthOrders = getFilteredOrdersByDate(orders, 'month', '', '');
     const currentMonthRevenue = getTotalRevenue(currentMonthOrders);
@@ -47,7 +53,9 @@ const PendingAmountsTab = ({
   }, [orders]);
 
   const pendingPayments = useMemo(() => {
-    const pending = orders.filter((o) => isPendingStatus(o.status, o.paymentStatus));
+    const pending = orders.filter((o) =>
+      isPendingStatus(o.status, o.paymentStatus)
+    );
 
     const fortyFiveDaysAgo = new Date(now);
     fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
@@ -56,7 +64,9 @@ const PendingAmountsTab = ({
     let payments = pending
       .map((order) => {
         try {
-          const orderDate = parseOrderDate(order.date || order.order_date || null);
+          const orderDate = parseOrderDate(
+            order.date || order.order_date || null
+          );
           if (!orderDate) {
             return {
               ...order,
@@ -66,7 +76,9 @@ const PendingAmountsTab = ({
               isOverdue: false,
             };
           }
-          const daysPending = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24));
+          const daysPending = Math.floor(
+            (now - orderDate) / (1000 * 60 * 60 * 24)
+          );
 
           const orderDateMidnight = new Date(orderDate);
           orderDateMidnight.setHours(0, 0, 0, 0);
@@ -112,9 +124,13 @@ const PendingAmountsTab = ({
     }
 
     if (filterDaysPending === '0-3') {
-      payments = payments.filter((p) => p.daysPending >= 0 && p.daysPending <= 3);
+      payments = payments.filter(
+        (p) => p.daysPending >= 0 && p.daysPending <= 3
+      );
     } else if (filterDaysPending === '4-7') {
-      payments = payments.filter((p) => p.daysPending >= 4 && p.daysPending <= 7);
+      payments = payments.filter(
+        (p) => p.daysPending >= 4 && p.daysPending <= 7
+      );
     } else if (filterDaysPending === '7+') {
       payments = payments.filter((p) => p.daysPending > 7);
     } else if (filterDaysPending === '45+') {
@@ -124,7 +140,12 @@ const PendingAmountsTab = ({
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       payments = payments.filter((p) => {
-        const address = (p.deliveryAddress || p.customerAddress || p.address || '').toLowerCase();
+        const address = (
+          p.deliveryAddress ||
+          p.customerAddress ||
+          p.address ||
+          ''
+        ).toLowerCase();
         const orderId = (p.orderId || p._id || '').toString().toLowerCase();
         return address.includes(query) || orderId.includes(query);
       });
@@ -132,6 +153,19 @@ const PendingAmountsTab = ({
 
     return payments;
   }, [orders, now, filterUrgency, filterDaysPending, searchQuery]);
+
+  // Pagination for pending payments
+  const totalPages = Math.ceil(pendingPayments.length / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const paginatedPayments = pendingPayments.slice(
+    startIndex,
+    startIndex + recordsPerPage
+  );
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterUrgency, filterDaysPending, searchQuery]);
 
   useEffect(() => {
     if (showOverdueFilter) {
@@ -162,7 +196,9 @@ const PendingAmountsTab = ({
         }
       });
 
-      const paidOrders = dayOrders.filter((o) => isPaidStatus(o.status, o.paymentStatus));
+      const paidOrders = dayOrders.filter((o) =>
+        isPaidStatus(o.status, o.paymentStatus)
+      );
       const collectionRevenue = getTotalRevenue(paidOrders);
 
       timeline.push({
@@ -176,25 +212,75 @@ const PendingAmountsTab = ({
   }, [orders, now]);
 
   const avgCollectionTime = useMemo(() => {
-    const paidOrders = orders.filter((o) => isPaidStatus(o.status, o.paymentStatus));
+    const paidOrders = orders.filter((o) =>
+      isPaidStatus(o.status, o.paymentStatus)
+    );
     if (paidOrders.length === 0) return 0;
 
     let totalDays = 0;
     paidOrders.forEach((order) => {
       try {
-        const orderDate = parseOrderDate(order.date || order.order_date || null);
+        const orderDate = parseOrderDate(
+          order.date || order.order_date || null
+        );
         if (!orderDate) return;
-        const paidDate = order.paidDate ? parseOrderDate(order.paidDate) : orderDate;
+        const paidDate = order.paidDate
+          ? parseOrderDate(order.paidDate)
+          : orderDate;
         if (!paidDate) return;
         const days = Math.floor((paidDate - orderDate) / (1000 * 60 * 60 * 24));
         totalDays += Math.max(0, days);
       } catch (e) {}
     });
 
-    return paidOrders.length > 0 ? (totalDays / paidOrders.length).toFixed(1) : 0;
+    return paidOrders.length > 0
+      ? (totalDays / paidOrders.length).toFixed(1)
+      : 0;
   }, [orders]);
 
-  const maxTimelineCollection = Math.max(...paymentTimeline.map((t) => t.collection), 1);
+  const maxTimelineCollection = Math.max(
+    ...paymentTimeline.map((t) => t.collection),
+    1
+  );
+
+  const handleExportPendingPayments = () => {
+    const escapeCSV = (value) => {
+      if (value === null || value === undefined) return '';
+      const str = String(value);
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    let csvContent =
+      'Order ID,Date,Delivery Address,Amount (₹),Days Pending,Status,Payment Mode\n';
+    pendingPayments.forEach((p) => {
+      const orderDate = p.orderDate
+        ? formatDateMonthDay(p.orderDate)
+        : 'N/A';
+      const amount = getOrderAmount(p);
+      const status = p.isOverdue ? 'Overdue' : p.isUrgent ? 'Urgent' : 'Pending';
+      csvContent += `${escapeCSV(p.orderId || p._id || 'N/A')},${escapeCSV(
+        orderDate
+      )},${escapeCSV(
+        p.deliveryAddress || p.customerAddress || p.address || 'N/A'
+      )},${escapeCSV(amount.toFixed(2))},${escapeCSV(
+        p.daysPending
+      )},${escapeCSV(status)},${escapeCSV(p.paymentMode || 'N/A')}\n`;
+    });
+
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `pending_payments_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    if (showNotification)
+      showNotification('Pending payments exported successfully', 'success');
+  };
 
   const paymentModePerformance = useMemo(() => {
     const modeStats = {};
@@ -225,14 +311,19 @@ const PendingAmountsTab = ({
       .sort((a, b) => b.amount - a.amount);
   }, [orders]);
 
-  const totalPaymentAmount = paymentModePerformance.reduce((sum, p) => sum + p.amount, 0);
+  const totalPaymentAmount = paymentModePerformance.reduce(
+    (sum, p) => sum + p.amount,
+    0
+  );
 
   useEffect(() => {
     const setTimelineBarHeights = () => {
-      document.querySelectorAll('.pending-timeline-bar[data-height]').forEach((bar) => {
-        const heightPercent = parseFloat(bar.getAttribute('data-height'));
-        bar.style.setProperty('--bar-height', `${heightPercent}%`);
-      });
+      document
+        .querySelectorAll('.pending-timeline-bar[data-height]')
+        .forEach((bar) => {
+          const heightPercent = parseFloat(bar.getAttribute('data-height'));
+          bar.style.setProperty('--bar-height', `${heightPercent}%`);
+        });
     };
 
     setTimelineBarHeights();
@@ -240,10 +331,12 @@ const PendingAmountsTab = ({
 
   useEffect(() => {
     const setPaymentModeBarWidths = () => {
-      document.querySelectorAll('.pending-payment-mode-bar-fill[data-width]').forEach((bar) => {
-        const widthPercent = parseFloat(bar.getAttribute('data-width'));
-        bar.style.setProperty('--bar-width', `${widthPercent}%`);
-      });
+      document
+        .querySelectorAll('.pending-payment-mode-bar-fill[data-width]')
+        .forEach((bar) => {
+          const widthPercent = parseFloat(bar.getAttribute('data-width'));
+          bar.style.setProperty('--bar-width', `${widthPercent}%`);
+        });
     };
 
     setPaymentModeBarWidths();
@@ -264,164 +357,253 @@ const PendingAmountsTab = ({
         type: 'info',
         confirmText: 'Mark as Paid',
         onConfirm: async () => {
-          await onUpdateOrderStatus(orderId, 'Paid');
-          if (showNotification) showNotification('Order marked as paid', 'success');
+          try {
+            await onUpdateOrderStatus(orderId, 'Paid', true);
+            if (showNotification)
+              showNotification('Order marked as paid', 'success');
+          } catch (error) {
+            console.error('Error marking order as paid:', error);
+            if (showNotification)
+              showNotification('Error updating order', 'error');
+          }
         },
       });
     } else if (onUpdateOrderStatus) {
-      await onUpdateOrderStatus(orderId, 'Paid');
-      if (showNotification) showNotification('Order marked as paid', 'success');
+      try {
+        await onUpdateOrderStatus(orderId, 'Paid', true);
+        if (showNotification) showNotification('Order marked as paid', 'success');
+      } catch (error) {
+        console.error('Error marking order as paid:', error);
+        if (showNotification)
+          showNotification('Error updating order', 'error');
+      }
     }
   };
 
   const handleBulkMarkAsPaid = async () => {
-    const selectedOrders = pendingPayments.filter((p) => p.isUrgent);
+    // Mark ALL pending payments, not just urgent ones
+    const selectedOrders = pendingPayments;
     const count = selectedOrders.length;
 
     if (count === 0) {
-      if (showNotification) showNotification('No urgent orders selected', 'info');
+      if (showNotification)
+        showNotification('No pending payments to mark as paid', 'info');
       return;
     }
 
     if (showConfirmation) {
       showConfirmation({
-        title: 'Mark All Urgent as Paid',
-        message: `Are you sure you want to mark ${count} urgent order${
+        title: 'Mark All as Paid',
+        message: `Are you sure you want to mark ${count} pending payment${
           count > 1 ? 's' : ''
         } as paid?`,
         type: 'info',
         confirmText: 'Mark All as Paid',
         onConfirm: async () => {
           try {
+            let successCount = 0;
+            let errorCount = 0;
+            
             for (const order of selectedOrders) {
-              if (onUpdateOrderStatus) {
-                await onUpdateOrderStatus(order._id || order.orderId, 'Paid');
+              try {
+                if (onUpdateOrderStatus) {
+                  await onUpdateOrderStatus(order._id || order.orderId, 'Paid', true);
+                  successCount++;
+                }
+              } catch (error) {
+                console.error('Error marking order as paid:', error);
+                errorCount++;
               }
             }
-            if (showNotification) showNotification('All urgent orders marked as paid', 'success');
+            
+            if (errorCount === 0) {
+              if (showNotification)
+                showNotification(
+                  `All ${successCount} payment${successCount > 1 ? 's' : ''} marked as paid`,
+                  'success'
+                );
+            } else {
+              if (showNotification)
+                showNotification(
+                  `${successCount} marked as paid, ${errorCount} failed`,
+                  'warning'
+                );
+            }
           } catch (error) {
             console.error('Error marking orders as paid:', error);
-            if (showNotification) showNotification('Error updating orders', 'error');
+            if (showNotification)
+              showNotification('Error updating orders', 'error');
           }
         },
       });
     } else {
       try {
+        let successCount = 0;
+        let errorCount = 0;
+        
         for (const order of selectedOrders) {
-          if (onUpdateOrderStatus) {
-            await onUpdateOrderStatus(order._id || order.orderId, 'Paid');
+          try {
+            if (onUpdateOrderStatus) {
+              await onUpdateOrderStatus(order._id || order.orderId, 'Paid', true);
+              successCount++;
+            }
+          } catch (error) {
+            console.error('Error marking order as paid:', error);
+            errorCount++;
           }
         }
-        if (showNotification) showNotification('All urgent orders marked as paid', 'success');
+        
+        if (errorCount === 0) {
+          if (showNotification)
+            showNotification(
+              `All ${successCount} payment${successCount > 1 ? 's' : ''} marked as paid`,
+              'success'
+            );
+        } else {
+          if (showNotification)
+            showNotification(
+              `${successCount} marked as paid, ${errorCount} failed`,
+              'warning'
+            );
+        }
       } catch (error) {
         console.error('Error marking orders as paid:', error);
-        if (showNotification) showNotification('Error updating orders', 'error');
+        if (showNotification)
+          showNotification('Error updating orders', 'error');
       }
     }
   };
 
   if (loading) {
     return (
-      <div className='admin-content'>
-        <PremiumLoader message='Loading payment data...' size='large' />
+      <div className="admin-content">
+        <PremiumLoader message="Loading payment data..." size="large" />
       </div>
     );
   }
 
   return (
-    <div className='admin-content'>
-      <div className='admin-stats'>
-        <div className='stat-card'>
-          <i className='fa-solid fa-check-circle icon-success'></i>
+    <div className="admin-content">
+      <div className="admin-stats">
+        <div className="stat-card">
+          <i className="fa-solid fa-check-circle icon-success"></i>
           <div>
             <h3>₹{formatCurrency(summaryStats.totalPaid)}</h3>
             <p>Total Paid</p>
-            <p className='stat-card-subtitle'>{summaryStats.totalPaidCount} orders</p>
+            <p className="stat-card-subtitle">
+              {summaryStats.totalPaidCount} orders
+            </p>
           </div>
         </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-exclamation-triangle pending-warning-text'></i>
+        <div className="stat-card">
+          <i className="fa-solid fa-exclamation-triangle pending-warning-text"></i>
           <div>
             <h3>₹{formatCurrency(summaryStats.pending)}</h3>
             <p>Pending</p>
-            <p className='stat-card-subtitle'>{summaryStats.pendingCount} orders</p>
+            <p className="stat-card-subtitle">
+              {summaryStats.pendingCount} orders
+            </p>
           </div>
         </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-times-circle icon-danger'></i>
+        <div className="stat-card">
+          <i className="fa-solid fa-times-circle icon-danger"></i>
           <div>
             <h3>₹{formatCurrency(summaryStats.overdue)}</h3>
             <p>Overdue</p>
-            <p className='stat-card-subtitle'>{summaryStats.overdueCount} orders</p>
+            <p className="stat-card-subtitle">
+              {summaryStats.overdueCount} orders
+            </p>
           </div>
         </div>
-        <div className='stat-card'>
-          <i className='fa-solid fa-calendar-alt icon-accent'></i>
+        <div className="stat-card">
+          <i className="fa-solid fa-calendar-alt icon-accent"></i>
           <div>
             <h3>₹{formatCurrency(summaryStats.thisMonth)}</h3>
             <p>This Month</p>
-            <p className='stat-card-subtitle'>{summaryStats.thisMonthCount} orders</p>
+            <p className="stat-card-subtitle">
+              {summaryStats.thisMonthCount} orders
+            </p>
           </div>
         </div>
       </div>
 
-      <div className='dashboard-card margin-bottom-24'>
-        <div className='pending-filter-bar'>
-          <div className='filter-container pending-filter-container'>
-            <div className='search-input-wrapper search-input-wrapper-flex'>
+      <div className="dashboard-card margin-bottom-24">
+        <div className="pending-filter-bar">
+          <div className="filter-container pending-filter-container">
+            <div className="search-input-wrapper search-input-wrapper-flex">
               <input
-                type='text'
-                className='input-field search-input-with-icon'
-                placeholder='Search by address or order ID...'
+                type="text"
+                className="input-field search-input-with-icon"
+                placeholder="Search by address or order ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <select
-              className='input-field filter-input-standard filter-select-placeholder'
+              className="input-field filter-input-standard filter-select-placeholder"
               value={filterUrgency}
               onChange={(e) => setFilterUrgency(e.target.value)}
             >
-              <option value='all'>All</option>
-              <option value='urgent'>Urgent (&gt;7 days)</option>
-              <option value='normal'>Normal (≤7 days)</option>
+              <option value="all">All</option>
+              <option value="urgent">Urgent (&gt;7 days)</option>
+              <option value="normal">Normal (≤7 days)</option>
             </select>
             <select
-              className='input-field filter-input-standard filter-select-placeholder'
+              className="input-field filter-input-standard filter-select-placeholder"
               value={filterDaysPending}
               onChange={(e) => setFilterDaysPending(e.target.value)}
             >
-              <option value='all'>All</option>
-              <option value='0-3'>0-3 days</option>
-              <option value='4-7'>4-7 days</option>
-              <option value='7+'>7+ days</option>
-              <option value='45+'>45+ days (Overdue)</option>
+              <option value="all">All</option>
+              <option value="0-3">0-3 days</option>
+              <option value="4-7">4-7 days</option>
+              <option value="7+">7+ days</option>
+              <option value="45+">45+ days (Overdue)</option>
             </select>
-            {(searchQuery || filterUrgency !== 'all' || filterDaysPending !== 'all') && (
+            {(searchQuery ||
+              filterUrgency !== 'all' ||
+              filterDaysPending !== 'all') && (
               <button
-                className='btn btn-ghost btn-small pending-clear-filter-btn'
+                className="btn btn-ghost btn-small pending-clear-filter-btn"
                 onClick={() => {
                   setSearchQuery('');
                   setFilterUrgency('all');
                   setFilterDaysPending('all');
                 }}
-                title='Clear all filters'
+                title="Clear all filters"
               >
-                <i className='fa-solid fa-xmark pending-clear-filter-icon'></i>
+                <i className="fa-solid fa-xmark pending-clear-filter-icon"></i>
                 Clear
               </button>
             )}
-            <div className='action-buttons-group'>
-              <button className='btn btn-special btn-small' onClick={handleBulkMarkAsPaid}>
-                <i className='fa-solid fa-check-circle pending-mark-paid-icon'></i>
+            <div className="action-buttons-group">
+              <button
+                className="btn btn-secondary btn-small"
+                onClick={handleExportPendingPayments}
+                title="Export Pending Payments"
+              >
+                <i className="fa-solid fa-download"></i> Export
+              </button>
+              <button
+                className="btn btn-special btn-small"
+                onClick={handleBulkMarkAsPaid}
+                disabled={pendingPayments.length === 0}
+              >
+                <i className="fa-solid fa-check-circle pending-mark-paid-icon"></i>
                 Mark All as Paid
               </button>
             </div>
+            {pendingPayments.length > 0 && (
+              <div className="pending-payments-count-info">
+                Showing {Math.min(startIndex + 1, pendingPayments.length)}-
+                {Math.min(startIndex + recordsPerPage, pendingPayments.length)} of{' '}
+                {pendingPayments.length} pending payments
+              </div>
+            )}
           </div>
         </div>
 
-        <div className='orders-table-container'>
-          <table className='orders-table'>
+        <div className="orders-table-container">
+          <table className="orders-table">
             <thead>
               <tr>
                 <th>Date</th>
@@ -435,16 +617,20 @@ const PendingAmountsTab = ({
             <tbody>
               {pendingPayments.length === 0 ? (
                 <tr>
-                  <td colSpan='6' className='pending-table-empty-message'>
-                    <div className='pending-table-empty-content'>
-                      <i className='fa-solid fa-inbox pending-table-empty-icon'></i>
-                      <p className='pending-table-empty-text'>
-                        {searchQuery || filterUrgency !== 'all' || filterDaysPending !== 'all'
+                  <td colSpan="6" className="pending-table-empty-message">
+                    <div className="pending-table-empty-content">
+                      <i className="fa-solid fa-inbox pending-table-empty-icon"></i>
+                      <p className="pending-table-empty-text">
+                        {searchQuery ||
+                        filterUrgency !== 'all' ||
+                        filterDaysPending !== 'all'
                           ? 'No records found in this category'
                           : 'No pending payments'}
                       </p>
-                      {(searchQuery || filterUrgency !== 'all' || filterDaysPending !== 'all') && (
-                        <p className='pending-table-empty-subtext'>
+                      {(searchQuery ||
+                        filterUrgency !== 'all' ||
+                        filterDaysPending !== 'all') && (
+                        <p className="pending-table-empty-subtext">
                           Try adjusting your filters to see more results
                         </p>
                       )}
@@ -452,7 +638,7 @@ const PendingAmountsTab = ({
                   </td>
                 </tr>
               ) : (
-                pendingPayments.map((order, idx) => {
+                paginatedPayments.map((order, idx) => {
                   const orderDate = parseOrderDate(
                     order.orderDate || order.date || order.order_date || null
                   );
@@ -462,10 +648,10 @@ const PendingAmountsTab = ({
                     order.daysPending > 45
                       ? 'overdue'
                       : order.daysPending > 7
-                      ? 'urgent'
-                      : order.daysPending > 3
-                      ? 'warning'
-                      : 'normal';
+                        ? 'urgent'
+                        : order.daysPending > 3
+                          ? 'warning'
+                          : 'normal';
 
                   return (
                     <tr
@@ -473,12 +659,12 @@ const PendingAmountsTab = ({
                       className={`pending-payment-row pending-payment-row-${urgencyLevel}`}
                     >
                       <td>
-                        <div className='pending-payment-date'>
+                        <div className="pending-payment-date">
                           <span>{dateStr}</span>
                         </div>
                       </td>
                       <td>
-                        <div className='pending-payment-address'>
+                        <div className="pending-payment-address">
                           <span>
                             {order.deliveryAddress ||
                               order.customerAddress ||
@@ -488,10 +674,14 @@ const PendingAmountsTab = ({
                         </div>
                       </td>
                       <td>
-                        <div className='pending-payment-amount'>
-                          <span className='pending-payment-amount-symbol'>₹</span>
-                          <span className='pending-payment-amount-value'>
-                            {formatCurrency(order.total || order.totalAmount || 0)}
+                        <div className="pending-payment-amount">
+                          <span className="pending-payment-amount-symbol">
+                            ₹
+                          </span>
+                          <span className="pending-payment-amount-value">
+                            {formatCurrency(
+                              order.total || order.totalAmount || 0
+                            )}
                           </span>
                         </div>
                       </td>
@@ -500,26 +690,31 @@ const PendingAmountsTab = ({
                           className={`pending-payment-days-badge pending-payment-days-${urgencyLevel}`}
                         >
                           <span>
-                            {order.daysPending} {order.daysPending === 1 ? 'day' : 'days'}
+                            {order.daysPending}{' '}
+                            {order.daysPending === 1 ? 'day' : 'days'}
                           </span>
                           {urgencyLevel === 'overdue' && (
-                            <span className='overdue-indicator'>OVERDUE</span>
+                            <span className="overdue-indicator">OVERDUE</span>
                           )}
                         </div>
                       </td>
                       <td>
-                        <div className='pending-payment-order-id'>
-                          <i className='fa-solid fa-hashtag'></i>
-                          <span className='monospace-text'>{order.orderId || 'N/A'}</span>
+                        <div className="pending-payment-order-id">
+                          <i className="fa-solid fa-hashtag"></i>
+                          <span className="monospace-text">
+                            {order.orderId || 'N/A'}
+                          </span>
                         </div>
                       </td>
                       <td>
                         <button
-                          className='btn btn-special btn-small pending-payment-action-btn'
-                          onClick={() => handleMarkAsPaid(order._id || order.orderId)}
-                          title='Mark as Paid'
+                          className="btn btn-special btn-small pending-payment-action-btn"
+                          onClick={() =>
+                            handleMarkAsPaid(order._id || order.orderId)
+                          }
+                          title="Mark as Paid"
                         >
-                          <i className='fa-solid fa-check-circle'></i>
+                          <i className="fa-solid fa-check-circle"></i>
                           <span>Mark Paid</span>
                         </button>
                       </td>
@@ -530,21 +725,67 @@ const PendingAmountsTab = ({
             </tbody>
           </table>
         </div>
+
+        {pendingPayments.length > 0 && totalPages > 1 && (
+          <div className="pagination-controls">
+            <div>
+              <button
+                className="btn btn-ghost btn-small"
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+              >
+                <i className="fa-solid fa-chevron-left"></i> Previous
+              </button>
+              <span className="pagination-info">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                className="btn btn-ghost btn-small"
+                onClick={() =>
+                  setCurrentPage(Math.min(totalPages, currentPage + 1))
+                }
+                disabled={currentPage >= totalPages}
+              >
+                Next <i className="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+            <div className="pagination-container">
+              <span>Show:</span>
+              <select
+                className="pagination-select"
+                value={recordsPerPage}
+                onChange={(e) => {
+                  setRecordsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+              >
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={200}>200</option>
+              </select>
+              <span>per page</span>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className='dashboard-grid-layout'>
-        <div className='dashboard-grid-item two-thirds'>
-          <div className='dashboard-card'>
-            <h3 className='dashboard-section-title'>
-              <i className='fa-solid fa-chart-area pending-chart-icon'></i>
+      <div className="dashboard-grid-layout">
+        <div className="dashboard-grid-item two-thirds">
+          <div className="dashboard-card">
+            <h3 className="dashboard-section-title">
+              <i className="fa-solid fa-chart-area pending-chart-icon"></i>
               Payment Collection Timeline (30 days)
             </h3>
-            <div className='pending-timeline-section'>
-              <div className='pending-timeline-container'>
+            <div className="pending-timeline-section">
+              <div className="pending-timeline-container">
                 {paymentTimeline.map((day, idx) => {
                   const heightPercent =
                     maxTimelineCollection > 0
-                      ? Math.min(100, (day.collection / maxTimelineCollection) * 100)
+                      ? Math.min(
+                          100,
+                          (day.collection / maxTimelineCollection) * 100
+                        )
                       : 0;
                   const hasLabel = idx % 5 === 0;
                   return (
@@ -554,53 +795,61 @@ const PendingAmountsTab = ({
                       title={`${day.date}: ₹${formatCurrency(day.collection)} (${day.orders} orders)`}
                     >
                       <div
-                        className='pending-amounts-timeline-bar pending-timeline-bar'
+                        className="pending-amounts-timeline-bar pending-timeline-bar"
                         data-height={heightPercent}
                       />
                       {hasLabel && (
-                        <span className='pending-timeline-label'>{day.date.split(' ')[0]}</span>
+                        <span className="pending-timeline-label">
+                          {day.date.split(' ')[0]}
+                        </span>
                       )}
                     </div>
                   );
                 })}
               </div>
-              <div className='pending-timeline-summary'>
+              <div className="pending-timeline-summary">
                 Avg collection time: {avgCollectionTime} days
               </div>
             </div>
           </div>
         </div>
 
-        <div className='dashboard-grid-item third-width'>
-          <div className='dashboard-card'>
-            <h3 className='dashboard-section-title'>
-              <i className='fa-solid fa-chart-pie pending-chart-icon'></i>
+        <div className="dashboard-grid-item third-width">
+          <div className="dashboard-card">
+            <h3 className="dashboard-section-title">
+              <i className="fa-solid fa-chart-pie pending-chart-icon"></i>
               Payment Mode Breakdown
             </h3>
-            <div className='pending-payment-mode-section'>
-              <div className='pending-payment-mode-list'>
+            <div className="pending-payment-mode-section">
+              <div className="pending-payment-mode-list">
                 {paymentModePerformance.map((mode, idx) => {
                   const percentage =
                     totalPaymentAmount > 0
                       ? Math.min(
                           100,
-                          parseFloat(((mode.amount / totalPaymentAmount) * 100).toFixed(2))
+                          parseFloat(
+                            ((mode.amount / totalPaymentAmount) * 100).toFixed(
+                              2
+                            )
+                          )
                         )
                       : 0;
                   return (
                     <div key={idx}>
-                      <div className='pending-payment-mode-header'>
-                        <span className='pending-payment-mode-label'>{mode.mode}</span>
-                        <span className='pending-payment-mode-percentage'>
+                      <div className="pending-payment-mode-header">
+                        <span className="pending-payment-mode-label">
+                          {mode.mode}
+                        </span>
+                        <span className="pending-payment-mode-percentage">
                           {percentage.toFixed(0)}%
                         </span>
                       </div>
-                      <div className='pending-payment-mode-details'>
+                      <div className="pending-payment-mode-details">
                         ₹{formatCurrency(mode.amount)} ({mode.count} orders)
                       </div>
-                      <div className='pending-payment-mode-bar-container'>
+                      <div className="pending-payment-mode-bar-container">
                         <div
-                          className='pending-payment-mode-bar-fill'
+                          className="pending-payment-mode-bar-fill"
                           data-width={percentage}
                         />
                       </div>

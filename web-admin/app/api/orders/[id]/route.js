@@ -1,9 +1,11 @@
-
 import connectDB from '../../../../lib/db.js';
 import Order from '../../../../lib/models/Order.js';
 import Settings from '../../../../lib/models/Settings.js';
 import mongoose from 'mongoose';
-import { isAdmin, createErrorResponse } from '../../../../lib/middleware/auth.js';
+import {
+  isAdmin,
+  createErrorResponse,
+} from '../../../../lib/middleware/auth.js';
 
 async function findOrderById(id) {
   if (mongoose.Types.ObjectId.isValid(id)) {
@@ -13,22 +15,26 @@ async function findOrderById(id) {
   return await Order.findOne({ orderId: id });
 }
 
-
 export async function PUT(request, { params }) {
   try {
     await connectDB();
     await isAdmin(request);
-    
-    const resolvedParams = params && typeof params.then === 'function' ? await params : params;
+
+    const resolvedParams =
+      params && typeof params.then === 'function' ? await params : params;
     const orderId = resolvedParams?.id;
-    
+
     if (!orderId) {
       return Response.json(
-        { success: false, message: 'Order ID is required', params: resolvedParams },
+        {
+          success: false,
+          message: 'Order ID is required',
+          params: resolvedParams,
+        },
         { status: 400 }
       );
     }
-    
+
     const existingOrder = await findOrderById(orderId);
 
     if (!existingOrder) {
@@ -38,16 +44,20 @@ export async function PUT(request, { params }) {
       );
     }
 
-    
     try {
       const settings = await Settings.getSettings();
       if (settings.monthLockedTill) {
-        const [lockedYear, lockedMonth] = settings.monthLockedTill.split('-').map(Number);
+        const [lockedYear, lockedMonth] = settings.monthLockedTill
+          .split('-')
+          .map(Number);
         const orderDate = new Date(existingOrder.date);
         const orderYear = orderDate.getFullYear();
         const orderMonth = orderDate.getMonth() + 1;
 
-        if (orderYear < lockedYear || (orderYear === lockedYear && orderMonth < lockedMonth)) {
+        if (
+          orderYear < lockedYear ||
+          (orderYear === lockedYear && orderMonth < lockedMonth)
+        ) {
           return Response.json(
             {
               success: false,
@@ -60,24 +70,20 @@ export async function PUT(request, { params }) {
     } catch (_) {}
 
     const update = await request.json();
-    delete update.orderId; 
+    delete update.orderId;
 
-    
     if (update.status !== undefined) {
       const statusValue = String(update.status).trim();
       update.status = statusValue;
-      
-      
-      
+
       const statusLower = statusValue.toLowerCase();
       if (statusLower === 'paid' || statusLower === 'delivered') {
         update.paymentStatus = 'Paid';
       } else {
-        update.paymentStatus = update.paymentStatus || 'Pending'; 
+        update.paymentStatus = update.paymentStatus || 'Pending';
       }
     }
-    
-    
+
     if (update.paymentStatus !== undefined) {
       const psLower = String(update.paymentStatus).toLowerCase().trim();
       if (psLower === 'paid') {
@@ -87,45 +93,50 @@ export async function PUT(request, { params }) {
       } else {
         update.paymentStatus = String(update.paymentStatus).trim();
       }
-      
-      
+
       if (update.status === undefined) {
         if (update.paymentStatus === 'Paid') {
-          update.status = existingOrder.status && existingOrder.status.toLowerCase() === 'paid' 
-            ? existingOrder.status 
-            : 'Paid';
+          update.status =
+            existingOrder.status &&
+            existingOrder.status.toLowerCase() === 'paid'
+              ? existingOrder.status
+              : 'Paid';
         }
       }
     }
-    
-    
+
     if (update.paymentMode !== undefined && update.paymentMode !== null) {
       if (update.paymentMode === '' || update.paymentMode === 'None') {
-        update.paymentMode = ''; 
+        update.paymentMode = '';
       } else {
         update.paymentMode = String(update.paymentMode).trim();
       }
     }
 
-    
     if (update.date) {
       const newDate = new Date(update.date);
       if (!isNaN(newDate.getTime())) {
         update.dateNeedsReview = false;
         update.originalDateString = undefined;
-        update.date = newDate; 
+        update.date = newDate;
       } else {
-        
         delete update.date;
       }
     }
 
-    
-    
-    
     if (update.quantity !== undefined || update.unitPrice !== undefined) {
-      const quantity = Number(update.quantity !== undefined ? update.quantity : existingOrder.quantity) || 1;
-      const unitPrice = Number(update.unitPrice !== undefined ? update.unitPrice : existingOrder.unitPrice) || 0;
+      const quantity =
+        Number(
+          update.quantity !== undefined
+            ? update.quantity
+            : existingOrder.quantity
+        ) || 1;
+      const unitPrice =
+        Number(
+          update.unitPrice !== undefined
+            ? update.unitPrice
+            : existingOrder.unitPrice
+        ) || 0;
       update.totalAmount = quantity * unitPrice;
 
       try {
@@ -136,42 +147,40 @@ export async function PUT(request, { params }) {
         update.priceOverride = false;
       }
     }
-    
-    
-    
-    
-    if (update.quantity !== undefined || update.unitPrice !== undefined || update.totalAmount === undefined) {
-      const finalQuantity = Number(update.quantity !== undefined ? update.quantity : existingOrder.quantity) || 1;
-      const finalUnitPrice = Number(update.unitPrice !== undefined ? update.unitPrice : existingOrder.unitPrice) || 0;
+
+    if (
+      update.quantity !== undefined ||
+      update.unitPrice !== undefined ||
+      update.totalAmount === undefined
+    ) {
+      const finalQuantity =
+        Number(
+          update.quantity !== undefined
+            ? update.quantity
+            : existingOrder.quantity
+        ) || 1;
+      const finalUnitPrice =
+        Number(
+          update.unitPrice !== undefined
+            ? update.unitPrice
+            : existingOrder.unitPrice
+        ) || 0;
       update.totalAmount = finalQuantity * finalUnitPrice;
     }
-    
-    
-    
 
-    
-    
-    
-    
     let updatedOrder;
     if (mongoose.Types.ObjectId.isValid(orderId)) {
-      updatedOrder = await Order.findByIdAndUpdate(
-        orderId, 
-        update, 
-        {
-          new: true,
-          runValidators: true,
-          
-        }
-      );
+      updatedOrder = await Order.findByIdAndUpdate(orderId, update, {
+        new: true,
+        runValidators: true,
+      });
     } else {
       updatedOrder = await Order.findOneAndUpdate(
         { orderId: orderId },
-        update, 
-        { 
-          new: true, 
+        update,
+        {
+          new: true,
           runValidators: true,
-          
         }
       );
     }
@@ -189,24 +198,32 @@ export async function PUT(request, { params }) {
       return createErrorResponse(error.status, error.message);
     }
     return Response.json(
-      { success: false, message: 'Failed to update order', error: error.message },
+      {
+        success: false,
+        message: 'Failed to update order',
+        error: error.message,
+      },
       { status: 500 }
     );
   }
 }
 
-
 export async function DELETE(request, { params }) {
   try {
     await connectDB();
     await isAdmin(request);
-    
-    const resolvedParams = params && typeof params.then === 'function' ? await params : params;
+
+    const resolvedParams =
+      params && typeof params.then === 'function' ? await params : params;
     const orderId = resolvedParams?.id;
-    
+
     if (!orderId) {
       return Response.json(
-        { success: false, message: 'Order ID is required', params: resolvedParams },
+        {
+          success: false,
+          message: 'Order ID is required',
+          params: resolvedParams,
+        },
         { status: 400 }
       );
     }
@@ -225,7 +242,11 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    return Response.json({ success: true, message: 'Order deleted', data: deletedOrder });
+    return Response.json({
+      success: true,
+      message: 'Order deleted',
+      data: deletedOrder,
+    });
   } catch (error) {
     if (error.status) {
       return createErrorResponse(error.status, error.message);
@@ -236,4 +257,3 @@ export async function DELETE(request, { params }) {
     );
   }
 }
-

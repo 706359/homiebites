@@ -62,7 +62,10 @@ export const useFastDataSync = () => {
         const apiOrderId = order._id || order.id || order.orderId || orderId;
 
         adminData.setOrders((prevOrders) =>
-          prevOrders.filter((o) => o._id !== orderId && o.orderId !== orderId && o.id !== orderId)
+          prevOrders.filter(
+            (o) =>
+              o._id !== orderId && o.orderId !== orderId && o.id !== orderId
+          )
         );
 
         await optimisticData.deleteOptimistic(orderId, async () => {
@@ -142,7 +145,9 @@ export const useFastDataSync = () => {
           const response = await api.updateOrder(apiOrderId, updatePayload);
 
           if (!response.success) {
-            throw new Error(response.error || response.message || 'Update failed');
+            throw new Error(
+              response.error || response.message || 'Update failed'
+            );
           }
           return response;
         });
@@ -166,7 +171,10 @@ export const useFastDataSync = () => {
           }, 500)
           .catch((err) => {
             if (process.env.NODE_ENV === 'development') {
-              console.warn('[useFastDataSync] Background sync error after update:', err);
+              console.warn(
+                '[useFastDataSync] Background sync error after update:',
+                err
+              );
             }
           });
 
@@ -187,16 +195,22 @@ export const useFastDataSync = () => {
   const fastCreate = useCallback(
     async (orderData, onSuccess, onError) => {
       try {
-        const response = await optimisticData.createOptimistic(orderData, async () => {
-          const response = await api.createManualOrder(orderData);
-          return response;
-        });
+        const response = await optimisticData.createOptimistic(
+          orderData,
+          async () => {
+            const response = await api.createManualOrder(orderData);
+            return response;
+          }
+        );
 
         if (response && response.data && response.data.order) {
           const newOrder = response.data.order;
           adminData.setOrders((prevOrders) => [...prevOrders, newOrder]);
         } else if (response && response.data && Array.isArray(response.data)) {
-          adminData.setOrders((prevOrders) => [...prevOrders, ...response.data]);
+          adminData.setOrders((prevOrders) => [
+            ...prevOrders,
+            ...response.data,
+          ]);
         }
 
         if (onSuccess) onSuccess();
