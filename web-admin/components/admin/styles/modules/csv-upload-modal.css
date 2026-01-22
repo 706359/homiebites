@@ -256,3 +256,68 @@
   color: var(--admin-success);
   margin-bottom: 16px;
 }
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .csv-file-info {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .csv-preview-container {
+    max-height: 200px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .csv-upload-options {
+    margin-top: 16px !important;
+    padding-top: 16px !important;
+  }
+
+  .csv-upload-option-hint {
+    margin-left: 0 !important;
+    margin-top: 4px !important;
+  }
+
+  .csv-upload-progress-container {
+    padding: 32px 16px !important;
+  }
+
+  .csv-upload-progress-card {
+    padding: 12px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .csv-upload-progress-card-content {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .csv-upload-progress-actions-mini {
+    width: 100% !important;
+    justify-content: flex-end !important;
+  }
+
+  .csv-upload-progress-actions {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .csv-upload-progress-actions .btn {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .csv-upload-success {
+    padding: 32px 16px !important;
+  }
+
+  .csv-upload-success-icon {
+    font-size: var(--admin-fs-3xl) !important;
+  }
+}

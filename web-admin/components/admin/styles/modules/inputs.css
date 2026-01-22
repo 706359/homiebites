@@ -260,3 +260,167 @@ select.placeholder-selected {
   color: rgba(0, 0, 0, 0.5) !important;
   font-size: 0.85rem !important;
 }
+
+/* Date input wrapper styles */
+.date-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 0;
+}
+
+.date-input-wrapper .input-field {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.date-picker-input {
+  position: absolute !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  visibility: hidden !important;
+}
+
+/* Hide browser's native date picker icon */
+.date-picker-input::-webkit-calendar-picker-indicator {
+  display: none !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  pointer-events: none !important;
+}
+
+.order-modal-calendar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  background: var(--admin-bg-secondary, #f9fafb);
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 10px;
+  color: var(--admin-text-secondary, #6b7280);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.order-modal-calendar-btn:hover {
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  border-color: var(--admin-accent, #449031);
+  color: var(--admin-accent, #449031);
+}
+
+.order-modal-calendar-btn:active {
+  transform: scale(0.95);
+}
+
+.order-modal-calendar-btn i {
+  font-size: var(--admin-fs-lg);
+}
+
+/* Laptop view optimizations (1024px - 1440px) */
+@media (min-width: 1024px) and (max-width: 1440px) {
+  .input-field,
+  .filter-select {
+    font-size: var(--admin-fs-md);
+    padding: 10px 14px;
+    height: 42px;
+  }
+
+  .premium-select-wrapper {
+    height: 42px;
+  }
+
+  .search-input-wrapper {
+    min-width: 240px;
+    max-width: 300px;
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .input-field,
+  .filter-select,
+  .premium-select-wrapper {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  .search-input-wrapper {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .global-search-input-wrapper {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 480px) {
+  .input-field,
+  .filter-select,
+  .premium-select-wrapper {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  .search-input-wrapper {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .global-search-input-wrapper {
+    padding: 10px 12px;
+  }
+
+  .global-search-header {
+    padding: 16px;
+  }
+
+  /* Date input wrapper mobile */
+  .date-input-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 6px !important;
+    box-sizing: border-box !important;
+  }
+
+  .date-input-wrapper .input-field {
+    flex: 1 !important;
+    min-width: 0 !important;
+    width: auto !important;
+  }
+
+  .order-modal-calendar-btn {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    flex-shrink: 0 !important;
+  }
+}

@@ -1038,6 +1038,36 @@
   opacity: 0.8;
 }
 
+/* Laptop view optimizations (1024px - 1440px) */
+@media (min-width: 1024px) and (max-width: 1440px) {
+  .dashboard-card {
+    padding: 20px;
+  }
+
+  .dashboard-grid-layout {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .chart-container {
+    min-height: 140px;
+    padding: 14px 0 18px;
+  }
+
+  .chart-bars-container {
+    min-height: 120px;
+  }
+
+  .stat-card {
+    padding: 20px;
+    min-height: 100px;
+  }
+
+  .stat-card h3 {
+    font-size: var(--admin-fs-xl);
+  }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .dashboard-card {
@@ -1061,11 +1091,26 @@
 
 @media (max-width: 480px) {
   .dashboard-card {
-    padding: 12px;
+    padding: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 0 0 12px 0 !important;
   }
 
   .table-container-card {
-    padding: 12px;
+    padding: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .dashboard-grid-layout {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 }
 
@@ -1116,23 +1161,35 @@
 
 @media (max-width: 480px) {
   .chart-container {
-    min-height: 100px;
-    padding: 8px 0 12px;
-    gap: 4px;
+    min-height: 100px !important;
+    padding: 8px 0 12px !important;
+    gap: 4px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .chart-bars-container {
-    min-height: 80px;
+    min-height: 80px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .chart-bar {
-    min-width: 16px;
+    min-width: 16px !important;
+  }
+
+  .recent-orders-table {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .recent-orders-table th,
   .recent-orders-table td {
-    padding: 10px 14px;
-    font-size: var(--admin-fs-base);
+    padding: 8px 10px !important;
+    font-size: var(--admin-fs-sm-mid) !important;
   }
 }
 
@@ -1266,7 +1323,44 @@
 
 @media (max-width: 480px) {
   .reports-grid-compact {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .report-type-card {
+    padding: 10px 6px !important;
+    min-height: 70px !important;
+  }
+
+  .report-type-card i {
+    font-size: var(--admin-fs-lg) !important;
+  }
+
+  .report-type-card span {
+    font-size: var(--admin-fs-xs) !important;
+  }
+
+  .reports-card-compact {
+    padding: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .reports-stats-summary {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .reports-stats-summary .stat-card {
+    padding: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 }
 
@@ -1385,6 +1479,30 @@
   .export-buttons-group .btn {
     flex: 1;
     min-width: 120px;
+  }
+}
+
+/* Mobile export buttons fix */
+@media (max-width: 480px) {
+  .export-buttons-group {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
+  }
+
+  .export-buttons-group .btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    flex: none !important;
+    padding: 10px 12px !important;
+    font-size: var(--admin-fs-sm-mid) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 }
 

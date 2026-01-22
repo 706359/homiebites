@@ -597,21 +597,35 @@ const OrderModal = ({ isOpen, onClose }) => {
   };
 
   const updateQuantity = (itemId, change) => {
+    // Get current state and calculate new quantity
+    const currentQuantity = orderItems[itemId] || 0;
+    const newQuantity = currentQuantity + change;
+    
+    if (newQuantity < 0) return; // Invalid operation
+    
+    const item = galleryItems.find((i) => i.id === itemId);
+    const willRemove = newQuantity === 0;
+    const willAdd = change > 0;
+    
+    // Update state first
     setOrderItems((prev) => {
-      const newQuantity = (prev[itemId] || 0) + change;
-      if (newQuantity < 0) return prev;
-      const item = galleryItems.find((i) => i.id === itemId);
       if (newQuantity === 0) {
         // eslint-disable-next-line no-unused-vars
         const { [itemId]: _removed, ...rest } = prev;
-        if (item) info(`${item.name} removed from order`);
         return rest;
-      }
-      if (item && change > 0) {
-        info(`${item.name} added to order`);
       }
       return { ...prev, [itemId]: newQuantity };
     });
+    
+    // Show notifications after state update (deferred to avoid render-phase update)
+    // Using setTimeout ensures this runs after the current render cycle completes
+    setTimeout(() => {
+      if (willRemove && item) {
+        info(`${item.name} removed from order`);
+      } else if (willAdd && item) {
+        info(`${item.name} added to order`);
+      }
+    }, 0);
   };
 
   const getTotalPrice = () => {

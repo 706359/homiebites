@@ -168,3 +168,74 @@
 .stat-card-icon-accent {
   color: var(--admin-accent, #449031);
 }
+
+/* Laptop view optimizations (1024px - 1440px) */
+@media (min-width: 1024px) and (max-width: 1440px) {
+  .stat-card {
+    padding: 20px 22px;
+    gap: 18px;
+    min-height: 100px;
+  }
+
+  .stat-card i {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    min-height: 52px;
+    font-size: var(--admin-fs-xl);
+  }
+
+  .stat-card h3 {
+    font-size: var(--admin-fs-xl);
+  }
+
+  .stat-card p {
+    font-size: var(--admin-fs-base);
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .stat-card {
+    padding: 18px 20px;
+    gap: 16px;
+    min-height: 88px;
+  }
+
+  .stat-card i {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    font-size: var(--admin-fs-lg);
+  }
+
+  .stat-card h3 {
+    font-size: var(--admin-fs-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-card {
+    padding: 16px;
+    gap: 12px;
+    min-height: 80px;
+    flex-direction: row;
+  }
+
+  .stat-card i {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: var(--admin-fs-base-mid);
+  }
+
+  .stat-card h3 {
+    font-size: var(--admin-fs-base-mid);
+  }
+
+  .stat-card p {
+    font-size: var(--admin-fs-sm);
+  }
+}

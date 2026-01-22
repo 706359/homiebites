@@ -430,6 +430,9 @@
 @media (max-width: 767px) {
   .analytics-delivery-table-wrapper {
     border-radius: 8px;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .analytics-delivery-table {
@@ -461,6 +464,94 @@
 
   .analytics-chart-container {
     padding: 14px;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* Small mobile (< 480px) */
+@media (max-width: 480px) {
+  .analytics-delivery-table-wrapper {
+    border-radius: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+  }
+
+  .analytics-delivery-table {
+    min-width: 400px !important;
+  }
+
+  .analytics-delivery-table thead th,
+  .analytics-delivery-table tbody td {
+    padding: 6px 3px !important;
+    font-size: var(--admin-fs-sm-mid) !important;
+  }
+
+  .analytics-monthly-year-row {
+    grid-template-columns: repeat(12, minmax(11px, 1fr)) !important;
+    gap: 1px !important;
+  }
+
+  .analytics-monthly-value {
+    font-size: var(--admin-fs-xs) !important;
+    padding: 1px !important;
+    min-height: 12px !important;
+  }
+
+  .analytics-trend-icon {
+    width: 16px !important;
+    height: 16px !important;
+    font-size: var(--admin-fs-sm) !important;
+  }
+
+  .analytics-chart-container {
+    padding: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .analytics-empty-state,
+  .analytics-empty-state-center,
+  .analytics-empty-state-inline {
+    padding: 32px 16px !important;
+  }
+
+  .section-header-with-select {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .section-header-with-select .dashboard-section-title {
+    width: 100% !important;
+  }
+
+  .top-areas-range-select {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .area-item {
+    padding: 10px 0 !important;
+  }
+
+  .area-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+  }
+
+  .analytics-top-days-container {
+    min-height: 200px !important;
+    gap: 6px !important;
+  }
+
+  .analytics-day-item {
+    min-width: 50px !important;
   }
 }
 

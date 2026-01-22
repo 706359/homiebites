@@ -317,3 +317,66 @@
   gap: 8px;
   cursor: pointer;
 }
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .admin-notification-container {
+    top: 10px !important;
+    right: 10px !important;
+    left: 10px !important;
+    max-width: calc(100% - 20px) !important;
+    width: calc(100% - 20px) !important;
+    max-height: calc(100vh - 20px) !important;
+  }
+
+  .admin-notification {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .admin-notification-content {
+    padding: 12px 16px !important;
+    padding-right: 44px !important;
+    gap: 12px !important;
+  }
+
+  .admin-notification-icon {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: var(--admin-fs-lg) !important;
+  }
+
+  .admin-notification-title {
+    font-size: var(--admin-fs-base) !important;
+  }
+
+  .admin-notification-description {
+    font-size: var(--admin-fs-sm-mid) !important;
+  }
+
+  .admin-notification-close {
+    width: 32px !important;
+    height: 32px !important;
+    top: 8px !important;
+    right: 8px !important;
+  }
+
+  .notifications-empty-state {
+    padding: 32px 16px !important;
+  }
+
+  .notifications-settings-item {
+    padding: 10px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .notifications-settings-item-toggle {
+    margin-left: 0 !important;
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+}

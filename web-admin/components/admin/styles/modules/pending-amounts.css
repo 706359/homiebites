@@ -234,3 +234,40 @@
   border-radius: 4px;
   transition: width 0.3s ease;
 }
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .pending-table-empty-message {
+    padding: 32px 16px !important;
+  }
+
+  .pending-table-empty-icon {
+    font-size: var(--admin-fs-3xl) !important;
+  }
+
+  .pending-payment-address {
+    max-width: 100% !important;
+    font-size: var(--admin-fs-sm) !important;
+  }
+
+  .pending-payment-action-btn {
+    min-width: 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .pending-timeline-item {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .pending-timeline-label {
+    min-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .pending-amounts-timeline-bar {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}

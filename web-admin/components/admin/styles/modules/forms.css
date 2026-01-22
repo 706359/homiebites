@@ -20,12 +20,25 @@
   margin-bottom: 0;
 }
 
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .form-row:last-child {
   margin-bottom: 0;
 }
 
 .form-row .form-group {
-  margin: 0;
+  margin-bottom: 0;
+}
+
+.form-group {
+  margin-bottom: 20px;
 }
 
 .form-group label {
@@ -36,6 +49,26 @@
   margin-bottom: 8px;
   line-height: 1.5;
   letter-spacing: -0.01em;
+}
+
+/* Helper and error text spacing */
+.helper-text {
+  display: block;
+  font-size: var(--admin-fs-sm);
+  color: var(--admin-text-secondary, #6b7280);
+  margin-top: 6px;
+  margin-bottom: 0;
+  line-height: 1.4;
+}
+
+.error-text {
+  display: block;
+  font-size: var(--admin-fs-sm);
+  color: var(--admin-danger, #dc2626);
+  margin-top: 6px;
+  margin-bottom: 0;
+  line-height: 1.4;
+  font-weight: 500;
 }
 
 .form-group label.required {
@@ -61,15 +94,110 @@
   position: relative;
 }
 
+/* Laptop view optimizations (1024px - 1440px) */
+@media (min-width: 1024px) and (max-width: 1440px) {
+  .form-grid {
+    gap: 20px;
+  }
+
+  .admin-dashboard .form-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .admin-dashboard .form-row .form-group {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Single column for full-width fields */
+  .admin-dashboard .form-row .form-group:has(textarea),
+  .admin-dashboard .form-row .form-group:has(input[type="date"]),
+  .admin-dashboard .form-row .form-group.full-width {
+    grid-column: 1 / -1 !important;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-group label {
+    font-size: var(--admin-fs-base);
+    margin-bottom: 6px;
+  }
+
+  .input-field,
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: var(--admin-fs-md);
+    padding: 10px 14px;
+    height: 42px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  textarea.input-field,
+  .form-group textarea {
+    height: auto;
+    min-height: 80px;
+  }
+}
+
+/* Tablet responsive */
+@media (max-width: 768px) {
+  .form-grid {
+    gap: 20px;
+  }
+
+  .form-group {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .form-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .form-row:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  .form-row .form-group {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 480px) {
+  .form-grid {
+    gap: 16px;
+  }
+
   .form-group {
     margin-bottom: 12px;
     gap: 6px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .form-group label {
     font-size: var(--admin-fs-sm-mid);
     margin-bottom: 4px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .form-group label i {
@@ -81,11 +209,43 @@
   .form-row {
     flex-direction: column;
     gap: 12px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .form-row .form-group {
     width: 100%;
+    max-width: 100%;
     margin-bottom: 0;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+    font-size: 16px !important; /* Prevent iOS zoom */
+    padding: 10px 12px !important;
+    min-height: 44px !important;
+  }
+
+  /* Ensure form rows stack properly */
+  .form-row {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Address input container mobile fix */
+  .address-input-container {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 }
 

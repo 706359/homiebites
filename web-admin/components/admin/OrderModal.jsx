@@ -1136,7 +1136,6 @@ const OrderModal = ({
                   editingOrder?.dateNeedsReview ? 'required error' : 'required'
                 }
               >
-                <i className="fa-solid fa-calendar mr-2"></i>
                 Date
                 {editingOrder?.dateNeedsReview && (
                   <span className="error-text ml-2">

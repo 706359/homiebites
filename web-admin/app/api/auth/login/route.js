@@ -74,11 +74,20 @@ export async function POST(request) {
     const esc = emailOrUsername.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const usernameRegex = new RegExp('^' + esc + '$', 'i');
     const emailLower = emailOrUsername.toLowerCase();
+    
+    // Normalize phone number (remove spaces, dashes, etc.)
+    const normalizedPhone = emailOrUsername.replace(/[\s\-\(\)]/g, '');
+    const phoneRegex = new RegExp('^' + normalizedPhone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
 
     let user;
     try {
       user = await User.findOne({
-        $or: [{ email: emailLower }, { username: usernameRegex }],
+        $or: [
+          { email: emailLower },
+          { username: usernameRegex },
+          { phone: phoneRegex },
+          { mobile: phoneRegex },
+        ],
       });
       if (process.env.NODE_ENV === 'development')
         console.log('[Login API] User lookup result:', {

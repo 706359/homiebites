@@ -127,10 +127,14 @@ const AdminForgotPassword = () => {
                 )}
               </button>
               <div className="admin-login-forgot-link-wrapper">
-                <a href="/admin" className="admin-login-forgot-link">
+                <button
+                  type="button"
+                  onClick={() => router.push('/admin')}
+                  className="admin-login-forgot-link"
+                >
                   <i className="fa-solid fa-arrow-left"></i>
                   <span>Back to Login</span>
-                </a>
+                </button>
               </div>
             </form>
             <div className="login-info">

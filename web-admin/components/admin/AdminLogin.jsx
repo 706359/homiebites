@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
 import api from '../../lib/api-admin.js';
 import { getSessionExpiresAt } from '../../lib/auth-admin.js';
@@ -7,6 +8,7 @@ import InstallPrompt from './InstallPrompt.jsx';
 import { parseFontSize, applyAdminFontSize } from './utils/fontSize.js';
 
 const AdminLogin = ({ onLoginSuccess }) => {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -230,14 +232,14 @@ const AdminLogin = ({ onLoginSuccess }) => {
               <div className="form-field">
                 <label htmlFor="email-input">
                   <i className="fa-solid fa-envelope"></i>
-                  Email Address
+                  Email or Mobile Number
                 </label>
                 <input
                   id="email-input"
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email address"
+                  placeholder="Enter your email or mobile number"
                   required
                   autoFocus
                   autoComplete="email"
@@ -281,13 +283,14 @@ const AdminLogin = ({ onLoginSuccess }) => {
               </button>
 
               <div className="admin-login-forgot-link-wrapper">
-                <a
-                  href="/admin/forgot-password"
+                <button
+                  type="button"
+                  onClick={() => router.push('/admin/forgot-password')}
                   className="admin-login-forgot-link"
                 >
                   <i className="fa-solid fa-key"></i>
                   Forgot Password?
-                </a>
+                </button>
               </div>
             </form>
 
