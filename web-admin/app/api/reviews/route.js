@@ -96,7 +96,10 @@ export async function POST(request) {
       );
     }
 
-    if (rating < 1 || rating > 5) {
+    // Convert rating to number to handle string inputs from JSON
+    const ratingNum = Number(rating);
+    
+    if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
       return Response.json(
         { success: false, error: 'Rating must be between 1 and 5' },
         { status: 400 }
@@ -104,7 +107,7 @@ export async function POST(request) {
     }
 
     // For low ratings (1-2 stars), comment is mandatory and should be detailed
-    if ((rating === 1 || rating === 2) && (!comment || comment.trim().length < 20)) {
+    if ((ratingNum === 1 || ratingNum === 2) && (!comment || comment.trim().length < 20)) {
       return Response.json(
         { 
           success: false, 
@@ -146,7 +149,7 @@ export async function POST(request) {
           userEmail: userEmail?.trim() || existingReview.userEmail,
           userPhone: userPhone?.trim() || existingReview.userPhone,
           userLocation: userLocation?.trim() || existingReview.userLocation,
-          rating: parseInt(rating),
+          rating: ratingNum,
           comment: comment.trim(),
           isApproved: false, // Reset approval status for updated review
           // Keep featured status if it was featured
@@ -163,7 +166,7 @@ export async function POST(request) {
         userEmail: userEmail?.trim(),
         userPhone: userPhone?.trim(),
         userLocation: userLocation?.trim(),
-        rating: parseInt(rating),
+        rating: ratingNum,
         comment: comment.trim(),
         isApproved: false,
         featured: false,
