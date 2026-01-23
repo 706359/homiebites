@@ -1,4 +1,4 @@
-import { connectDB } from '../../../../lib/db.js';
+import connectDB from '../../../../lib/db.js';
 import { authenticate } from '../../../../lib/middleware/auth.js';
 
 /**
