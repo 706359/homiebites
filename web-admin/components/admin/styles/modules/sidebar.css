@@ -732,10 +732,12 @@
     pointer-events: auto;
     width: min(280px, 85vw);
     max-width: 85vw;
-    overflow-y: auto;
+    overflow-y: hidden;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .sidebar-header {
@@ -749,9 +751,33 @@
 
   .sidebar-footer {
     padding: 16px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    flex-shrink: 0 !important;
+    margin-top: auto !important;
+  }
+
+  .sidebar-profile-section {
+    display: flex !important;
+    width: 100% !important;
+  }
+
+  .sidebar-profile-btn {
+    display: flex !important;
+    width: 100% !important;
+    min-height: 44px !important;
   }
 
   .sidebar-item {
     min-height: 44px;
+  }
+
+  /* Ensure sidebar nav can scroll while footer stays visible */
+  .sidebar-nav {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    min-height: 0 !important;
   }
 }
