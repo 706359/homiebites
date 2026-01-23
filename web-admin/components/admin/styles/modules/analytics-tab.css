@@ -241,6 +241,28 @@
   gap: 6px;
   padding: 6px 0;
   width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--admin-accent, #449031) transparent;
+}
+
+.analytics-monthly-breakdown::-webkit-scrollbar {
+  height: 8px;
+}
+
+.analytics-monthly-breakdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.analytics-monthly-breakdown::-webkit-scrollbar-thumb {
+  background-color: var(--admin-accent, #449031);
+  border-radius: 4px;
+}
+
+.analytics-monthly-breakdown::-webkit-scrollbar-thumb:hover {
+  background-color: var(--admin-accent-dark, #357a26);
 }
 
 .analytics-monthly-year-row {
@@ -250,6 +272,7 @@
   align-items: center;
   width: 100%;
   padding: 2px 0;
+  min-width: max-content;
 }
 
 .analytics-monthly-value {
@@ -321,6 +344,28 @@
   margin-top: 16px;
   background: var(--admin-bg, #ffffff);
   box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--admin-accent, #449031) transparent;
+}
+
+.analytics-chart-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.analytics-chart-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.analytics-chart-container::-webkit-scrollbar-thumb {
+  background-color: var(--admin-accent, #449031);
+  border-radius: 4px;
+}
+
+.analytics-chart-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--admin-accent-dark, #357a26);
 }
 
 /* ============================================
@@ -490,15 +535,23 @@
     font-size: var(--admin-fs-sm-mid) !important;
   }
 
+  .analytics-monthly-breakdown {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
   .analytics-monthly-year-row {
     grid-template-columns: repeat(12, minmax(11px, 1fr)) !important;
     gap: 1px !important;
+    min-width: max-content !important;
   }
 
   .analytics-monthly-value {
     font-size: var(--admin-fs-xs) !important;
     padding: 1px !important;
     min-height: 12px !important;
+    flex-shrink: 0 !important;
   }
 
   .analytics-trend-icon {
@@ -528,6 +581,12 @@
 
   .section-header-with-select .dashboard-section-title {
     width: 100% !important;
+    font-size: var(--admin-fs-base-mid, 0.9375rem) !important;
+    gap: 8px;
+  }
+
+  .section-header-with-select .dashboard-section-title i {
+    font-size: var(--admin-fs-base, 1rem) !important;
   }
 
   .top-areas-range-select {

@@ -10,7 +10,19 @@ export async function GET(request) {
     await connectDB();
     await isAdmin(request);
     const settings = await Settings.getSettings();
-    return Response.json({ success: true, data: settings });
+    
+    // Ensure autoHideSidebar is explicitly included in the response
+    // Convert to plain object and explicitly set the field to ensure it's included
+    const settingsObj = settings.toObject ? settings.toObject() : settings;
+    
+    // Explicitly include autoHideSidebar if it exists, or set default
+    if (settingsObj.autoHideSidebar === undefined || settingsObj.autoHideSidebar === null) {
+      settingsObj.autoHideSidebar = false; // Default value
+    } else {
+      settingsObj.autoHideSidebar = Boolean(settingsObj.autoHideSidebar);
+    }
+    
+    return Response.json({ success: true, data: settingsObj });
   } catch (error) {
     if (error.status) {
       return createErrorResponse(error.status, error.message);

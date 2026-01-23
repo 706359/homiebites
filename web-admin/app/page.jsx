@@ -15,7 +15,6 @@ import StructuredData from '../components/StructuredData';
 const HowItWorks = lazy(() => import('../components/HowItWorks'));
 const Features = lazy(() => import('../components/Features'));
 const SpecialOffer = lazy(() => import('../components/SpecialOffer'));
-const Pricing = lazy(() => import('../components/Pricing'));
 const Gallery = lazy(() => import('../components/Gallery'));
 const Testimonials = lazy(() => import('../components/Testimonials'));
 const FAQ = lazy(() => import('../components/FAQ'));
@@ -52,12 +51,7 @@ export default function HomePage() {
         <Suspense
           fallback={<PremiumLoader message="Loading offers..." size="small" />}
         >
-          <SpecialOffer />
-        </Suspense>
-        <Suspense
-          fallback={<PremiumLoader message="Loading pricing..." size="small" />}
-        >
-          <Pricing />
+          <SpecialOffer onOrderClick={handleOrderClick} />
         </Suspense>
         <Suspense
           fallback={<PremiumLoader message="Loading gallery..." size="small" />}

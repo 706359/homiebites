@@ -142,6 +142,25 @@ export const api = {
     });
   },
 
+  async createWebsiteOrder(orderData) {
+    return this.request('/api/orders/website', {
+      method: 'POST',
+      body: JSON.stringify(orderData),
+    });
+  },
+
+  async getKitchenStatus() {
+    // Public endpoint, no auth required
+    const url = `${resolvedApiUrl}/api/kitchen-status`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.json();
+  },
+
   async getAllOrders(filters = {}) {
     const params = new URLSearchParams();
     if (filters.status) params.append('status', filters.status);

@@ -61,15 +61,9 @@ export default function OffersPage() {
     setIsOrderModalOpen(true);
   };
 
-  const handleGetDeal = (offer) => {
-    const message = encodeURIComponent(
-      offer.whatsappMessage || `I'm interested in: ${offer.title}`
-    );
-    window.open(
-      `https://wa.me/919958983578?text=${message}`,
-      '_blank',
-      'noopener'
-    );
+  const handleGetDeal = () => {
+    // Open order form instead of direct WhatsApp
+    openOrderModal();
   };
 
   const formatDate = (dateString) => {

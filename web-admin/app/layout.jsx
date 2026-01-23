@@ -50,7 +50,12 @@ export const metadata = {
       'Delicious home-cooked vegetarian meals delivered to your doorstep. Daily and monthly tiffin subscriptions available.',
     images: [
       {
-        url: '/logo.png',
+        url: new URL(
+          '/logo.png',
+          process.env.NEXT_PUBLIC_SITE_URL ||
+            process.env.VITE_SITE_URL ||
+            'https://homiebites.com'
+        ).toString(),
         width: 1200,
         height: 630,
         alt: 'HomieBites Logo',
@@ -62,7 +67,14 @@ export const metadata = {
     title: 'HomieBites - Premium Tiffin Service',
     description:
       'Delicious home-cooked vegetarian meals delivered to your doorstep.',
-    images: ['/logo.png'],
+    images: [
+      new URL(
+        '/logo.png',
+        process.env.NEXT_PUBLIC_SITE_URL ||
+          process.env.VITE_SITE_URL ||
+          'https://homiebites.com'
+      ).toString(),
+    ],
   },
   robots: {
     index: true,

@@ -402,13 +402,6 @@ const AllAddressesTab = ({
                 <i className="fa-solid fa-th"></i>
               </button>
             </div>
-            <button
-              className="btn btn-secondary btn-small"
-              onClick={handleExport}
-              title="Export"
-            >
-              <i className="fa-solid fa-download"></i> Export
-            </button>
             {(searchQuery ||
               filterStatus !== 'all' ||
               filterSegment !== 'all') && (

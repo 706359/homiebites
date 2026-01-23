@@ -40,12 +40,18 @@ const SettingsSchema = new mongoose.Schema(
     primaryColor: { type: String, default: '#449031' },
     secondaryColor: { type: String, default: '#c45c2d' },
     theme: { type: String, default: 'light' },
+    autoHideSidebar: { type: Boolean, default: false },
 
     whatsappNumber: String,
     deliveryTimings: String,
     minOrderValue: Number,
     deliveryCharge: Number,
     announcement: String,
+
+    // Kitchen Status
+    kitchenEnabled: { type: Boolean, default: true }, // true = open, false = closed
+    kitchenClosedFrom: { type: String, default: '' },
+    kitchenClosedTo: { type: String, default: '' },
   },
   { timestamps: true, strict: false }
 );

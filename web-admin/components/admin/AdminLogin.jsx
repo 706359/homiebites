@@ -128,6 +128,8 @@ const AdminLogin = ({ onLoginSuccess }) => {
             'homiebites_token_meta',
             JSON.stringify({ expiresAt: getSessionExpiresAt() })
           );
+          // Set initial activity timestamp
+          localStorage.setItem('homiebites_last_activity', Date.now().toString());
 
           if (data.requirePasswordChange) {
             // Show success message before redirect for password change

@@ -508,7 +508,7 @@ textarea.settings-input-field {
   }
 
   .settings-section-title {
-    font-size: var(--admin-fs-lg) !important;
+    font-size: var(--admin-fs-base-mid, 0.9375rem) !important;
   }
 
   .settings-section-subtitle {

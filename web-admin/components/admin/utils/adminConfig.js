@@ -34,9 +34,9 @@ export const adminFeatures = {
     icon: 'fa-exclamation-triangle',
     enabled: true,
   },
-  notifications: {
-    name: 'Notifications',
-    icon: 'fa-bell',
+  todayOrder: {
+    name: 'Today Order',
+    icon: 'fa-calendar-day',
     enabled: true,
   },
   settings: {

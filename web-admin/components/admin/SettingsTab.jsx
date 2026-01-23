@@ -41,6 +41,7 @@ const SettingsTab = ({
   onBackup,
   onRestore,
   onClearAllData,
+  onClearAllMenuItems,
   showNotification,
   loading = false,
   showConfirmation,
@@ -104,61 +105,165 @@ const SettingsTab = ({
     confirmPassword: '',
   });
 
-  const [appearanceSettings, setAppearanceSettings] = useState({
-    fontFamily: settings?.fontFamily || 'Baloo 2',
-    fontSize: ADMIN_FONT_SIZE_DEFAULT,
-  });
-
-  useEffect(() => {
-    const fromSettings = settings?.fontFamily;
-    const fromStorage =
-      typeof localStorage !== 'undefined'
-        ? localStorage.getItem('homiebites_font_family')
-        : null;
-    const fs =
-      parseFontSize(
-        settings?.fontSize ??
-          (typeof localStorage !== 'undefined'
-            ? localStorage.getItem('homiebites_font_size')
-            : null)
-      ) ?? ADMIN_FONT_SIZE_DEFAULT;
-    setAppearanceSettings((prev) => ({
-      ...prev,
-      fontFamily: fromSettings || fromStorage || 'Baloo 2',
-      fontSize: fs,
-    }));
-    // Apply font size immediately on load
-    if (fs != null) {
-      applyAdminFontSize(fs);
+  // Initialize appearance settings - properly handle false values
+  const getInitialAppearanceSettings = () => {
+    if (!settings) {
+      return {
+        fontFamily: 'Baloo 2',
+        fontSize: ADMIN_FONT_SIZE_DEFAULT,
+        autoHideSidebar: false,
+      };
     }
-  }, [settings?.fontFamily, settings?.fontSize]);
+    // Properly handle autoHideSidebar: check if property exists and is explicitly set
+    // If undefined or null, it means it was never set, so default to false
+    // If it exists (even if true), use the actual value
+    const autoHideSidebar = settings.autoHideSidebar !== undefined && settings.autoHideSidebar !== null
+      ? Boolean(settings.autoHideSidebar)
+      : false;
+    
+    return {
+      fontFamily: settings.fontFamily || 'Baloo 2',
+      fontSize: ADMIN_FONT_SIZE_DEFAULT,
+      autoHideSidebar,
+    };
+  };
+
+  const [appearanceSettings, setAppearanceSettings] = useState(getInitialAppearanceSettings());
+
+  // Initialize kitchen settings - properly handle false values
+  const getInitialKitchenSettings = () => {
+    if (!settings) {
+      return {
+        kitchenEnabled: true,
+        kitchenClosedFrom: '',
+        kitchenClosedTo: '',
+      };
+    }
+    // If kitchenEnabled is explicitly false, use false; otherwise default to true
+    const kitchenEnabled = settings.kitchenEnabled === false ? false : (settings.kitchenEnabled === true ? true : true);
+    return {
+      kitchenEnabled,
+      kitchenClosedFrom: settings.kitchenClosedFrom || '',
+      kitchenClosedTo: settings.kitchenClosedTo || '',
+    };
+  };
+
+  const [kitchenSettings, setKitchenSettings] = useState(getInitialKitchenSettings());
+
+  // Update kitchen settings when settings prop changes (on load/refresh)
+  useEffect(() => {
+    if (settings) {
+      // Properly handle false values - if explicitly false, keep it false
+      const kitchenEnabled = settings.kitchenEnabled === false 
+        ? false 
+        : (settings.kitchenEnabled === true ? true : true);
+      
+      setKitchenSettings({
+        kitchenEnabled,
+        kitchenClosedFrom: settings.kitchenClosedFrom || '',
+        kitchenClosedTo: settings.kitchenClosedTo || '',
+      });
+    }
+  }, [settings?.kitchenEnabled, settings?.kitchenClosedFrom, settings?.kitchenClosedTo]);
+
+  // Update appearance settings when settings prop changes (on load/refresh)
+  useEffect(() => {
+    if (settings) {
+      const fromSettings = settings.fontFamily;
+      const fromStorage =
+        typeof localStorage !== 'undefined'
+          ? localStorage.getItem('homiebites_font_family')
+          : null;
+      
+      // Priority: localStorage > settings from API > default
+      // localStorage is the source of truth for the current session
+      const fontSizeFromStorage = typeof localStorage !== 'undefined'
+        ? localStorage.getItem('homiebites_font_size')
+        : null;
+      const fontSizeFromSettings = settings.fontSize;
+      
+      // Always prioritize localStorage if it exists (user's current preference)
+      // Only fall back to settings from API if localStorage is empty
+      const fs =
+        parseFontSize(fontSizeFromStorage || fontSizeFromSettings) ?? ADMIN_FONT_SIZE_DEFAULT;
+      
+      // Properly handle autoHideSidebar: check if property exists and is explicitly set
+      // If undefined or null, preserve current local state (don't reset to default)
+      // If it exists (even if false), use the actual value from settings
+      const autoHideSidebarFromSettings = settings.autoHideSidebar !== undefined && settings.autoHideSidebar !== null
+        ? Boolean(settings.autoHideSidebar)
+        : null; // null means not set in settings yet
+      
+      setAppearanceSettings((prev) => {
+        // Only update if the value actually changed to prevent unnecessary re-renders
+        const newFontSize = fs;
+        const newFontFamily = fromSettings || fromStorage || 'Baloo 2';
+        
+        // For autoHideSidebar: use value from settings if explicitly set, otherwise preserve local state
+        // This prevents resetting to default when settings reloads before save completes
+        const newAutoHideSidebar = autoHideSidebarFromSettings !== null
+          ? autoHideSidebarFromSettings // Use value from settings if explicitly set
+          : (prev.autoHideSidebar !== undefined ? prev.autoHideSidebar : false); // Preserve local state or default to false
+        
+        if (prev.fontSize === newFontSize && 
+            prev.fontFamily === newFontFamily && 
+            prev.autoHideSidebar === newAutoHideSidebar) {
+          return prev; // No change needed
+        }
+        
+        return {
+          ...prev,
+          fontFamily: newFontFamily,
+          fontSize: newFontSize,
+          autoHideSidebar: newAutoHideSidebar,
+        };
+      });
+      
+      // Apply font size immediately on load
+      if (fs != null) {
+        applyAdminFontSize(fs);
+      }
+    }
+  }, [settings?.fontFamily, settings?.fontSize, settings?.autoHideSidebar]);
 
   const handleSaveAppearance = () => {
-    const saveSettings = () => {
+    const saveSettings = async () => {
       // Ensure font size is applied before saving
       const fontSize = appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT;
-      applyAdminFontSize(fontSize);
+      const fontSizeString = String(fontSize);
       
-      // Save to localStorage immediately
+      // Save to localStorage immediately (this is the source of truth)
       if (typeof localStorage !== 'undefined') {
-        localStorage.setItem('homiebites_font_size', String(fontSize));
+        localStorage.setItem('homiebites_font_size', fontSizeString);
         localStorage.setItem('homiebites_font_family', appearanceSettings.fontFamily);
       }
+      
+      // Apply font size immediately
+      applyAdminFontSize(fontSize);
       
       // Dispatch event to notify other components
       window.dispatchEvent(
         new CustomEvent('adminFontSizeChanged', { detail: { fontSize } })
       );
       
-      // Save to database
+      // Save to database (as string to match schema)
       if (onUpdateSettings) {
-        onUpdateSettings({
+        await onUpdateSettings({
           themeSettings: {
             fontFamily: appearanceSettings.fontFamily,
-            fontSize: fontSize,
+            fontSize: fontSizeString, // Save as string
+            autoHideSidebar: appearanceSettings.autoHideSidebar,
           },
         });
       }
+      
+      // Update local state to prevent reset on reload
+      // Include autoHideSidebar to preserve the saved value
+      setAppearanceSettings((prev) => ({
+        ...prev,
+        fontSize: fontSize,
+        autoHideSidebar: appearanceSettings.autoHideSidebar, // Preserve the saved value
+      }));
       
       if (showNotification) {
         showNotification('Appearance settings saved successfully', 'success');
@@ -226,6 +331,48 @@ const SettingsTab = ({
     } else {
       if (onUpdateSettings) {
         onUpdateSettings({ pricing });
+      }
+    }
+  };
+
+  const handleSaveKitchenSettings = () => {
+    // Validate date range if kitchen is disabled
+    if (!kitchenSettings.kitchenEnabled) {
+      if (kitchenSettings.kitchenClosedFrom && kitchenSettings.kitchenClosedTo) {
+        const fromDate = new Date(kitchenSettings.kitchenClosedFrom);
+        const toDate = new Date(kitchenSettings.kitchenClosedTo);
+        if (toDate < fromDate) {
+          if (showNotification) {
+            showNotification('End date must be after start date', 'error');
+          }
+          return;
+        }
+        // Check if range is at least 2 days
+        const daysDiff = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24));
+        if (daysDiff < 1) {
+          if (showNotification) {
+            showNotification('Date range must be at least 2 days', 'error');
+          }
+          return;
+        }
+      }
+    }
+
+    if (showConfirmation) {
+      showConfirmation({
+        title: 'Save Kitchen Settings',
+        message: 'Are you sure you want to save changes to kitchen status?',
+        type: 'info',
+        confirmText: 'Save',
+        onConfirm: () => {
+          if (onUpdateSettings) {
+            onUpdateSettings({ kitchenSettings });
+          }
+        },
+      });
+    } else {
+      if (onUpdateSettings) {
+        onUpdateSettings({ kitchenSettings });
       }
     }
   };
@@ -807,6 +954,131 @@ const SettingsTab = ({
                 </div>
               </div>
             </div>
+
+            {/* Kitchen Settings Section */}
+            <div className="dashboard-card" style={{ marginTop: '24px' }}>
+              <div className="settings-section-header">
+                <div className="settings-section-icon-wrapper">
+                  <i className="fa-solid fa-utensils"></i>
+                </div>
+                <div className="settings-section-title-wrapper">
+                  <h3 className="settings-section-title">Kitchen Status</h3>
+                  <p className="settings-section-subtitle">
+                    Control when the kitchen is open or closed for orders
+                  </p>
+                </div>
+              </div>
+              <div className="settings-section-body">
+                <div className="settings-form-grid">
+                  <div className="settings-form-group-full">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-toggle-on"></i>
+                      <span>Kitchen Status</span>
+                    </label>
+                    <div className="settings-toggle-switch-wrapper">
+                      <label className="settings-toggle-switch">
+                        <input
+                          type="checkbox"
+                          checked={kitchenSettings.kitchenEnabled}
+                          onChange={(e) => {
+                            setKitchenSettings({
+                              ...kitchenSettings,
+                              kitchenEnabled: e.target.checked,
+                              // Clear dates when enabling kitchen
+                              kitchenClosedFrom: e.target.checked ? '' : kitchenSettings.kitchenClosedFrom,
+                              kitchenClosedTo: e.target.checked ? '' : kitchenSettings.kitchenClosedTo,
+                            });
+                          }}
+                        />
+                        <span className="settings-toggle-slider"></span>
+                      </label>
+                      <span className="settings-toggle-label">
+                        {kitchenSettings.kitchenEnabled ? 'Kitchen is Open' : 'Kitchen is Closed'}
+                      </span>
+                    </div>
+                    <p className="settings-helper-text">
+                      {kitchenSettings.kitchenEnabled
+                        ? 'Kitchen is currently accepting orders. Use date range below to schedule future closures.'
+                        : 'Kitchen is closed. Set date range below for extended closure (minimum 2 days), or leave empty to close for today only.'}
+                    </p>
+                  </div>
+
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-calendar-alt"></i>
+                      <span>Closed From Date</span>
+                      {!kitchenSettings.kitchenEnabled && (
+                        <span style={{ color: '#ef4444', marginLeft: '8px' }}>*</span>
+                      )}
+                    </label>
+                    <input
+                      type="date"
+                      className="settings-input-field"
+                      value={kitchenSettings.kitchenClosedFrom}
+                      onChange={(e) =>
+                        setKitchenSettings({
+                          ...kitchenSettings,
+                          kitchenClosedFrom: e.target.value,
+                        })
+                      }
+                      min={new Date().toISOString().split('T')[0]}
+                      disabled={kitchenSettings.kitchenEnabled && !kitchenSettings.kitchenClosedFrom}
+                      style={{
+                        opacity: kitchenSettings.kitchenEnabled && !kitchenSettings.kitchenClosedFrom ? 0.6 : 1,
+                      }}
+                    />
+                    <p className="settings-helper-text">
+                      {kitchenSettings.kitchenEnabled
+                        ? 'Start date for scheduled kitchen closure (optional - for future planning)'
+                        : 'Start date for kitchen closure (optional - leave empty to close for today only)'}
+                    </p>
+                  </div>
+
+                  <div className="settings-form-group">
+                    <label className="settings-form-label">
+                      <i className="fa-solid fa-calendar-check"></i>
+                      <span>Closed To Date</span>
+                      {!kitchenSettings.kitchenEnabled && (
+                        <span style={{ color: '#ef4444', marginLeft: '8px' }}>*</span>
+                      )}
+                    </label>
+                    <input
+                      type="date"
+                      className="settings-input-field"
+                      value={kitchenSettings.kitchenClosedTo}
+                      onChange={(e) =>
+                        setKitchenSettings({
+                          ...kitchenSettings,
+                          kitchenClosedTo: e.target.value,
+                        })
+                      }
+                      min={
+                        kitchenSettings.kitchenClosedFrom ||
+                        new Date().toISOString().split('T')[0]
+                      }
+                      disabled={kitchenSettings.kitchenEnabled && !kitchenSettings.kitchenClosedFrom}
+                      style={{
+                        opacity: kitchenSettings.kitchenEnabled && !kitchenSettings.kitchenClosedFrom ? 0.6 : 1,
+                      }}
+                    />
+                    <p className="settings-helper-text">
+                      {kitchenSettings.kitchenEnabled
+                        ? 'End date for scheduled kitchen closure (optional - minimum 2 days from start date)'
+                        : 'End date for kitchen closure (optional - minimum 2 days from start date, or leave empty to close for today only)'}
+                    </p>
+                  </div>
+                </div>
+                <div className="settings-section-actions">
+                  <button
+                    className="btn btn-primary btn-large"
+                    onClick={handleSaveKitchenSettings}
+                  >
+                    <i className="fa-solid fa-save"></i>
+                    <span>Update Kitchen Status</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1309,35 +1581,11 @@ const SettingsTab = ({
                   </div>
                 </div>
 
-                <div className="settings-backup-actions">
-                  <button
-                    className="btn btn-primary btn-large"
-                    onClick={handleBackup}
-                  >
-                    <i className="fa-solid fa-save"></i>
-                    <span>Create Backup Now</span>
-                  </button>
-                  <button
-                    className="btn btn-secondary btn-large"
-                    onClick={handleDownloadBackup}
-                  >
-                    <i className="fa-solid fa-download"></i>
-                    <span>Download Backup</span>
-                  </button>
-                  <button
-                    className="btn btn-secondary btn-large"
-                    onClick={handleRestore}
-                  >
-                    <i className="fa-solid fa-rotate"></i>
-                    <span>Restore from Backup</span>
-                  </button>
-                  <button
-                    className="btn btn-secondary btn-large"
-                    onClick={handleExportSettings}
-                  >
-                    <i className="fa-solid fa-file-export"></i>
-                    <span>Export Settings</span>
-                  </button>
+                <div className="settings-backup-info">
+                  <p className="settings-form-hint" style={{ marginTop: '12px' }}>
+                    <i className="fa-solid fa-info-circle"></i>
+                    Backup, restore, and export functions are now available in the <strong>Reports</strong> tab.
+                  </p>
                 </div>
 
                 <div className="settings-form-group settings-form-group-full mt-2xl">
@@ -1424,6 +1672,41 @@ const SettingsTab = ({
               </div>
               <div className="settings-section-body">
                 <div className="settings-danger-action">
+                  <div className="settings-danger-action-info">
+                    <i className="fa-solid fa-utensils"></i>
+                    <div>
+                      <span className="settings-danger-action-label">
+                        Clear All Menu Items
+                      </span>
+                      <span className="settings-danger-action-description">
+                        Permanently delete all menu items and remove the default menu record from the database. This action cannot be undone.
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    className="btn btn-special danger btn-large"
+                    onClick={() => {
+                      if (showConfirmation && onClearAllMenuItems) {
+                        showConfirmation({
+                          title: 'Clear All Menu Items',
+                          message:
+                            'Are you sure you want to delete all menu items? This will also remove the default menu record from the database. This action cannot be undone.',
+                          type: 'warning',
+                          confirmText: 'Delete All',
+                          onConfirm: async () => {
+                            await onClearAllMenuItems();
+                          },
+                        });
+                      } else if (onClearAllMenuItems) {
+                        onClearAllMenuItems();
+                      }
+                    }}
+                  >
+                    <i className="fa-solid fa-trash"></i>
+                    <span>Clear All Menu Items</span>
+                  </button>
+                </div>
+                <div className="settings-danger-action" style={{ marginTop: '20px' }}>
                   <div className="settings-danger-action-info">
                     <i className="fa-solid fa-trash"></i>
                     <div>
@@ -1747,6 +2030,43 @@ const SettingsTab = ({
                       {ADMIN_FONT_SIZE_MIN}–{ADMIN_FONT_SIZE_MAX} px in{' '}
                       {ADMIN_FONT_SIZE_STEP} px steps. Applies immediately; save
                       to persist.
+                    </p>
+                  </div>
+                  
+                  {/* Auto-hide Sidebar Toggle */}
+                  <div className="settings-form-group settings-form-group-full">
+                    <div className="settings-toggle-group">
+                      <div className="settings-toggle-item">
+                        <div className="settings-toggle-content">
+                          <div className="settings-toggle-label-wrapper">
+                            <i className="fa-solid fa-eye-slash"></i>
+                            <div>
+                              <span className="settings-toggle-label">
+                                Auto-hide Sidebar
+                              </span>
+                              <span className="settings-toggle-description">
+                                Automatically hide sidebar after inactivity. Hover over left edge to show.
+                              </span>
+                            </div>
+                          </div>
+                          <label className="settings-toggle-switch">
+                            <input
+                              type="checkbox"
+                              checked={appearanceSettings.autoHideSidebar}
+                              onChange={(e) =>
+                                setAppearanceSettings({
+                                  ...appearanceSettings,
+                                  autoHideSidebar: e.target.checked,
+                                })
+                              }
+                            />
+                            <span className="settings-toggle-slider"></span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="settings-form-hint">
+                      When enabled, sidebar will hide after 3 seconds of inactivity. Move cursor to the left edge to reveal it.
                     </p>
                   </div>
                 </div>

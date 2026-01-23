@@ -137,11 +137,14 @@
   .form-group select,
   .form-group textarea {
     font-size: var(--admin-fs-md);
+    line-height: 1.5;
     padding: 10px 14px;
+    min-height: 42px;
     height: 42px;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+    vertical-align: middle;
   }
 
   textarea.input-field,
@@ -227,8 +230,18 @@
     box-sizing: border-box !important;
     min-width: 0 !important;
     font-size: 16px !important; /* Prevent iOS zoom */
+    line-height: 1.5 !important;
     padding: 10px 12px !important;
     min-height: 44px !important;
+    height: 44px !important;
+    vertical-align: middle !important;
+  }
+  
+  .form-group textarea {
+    height: auto !important;
+    min-height: 80px !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
   }
 
   /* Ensure form rows stack properly */

@@ -11,6 +11,8 @@ import Sidebar from './Sidebar.jsx';
 import TopNav from './TopNav.jsx';
 import { useNotification } from './contexts/NotificationContext.jsx';
 import { useFastDataSync } from './hooks/useFastDataSync.js';
+import { useSessionManager } from './hooks/useSessionManager.js';
+import SessionTimeoutModal from './SessionTimeoutModal.jsx';
 import dataSyncManager from './utils/dataSyncManager.js';
 import { parseOrderDate } from './utils/dateUtils.js';
 import { isPendingStatus } from './utils/orderUtils.js';
@@ -41,7 +43,7 @@ const ImportantNotificationsBanner = lazy(
 const OfflineBanner = lazy(() => import('./OfflineBanner.jsx'));
 const InstallPrompt = lazy(() => import('./InstallPrompt.jsx'));
 const MenuPriceTab = lazy(() => import('./MenuPriceTab.jsx'));
-const NotificationsTab = lazy(() => import('./NotificationsTab.jsx'));
+const TodayOrderTab = lazy(() => import('./TodayOrderTab.jsx'));
 const OffersTab = lazy(() => import('./OffersTab.jsx'));
 const OrderModal = lazy(() => import('./OrderModal.jsx'));
 const PendingAmountsTab = lazy(() => import('./PendingAmountsTab.jsx'));
@@ -53,6 +55,23 @@ const SettingsTab = lazy(() => import('./SettingsTab.jsx'));
 const AdminDashboard = () => {
   const router = useRouter();
   const { showNotification } = useNotification();
+
+  // Enterprise-level session management
+  const {
+    isSessionActive,
+    showWarningModal,
+    timeRemaining,
+    extendSession,
+    logoutNow,
+  } = useSessionManager({
+    inactivityTimeout: 30 * 60 * 1000, // 30 minutes
+    warningTime: 5 * 60 * 1000, // 5 minutes warning
+    onSessionExpired: (reason) => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[AdminDashboard] Session expired:', reason);
+      }
+    },
+  });
 
   const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -84,6 +103,7 @@ const AdminDashboard = () => {
   }, []); // Only run once on mount
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarAutoHidden, setSidebarAutoHidden] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [showCSVUploadModal, setShowCSVUploadModal] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
@@ -137,17 +157,21 @@ const AdminDashboard = () => {
     fastCreate,
     cancelAll,
     loadError,
+    menuData,
+    reviews,
+    users,
   } = useFastDataSync();
 
   const unreadNotifications = useMemo(() => {
     const list = Array.isArray(orders) ? orders : [];
     const now = new Date();
-    const fortyFiveDaysAgo = new Date(now);
-    fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
-    fortyFiveDaysAgo.setHours(0, 0, 0, 0);
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
     const sevenDaysAgo = new Date(now);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
+    // 1. Count unpaid orders > 30 days (matching NotificationDropdown logic)
     const pending = list.filter((o) =>
       isPendingStatus(o.status, o.paymentStatus)
     );
@@ -160,19 +184,23 @@ const AdminDashboard = () => {
           if (!orderDate) return null;
           const orderDateMidnight = new Date(orderDate);
           orderDateMidnight.setHours(0, 0, 0, 0);
-          const daysPending = Math.floor(
-            (now - orderDateMidnight) / (1000 * 60 * 60 * 24)
-          );
-          const isOverdue = orderDateMidnight < fortyFiveDaysAgo;
-          const isUrgent = daysPending > 7;
-          return isOverdue || isUrgent ? 1 : null;
+          // Count only orders > 30 days (matching dropdown criteria)
+          return orderDateMidnight < thirtyDaysAgo ? 1 : null;
         } catch (e) {
           return null;
         }
       })
       .filter(Boolean).length;
 
-    const recentCount = list.filter((order) => {
+    // 2. Count website orders from last 7 days (matching NotificationDropdown logic)
+    const websiteOrdersCount = list.filter((order) => {
+      // Check if order is from website
+      const isWebsiteOrder = order.source === 'website' || 
+                            order.source === 'api' ||
+                            (order.paymentMode && order.paymentMode.toLowerCase() === 'online');
+      
+      if (!isWebsiteOrder) return false;
+      
       try {
         const orderDate = parseOrderDate(
           order.date || order.order_date || null
@@ -183,8 +211,8 @@ const AdminDashboard = () => {
       }
     }).length;
 
-    const total = Math.min(15, overdueCount) + Math.min(10, recentCount);
-    return Math.min(99, total);
+    // Return total count (matching what NotificationDropdown will show)
+    return overdueCount + websiteOrdersCount;
   }, [orders]);
 
   // Helper function for color conversion
@@ -457,26 +485,18 @@ const AdminDashboard = () => {
       cancelText: 'Cancel',
       onConfirm: async () => {
         try {
-          // Perform logout cleanup
-          await logout();
-
-          // Show success message
-          showNotification({
-            type: 'success',
-            message: 'Logged out successfully',
-            duration: getNotificationDuration('success'),
-          });
-
-          // Add small delay to show success message before redirect
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
-          // Redirect to admin login page consistently
-          window.location.href = '/admin';
+          // Use session manager's logout function for proper cleanup
+          await logoutNow();
         } catch (error) {
           console.error('[AdminDashboard] Error during logout:', error);
-          // Still redirect even if there's an error
-          await logout();
-          window.location.href = '/admin';
+          // Fallback to direct logout
+          try {
+            await logout();
+            window.location.href = '/admin';
+          } catch (fallbackError) {
+            console.error('[AdminDashboard] Fallback logout error:', fallbackError);
+            window.location.href = '/admin';
+          }
         }
       },
     });
@@ -960,6 +980,107 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleAcceptOrder = async (order) => {
+    try {
+      // Accept order means updating its status to accepted/confirmed
+      // and ensuring it's properly recorded in the system
+      const apiOrderId = order._id || order.id || order.orderId;
+      
+      await fastUpdate(
+        apiOrderId,
+        {
+          status: 'Accepted',
+          paymentStatus: order.paymentStatus || 'Pending',
+        },
+        () => {
+          if (showNotification) {
+            showNotification(
+              `Order #${order.orderId || 'N/A'} has been accepted and added to the system`,
+              'success',
+              getNotificationDuration('success')
+            );
+          }
+          if (loadOrders) {
+            setTimeout(() => {
+              loadOrders();
+            }, 200);
+          }
+        },
+        (error) => {
+          console.error('Error accepting order:', error);
+          if (showNotification) {
+            const errorMessage =
+              error?.message || 'Failed to accept order';
+            showNotification(
+              errorMessage,
+              'error',
+              getNotificationDuration('error')
+            );
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error accepting order:', error);
+      if (showNotification) {
+        showNotification(
+          error?.message || 'Failed to accept order',
+          'error',
+          getNotificationDuration('error')
+        );
+      }
+    }
+  };
+
+  const handleCancelOrder = async (order) => {
+    try {
+      // Cancel order means updating its status to cancelled
+      const apiOrderId = order._id || order.id || order.orderId;
+      
+      await fastUpdate(
+        apiOrderId,
+        {
+          status: 'Cancelled',
+          paymentStatus: 'Cancelled',
+        },
+        () => {
+          if (showNotification) {
+            showNotification(
+              `Order #${order.orderId || 'N/A'} has been cancelled`,
+              'success',
+              getNotificationDuration('success')
+            );
+          }
+          if (loadOrders) {
+            setTimeout(() => {
+              loadOrders();
+            }, 200);
+          }
+        },
+        (error) => {
+          console.error('Error cancelling order:', error);
+          if (showNotification) {
+            const errorMessage =
+              error?.message || 'Failed to cancel order';
+            showNotification(
+              errorMessage,
+              'error',
+              getNotificationDuration('error')
+            );
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      if (showNotification) {
+        showNotification(
+          error?.message || 'Failed to cancel order',
+          'error',
+          getNotificationDuration('error')
+        );
+      }
+    }
+  };
+
   const handleUpdateSettings = async (newSettings) => {
     try {
       const response = await api.updateSettings(newSettings);
@@ -998,6 +1119,30 @@ const AdminDashboard = () => {
             message = newPassword
               ? 'Your profile and password have been updated'
               : 'Your profile has been updated successfully';
+          } else if (newSettings.kitchenSettings) {
+            const { kitchenEnabled, kitchenClosedFrom, kitchenClosedTo } = newSettings.kitchenSettings;
+            const statusText = kitchenEnabled ? 'open' : 'closed';
+            if (kitchenClosedFrom && kitchenClosedTo) {
+              const fromDate = new Date(kitchenClosedFrom).toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+              });
+              const toDate = new Date(kitchenClosedTo).toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+              });
+              message = `Kitchen is now ${statusText} (${fromDate} - ${toDate})`;
+            } else if (!kitchenEnabled) {
+              message = 'Kitchen is now closed for today';
+            } else {
+              message = 'Kitchen is now open';
+            }
+            // Reload settings to update indicator
+            if (loadSettings) {
+              setTimeout(() => {
+                loadSettings();
+              }, 300);
+            }
           } else if (newSettings.themeSettings) {
             const {
               primaryColor,
@@ -1025,6 +1170,10 @@ const AdminDashboard = () => {
               window.dispatchEvent(
                 new CustomEvent('adminFontSizeChanged', { detail: { fontSize: px } })
               );
+              // Update settings state to preserve fontSize
+              if (typeof setSettings === 'function') {
+                setSettings((prev) => ({ ...prev, fontSize: String(px) }));
+              }
             }
             if (fontFamily !== undefined) {
               localStorage.setItem('homiebites_font_family', fontFamily);
@@ -1056,6 +1205,24 @@ const AdminDashboard = () => {
               } catch (e) {
                 if (process.env.NODE_ENV === 'development')
                   console.warn('Apply font failed:', e);
+              }
+            }
+            if (newSettings.themeSettings.autoHideSidebar !== undefined) {
+              const savedAutoHideValue = Boolean(newSettings.themeSettings.autoHideSidebar);
+              // Update settings state IMMEDIATELY - this is the source of truth
+              // The Sidebar component reads from settings prop, so this update will take effect immediately
+              if (typeof setSettings === 'function') {
+                setSettings((prev) => ({ 
+                  ...prev, 
+                  autoHideSidebar: savedAutoHideValue
+                }));
+              }
+              // Reload settings from database after a delay to ensure the persisted value is loaded
+              // This ensures the value is correctly retrieved on next page load
+              if (loadSettings) {
+                setTimeout(() => {
+                  loadSettings();
+                }, 800); // Wait longer to ensure DB save completed
               }
             }
 
@@ -1239,6 +1406,26 @@ const AdminDashboard = () => {
     input.click();
   };
 
+  const handleClearAllMenuItems = async () => {
+    try {
+      await api.deleteMenu();
+      if (showNotification) {
+        showNotification(
+          'All menu items and default record deleted successfully',
+          'success'
+        );
+      }
+    } catch (error) {
+      console.error('Error deleting menu:', error);
+      if (showNotification) {
+        showNotification(
+          'Error deleting menu: ' + (error.message || 'Unknown error'),
+          'error'
+        );
+      }
+    }
+  };
+
   const handleClearAllData = async (skipConfirmation = false) => {
     const performClear = async () => {
       try {
@@ -1380,17 +1567,6 @@ const AdminDashboard = () => {
       currentMonthOrders: {
         title: 'Current Month Orders',
         subtitle: 'Manage orders for the current billing month',
-        action: (
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              setEditingOrder(null);
-              setShowOrderModal(true);
-            }}
-          >
-            <i className="fa-solid fa-plus"></i> Add New Order
-          </button>
-        ),
       },
       analytics: {
         title: 'Analytics',
@@ -1412,9 +1588,9 @@ const AdminDashboard = () => {
         title: 'Settings',
         subtitle: 'Configure your application settings',
       },
-      notifications: {
-        title: 'Notifications',
-        subtitle: 'Stay updated with your business activities',
+      todayOrder: {
+        title: 'Today Order',
+        subtitle: 'Manage orders received from website today',
       },
       menuPrice: {
         title: 'Menu & Price',
@@ -1526,6 +1702,35 @@ const AdminDashboard = () => {
             {...commonProps}
             onLoadExcelFile={() => setShowCSVUploadModal(true)}
             onClearAllData={handleClearAllData}
+            onBackup={handleBackup}
+            onRestore={handleRestore}
+            onExportSettings={async () => {
+              // Export settings functionality
+              try {
+                const settingsToExport = {
+                  ...settings,
+                  exportedAt: new Date().toISOString(),
+                };
+                const dataStr = JSON.stringify(settingsToExport, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `homiebites-settings-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                if (showNotification)
+                  showNotification('Settings exported successfully', 'success');
+              } catch (error) {
+                if (showNotification)
+                  showNotification('Failed to export settings', 'error');
+              }
+            }}
+            menuItems={menuData || []}
+            reviews={[]}
+            loadMenuData={loadMenuData}
           />
         );
 
@@ -1554,18 +1759,18 @@ const AdminDashboard = () => {
             onBackup={handleBackup}
             onRestore={handleRestore}
             onClearAllData={handleClearAllData}
+            onClearAllMenuItems={handleClearAllMenuItems}
           />
         );
 
-      case 'notifications':
+      case 'todayOrder':
         return (
-          <NotificationsTab
+          <TodayOrderTab
             {...commonProps}
-            setActiveTab={setActiveTab}
+            onAcceptOrder={handleAcceptOrder}
+            onCancelOrder={handleCancelOrder}
+            onDeleteOrder={handleDeleteOrder}
             showConfirmation={showConfirmation}
-            onViewOrder={handleViewOrder}
-            onMarkAsPaid={handleUpdateOrderStatus}
-            onSendReminder={handleSendReminder}
           />
         );
 
@@ -1663,10 +1868,12 @@ const AdminDashboard = () => {
           setSidebarCollapsed={setSidebarCollapsed}
           currentUser={currentUser}
           onLogout={handleLogout}
+          settings={settings}
+          onAutoHideChange={setSidebarAutoHidden}
         />
 
         <div
-          className={`admin-main ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}
+          className={`admin-main ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${sidebarAutoHidden ? 'sidebar-auto-hidden' : ''}`}
         >
           <TopNav
             sidebarOpen={sidebarOpen}
@@ -1685,6 +1892,15 @@ const AdminDashboard = () => {
               }, 150);
             }}
             onRefresh={handleRefresh}
+            orders={orders}
+            onViewOrder={(order) => {
+              if (order && order._id) {
+                handleViewOrder(order._id);
+              } else {
+                setActiveTab('allOrdersData');
+              }
+            }}
+            onViewPendingAmounts={handleViewPendingAmounts}
           />
 
           <Suspense fallback={null}>
@@ -1795,6 +2011,14 @@ const AdminDashboard = () => {
         <Suspense fallback={null}>
           <InstallPrompt />
         </Suspense>
+
+        {/* Session Timeout Warning Modal */}
+        <SessionTimeoutModal
+          show={showWarningModal}
+          timeRemaining={timeRemaining}
+          onExtendSession={extendSession}
+          onLogout={logoutNow}
+        />
       </div>
     </ErrorBoundary>
   );

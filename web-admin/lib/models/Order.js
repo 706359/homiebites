@@ -20,7 +20,7 @@ const OrderSchema = new mongoose.Schema(
     status: { type: String, default: 'PENDING' },
     source: {
       type: String,
-      enum: ['manual', 'excel', 'api'],
+      enum: ['manual', 'excel', 'api', 'website'],
       default: 'manual',
     },
     billingMonth: { type: Number },

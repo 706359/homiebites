@@ -14,6 +14,9 @@ export async function GET() {
         primaryColor: settings.primaryColor || '#449031',
         secondaryColor: settings.secondaryColor || '#c45c2d',
         theme: settings.theme || 'light',
+        autoHideSidebar: settings.autoHideSidebar !== undefined && settings.autoHideSidebar !== null
+          ? Boolean(settings.autoHideSidebar)
+          : false, // Default to false only if property doesn't exist or is null
         businessName: settings.businessName || 'HomieBites',
         contact: settings.contact || '',
         email: settings.email || '',
@@ -43,6 +46,11 @@ export async function GET() {
         userName: settings.userName,
         userEmail: settings.userEmail,
         userPhone: settings.userPhone,
+        kitchenEnabled: 'kitchenEnabled' in settings 
+          ? Boolean(settings.kitchenEnabled)
+          : true, // Default to true only if property doesn't exist
+        kitchenClosedFrom: settings.kitchenClosedFrom || '',
+        kitchenClosedTo: settings.kitchenClosedTo || '',
       },
     });
   } catch (error) {
@@ -55,6 +63,7 @@ export async function GET() {
           primaryColor: '#449031',
           secondaryColor: '#c45c2d',
           theme: 'light',
+          autoHideSidebar: false,
           businessName: 'HomieBites',
           defaultUnitPrice: 0,
           minimumOrderQty: 1,
@@ -181,14 +190,38 @@ export async function PUT(request) {
     if (updates.themeSettings) {
       if (updates.themeSettings.fontFamily !== undefined)
         settings.fontFamily = updates.themeSettings.fontFamily;
-      if (updates.themeSettings.fontSize !== undefined)
-        settings.fontSize = updates.themeSettings.fontSize;
+      if (updates.themeSettings.fontSize !== undefined) {
+        // Convert fontSize to string to match schema (String type)
+        // This ensures numbers are properly stored and retrieved
+        settings.fontSize = String(updates.themeSettings.fontSize);
+      }
       if (updates.themeSettings.primaryColor !== undefined)
         settings.primaryColor = updates.themeSettings.primaryColor;
       if (updates.themeSettings.secondaryColor !== undefined)
         settings.secondaryColor = updates.themeSettings.secondaryColor;
       if (updates.themeSettings.theme !== undefined)
         settings.theme = updates.themeSettings.theme;
+      if (updates.themeSettings.autoHideSidebar !== undefined) {
+        // Explicitly set autoHideSidebar (even if false, to distinguish from undefined)
+        // Convert to boolean and explicitly set to ensure it's saved to database
+        settings.autoHideSidebar = Boolean(updates.themeSettings.autoHideSidebar);
+        // Explicitly mark as modified to ensure Mongoose saves it even if it matches default
+        settings.markModified('autoHideSidebar');
+      }
+    }
+
+    if (updates.kitchenSettings) {
+      // Explicitly set kitchenEnabled (even if false, to distinguish from undefined)
+      // This ensures false is saved to database, not just undefined
+      if (updates.kitchenSettings.kitchenEnabled !== undefined) {
+        settings.kitchenEnabled = Boolean(updates.kitchenSettings.kitchenEnabled);
+      }
+      if (updates.kitchenSettings.kitchenClosedFrom !== undefined) {
+        settings.kitchenClosedFrom = updates.kitchenSettings.kitchenClosedFrom || null;
+      }
+      if (updates.kitchenSettings.kitchenClosedTo !== undefined) {
+        settings.kitchenClosedTo = updates.kitchenSettings.kitchenClosedTo || null;
+      }
     }
 
     await settings.save();

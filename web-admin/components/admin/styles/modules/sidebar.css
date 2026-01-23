@@ -35,6 +35,27 @@
     1px 0 3px rgba(0, 0, 0, 0.04);
 }
 
+/* Auto-hide sidebar when enabled */
+.admin-sidebar.auto-hidden {
+  transform: translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: 
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+}
+
+.admin-sidebar:not(.auto-hidden) {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+  transition: 
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+}
+
 .sidebar-header {
   padding: 24px;
   border-bottom: 1px solid var(--admin-border, #e5e7eb);
@@ -56,7 +77,28 @@
   justify-content: center;
 }
 
+.kitchen-status-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--admin-bg-primary, #ffffff);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.admin-sidebar.collapsed .kitchen-status-indicator {
+  top: 4px;
+  right: 4px;
+  width: 10px;
+  height: 10px;
+}
+
 .sidebar-logo {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -486,7 +528,7 @@
   left: 0;
   right: 0;
   bottom: calc(100% + 8px);
-  background: var(--admin-bg, #fff);
+  background: #ffffff !important;
   border: 1px solid var(--admin-border, #e5e7eb);
   border-radius: 8px;
   box-shadow:
@@ -497,6 +539,8 @@
   padding: 6px 0;
   animation: sidebarProfileDropdownIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   transform-origin: bottom center;
+  backdrop-filter: none;
+  opacity: 1;
 }
 
 @keyframes sidebarProfileDropdownIn {
@@ -516,6 +560,7 @@
   gap: 10px;
   padding: 10px 12px;
   border-bottom: 1px solid var(--admin-border, #e5e7eb);
+  background: #ffffff;
 }
 
 .sidebar-profile-dropdown-avatar {
@@ -570,7 +615,7 @@
   transition:
     background 0.2s ease,
     transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
-  background: transparent;
+  background: #ffffff;
   border: none;
   text-align: left;
 }

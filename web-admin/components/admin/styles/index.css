@@ -216,6 +216,27 @@ html.admin-active .login-page-wrapper .btn {
 .admin-dashboard textarea,
 .admin-dashboard select {
   font-family: inherit;
+  line-height: 1.5;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+/* Ensure all inputs, selects, and textareas have proper text visibility */
+.admin-dashboard input:not([type='checkbox']):not([type='radio']):not([type='file']),
+.admin-dashboard select,
+.admin-dashboard textarea {
+  line-height: 1.5 !important;
+  box-sizing: border-box !important;
+}
+
+/* Buttons - ensure text is fully visible */
+.admin-dashboard .btn,
+.admin-dashboard button:not([type='submit']):not([type='button']):not([type='reset']) {
+  line-height: 1.5 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
 }
 
 .admin-main {
@@ -228,14 +249,23 @@ html.admin-active .login-page-wrapper .btn {
   min-height: 100dvh;
   background: var(--admin-bg-secondary, #f9fafb);
   transition:
-    margin-left 0.2s ease-out,
-    width 0.2s ease-out;
+    margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   overflow-x: hidden;
   position: relative;
+  width: calc(100% - 260px);
+  will-change: margin-left, width;
 }
 
 .admin-main.sidebar-collapsed {
   margin-left: 80px;
+  width: calc(100% - 80px);
+}
+
+/* When sidebar is auto-hidden, use full width */
+.admin-main.sidebar-auto-hidden {
+  margin-left: 0 !important;
+  width: 100% !important;
 }
 
 .admin-content {
@@ -247,7 +277,7 @@ html.admin-active .login-page-wrapper .btn {
   min-height: 0;
   position: relative;
   background: var(--admin-bg-secondary, #f9fafb);
-  transition: width 0.2s ease-out;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-overflow-scrolling: touch;
 }
 
@@ -269,6 +299,15 @@ html.admin-active .login-page-wrapper .btn {
 
   .admin-main.sidebar-collapsed {
     margin-left: 80px;
+    width: calc(100% - 80px);
+  }
+  
+  .admin-main.sidebar-auto-hidden {
+    margin-left: 0 !important;
+    width: 100% !important;
+    transition:
+      margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Optimize modal sizes for laptop */
@@ -374,6 +413,11 @@ html.admin-active .login-page-wrapper .btn {
   .admin-main.sidebar-collapsed {
     margin-left: 0 !important;
   }
+  
+  .admin-main.sidebar-auto-hidden {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
 
   .admin-content {
     padding: 20px;
@@ -449,6 +493,11 @@ html.admin-active .login-page-wrapper .btn {
 
   .admin-main.sidebar-collapsed {
     margin-left: 0 !important;
+  }
+  
+  .admin-main.sidebar-auto-hidden {
+    margin-left: 0 !important;
+    width: 100% !important;
   }
 
   /* Compact content padding for small screens */

@@ -104,6 +104,11 @@ const Footer = ({ onOrderClick }) => {
                 {t('footer.foodGallery')}
               </a>
             </li>
+            <li>
+              <Link href="/pricing">
+                {t('footer.pricing') || t('header.pricing') || 'Price'}
+              </Link>
+            </li>
           </ul>
         </div>
 

@@ -177,36 +177,25 @@ const Testimonials = () => {
                       .charAt(0)
                       .toUpperCase()}
                   </div>
-                  <div className="review-author-info">
-                    <div className="review-author-name-row">
-                      <strong>
-                        {review.userName || review.name || 'Customer'}
-                      </strong>
-                      {review.featured && (
-                        <span className="review-featured-badge" title="Featured Review">
-                          <i className="fa-solid fa-star"></i>
-                        </span>
-                      )}
-                    </div>
-                    {review.userLocation || review.location ? (
-                      <span className="review-location">
-                        <i className="fa-solid fa-location-dot"></i>{' '}
-                        {review.userLocation || review.location}
-                      </span>
-                    ) : null}
-                  </div>
-                  <div className="review-rating-section review-rating-header">
-                    {renderStars(review.rating || 5)}
-                    <span className="review-rating-number">
-                      {review.rating || 5}/5
+                  {review.featured && (
+                    <span className="review-featured-badge" title="Featured Review">
+                      <i className="fa-solid fa-star"></i>
                     </span>
-                  </div>
-                  <div className="review-card-expand-indicator">
-                    <i className="fa-solid fa-chevron-down"></i>
-                  </div>
+                  )}
                 </div>
                 <div className="review-card-body">
-                  <div className="review-rating-section review-rating-body">
+                  <div className="review-author-name">
+                    <strong>
+                      {review.userName || review.name || 'Customer'}
+                    </strong>
+                  </div>
+                  {review.userLocation || review.location ? (
+                    <div className="review-location">
+                      <i className="fa-solid fa-location-dot"></i>{' '}
+                      {review.userLocation || review.location}
+                    </div>
+                  ) : null}
+                  <div className="review-rating-section">
                     {renderStars(review.rating || 5)}
                     <span className="review-rating-number">
                       {review.rating || 5}/5
@@ -215,12 +204,10 @@ const Testimonials = () => {
                   <p className="review-comment">
                     {review.comment || review.text}
                   </p>
-                </div>
-                <div className="review-card-footer">
-                  <span className="review-date">
+                  <div className="review-date">
                     <i className="fa-solid fa-calendar"></i>{' '}
                     {review.createdAt ? formatDate(review.createdAt) : ''}
-                  </span>
+                  </div>
                 </div>
               </div>
               );

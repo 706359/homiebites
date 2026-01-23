@@ -10,7 +10,7 @@ import {
 import api from '../lib/api';
 import './SpecialOffer.css';
 
-const SpecialOffer = () => {
+const SpecialOffer = ({ onOrderClick }) => {
   const { t } = useLanguage();
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,11 +20,66 @@ const SpecialOffer = () => {
     let refreshInterval;
     let visibilityInterval;
 
-    const loadOffers = async (showLoading = false) => {
+    const loadOffers = async (showLoading = false, useCache = true) => {
       try {
         if (showLoading) {
           setLoading(true);
         }
+
+        // Try to load from cache first for fast initial render
+        if (useCache && typeof window !== 'undefined') {
+          try {
+            const cachedData = localStorage.getItem('homiebites_offers_data');
+            const cacheTimestamp = localStorage.getItem('homiebites_offers_data_timestamp');
+            
+            if (cachedData && cacheTimestamp) {
+              const cacheAge = Date.now() - parseInt(cacheTimestamp, 10);
+              const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+              
+              // Use cache if it's less than 5 minutes old
+              if (cacheAge < CACHE_DURATION) {
+                try {
+                  const parsed = JSON.parse(cachedData);
+                  if (Array.isArray(parsed) && parsed.length > 0) {
+                    // Filter active offers from cache
+                    const now = new Date();
+                    const active = parsed.filter((offer) => {
+                      if (!offer.isActive) return false;
+                      if (offer.endDate && new Date(offer.endDate) < now) return false;
+                      if (!offer.title || offer.title.trim() === '') return false;
+                      return true;
+                    });
+
+                    if (active.length > 0 || parsed.length > 0) {
+                      setOffers(active);
+                      setActiveOffer(active.length > 0 ? active[0] : null);
+                      if (showLoading) {
+                        setLoading(false);
+                      }
+                      // Still fetch fresh data in background if cache is older than 1 minute
+                      if (cacheAge > 60 * 1000) {
+                        loadOffers(false, false); // Fetch fresh data without showing loading
+                      }
+                      return;
+                    }
+                  }
+                } catch (parseError) {
+                  // If cache parse fails, continue to API fetch
+                  if (process.env.NODE_ENV === 'development') {
+                    console.warn('[SpecialOffer] Cache parse failed:', parseError);
+                  }
+                }
+              }
+            }
+          } catch (cacheError) {
+            // If cache read fails, continue to API fetch
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('[SpecialOffer] Cache read failed:', cacheError);
+            }
+          }
+        }
+
+        // Fetch from API
         const response = await api.getOffers();
 
         if (process.env.NODE_ENV === 'development') {
@@ -35,6 +90,18 @@ const SpecialOffer = () => {
         }
 
         if (response.success && response.data && Array.isArray(response.data)) {
+          // Save to cache
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('homiebites_offers_data', JSON.stringify(response.data));
+              localStorage.setItem('homiebites_offers_data_timestamp', String(Date.now()));
+            } catch (storageError) {
+              if (process.env.NODE_ENV === 'development') {
+                console.warn('[SpecialOffer] Failed to save to cache:', storageError);
+              }
+            }
+          }
+
           // Filter active offers
           const now = new Date();
           const active = response.data.filter((offer) => {
@@ -62,21 +129,38 @@ const SpecialOffer = () => {
       }
     };
 
-    // Initial load
-    loadOffers(true);
+    // Initial load - will use cache if available for fast load
+    loadOffers(true, true);
 
-    // Refresh every 60 seconds
+    // Refresh every 5 minutes (cache duration)
     refreshInterval = setInterval(() => {
       if (!document.hidden) {
-        loadOffers(false);
+        loadOffers(false, false); // Always fetch fresh data on interval
       }
-    }, 60000);
+    }, 5 * 60 * 1000);
 
-    // Listen for visibility changes
+    // Listen for visibility changes - refresh if cache is stale
     const handleVisibilityChange = () => {
-      if (!document.hidden && process.env.NODE_ENV === 'development') {
-        console.log('[SpecialOffer] Tab became visible, refreshing...');
-        loadOffers(false);
+      if (!document.hidden) {
+        // Check if cache is stale before refreshing
+        if (typeof window !== 'undefined') {
+          try {
+            const cacheTimestamp = localStorage.getItem('homiebites_offers_data_timestamp');
+            if (cacheTimestamp) {
+              const cacheAge = Date.now() - parseInt(cacheTimestamp, 10);
+              // Only refresh if cache is older than 2 minutes
+              if (cacheAge > 2 * 60 * 1000) {
+                loadOffers(false, false);
+              }
+            } else {
+              // No cache, fetch fresh data
+              loadOffers(false, false);
+            }
+          } catch (e) {
+            // If check fails, fetch fresh data
+            loadOffers(false, false);
+          }
+        }
       }
     };
 
@@ -84,12 +168,21 @@ const SpecialOffer = () => {
 
     // Listen for custom events to trigger immediate refresh (from admin panel)
     const handleOffersUpdate = () => {
+      // Clear cache and fetch fresh data when offers are updated
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem('homiebites_offers_data');
+          localStorage.removeItem('homiebites_offers_data_timestamp');
+        } catch (e) {
+          // Ignore errors
+        }
+      }
       if (process.env.NODE_ENV === 'development') {
         console.log(
           '[SpecialOffer] Received offers update event, refreshing immediately...'
         );
       }
-      loadOffers(false);
+      loadOffers(false, false);
     };
 
     window.addEventListener('offersDataUpdated', handleOffersUpdate);
@@ -123,9 +216,15 @@ const SpecialOffer = () => {
     };
   }, []);
 
-  const handleGetDeal = () => {
-    const message = activeOffer?.whatsappMessage || t('specialOffer.whatsappMessage');
-    window.open(getWhatsAppLink(message), '_blank', 'noopener');
+  const handleGetDeal = (e) => {
+    e.preventDefault();
+    if (onOrderClick) {
+      onOrderClick();
+    } else {
+      // Fallback to WhatsApp if onOrderClick not provided
+      const message = activeOffer?.whatsappMessage || t('specialOffer.whatsappMessage');
+      window.open(getWhatsAppLink(message), '_blank', 'noopener');
+    }
   };
 
   // Use offer data if available, otherwise fall back to translations
@@ -163,15 +262,13 @@ const SpecialOffer = () => {
           )}
         </div>
         <div className="offer-actions">
-          <a
-            href={getWhatsAppLink(activeOffer?.whatsappMessage || '')}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-primary btn-small"
+          <button
             onClick={handleGetDeal}
+            className="btn btn-primary btn-small"
+            type="button"
           >
             <i className="fa-brands fa-whatsapp"></i> {ctaText}
-          </a>
+          </button>
           <a href={getPhoneLink()} className="btn btn-secondary btn-small">
             <i className="fa-solid fa-phone"></i> {t('common.call')}{' '}
             {getFormattedPhone()}

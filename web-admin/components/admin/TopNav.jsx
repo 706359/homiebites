@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import NotificationDropdown from './NotificationDropdown.jsx';
 
 const TopNav = ({
   sidebarOpen,
@@ -14,11 +15,15 @@ const TopNav = ({
   tabAction,
   onNewOrder,
   onRefresh,
+  orders = [],
+  onViewOrder,
+  onViewPendingAmounts,
 }) => {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [recentSearches, setRecentSearches] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -198,11 +203,11 @@ const TopNav = ({
           </button>
           <button
             className="top-nav-notification-btn tooltip-wrapper"
-            onClick={() => setActiveTab('notifications')}
             title={`Notifications${
-              unreadNotifications > 0 ? ` (${unreadNotifications} unread)` : ''
+              unreadNotifications > 0 ? ` (${unreadNotifications} new)` : ''
             }`}
             aria-label="Notifications"
+            onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
           >
             <i className="fa-solid fa-bell"></i>
             {unreadNotifications > 0 && (
@@ -213,10 +218,31 @@ const TopNav = ({
             <span className="tooltip">
               Notifications
               {unreadNotifications > 0
-                ? ` (${unreadNotifications} unread)`
+                ? ` (${unreadNotifications} new)`
                 : ''}
             </span>
           </button>
+          
+          {/* Notification Dropdown */}
+          <NotificationDropdown
+            orders={orders}
+            isOpen={showNotificationDropdown}
+            onClose={() => setShowNotificationDropdown(false)}
+            onViewOrder={(order) => {
+              if (onViewOrder) {
+                onViewOrder(order);
+              } else {
+                setActiveTab('allOrdersData');
+              }
+            }}
+            onViewPendingAmounts={() => {
+              if (onViewPendingAmounts) {
+                onViewPendingAmounts();
+              } else {
+                setActiveTab('pendingAmounts');
+              }
+            }}
+          />
         </div>
       </div>
 

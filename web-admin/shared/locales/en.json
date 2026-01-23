@@ -63,7 +63,8 @@
     "support": "Support",
     "faq": "FAQ",
     "offers": "Offers",
-    "gallery": "Gallery"
+    "gallery": "Gallery",
+    "pricing": "Price"
   },
 
   "hero": {
@@ -300,6 +301,9 @@
     "deliveryMode": "Delivery Mode",
     "homeDelivery": "Home Delivery",
     "pickup": "Self-Pickup",
+    "outsideDelivery": "Outside Panchsheel Greens-1",
+    "originalAddress": "Original Address (for reference)",
+    "outsideAddressHelper": "Note: Please provide your original address for reference. Order will be handed over at the main gate of Panchsheel Greens-1 only (no home delivery for outside orders).",
     "pickupCharge": "Pickup Charge",
     "deliveryDate": "Delivery Date",
     "deliveryTime": "Delivery Time Slot",
@@ -331,7 +335,13 @@
       "timeRequired": "Delivery time slot is required",
       "itemsRequired": "Please select at least one item",
       "minimumOrderHome": "Minimum order of ₹70 required for home delivery. Please select pickup option for orders below ₹70."
-    }
+    },
+    "confirmOrder": "Confirm Order",
+    "deliveryTimeDisclaimer": "Delivery Time Disclaimer",
+    "deliveryTimeDisclaimerText": "Please note that your order may arrive up to 10 minutes earlier or later than your preferred delivery time due to traffic conditions and order volume. We appreciate your understanding.",
+    "orderSummary": "Order Summary",
+    "cancel": "Cancel",
+    "confirmAndSend": "Confirm & Send to WhatsApp"
   },
 
   "chatbot": {
@@ -401,6 +411,7 @@
     "home": "Home",
     "aboutUs": "About Us",
     "foodGallery": "Food Gallery",
+    "pricing": "Price",
     "help": "Help",
     "contactUs": "Contact Us",
     "whatsappSupport": "WhatsApp Support",

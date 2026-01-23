@@ -23,7 +23,10 @@ const NotificationWrapper = () => {
     notifications.forEach((notification, index) => {
       const element = notificationRefs.current.get(notification.id);
       if (element) {
-        element.style.animationDelay = `${index * 0.05}s`;
+        // Stagger animation for multiple notifications
+        element.style.animationDelay = `${index * 0.1}s`;
+        // Remove exiting class if notification is still active
+        element.classList.remove('notification-exiting');
       }
     });
   }, [notifications]);

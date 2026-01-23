@@ -19,7 +19,10 @@ const OrderModal = ({ isOpen, onClose }) => {
   const [deliveryDate, setDeliveryDate] = useState('');
   const [displayDate, setDisplayDate] = useState(''); // DD/MM/YYYY format for display
   const [deliveryTime, setDeliveryTime] = useState('');
-  const [deliveryMode, setDeliveryMode] = useState('home'); // 'home' or 'pickup'
+  const [preferredDeliveryTime, setPreferredDeliveryTime] = useState(''); // Specific time like "08:30"
+  const [deliveryMode, setDeliveryMode] = useState('home'); // 'home', 'pickup', or 'outside'
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingOrderData, setPendingOrderData] = useState(null);
   const [galleryItems, setGalleryItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [validationErrors, setValidationErrors] = useState({});
@@ -31,6 +34,7 @@ const OrderModal = ({ isOpen, onClose }) => {
   const addressSearchTimeoutRef = useRef(null);
   const addressAbortControllerRef = useRef(null);
   const allAddressesRef = useRef([]); // Cache all addresses for instant suggestions
+  const [kitchenStatus, setKitchenStatus] = useState({ isOpen: true, message: '' });
 
   // Enable keyboard avoidance for mobile
   useAutoKeyboardAvoidance({
@@ -45,8 +49,38 @@ const OrderModal = ({ isOpen, onClose }) => {
       loadAllAddresses().then((addresses) => {
         allAddressesRef.current = addresses;
       });
+      // Check kitchen status when modal opens
+      checkKitchenStatus();
     }
   }, [isOpen]);
+
+  const checkKitchenStatus = async () => {
+    try {
+      const response = await api.getKitchenStatus();
+      if (response && response.success && response.data) {
+        const isOpen = response.data.isOpen === true; // Explicitly check for true
+        setKitchenStatus({
+          isOpen: isOpen,
+          message: response.data.message || '',
+        });
+        
+        // Debug log in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[OrderModal] Kitchen status:', {
+            isOpen,
+            message: response.data.message,
+          });
+        }
+      } else {
+        // If response is not successful, default to open
+        setKitchenStatus({ isOpen: true, message: '' });
+      }
+    } catch (err) {
+      console.error('Error checking kitchen status:', err);
+      // Default to open on error
+      setKitchenStatus({ isOpen: true, message: '' });
+    }
+  };
   
   // Load addresses on component mount (when website opens)
   useEffect(() => {
@@ -138,8 +172,8 @@ const OrderModal = ({ isOpen, onClose }) => {
 
   // Filter items by category based on time slot
   const filterItemsByTimeSlot = (items) => {
-    if (!deliveryTime || deliveryMode === 'pickup') {
-      // If no time slot selected or pickup mode, show all items
+    if (!deliveryTime || deliveryMode === 'pickup' || deliveryMode === 'outside') {
+      // If no time slot selected or pickup/outside mode, show all items
       return items;
     }
     const categoryKeywords = getCategoryForTimeSlot(deliveryTime);
@@ -279,6 +313,7 @@ const OrderModal = ({ isOpen, onClose }) => {
       setDeliveryDate('');
       setDisplayDate('');
       setDeliveryTime('');
+      setPreferredDeliveryTime('');
       setDeliveryMode('home');
       setValidationErrors({});
       setAddedItemIds(new Set());
@@ -287,6 +322,8 @@ const OrderModal = ({ isOpen, onClose }) => {
       setAddressSuggestionsFull([]);
       setAddressSuggestionsFull([]);
       setShowAddressSuggestions(false);
+      setShowConfirmModal(false);
+      setPendingOrderData(null);
       if (addressSearchTimeoutRef.current) {
         clearTimeout(addressSearchTimeoutRef.current);
         addressSearchTimeoutRef.current = null;
@@ -637,7 +674,7 @@ const OrderModal = ({ isOpen, onClose }) => {
 
   const getDeliveryCharge = () => {
     const total = getTotalPrice();
-    if (deliveryMode === 'pickup') {
+    if (deliveryMode === 'pickup' || deliveryMode === 'outside') {
       return 0;
     }
     // Home delivery: free above ₹100, ₹20 below ₹100
@@ -660,14 +697,15 @@ const OrderModal = ({ isOpen, onClose }) => {
 
     // Phone number not required - will be obtained from WhatsApp
 
-    // Delivery Address validation (only for home delivery)
-    if (deliveryMode === 'home') {
+    // Delivery Address validation (required for home delivery and outside delivery)
+    if (deliveryMode === 'home' || deliveryMode === 'outside') {
       if (!deliveryAddress || !deliveryAddress.trim()) {
-        errors.deliveryAddress = t('order.errors.addressRequired') || 'Delivery address is required';
+        errors.deliveryAddress = t('order.errors.addressRequired') || 'Address is required';
       } else if (deliveryAddress.trim().length < 5) {
         errors.deliveryAddress = t('order.errors.addressMinLength') || 'Address must be at least 5 characters';
       }
     }
+    // No address required for pickup
 
     // Delivery Date validation (DD/MM/YYYY format)
     if (!displayDate || !displayDate.trim()) {
@@ -690,7 +728,19 @@ const OrderModal = ({ isOpen, onClose }) => {
 
     // Delivery Time validation (only for home delivery)
     if (deliveryMode === 'home' && !deliveryTime) {
-      errors.deliveryTime = t('order.errors.timeRequired') || 'Delivery time is required';
+      errors.deliveryTime = t('order.errors.timeRequired') || 'Delivery time slot is required';
+    }
+    // No time slot required for pickup or outside delivery
+
+    // Preferred Delivery Time validation (mandatory for all orders)
+    if (!preferredDeliveryTime || !preferredDeliveryTime.trim()) {
+      errors.preferredDeliveryTime = t('order.errors.preferredTimeRequired') || 'Preferred delivery time is required';
+    } else {
+      // Validate time format (HH:MM)
+      const timePattern = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+      if (!timePattern.test(preferredDeliveryTime.trim())) {
+        errors.preferredDeliveryTime = t('order.errors.preferredTimeInvalid') || 'Please enter time in HH:MM format (e.g., 08:30)';
+      }
     }
 
     // Items validation - check visible items only
@@ -712,7 +762,90 @@ const OrderModal = ({ isOpen, onClose }) => {
     return errors;
   };
 
-  const handleWhatsAppOrder = () => {
+  const proceedToWhatsApp = async (orderData) => {
+    // This function is called after confirmation
+    const {
+      customerName,
+      addressText,
+      formattedDate,
+      deliveryTime,
+      preferredDeliveryTime,
+      deliveryMode,
+      selectedItems,
+      totalAmount,
+      deliveryCharge,
+      grandTotal,
+      deliveryModeText,
+      timeLabel,
+      parsedDateStr,
+      orderItemsData,
+    } = orderData;
+
+    // Save order to database
+    try {
+      const orderDataForAPI = {
+        date: parsedDateStr,
+        customerName: customerName.trim(),
+        deliveryAddress: addressText,
+        deliveryTime: deliveryTime,
+        preferredDeliveryTime: preferredDeliveryTime,
+        deliveryMode: deliveryMode,
+        items: orderItemsData,
+        orderItems: orderItemsData,
+        quantity: orderItemsData.reduce((sum, item) => sum + item.quantity, 0),
+        totalAmount: totalAmount,
+        grandTotal: grandTotal,
+        paymentMode: 'Online',
+      };
+
+      const response = await api.createWebsiteOrder(orderDataForAPI);
+
+      if (!response.success) {
+        console.error('Failed to save order:', response.error);
+        info('Order saved with issues. Please contact support if needed.');
+      }
+    } catch (err) {
+      console.error('Error saving order:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Order save error details:', err);
+      }
+    }
+
+    // Format preferred time for display
+    const [hours, minutes] = preferredDeliveryTime.split(':');
+    const hour12 = parseInt(hours) % 12 || 12;
+    const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
+    const preferredTimeFormatted = `${hour12}:${minutes} ${ampm}`;
+
+    const message = `🍽️ *NEW ORDER*
+
+*Customer:* ${customerName}
+*${deliveryMode === 'pickup' ? 'Pickup' : deliveryMode === 'outside' ? 'Pickup' : 'Delivery'} Mode:* ${deliveryModeText}
+${deliveryMode === 'pickup' ? '' : `*Address:* ${addressText}`}
+
+*Date:* ${formattedDate}
+${deliveryMode === 'home' ? `*Time Slot:* ${timeLabel}` : ''}
+*Preferred Time:* ${preferredTimeFormatted} (±10 minutes)
+
+*Items:*
+${selectedItems.map((item) => `• ${item}`).join('\n')}
+
+*Total:* ₹${totalAmount}
+${deliveryMode === 'pickup' ? '' : deliveryCharge > 0 ? `*Delivery:* ₹${deliveryCharge}` : '*Delivery:* FREE'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*Grand Total: ₹${grandTotal}*
+
+Please confirm. Thank you! 🙏`;
+
+    window.open(getWhatsAppLink(message), '_blank', 'noopener');
+    success(
+      t('order.orderPlaced') ||
+        'Order sent to WhatsApp! Our team will confirm shortly.'
+    );
+    onClose();
+  };
+
+  const handleWhatsAppOrder = async () => {
     // Validate form data
     const errors = validateOrderForm();
 
@@ -766,34 +899,54 @@ const OrderModal = ({ isOpen, onClose }) => {
     const deliveryCharge = getDeliveryCharge();
     const grandTotal = getGrandTotal();
 
-    const deliveryModeText = deliveryMode === 'pickup' ? 'Self-Pickup' : 'Home Delivery';
-    const addressText = deliveryMode === 'pickup' ? 'Self-Pickup (A1 Tower)' : deliveryAddress;
+    const deliveryModeText = 
+      deliveryMode === 'pickup' ? 'Self-Pickup' : 
+      deliveryMode === 'outside' ? 'Main Gate Pickup (Outside Panchsheel Greens-1)' : 
+      'Home Delivery';
+    const addressText = 
+      deliveryMode === 'pickup' ? 'Self-Pickup (A1 Tower)' : 
+      deliveryMode === 'outside' ? `Main Gate Pickup - Panchsheel Greens-1 (Original Address: ${deliveryAddress})` : 
+      deliveryAddress;
 
-    const message = `🍽️ *NEW ORDER*
+    // Prepare order items for API
+    const orderItemsData = Object.entries(orderItems)
+      .filter(([itemId]) => visibleItemIds.has(itemId))
+      .map(([itemId, quantity]) => {
+        const item = galleryItems.find((i) => i.id === itemId);
+        return item
+          ? {
+              id: itemId,
+              name: item.name,
+              quantity: quantity,
+              price: item.price,
+            }
+          : null;
+      })
+      .filter(Boolean);
 
-*Customer:* ${customerName}
-*${deliveryMode === 'pickup' ? 'Pickup' : 'Delivery'} Mode:* ${deliveryModeText}
-${deliveryMode === 'pickup' ? '' : `*Address:* ${addressText}`}
+    // Prepare order data for confirmation modal
+    const orderDataForConfirmation = {
+      customerName,
+      deliveryAddress: addressText,
+      displayDate: formattedDate,
+      deliveryTime,
+      preferredDeliveryTime,
+      deliveryMode,
+      selectedItems,
+      totalAmount,
+      deliveryCharge,
+      grandTotal,
+      deliveryModeText,
+      addressText,
+      formattedDate,
+      timeLabel,
+      parsedDateStr,
+      orderItemsData,
+    };
 
-*Date:* ${formattedDate}
-${deliveryMode === 'home' ? `*Time:* ${timeLabel}` : ''}
-
-*Items:*
-${selectedItems.map((item) => `• ${item}`).join('\n')}
-
-*Total:* ₹${totalAmount}
-${deliveryMode === 'pickup' ? '' : deliveryCharge > 0 ? `*Delivery:* ₹${deliveryCharge}` : '*Delivery:* FREE'}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-*Grand Total: ₹${grandTotal}*
-
-Please confirm. Thank you! 🙏`;
-
-    window.open(getWhatsAppLink(message), '_blank', 'noopener');
-    success(
-      t('order.orderPlaced') ||
-        'Order sent to WhatsApp! Our team will confirm shortly.'
-    );
-    onClose();
+    // Show confirmation modal instead of directly opening WhatsApp
+    setPendingOrderData(orderDataForConfirmation);
+    setShowConfirmModal(true);
   };
 
   if (!isOpen) return null;
@@ -811,6 +964,34 @@ Please confirm. Thank you! 🙏`;
           <h2>
             <i className="fa-brands fa-whatsapp"></i> {t('order.sendWhatsApp')}
           </h2>
+
+          {/* Kitchen Status Message */}
+          {!kitchenStatus.isOpen && kitchenStatus.message && (
+            <div
+              className="kitchen-closed-banner"
+              style={{
+                backgroundColor: '#fee2e2',
+                border: '1px solid #fecaca',
+                borderRadius: '8px',
+                padding: '16px',
+                marginBottom: '20px',
+                color: '#991b1b',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <i
+                  className="fa-solid fa-exclamation-triangle"
+                  style={{ fontSize: '20px', color: '#dc2626' }}
+                ></i>
+                <div>
+                  <strong style={{ display: 'block', marginBottom: '4px' }}>
+                    Kitchen is Closed
+                  </strong>
+                  <p style={{ margin: 0, fontSize: '14px' }}>{kitchenStatus.message}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="order-form-section">
           <h3>{t('order.customerInfo') || 'Customer Information'}</h3>
@@ -831,19 +1012,26 @@ Please confirm. Thank you! 🙏`;
               }}
               placeholder={t('order.customerNamePlaceholder') || 'Enter your full name'}
               className={validationErrors.customerName ? 'error' : ''}
+              disabled={!kitchenStatus.isOpen}
             />
             {validationErrors.customerName && (
               <span className="error-message">{validationErrors.customerName}</span>
             )}
           </div>
           {/* 2. Address */}
+          {(deliveryMode === 'home' || deliveryMode === 'outside') && (
           <div className="form-group address-autocomplete-wrapper">
-            <label>{t('order.deliveryAddress') || 'Delivery Address'} *</label>
+            <label>
+              {deliveryMode === 'outside' 
+                ? (t('order.originalAddress') || 'Original Address (for reference)') 
+                : (t('order.deliveryAddress') || 'Delivery Address')} *
+            </label>
             <div className="address-input-container">
               <textarea
                 value={deliveryAddress}
                 onChange={(e) => handleAddressChange(e.target.value)}
                 onFocus={() => {
+                  if (!kitchenStatus.isOpen) return; // Don't show suggestions if kitchen is closed
                   // Only show suggestions if user has typed something
                   if (deliveryAddress && deliveryAddress.trim().length > 0) {
                     if (addressSuggestions.length === 0) {
@@ -872,6 +1060,7 @@ Please confirm. Thank you! 🙏`;
                 placeholder={t('order.addressPlaceholder') || 'A1-405, Panchsheel Greens'}
                 rows="3"
                 className={validationErrors.deliveryAddress ? 'error' : ''}
+                disabled={!kitchenStatus.isOpen}
               />
               {showAddressSuggestions && addressSuggestions.length > 0 && (
                 <div className="address-suggestions-dropdown">
@@ -897,7 +1086,13 @@ Please confirm. Thank you! 🙏`;
             {validationErrors.deliveryAddress && (
               <span className="error-message">{validationErrors.deliveryAddress}</span>
             )}
+            {deliveryMode === 'outside' && (
+              <p className="helper-text" style={{ marginTop: '4px', fontSize: '12px', color: '#666' }}>
+                {t('order.outsideAddressHelper') || 'Note: Please provide your original address for reference. Order will be handed over at the main gate of Panchsheel Greens-1 only (no home delivery for outside orders).'}
+              </p>
+            )}
           </div>
+          )}
           {/* 3. Delivery Mode */}
           <div className="form-group">
             <label>{t('order.deliveryMode') || 'Delivery Mode'} *</label>
@@ -906,6 +1101,7 @@ Please confirm. Thank you! 🙏`;
                 type="button"
                 className={`delivery-mode-btn ${deliveryMode === 'home' ? 'active' : ''}`}
                 onClick={() => {
+                  if (!kitchenStatus.isOpen) return;
                   setDeliveryMode('home');
                   setValidationErrors((prev) => ({
                     ...prev,
@@ -913,6 +1109,7 @@ Please confirm. Thank you! 🙏`;
                     deliveryMode: undefined,
                   }));
                 }}
+                disabled={!kitchenStatus.isOpen}
               >
                 <i className="fa-solid fa-truck"></i>
                 <span>{t('order.homeDelivery') || 'Home Delivery'}</span>
@@ -921,6 +1118,7 @@ Please confirm. Thank you! 🙏`;
                 type="button"
                 className={`delivery-mode-btn ${deliveryMode === 'pickup' ? 'active' : ''}`}
                 onClick={() => {
+                  if (!kitchenStatus.isOpen) return;
                   setDeliveryMode('pickup');
                   setValidationErrors((prev) => ({
                     ...prev,
@@ -928,9 +1126,27 @@ Please confirm. Thank you! 🙏`;
                     deliveryMode: undefined,
                   }));
                 }}
+                disabled={!kitchenStatus.isOpen}
               >
                 <i className="fa-solid fa-walking"></i>
                 <span>{t('order.pickup') || 'Self-Pickup'}</span>
+              </button>
+              <button
+                type="button"
+                className={`delivery-mode-btn ${deliveryMode === 'outside' ? 'active' : ''}`}
+                onClick={() => {
+                  if (!kitchenStatus.isOpen) return;
+                  setDeliveryMode('outside');
+                  setValidationErrors((prev) => ({
+                    ...prev,
+                    minimumOrder: undefined,
+                    deliveryMode: undefined,
+                  }));
+                }}
+                disabled={!kitchenStatus.isOpen}
+              >
+                <i className="fa-solid fa-gate"></i>
+                <span>{t('order.outsideDelivery') || 'Outside Panchsheel Greens-1'}</span>
               </button>
             </div>
             {validationErrors.deliveryMode && (
@@ -947,6 +1163,7 @@ Please confirm. Thank you! 🙏`;
               type="text"
               value={displayDate}
               onChange={(e) => {
+                if (!kitchenStatus.isOpen) return;
                 let value = e.target.value;
                 // Allow only digits and slashes
                 value = value.replace(/[^\d/]/g, '');
@@ -984,6 +1201,7 @@ Please confirm. Thank you! 🙏`;
               placeholder="DD/MM/YYYY (e.g., 22/01/2026)"
               maxLength="10"
               className={validationErrors.deliveryDate ? 'error' : ''}
+              disabled={!kitchenStatus.isOpen}
             />
             {validationErrors.deliveryDate && (
               <span className="error-message">{validationErrors.deliveryDate}</span>
@@ -996,6 +1214,7 @@ Please confirm. Thank you! 🙏`;
               <select
                 value={deliveryTime}
                 onChange={(e) => {
+                  if (!kitchenStatus.isOpen) return;
                   setDeliveryTime(e.target.value);
                   if (validationErrors.deliveryTime) {
                     setValidationErrors((prev) => ({
@@ -1005,6 +1224,7 @@ Please confirm. Thank you! 🙏`;
                   }
                 }}
                 className={`${validationErrors.deliveryTime ? 'error' : ''} ${!deliveryTime ? 'placeholder-selected' : ''}`}
+                disabled={!kitchenStatus.isOpen}
               >
                 <option value="">{t('order.selectTime') || 'Select time slot'}</option>
                 <option value="morning" title="Morning (7:00 AM – 10:00 AM)">
@@ -1022,6 +1242,39 @@ Please confirm. Thank you! 🙏`;
               )}
             </div>
           )}
+
+          {/* 6. Preferred Delivery Time (mandatory for all orders) */}
+          <div className="form-group">
+            <label>
+              {t('order.preferredDeliveryTime') || 'Preferred Delivery Time'} *
+              <span className="helper-text-inline" style={{ marginLeft: '8px', fontSize: '12px', fontWeight: 'normal' }}>
+                (e.g., 08:30, 14:00)
+              </span>
+            </label>
+            <input
+              type="time"
+              value={preferredDeliveryTime}
+              onChange={(e) => {
+                if (!kitchenStatus.isOpen) return;
+                setPreferredDeliveryTime(e.target.value);
+                if (validationErrors.preferredDeliveryTime) {
+                  setValidationErrors((prev) => ({
+                    ...prev,
+                    preferredDeliveryTime: undefined,
+                  }));
+                }
+              }}
+              className={validationErrors.preferredDeliveryTime ? 'error' : ''}
+              disabled={!kitchenStatus.isOpen}
+              placeholder="HH:MM"
+            />
+            {validationErrors.preferredDeliveryTime && (
+              <span className="error-message">{validationErrors.preferredDeliveryTime}</span>
+            )}
+            <p className="helper-text" style={{ marginTop: '4px', fontSize: '12px', color: '#666' }}>
+              {t('order.preferredTimeHelper') || 'Please note: Delivery may arrive 10 minutes earlier or later than your preferred time.'}
+            </p>
+          </div>
         </div>
 
         <div className="order-form-section">
@@ -1031,9 +1284,13 @@ Please confirm. Thank you! 🙏`;
               <div className="add-more-container">
                 <button
                   className="btn-add-more"
-                  onClick={() => setShowAddMoreDropdown(!showAddMoreDropdown)}
+                  onClick={() => {
+                    if (!kitchenStatus.isOpen) return;
+                    setShowAddMoreDropdown(!showAddMoreDropdown);
+                  }}
                   type="button"
                   aria-label="Add more items"
+                  disabled={!kitchenStatus.isOpen}
                 >
                   <i className="fa-solid fa-plus"></i>
                   <span>{t('order.addMore') || 'Add More'}</span>
@@ -1098,7 +1355,7 @@ Please confirm. Thank you! 🙏`;
                         <button
                           className="btn btn-qty"
                           onClick={() => updateQuantity(item.id, -1)}
-                          disabled={quantity === 0}
+                          disabled={quantity === 0 || !kitchenStatus.isOpen}
                           aria-label="Decrease quantity"
                         >
                           <i className="fa-solid fa-minus"></i>
@@ -1107,6 +1364,7 @@ Please confirm. Thank you! 🙏`;
                         <button
                           className="btn btn-qty"
                           onClick={() => updateQuantity(item.id, 1)}
+                          disabled={!kitchenStatus.isOpen}
                           aria-label="Increase quantity"
                         >
                           <i className="fa-solid fa-plus"></i>
@@ -1179,7 +1437,11 @@ Please confirm. Thank you! 🙏`;
           <button
             className="btn btn-primary btn-large"
             onClick={handleWhatsAppOrder}
-            disabled={loading || galleryItems.length === 0}
+            disabled={loading || galleryItems.length === 0 || !kitchenStatus.isOpen}
+            style={{
+              opacity: !kitchenStatus.isOpen ? 0.6 : 1,
+              cursor: !kitchenStatus.isOpen ? 'not-allowed' : 'pointer',
+            }}
           >
             <i className="fa-brands fa-whatsapp"></i>{' '}
             {t('order.sendWhatsApp') || 'Send Order via WhatsApp'}
@@ -1187,6 +1449,110 @@ Please confirm. Thank you! 🙏`;
         </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && pendingOrderData && (
+        <div className="order-modal-overlay" style={{ zIndex: 10000 }}>
+          <div 
+            className="order-modal" 
+            style={{ maxWidth: '500px', zIndex: 10001 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="order-modal-content">
+              <button 
+                className="order-modal-close" 
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  setPendingOrderData(null);
+                }}
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+              <h2>
+                <i className="fa-solid fa-check-circle" style={{ color: '#10b981', marginRight: '8px' }}></i>
+                {t('order.confirmOrder') || 'Confirm Order'}
+              </h2>
+
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ 
+                  backgroundColor: '#fef3c7', 
+                  border: '1px solid #fbbf24', 
+                  borderRadius: '8px', 
+                  padding: '16px',
+                  marginBottom: '20px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                    <i className="fa-solid fa-info-circle" style={{ color: '#f59e0b', fontSize: '18px', marginTop: '2px' }}></i>
+                    <div>
+                      <strong style={{ display: 'block', marginBottom: '8px', color: '#92400e' }}>
+                        {t('order.deliveryTimeDisclaimer') || 'Delivery Time Disclaimer'}
+                      </strong>
+                      <p style={{ margin: 0, fontSize: '14px', color: '#78350f', lineHeight: '1.5' }}>
+                        {t('order.deliveryTimeDisclaimerText') || 'Please note that your order may arrive up to 10 minutes earlier or later than your preferred delivery time due to traffic conditions and order volume. We appreciate your understanding.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ 
+                  backgroundColor: '#f9fafb', 
+                  borderRadius: '8px', 
+                  padding: '16px',
+                  border: '1px solid #e5e7eb'
+                }}>
+                  <h3 style={{ marginTop: 0, marginBottom: '12px', fontSize: '16px' }}>
+                    {t('order.orderSummary') || 'Order Summary'}
+                  </h3>
+                  <div style={{ fontSize: '14px', lineHeight: '1.8' }}>
+                    <div><strong>Customer:</strong> {pendingOrderData.customerName}</div>
+                    <div><strong>Address:</strong> {pendingOrderData.addressText}</div>
+                    <div><strong>Date:</strong> {pendingOrderData.formattedDate}</div>
+                    {pendingOrderData.deliveryMode === 'home' && (
+                      <div><strong>Time Slot:</strong> {pendingOrderData.timeLabel}</div>
+                    )}
+                    <div><strong>Preferred Time:</strong> {
+                      (() => {
+                        const [hours, minutes] = pendingOrderData.preferredDeliveryTime.split(':');
+                        const hour12 = parseInt(hours) % 12 || 12;
+                        const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
+                        return `${hour12}:${minutes} ${ampm}`;
+                      })()
+                    } (±10 minutes)</div>
+                    <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #e5e7eb' }}>
+                      <strong>Total:</strong> ₹{pendingOrderData.grandTotal}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowConfirmModal(false);
+                    setPendingOrderData(null);
+                  }}
+                  style={{ padding: '12px 24px' }}
+                >
+                  {t('order.cancel') || 'Cancel'}
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setShowConfirmModal(false);
+                    proceedToWhatsApp(pendingOrderData);
+                    setPendingOrderData(null);
+                  }}
+                  style={{ padding: '12px 24px' }}
+                >
+                  <i className="fa-brands fa-whatsapp" style={{ marginRight: '8px' }}></i>
+                  {t('order.confirmAndSend') || 'Confirm & Send to WhatsApp'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

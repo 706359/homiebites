@@ -1265,191 +1265,101 @@ const MenuPriceTab = ({
   }
 
   return (
-    <div className="admin-content">
-      <div className="dashboard-header">
-        <div className="action-buttons-group">
-          <button
-            className="btn btn-primary btn-small"
-            onClick={() => {
-              setFormData({
-                name: '',
-                description: '',
-                price: 0,
-                isAvailable: true,
-                imageUrl: '',
-                category: '',
-              });
-              setShowAddModal(true);
-            }}
-          >
-            <i className="fa-solid fa-plus"></i> Add Menu Item
-          </button>
-          {menuItems.length > 0 && (
-            <button
-              className="btn btn-special danger btn-small"
-              onClick={async () => {
-                if (showConfirmation) {
-                  showConfirmation({
-                    title: 'Clear All Menu Items',
-                    message:
-                      'Are you sure you want to delete all menu items? This will also remove the default menu record from the database. This action cannot be undone.',
-                    type: 'warning',
-                    confirmText: 'Delete All',
-                    onConfirm: async () => {
-                      try {
-                        await api.deleteMenu();
-
-                        setMenuItems([]);
-                        setOriginalCategories([]);
-                        if (showNotification) {
-                          showNotification(
-                            'All menu items and default record deleted successfully',
-                            'success'
-                          );
-                        }
-                      } catch (error) {
-                        console.error('Error deleting menu:', error);
-                        if (showNotification)
-                          showNotification(
-                            'Error deleting menu: ' +
-                              (error.message || 'Unknown error'),
-                            'error'
-                          );
-                      }
-                    },
+    <div className="admin-content menu-price-tab">
+      <div className="dashboard-header menu-price-header">
+        <div className="dashboard-card dashboard-card-spaced">
+          <div className="filter-container menu-price-filters">
+            <div className="search-input-wrapper search-input-wrapper-flex">
+              <input
+                type="text"
+                className="input-field search-input-with-icon"
+                placeholder="Search menu items..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="filter-field-group-standard min-width-140">
+              <select
+                className="input-field filter-input-standard"
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+              >
+                <option value="">Category</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="filter-field-group-standard min-width-160">
+              <select
+                className="input-field filter-input-standard"
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                  const [by, order] = e.target.value.split('-');
+                  setSortBy(by);
+                  setSortOrder(order);
+                }}
+              >
+                <option value="name-asc">Sort By Name</option>
+                <option value="name-desc">Name (Z-A)</option>
+                <option value="price-asc">Price (Low to High)</option>
+                <option value="price-desc">Price (High to Low)</option>
+                <option value="category-asc">Category (A-Z)</option>
+                <option value="category-desc">Category (Z-A)</option>
+              </select>
+            </div>
+            {(searchQuery || filterCategory) && (
+              <button
+                className="btn btn-secondary btn-small"
+                onClick={() => {
+                  setSearchQuery('');
+                  setFilterCategory('');
+                }}
+                title="Clear all filters"
+              >
+                <i className="fa-solid fa-xmark"></i>
+                Clear Filters
+              </button>
+            )}
+            <div className="action-buttons-group menu-price-actions">
+              <button
+                className="btn btn-primary btn-small"
+                onClick={() => {
+                  setFormData({
+                    name: '',
+                    description: '',
+                    price: 0,
+                    isAvailable: true,
+                    imageUrl: '',
+                    category: '',
                   });
-                }
-              }}
-              title="Delete all menu items and remove default record from database"
-            >
-              <i className="fa-solid fa-trash"></i> Clear All
-            </button>
-          )}
-          <button
-            className="btn btn-secondary btn-small"
-            onClick={async () => {
-              try {
-                showNotification('Syncing menu items to gallery...', 'info');
-                await syncMenuItemsToGallery(menuItems, showNotification);
-              } catch (error) {
-                console.error('[Manual Sync] Error:', error);
-                showNotification(
-                  'Gallery sync failed: ' + (error.message || 'Unknown error'),
-                  'error'
-                );
-              }
-            }}
-            title="Sync all menu items with images to website gallery"
-          >
-            <i className="fa-solid fa-sync-alt"></i> Sync to Gallery
-          </button>
-          <button
-            className="btn btn-special btn-small"
-            onClick={handleImportMenuItems}
-            title="Import predefined menu items (adds to existing items)"
-          >
-            <i className="fa-solid fa-download"></i> Import Menu Items
-          </button>
-          <button
-            className="btn btn-secondary btn-small"
-            onClick={() => {
-              const escapeCSV = (value) => {
-                if (value === null || value === undefined) return '';
-                const str = String(value);
-                if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-                  return `"${str.replace(/"/g, '""')}"`;
-                }
-                return str;
-              };
-
-              let csvContent =
-                'Name,Description,Price (₹),Category,Available,Image URL\n';
-              filteredMenuItems.forEach((item) => {
-                csvContent += `${escapeCSV(item.name)},${escapeCSV(
-                  item.description || ''
-                )},${escapeCSV(item.price || 0)},${escapeCSV(
-                  item.category || ''
-                )},${escapeCSV(item.isAvailable !== false ? 'Yes' : 'No')},${escapeCSV(
-                  item.imageUrl || ''
-                )}\n`;
-              });
-
-              const BOM = '\uFEFF';
-              const blob = new Blob([BOM + csvContent], {
-                type: 'text/csv;charset=utf-8;',
-              });
-              const link = document.createElement('a');
-              link.href = URL.createObjectURL(blob);
-              link.download = `menu_items_export_${new Date().toISOString().split('T')[0]}.csv`;
-              link.click();
-              if (showNotification)
-                showNotification('Menu items exported successfully', 'success');
-            }}
-            title="Export Menu Items to CSV"
-          >
-            <i className="fa-solid fa-file-export"></i> Export Menu
-          </button>
-        </div>
-      </div>
-
-      <div className="dashboard-card dashboard-card-spaced">
-        <div className="filter-container">
-          <div className="search-input-wrapper search-input-wrapper-flex">
-            <input
-              type="text"
-              className="input-field search-input-with-icon"
-              placeholder="Search menu items..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+                  setShowAddModal(true);
+                }}
+              >
+                <i className="fa-solid fa-plus"></i> Add Menu Item
+              </button>
+              <button
+                className="btn btn-secondary btn-small"
+                onClick={async () => {
+                  try {
+                    showNotification('Syncing menu items to gallery...', 'info');
+                    await syncMenuItemsToGallery(menuItems, showNotification);
+                  } catch (error) {
+                    console.error('[Manual Sync] Error:', error);
+                    showNotification(
+                      'Gallery sync failed: ' + (error.message || 'Unknown error'),
+                      'error'
+                    );
+                  }
+                }}
+                title="Sync all menu items with images to website gallery"
+              >
+                <i className="fa-solid fa-sync-alt"></i> Sync to Gallery
+              </button>
+            </div>
           </div>
-          <div className="filter-field-group-standard min-width-140">
-            <label className="filter-label-standard">Category</label>
-            <select
-              className="input-field filter-input-standard"
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-            >
-              <option value="">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="filter-field-group-standard min-width-160">
-            <label className="filter-label-standard">Sort By</label>
-            <select
-              className="input-field filter-input-standard"
-              value={`${sortBy}-${sortOrder}`}
-              onChange={(e) => {
-                const [by, order] = e.target.value.split('-');
-                setSortBy(by);
-                setSortOrder(order);
-              }}
-            >
-              <option value="name-asc">Name (A-Z)</option>
-              <option value="name-desc">Name (Z-A)</option>
-              <option value="price-asc">Price (Low to High)</option>
-              <option value="price-desc">Price (High to Low)</option>
-              <option value="category-asc">Category (A-Z)</option>
-              <option value="category-desc">Category (Z-A)</option>
-            </select>
-          </div>
-          {(searchQuery || filterCategory) && (
-            <button
-              className="btn btn-ghost btn-small"
-              onClick={() => {
-                setSearchQuery('');
-                setFilterCategory('');
-              }}
-              className="form-label-small"
-            >
-              <i className="fa-solid fa-xmark icon-margin-right-sm"></i>
-              Clear Filters
-            </button>
-          )}
         </div>
       </div>
 

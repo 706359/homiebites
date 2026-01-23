@@ -192,6 +192,9 @@ const Header = ({ onOrderClick }) => {
           >
             {t('header.gallery') || 'Gallery'}
           </a>
+          <Link href="/pricing" onClick={handleNavClick} aria-label="Pricing">
+            {t('header.pricing') || 'Price'}
+          </Link>
           <a href="/#faq" onClick={(e) => handleHashLink(e, '#faq')} aria-label="Frequently asked questions">
             {t('header.faq')}
           </a>
@@ -255,6 +258,9 @@ const Header = ({ onOrderClick }) => {
           <a href="/#gallery" onClick={(e) => handleHashLink(e, '#gallery')}>
             {t('header.gallery') || 'Gallery'}
           </a>
+          <Link href="/pricing" onClick={handleNavClick}>
+            {t('header.pricing') || 'Price'}
+          </Link>
           <a href="/#gallery" onClick={(e) => handleHashLink(e, '#gallery')}>
             {t('header.menu')}
           </a>

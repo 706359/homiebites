@@ -826,29 +826,6 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               </div>
             )}
           </div>
-          <div className="export-buttons-group">
-            <button
-              className="btn btn-secondary btn-small"
-              onClick={() => handleExportReport('monthly')}
-              title="Export Monthly Report"
-            >
-              <i className="fa-solid fa-download"></i> Export Monthly
-            </button>
-            <button
-              className="btn btn-secondary btn-small"
-              onClick={() => handleExportReport('quarterly')}
-              title="Export Quarterly Report"
-            >
-              <i className="fa-solid fa-download"></i> Export Quarterly
-            </button>
-            <button
-              className="btn btn-secondary btn-small"
-              onClick={() => handleExportReport('annual')}
-              title="Export Annual Report"
-            >
-              <i className="fa-solid fa-download"></i> Export Annual
-            </button>
-          </div>
         </div>
       </div>
 

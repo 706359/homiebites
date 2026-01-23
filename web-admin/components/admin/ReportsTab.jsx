@@ -1,6 +1,8 @@
 import ExcelJS from 'exceljs';
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
+import api from '../../lib/api-admin.js';
+import { convertMenuItemsToCategories } from '../../lib/menuData.js';
 import {
   formatDate,
   formatDateMonthDay,
@@ -10,6 +12,7 @@ import {
   getOrderAmount,
   isPaidStatus,
   isPendingStatus,
+  getTotalRevenue,
 } from './utils/orderUtils.js';
 
 const ReportsTab = ({
@@ -19,6 +22,14 @@ const ReportsTab = ({
   onLoadExcelFile,
   onClearAllData,
   showConfirmation,
+  // Backup/Restore handlers
+  onBackup,
+  onRestore,
+  onExportSettings,
+  // Additional data
+  reviews = [],
+  menuItems = [],
+  loadMenuData,
 }) => {
   const [selectedReportType, setSelectedReportType] = useState('');
   const [reportDateFrom, setReportDateFrom] = useState('');
@@ -75,6 +86,469 @@ const ReportsTab = ({
       return `"${str.replace(/"/g, '""')}"`;
     }
     return str;
+  };
+
+  // Import menu handler
+  const handleImportMenu = async () => {
+    if (showConfirmation) {
+      showConfirmation({
+        title: 'Import Menu Items',
+        message:
+          'This will add all predefined menu items to your menu. Existing items will be preserved. Continue?',
+        type: 'info',
+        confirmText: 'Import',
+        onConfirm: async () => {
+          try {
+            const newCategories = convertMenuItemsToCategories();
+
+            const currentMenuResponse = await api.getMenu();
+            const existingCategories =
+              currentMenuResponse.success &&
+              Array.isArray(currentMenuResponse.data)
+                ? currentMenuResponse.data
+                : [];
+
+            const mergedCategories = [...existingCategories];
+
+            newCategories.forEach((newCategory) => {
+              const existingIndex = mergedCategories.findIndex(
+                (cat) => cat.category === newCategory.category
+              );
+
+              if (existingIndex >= 0) {
+                const existingItems =
+                  mergedCategories[existingIndex].items || [];
+                const existingItemNames = new Set(
+                  existingItems.map((item) => item.name)
+                );
+
+                newCategory.items.forEach((newItem) => {
+                  if (!existingItemNames.has(newItem.name)) {
+                    existingItems.push(newItem);
+                  }
+                });
+
+                mergedCategories[existingIndex].items = existingItems;
+              } else {
+                mergedCategories.push(newCategory);
+              }
+            });
+
+            const flattenedItems = [];
+            mergedCategories.forEach((category) => {
+              if (category.items && Array.isArray(category.items)) {
+                category.items.forEach((item) => {
+                  flattenedItems.push({
+                    ...item,
+                    category: category.category || item.category || 'Lunch',
+                    categoryId: category.id,
+                    categoryIcon: category.icon,
+                    categoryTag: category.tag,
+                    categoryDescription: category.description,
+                  });
+                });
+              }
+            });
+
+            // Save to backend
+            const response = await api.updateMenu(mergedCategories);
+            if (response && response.success) {
+              const importedCount = newCategories.reduce(
+                (sum, cat) => sum + (cat.items?.length || 0),
+                0
+              );
+              if (showNotification) {
+                showNotification(
+                  `Successfully imported ${importedCount} menu items`,
+                  'success'
+                );
+              }
+              // Reload menu data
+              if (loadMenuData) {
+                await loadMenuData();
+              }
+            } else {
+              if (showNotification) {
+                showNotification('Failed to import menu items', 'error');
+              }
+            }
+          } catch (error) {
+            console.error('Error importing menu items:', error);
+            if (showNotification)
+              showNotification(
+                'Error importing menu items: ' +
+                  (error.message || 'Unknown error'),
+                'error'
+              );
+          }
+        },
+      });
+    }
+  };
+
+  // Export handler functions
+  const handleExportAllOrders = () => {
+    const csvContent =
+      'S.No,Date,Address,Quantity,Price,Total,Mode,Status,Payment,Month,Year,OrderID\n' +
+      orders
+        .map((o, idx) => {
+          const date = parseOrderDate(o.date || o.order_date || null);
+          let month, year;
+          if (o.billingMonth && o.billingYear) {
+            month = parseInt(o.billingMonth) || new Date().getUTCMonth() + 1;
+            year = parseInt(o.billingYear) || new Date().getUTCFullYear();
+          } else if (date) {
+            month = date.getUTCMonth() + 1;
+            year = date.getUTCFullYear();
+          } else {
+            month = null;
+            year = null;
+          }
+          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const monthStr = month ? monthNames[month - 1] : 'N/A';
+          return `${idx + 1},"${date ? date.toLocaleDateString() : ''}","${
+            o.deliveryAddress || o.customerAddress || o.address || 'N/A'
+          }","${o.quantity || 1}","${o.unitPrice || 0}","${o.total || o.totalAmount || 0}","${
+            o.mode || 'N/A'
+          }","${o.status || 'N/A'}","${o.paymentMode || 'N/A'}","${
+            month ? `${monthStr}'${year.toString().slice(-2)}` : 'N/A'
+          }","${year || 'N/A'}","${o.orderId || 'N/A'}"`;
+        })
+        .join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `all_orders_export_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    if (showNotification)
+      showNotification('Orders exported successfully', 'success');
+  };
+
+  const handleExportCurrentMonth = () => {
+    const now = new Date();
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    
+    const currentMonthOrders = orders.filter((o) => {
+      const orderDate = parseOrderDate(o.date || o.order_date || null);
+      return orderDate && orderDate >= currentMonthStart && orderDate <= currentMonthEnd;
+    });
+
+    let csvContent =
+      'Order ID,Date,Delivery Address,Quantity,Unit Price (₹),Total Amount (₹),Mode,Status,Payment Mode\n';
+    currentMonthOrders.forEach((o) => {
+      const orderDate = parseOrderDate(o.date || o.order_date || null);
+      const dateStr = orderDate ? formatDate(orderDate) : 'N/A';
+      const orderId = o.orderId || o._id || 'N/A';
+      const address =
+        o.deliveryAddress || o.customerAddress || o.address || 'N/A';
+      const quantity = o.quantity || 1;
+      const unitPrice = parseFloat(o.unitPrice || 0).toFixed(2);
+      const totalAmount = getOrderAmount(o).toFixed(2);
+      const mode = o.mode || 'N/A';
+      const status = o.status || 'N/A';
+      const paymentMode = o.paymentMode || 'N/A';
+
+      csvContent += `${escapeCSV(orderId)},${escapeCSV(dateStr)},${escapeCSV(
+        address
+      )},${escapeCSV(quantity)},${escapeCSV(unitPrice)},${escapeCSV(totalAmount)},${escapeCSV(
+        mode
+      )},${escapeCSV(status)},${escapeCSV(paymentMode)}\n`;
+    });
+
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `current_month_orders_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    if (showNotification)
+      showNotification('Current month orders exported successfully', 'success');
+  };
+
+  const handleExportPendingPayments = () => {
+    const pendingPayments = orders.filter((o) =>
+      isPendingStatus(o.status, o.paymentStatus)
+    ).map((o) => {
+      const orderDate = parseOrderDate(o.date || o.order_date || null);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const daysPending = orderDate ? Math.floor((today - orderDate) / (1000 * 60 * 60 * 24)) : 0;
+      return {
+        ...o,
+        orderDate,
+        daysPending,
+        isOverdue: daysPending > 7,
+        isUrgent: daysPending > 3 && daysPending <= 7,
+      };
+    });
+
+    let csvContent =
+      'Order ID,Date,Delivery Address,Amount (₹),Days Pending,Status,Payment Mode\n';
+    pendingPayments.forEach((p) => {
+      const orderDate = p.orderDate
+        ? formatDateMonthDay(p.orderDate)
+        : 'N/A';
+      const amount = getOrderAmount(p);
+      const status = p.isOverdue ? 'Overdue' : p.isUrgent ? 'Urgent' : 'Pending';
+      csvContent += `${escapeCSV(p.orderId || p._id || 'N/A')},${escapeCSV(
+        orderDate
+      )},${escapeCSV(
+        p.deliveryAddress || p.customerAddress || p.address || 'N/A'
+      )},${escapeCSV(amount.toFixed(2))},${escapeCSV(
+        p.daysPending
+      )},${escapeCSV(status)},${escapeCSV(p.paymentMode || 'N/A')}\n`;
+    });
+
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `pending_payments_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    if (showNotification)
+      showNotification('Pending payments exported successfully', 'success');
+  };
+
+  // Load reviews for export
+  const [reviewsData, setReviewsData] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+
+  useEffect(() => {
+    const loadReviewsForExport = async () => {
+      setLoadingReviews(true);
+      try {
+        const response = await api.getAllReviews();
+        if (response && response.success && Array.isArray(response.data)) {
+          setReviewsData(response.data);
+        } else {
+          setReviewsData([]);
+        }
+      } catch (error) {
+        console.error('Error loading reviews:', error);
+        setReviewsData([]);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+    loadReviewsForExport();
+  }, []);
+
+  const handleExportReviews = () => {
+    const reviewsToExport = reviews.length > 0 ? reviews : reviewsData;
+    if (!reviewsToExport || reviewsToExport.length === 0) {
+      if (showNotification)
+        showNotification('No reviews to export', 'warning');
+      return;
+    }
+    const csvContent =
+      'Name,Email,Phone,Location,Rating,Comment,Featured,Approved,Date\n' +
+      reviewsToExport
+        .map((r) => {
+          const date = r.createdAt
+            ? formatDate(new Date(r.createdAt))
+            : 'N/A';
+          return `"${r.userName || ''}","${r.userEmail || ''}","${
+            r.userPhone || ''
+          }","${r.userLocation || ''}","${r.rating || 0}","${
+            (r.comment || '').replace(/"/g, '""')
+          }","${r.featured ? 'Yes' : 'No'}","${r.isApproved ? 'Yes' : 'No'}","${date}"`;
+        })
+        .join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `reviews_export_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    if (showNotification) {
+      showNotification('Reviews exported successfully', 'success');
+    }
+  };
+
+  const handleExportFinancialSummary = () => {
+    const now = new Date();
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    
+    const dailyData = [];
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dayStart = new Date(date);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(date);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const dayOrders = orders.filter((o) => {
+        const orderDate = parseOrderDate(o.date || o.order_date || null);
+        return orderDate && orderDate >= dayStart && orderDate <= dayEnd;
+      });
+
+      const revenue = getTotalRevenue(dayOrders);
+      const paidRevenue = getTotalRevenue(
+        dayOrders.filter((o) => isPaidStatus(o.status, o.paymentStatus))
+      );
+      const pendingRevenue = revenue - paidRevenue;
+
+      dailyData.push({
+        date: date.toISOString().split('T')[0],
+        orders: dayOrders.length,
+        revenue,
+        paidRevenue,
+        pendingRevenue,
+      });
+    }
+
+    const csvContent =
+      'Date,Orders,Total Revenue (₹),Paid Revenue (₹),Pending Revenue (₹),Avg Order Value (₹)\n' +
+      dailyData
+        .map((day) => {
+          const avgValue =
+            day.orders > 0 ? (day.revenue / day.orders).toFixed(2) : '0.00';
+          return `"${formatDate(new Date(day.date))}","${day.orders}","${day.revenue.toFixed(2)}","${day.paidRevenue.toFixed(2)}","${day.pendingRevenue.toFixed(2)}","${avgValue}"`;
+        })
+        .join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `financial_summary_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    if (showNotification) {
+      showNotification('Financial summary exported successfully', 'success');
+    }
+  };
+
+  const handleExportAnalytics = (type) => {
+    let csvContent = '';
+    const reportDate = new Date().toISOString().split('T')[0];
+
+    if (type === 'monthly') {
+      const monthStats = {};
+      orders.forEach((o) => {
+        const orderDate = parseOrderDate(o.date || o.order_date || null);
+        if (orderDate) {
+          const monthKey = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`;
+          const monthName = orderDate.toLocaleDateString('en-US', { month: 'long' });
+          if (!monthStats[monthKey]) {
+            monthStats[monthKey] = {
+              month: monthName,
+              year: orderDate.getFullYear(),
+              orders: 0,
+              revenue: 0,
+            };
+          }
+          monthStats[monthKey].orders++;
+          monthStats[monthKey].revenue += getOrderAmount(o);
+        }
+      });
+
+      csvContent = 'Month,Year,Revenue (₹),Orders,Average Order Value (₹)\n';
+      Object.values(monthStats)
+        .sort((a, b) => {
+          if (a.year !== b.year) return a.year - b.year;
+          return a.month.localeCompare(b.month);
+        })
+        .forEach((stat) => {
+          const avgOrderValue =
+            stat.orders > 0 ? (stat.revenue / stat.orders).toFixed(2) : '0.00';
+          csvContent += `${escapeCSV(stat.month)},${escapeCSV(stat.year)},${escapeCSV(
+            stat.revenue.toFixed(2)
+          )},${escapeCSV(stat.orders)},${escapeCSV(avgOrderValue)}\n`;
+        });
+    }
+
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `analytics_${type}_${reportDate}.csv`;
+    link.click();
+    if (showNotification)
+      showNotification(`${type} analytics exported successfully`, 'success');
+  };
+
+  const handleExportAddresses = () => {
+    const addressMap = new Map();
+    orders.forEach((o) => {
+      const address = o.deliveryAddress || o.customerAddress || o.address;
+      if (address) {
+        if (!addressMap.has(address)) {
+          addressMap.set(address, {
+            address,
+            totalOrders: 0,
+            totalSpent: 0,
+            lastOrderDate: null,
+          });
+        }
+        const customer = addressMap.get(address);
+        customer.totalOrders++;
+        customer.totalSpent += getOrderAmount(o);
+        const orderDate = parseOrderDate(o.date || o.order_date || null);
+        if (orderDate && (!customer.lastOrderDate || orderDate > customer.lastOrderDate)) {
+          customer.lastOrderDate = orderDate;
+        }
+      }
+    });
+
+    const customers = Array.from(addressMap.values()).map((c) => ({
+      ...c,
+      avgOrderValue: c.totalOrders > 0 ? c.totalSpent / c.totalOrders : 0,
+      segment: c.totalSpent >= 5000 ? 'VIP' : c.totalSpent >= 2000 ? 'Regular' : 'New',
+    }));
+
+    const csvContent =
+      'Address,Total Orders,Total Spent,Avg Order Value,Last Order,Segment\n' +
+      customers
+        .map(
+          (c) =>
+            `"${c.address}","${c.totalOrders}","${c.totalSpent}","${c.avgOrderValue.toFixed(2)}","${
+              c.lastOrderDate ? formatDate(c.lastOrderDate) : 'Never'
+            }","${c.segment}"`
+        )
+        .join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `customers_export_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    if (showNotification)
+      showNotification('Customer list exported successfully', 'success');
+  };
+
+  const handleExportMenu = () => {
+    if (!menuItems || menuItems.length === 0) {
+      if (showNotification)
+        showNotification('No menu items to export', 'warning');
+      return;
+    }
+    let csvContent =
+      'Name,Description,Price (₹),Category,Available,Image URL\n';
+    menuItems.forEach((item) => {
+      csvContent += `${escapeCSV(item.name)},${escapeCSV(
+        item.description || ''
+      )},${escapeCSV(item.price || 0)},${escapeCSV(
+        item.category || ''
+      )},${escapeCSV(item.isAvailable !== false ? 'Yes' : 'No')},${escapeCSV(
+        item.imageUrl || ''
+      )}\n`;
+    });
+
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `menu_items_export_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    if (showNotification)
+      showNotification('Menu items exported successfully', 'success');
   };
 
   const handlePreviewReport = () => {
@@ -875,76 +1349,193 @@ const ReportsTab = ({
 
   return (
     <div className="admin-content">
-      <div className="action-bar">
-        <div className="action-buttons-group">
-          {onLoadExcelFile && (
+      {/* Organized Sections for Reports & Data Operations */}
+      <div className="reports-sections-container">
+        {/* Section 1: Order Reports & Export */}
+        <div className="dashboard-card reports-section-card">
+          <h3 className="reports-section-title">
+            <i className="fa-solid fa-shopping-cart"></i>
+            Order Reports & Export
+          </h3>
+          <div className="reports-buttons-grid">
             <button
-              className="btn btn-secondary btn-small"
-              onClick={onLoadExcelFile}
-              title="Upload CSV"
-            >
-              <i className="fa-solid fa-upload"></i> Upload CSV
-            </button>
-          )}
-          {onClearAllData && (
-            <button
-              className="btn btn-special danger btn-small"
+              className="btn btn-secondary"
               onClick={() => {
-                if (showConfirmation) {
-                  showConfirmation({
-                    title: 'Clear All Data',
-                    message:
-                      'Are you sure you want to clear ALL orders data? This action cannot be undone and will permanently delete all orders.',
-                    type: 'danger',
-                    confirmText: 'Clear All Data',
-                    onConfirm: async () => {
-                      await onClearAllData(true);
-                    },
-                  });
-                } else if (onClearAllData) {
-                  onClearAllData(true);
-                }
+                setSelectedReportType('Sales Report');
+                setShowGenerator(true);
               }}
-              title="Delete All Orders"
             >
-              <i className="fa-solid fa-trash"></i> Delete All
+              <i className="fa-solid fa-chart-bar"></i>
+              Sales Report
             </button>
-          )}
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowGenerator(true)}
-          >
-            <i className="fa-solid fa-file-alt"></i>
-            Generate Report
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={handleGenerateReport}
-            disabled={!selectedReportType}
-          >
-            <i className="fa-solid fa-download"></i>
-            Download Report
-          </button>
-          <button
-            className={`btn btn-ghost ${selectedReportType === 'Sales Report' ? 'active' : ''}`}
-            onClick={() => {
-              setSelectedReportType('Sales Report');
-              setShowGenerator(true);
-            }}
-          >
-            <i className="fa-solid fa-chart-bar"></i>
-            Sales Report
-          </button>
-          <button
-            className={`btn btn-ghost ${selectedReportType === 'Payment Report' ? 'active' : ''}`}
-            onClick={() => {
-              setSelectedReportType('Payment Report');
-              setShowGenerator(true);
-            }}
-          >
-            <i className="fa-solid fa-money-bill-wave"></i>
-            Payment Report
-          </button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => {
+                setSelectedReportType('Payment Report');
+                setShowGenerator(true);
+              }}
+            >
+              <i className="fa-solid fa-money-bill-wave"></i>
+              Payment Report
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={handleExportAllOrders}
+              title="Export all orders data"
+            >
+              <i className="fa-solid fa-download"></i>
+              Export All Orders
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={handleExportCurrentMonth}
+              title="Export current month orders"
+            >
+              <i className="fa-solid fa-download"></i>
+              Export Current Month
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={handleExportPendingPayments}
+              title="Export pending payments"
+            >
+              <i className="fa-solid fa-download"></i>
+              Export Pending Payments
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={handleExportFinancialSummary}
+              title="Export financial summary"
+            >
+              <i className="fa-solid fa-download"></i>
+              Export Financial Summary
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => handleExportAnalytics('monthly')}
+              title="Export monthly analytics"
+            >
+              <i className="fa-solid fa-download"></i>
+              Export Monthly Analytics
+            </button>
+          </div>
+        </div>
+
+        {/* Section 2: Data Import/Export */}
+        <div className="dashboard-card reports-section-card">
+          <h3 className="reports-section-title">
+            <i className="fa-solid fa-file-import"></i>
+            Data Import/Export
+          </h3>
+          <div className="reports-buttons-grid">
+            {onLoadExcelFile && (
+              <button
+                className="btn btn-primary"
+                onClick={onLoadExcelFile}
+                title="Upload CSV file to import orders"
+              >
+                <i className="fa-solid fa-upload"></i>
+                Upload CSV (Import Orders)
+              </button>
+            )}
+            <button
+              className="btn btn-secondary"
+              onClick={handleExportAddresses}
+              title="Export customer addresses"
+            >
+              <i className="fa-solid fa-download"></i>
+              Export Addresses
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={handleExportReviews}
+              title="Export reviews data"
+            >
+              <i className="fa-solid fa-download"></i>
+              Export Reviews
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={handleExportMenu}
+              title="Export menu items to CSV"
+            >
+              <i className="fa-solid fa-file-export"></i>
+              Export Menu Items
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={handleImportMenu}
+              title="Import predefined menu items"
+            >
+              <i className="fa-solid fa-file-import"></i>
+              Import Menu Items
+            </button>
+          </div>
+        </div>
+
+        {/* Section 3: Backup & Restore */}
+        <div className="dashboard-card reports-section-card">
+          <h3 className="reports-section-title">
+            <i className="fa-solid fa-database"></i>
+            Backup & Restore
+          </h3>
+          <div className="reports-buttons-grid">
+            {onBackup && (
+              <button
+                className="btn btn-primary"
+                onClick={onBackup}
+                title="Create backup of all data"
+              >
+                <i className="fa-solid fa-save"></i>
+                Create Backup
+              </button>
+            )}
+            {onRestore && (
+              <button
+                className="btn btn-secondary"
+                onClick={onRestore}
+                title="Restore data from backup"
+              >
+                <i className="fa-solid fa-rotate"></i>
+                Restore from Backup
+              </button>
+            )}
+            {onExportSettings && (
+              <button
+                className="btn btn-secondary"
+                onClick={onExportSettings}
+                title="Export settings configuration"
+              >
+                <i className="fa-solid fa-file-export"></i>
+                Export Settings
+              </button>
+            )}
+            {onClearAllData && (
+              <button
+                className="btn btn-special danger"
+                onClick={() => {
+                  if (showConfirmation) {
+                    showConfirmation({
+                      title: 'Clear All Data',
+                      message:
+                        'Are you sure you want to clear ALL orders data? This action cannot be undone and will permanently delete all orders.',
+                      type: 'danger',
+                      confirmText: 'Clear All Data',
+                      onConfirm: async () => {
+                        await onClearAllData(true);
+                      },
+                    });
+                  } else if (onClearAllData) {
+                    onClearAllData(true);
+                  }
+                }}
+                title="Delete all orders (dangerous)"
+              >
+                <i className="fa-solid fa-trash"></i>
+                Clear All Orders
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

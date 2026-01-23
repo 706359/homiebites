@@ -393,13 +393,6 @@ const ReviewsTab = ({
               <option value="1">1 Star</option>
             </select>
           </div>
-          <button
-            className="btn btn-secondary"
-            onClick={handleExport}
-            title="Export Reviews"
-          >
-            <i className="fa-solid fa-download"></i> Export
-          </button>
         </div>
         <div className="table-info-text">
           Showing {paginatedReviews.length > 0 ? (currentPage - 1) * recordsPerPage + 1 : 0}-

@@ -6,79 +6,175 @@ import api from '../lib/api';
 import './Pricing.css';
 import SkeletonLoader from './SkeletonLoader';
 
+const PRICING_DATA_KEY = 'homiebites_pricing_data';
+const PRICING_CACHE_TIMESTAMP_KEY = 'homiebites_pricing_cache_timestamp';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache duration
+
 const Pricing = () => {
   const { t } = useLanguage();
   const [pricingItems, setPricingItems] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Process and transform pricing data
+  const processPricingData = (data) => {
+    if (!data || !Array.isArray(data)) return [];
+
+    return data
+      .filter((item) => {
+        // Show all active items (not just those with images)
+        return item.isActive !== false;
+      })
+      .map((item) => {
+        return {
+          id: item._id || item.id,
+          name: item.name,
+          price: item.price,
+          category: item.category || 'Other',
+          details:
+            item.details &&
+            Array.isArray(item.details) &&
+            item.details.length > 0
+              ? item.details
+              : null,
+        };
+      })
+      .sort((a, b) => {
+        // Sort by category first, then by name
+        if (a.category !== b.category) {
+          return a.category.localeCompare(b.category);
+        }
+        return a.name.localeCompare(b.name);
+      });
+  };
+
+  // Load pricing items from cache or API
+  const loadPricingItems = async (showLoading = false, useCache = true) => {
+    try {
+      if (showLoading) {
+        setLoading(true);
+      }
+
+      // Try to load from localStorage first for fast initial render
+      if (useCache && typeof window !== 'undefined') {
+        try {
+          const cachedData = localStorage.getItem(PRICING_DATA_KEY);
+          const cacheTimestamp = localStorage.getItem(PRICING_CACHE_TIMESTAMP_KEY);
+          
+          if (cachedData && cacheTimestamp) {
+            const cacheAge = Date.now() - parseInt(cacheTimestamp);
+            
+            // Use cache if it's less than 5 minutes old
+            if (cacheAge < CACHE_DURATION) {
+              const parsed = JSON.parse(cachedData);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                const processed = processPricingData(parsed);
+                if (processed.length > 0) {
+                  setPricingItems(processed);
+                  if (showLoading) {
+                    setLoading(false);
+                  }
+                  // Still fetch fresh data in background if cache is older than 1 minute
+                  if (cacheAge > 60 * 1000) {
+                    loadPricingItems(false, false); // Fetch fresh data without showing loading
+                  }
+                  return;
+                }
+              }
+            }
+          }
+        } catch (cacheError) {
+          // If cache read fails, continue to API fetch
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('[Pricing] Cache read failed:', cacheError);
+          }
+        }
+      }
+
+      // Fetch from API
+      const response = await api.getGallery();
+
+      if (response.success && response.data && Array.isArray(response.data)) {
+        const processed = processPricingData(response.data);
+        setPricingItems(processed);
+
+        // Save to localStorage for future use
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(PRICING_DATA_KEY, JSON.stringify(response.data));
+            localStorage.setItem(PRICING_CACHE_TIMESTAMP_KEY, String(Date.now()));
+          } catch (storageError) {
+            // Ignore localStorage errors (quota exceeded, etc.)
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('[Pricing] Failed to save to cache:', storageError);
+            }
+          }
+        }
+      } else {
+        setPricingItems([]);
+      }
+    } catch (error) {
+      console.error('[Pricing] Error loading pricing items:', error);
+      
+      // On error, try to use cached data as fallback
+      if (typeof window !== 'undefined') {
+        try {
+          const cachedData = localStorage.getItem(PRICING_DATA_KEY);
+          if (cachedData) {
+            const parsed = JSON.parse(cachedData);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              const processed = processPricingData(parsed);
+              setPricingItems(processed);
+            }
+          }
+        } catch (fallbackError) {
+          // If fallback also fails, keep empty state
+          setPricingItems([]);
+        }
+      }
+    } finally {
+      if (showLoading) {
+        setLoading(false);
+      }
+    }
+  };
 
   // Fetch pricing items from gallery (same source as Gallery component)
   useEffect(() => {
     let refreshInterval;
     let visibilityInterval;
 
-    const loadPricingItems = async (showLoading = false) => {
-      try {
-        if (showLoading) {
-          setLoading(true);
-        }
-        const response = await api.getGallery();
+    // Initial load with loading state - will use cache if available for fast load
+    loadPricingItems(true, true);
 
-        if (response.success && response.data && Array.isArray(response.data)) {
-          // Map backend data to pricing format - show all active items (with or without images)
-          const items = response.data
-            .filter((item) => {
-              // Show all active items (not just those with images)
-              return item.isActive !== false;
-            })
-            .map((item) => {
-              return {
-                id: item._id || item.id,
-                name: item.name,
-                price: item.price,
-                category: item.category || 'Other',
-                details:
-                  item.details &&
-                  Array.isArray(item.details) &&
-                  item.details.length > 0
-                    ? item.details
-                    : null,
-              };
-            })
-            .sort((a, b) => {
-              // Sort by category first, then by name
-              if (a.category !== b.category) {
-                return a.category.localeCompare(b.category);
-              }
-              return a.name.localeCompare(b.name);
-            });
-
-          setPricingItems(items);
-        } else {
-          setPricingItems([]);
-        }
-      } catch (error) {
-        console.error('[Pricing] Error loading pricing items:', error);
-      } finally {
-        if (showLoading) {
-          setLoading(false);
-        }
-      }
-    };
-
-    // Initial load with loading state
-    loadPricingItems(true);
-
-    // Refresh pricing every 60 seconds to pick up new items automatically
+    // Refresh pricing every 5 minutes to pick up new items automatically
     refreshInterval = setInterval(() => {
       if (!document.hidden) {
-        loadPricingItems(false);
+        loadPricingItems(false, false); // Always fetch fresh data on interval
       }
-    }, 60000);
+    }, CACHE_DURATION);
 
-    // Listen for visibility changes - refresh when tab becomes visible
+    // Listen for visibility changes - refresh when tab becomes visible (check cache age)
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        loadPricingItems(false);
+        // Check if cache is stale before refreshing
+        if (typeof window !== 'undefined') {
+          try {
+            const cacheTimestamp = localStorage.getItem(PRICING_CACHE_TIMESTAMP_KEY);
+            if (cacheTimestamp) {
+              const cacheAge = Date.now() - parseInt(cacheTimestamp);
+              // Only refresh if cache is older than 2 minutes
+              if (cacheAge > 2 * 60 * 1000) {
+                loadPricingItems(false, false);
+              }
+            } else {
+              // No cache, fetch fresh data
+              loadPricingItems(false, false);
+            }
+          } catch (e) {
+            // If check fails, fetch fresh data
+            loadPricingItems(false, false);
+          }
+        }
       }
     };
 
@@ -86,7 +182,16 @@ const Pricing = () => {
 
     // Listen for custom events to trigger immediate refresh (from admin panel)
     const handleGalleryUpdate = () => {
-      loadPricingItems(false);
+      // Clear cache and fetch fresh data when gallery is updated
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem(PRICING_DATA_KEY);
+          localStorage.removeItem(PRICING_CACHE_TIMESTAMP_KEY);
+        } catch (e) {
+          // Ignore errors
+        }
+      }
+      loadPricingItems(false, false);
     };
 
     window.addEventListener('gallery-updated', handleGalleryUpdate);
@@ -98,7 +203,10 @@ const Pricing = () => {
         const lastUpdate = localStorage.getItem('gallery-last-update');
         const currentTime = Date.now();
         if (lastUpdate && currentTime - parseInt(lastUpdate) < 10000) {
-          loadPricingItems(false);
+          // Gallery was updated, clear pricing cache and refresh
+          localStorage.removeItem(PRICING_DATA_KEY);
+          localStorage.removeItem(PRICING_CACHE_TIMESTAMP_KEY);
+          loadPricingItems(false, false);
         }
       } catch (e) {
         // Ignore localStorage errors

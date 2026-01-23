@@ -365,7 +365,7 @@
   }
 
   .tab-title {
-    font-size: var(--admin-fs-xl) !important;
+    font-size: var(--admin-fs-base-mid, 0.9375rem) !important;
     margin-bottom: 12px !important;
   }
 

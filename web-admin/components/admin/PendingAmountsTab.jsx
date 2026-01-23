@@ -577,13 +577,6 @@ const PendingAmountsTab = ({
             )}
             <div className="action-buttons-group">
               <button
-                className="btn btn-secondary btn-small"
-                onClick={handleExportPendingPayments}
-                title="Export Pending Payments"
-              >
-                <i className="fa-solid fa-download"></i> Export
-              </button>
-              <button
                 className="btn btn-special btn-small"
                 onClick={handleBulkMarkAsPaid}
                 disabled={pendingPayments.length === 0}

@@ -42,6 +42,7 @@ const OrderModal = ({
   const datePickerRef = useRef(null);
   const persistedDateRef = useRef(null);
   const lastOrderIdRef = useRef(null);
+  const initialOrderRef = useRef(null);
 
   useAutoKeyboardAvoidance({
     containerSelector: '.modal-container',
@@ -328,61 +329,74 @@ const OrderModal = ({
     newOrder?.status,
   ]);
 
+  // Track initial order state when modal opens
   useEffect(() => {
     if (show && !editingOrder) {
-      setHasUnsavedChanges(
-        !!(
-          newOrder.date ||
-          newOrder.deliveryAddress ||
-          newOrder.quantity ||
-          newOrder.unitPrice
-        )
+      // Store initial state when modal first opens (only once per modal open)
+      if (initialOrderRef.current === null) {
+        initialOrderRef.current = JSON.parse(JSON.stringify(newOrder));
+        setHasUnsavedChanges(false); // Reset when modal first opens
+      }
+    } else {
+      // Reset when modal closes
+      initialOrderRef.current = null;
+      setHasUnsavedChanges(false);
+    }
+  }, [show, editingOrder]);
+
+  // Check for unsaved changes whenever newOrder changes
+  useEffect(() => {
+    if (show && !editingOrder && initialOrderRef.current) {
+      // Compare current state with initial state
+      const initial = initialOrderRef.current;
+      const hasChanges = !!(
+        (newOrder.deliveryAddress && newOrder.deliveryAddress.trim() !== '' && newOrder.deliveryAddress.trim() !== (initial.deliveryAddress || '').trim()) ||
+        (newOrder.quantity !== initial.quantity) ||
+        (newOrder.unitPrice !== initial.unitPrice) ||
+        (newOrder.mode !== initial.mode) ||
+        (newOrder.status !== initial.status) ||
+        (newOrder.paymentMode !== initial.paymentMode) ||
+        (newOrder.date !== initial.date)
       );
+      setHasUnsavedChanges(hasChanges);
     }
   }, [show, editingOrder, newOrder]);
 
   const handleClose = () => {
-    if (hasUnsavedChanges && !editingOrder) {
-      if (showConfirmation) {
-        showConfirmation({
-          title: 'Unsaved Changes',
-          message: 'You have unsaved changes. Are you sure you want to close?',
-          type: 'warning',
-          confirmText: 'Close',
-          cancelText: 'Cancel',
-          onConfirm: () => {
-            setHasUnsavedChanges(false);
-            setFormErrors({});
-            setTouchedFields({});
-            setDuplicateWarning(null);
-            setAutoPopulatedAddress(null);
-            persistedDateRef.current = null;
-            onClose();
-          },
-        });
-      } else {
-        if (
-          window.confirm(
-            'You have unsaved changes. Are you sure you want to close?'
-          )
-        ) {
+    // Check if there are unsaved changes
+    const hasChanges = hasUnsavedChanges && !editingOrder;
+    
+    if (hasChanges && showConfirmation) {
+      // Show custom confirmation modal
+      showConfirmation({
+        title: 'Unsaved Changes',
+        message: 'You have unsaved changes. Are you sure you want to close?',
+        type: 'warning',
+        confirmText: 'Close',
+        cancelText: 'Cancel',
+        onConfirm: () => {
           setHasUnsavedChanges(false);
           setFormErrors({});
           setTouchedFields({});
           setDuplicateWarning(null);
           setAutoPopulatedAddress(null);
           persistedDateRef.current = null;
+          initialOrderRef.current = null;
           onClose();
-        }
-      }
-    } else {
-      setHasUnsavedChanges(false);
-      setFormErrors({});
-      setDuplicateWarning(null);
-      setAutoPopulatedAddress(null);
-      persistedDateRef.current = null;
-      onClose();
+        },
+      });
+      return; // Important: return here to prevent closing
     }
+    
+    // Close without confirmation if no unsaved changes
+    setHasUnsavedChanges(false);
+    setFormErrors({});
+    setTouchedFields({});
+    setDuplicateWarning(null);
+    setAutoPopulatedAddress(null);
+    persistedDateRef.current = null;
+    initialOrderRef.current = null;
+    onClose();
   };
 
   const handleSave = async () => {
@@ -558,13 +572,10 @@ const OrderModal = ({
         });
         return;
       } else {
-        if (
-          !window.confirm(
-            `⚠️ Warning: ${duplicateWarning.address} already has an order today (${duplicateWarning.mode})\nDo you want to add another order?`
-          )
-        ) {
-          return;
-        }
+        // Fallback: proceed without confirmation if showConfirmation is not available
+        // This should not happen in normal usage, but prevents blocking the save
+        await proceedWithSave(normalizedOrder);
+        return;
       }
     }
 

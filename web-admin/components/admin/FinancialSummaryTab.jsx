@@ -199,13 +199,6 @@ const FinancialSummaryTab = ({
               </div>
             </>
           )}
-          <button
-            className="btn btn-secondary"
-            onClick={handleExport}
-            title="Export Financial Summary"
-          >
-            <i className="fa-solid fa-download"></i> Export
-          </button>
         </div>
       </div>
 

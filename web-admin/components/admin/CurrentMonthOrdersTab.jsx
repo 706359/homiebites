@@ -11,6 +11,7 @@ import {
   isPendingStatus,
   sortOrdersByOrderId,
 } from './utils/orderUtils.js';
+import { usePreserveScroll } from './hooks/usePreserveScroll.js';
 
 const CurrentMonthOrdersTab = ({
   orders = [],
@@ -273,6 +274,9 @@ const CurrentMonthOrdersTab = ({
     startIndex + recordsPerPage
   );
 
+  // Preserve scroll position during auto-refresh to prevent flickering
+  usePreserveScroll(orders.length, '.orders-table-container');
+
   const handleNewOrderChange = (field, value) => {
     const updated = { ...newOrder, [field]: value };
 
@@ -512,15 +516,6 @@ const CurrentMonthOrdersTab = ({
             {Math.min(startIndex + recordsPerPage, filteredOrders.length)} of{' '}
             {filteredOrders.length} orders
           </div>
-          <div className="action-buttons-group">
-            <button
-              className="btn btn-secondary btn-small"
-              onClick={handleExport}
-              title="Export Current Month Orders"
-            >
-              <i className="fa-solid fa-download"></i> Export
-            </button>
-          </div>
         </div>
 
         {filteredOrders.length === 0 ? (
@@ -561,9 +556,12 @@ const CurrentMonthOrdersTab = ({
                       order.paymentStatus
                     );
 
+                    // Use stable key to prevent remounting and flickering
+                    const orderKey = order._id || order.orderId || `order-${idx}`;
+                    
                     return (
                       <tr
-                        key={order._id || order.orderId || idx}
+                        key={orderKey}
                         onDoubleClick={() => {
                           setEditingOrder(order);
                           setShowAddOrderModal(true);

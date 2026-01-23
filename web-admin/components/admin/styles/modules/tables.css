@@ -65,6 +65,102 @@
   max-width: 320px;
 }
 
+/* Search container in action bar (used in TodayOrderTab) */
+.action-bar .search-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  background: var(--admin-bg-secondary, #f9fafb);
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 10px;
+  padding: 10px 12px;
+  min-height: 44px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.action-bar .search-container:focus-within {
+  background: var(--admin-bg, #ffffff);
+  border-color: var(--admin-accent, #449031);
+  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
+}
+
+.action-bar .search-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-text-secondary, #64748b);
+  font-size: var(--admin-fs-base);
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+}
+
+.action-bar .search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-size: var(--admin-fs-md);
+  line-height: 1.5;
+  color: var(--admin-text-primary, #1e293b);
+  padding: 0;
+  margin: 0;
+  outline: none;
+  box-sizing: border-box;
+  height: 24px;
+  min-height: 24px;
+  vertical-align: middle;
+}
+
+.action-bar .search-input::placeholder {
+  color: var(--admin-text-secondary, #64748b);
+  opacity: 1;
+  line-height: 1.5;
+  vertical-align: middle;
+}
+
+.action-bar .search-input:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+.action-bar .search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--admin-text-secondary, #64748b);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.action-bar .search-clear:hover {
+  background: var(--admin-bg, #ffffff);
+  color: var(--admin-text-primary, #1e293b);
+}
+
+.action-bar .orders-count {
+  font-size: var(--admin-fs-base);
+  font-weight: 500;
+  color: var(--admin-text-secondary, #64748b);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .bulk-actions-inline {
   display: flex;
   align-items: center;
@@ -310,6 +406,11 @@
   position: relative;
   -webkit-overflow-scrolling: touch;
   display: block;
+  /* Prevent flickering during auto-refresh */
+  scroll-behavior: auto; /* Instant scroll restoration, no animation */
+  /* Optimize rendering performance */
+  contain: layout style paint;
+  will-change: scroll-position;
 }
 
 .orders-table {
@@ -382,13 +483,22 @@
   text-overflow: ellipsis;
   box-sizing: border-box;
   line-height: 1.5;
+  /* Smooth content updates without visual flicker */
+  transition: background-color 0.15s ease, color 0.15s ease;
+  /* Optimize for content updates */
+  contain: layout style;
 }
 
 .orders-table tbody tr {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
   border-bottom: 1px solid var(--admin-border, #e2e8f0);
   display: table-row;
   width: 100%;
+  /* Prevent flickering during updates */
+  contain: layout style;
+  /* Stable rendering during data updates */
+  backface-visibility: hidden;
+  transform: translateZ(0); /* Force GPU acceleration */
 }
 
 .orders-table tbody tr:last-child {

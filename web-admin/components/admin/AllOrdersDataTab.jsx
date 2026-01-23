@@ -10,6 +10,7 @@ import {
   sortOrdersByOrderId,
 } from './utils/orderUtils.js';
 import { useDebounce } from './utils/useDebounce.js';
+import { usePreserveScroll } from './hooks/usePreserveScroll.js';
 
 const AllOrdersDataTab = ({
   orders = [],
@@ -430,6 +431,9 @@ const AllOrdersDataTab = ({
     startIndex + recordsPerPage
   );
 
+  // Preserve scroll position during auto-refresh to prevent flickering
+  usePreserveScroll(orders.length, '.orders-table-container');
+
   // Reset to page 1 when filters reduce results and current page would be out of bounds
   useEffect(() => {
     if (totalPages >= 1 && currentPage > totalPages && onPageChange) {
@@ -692,20 +696,6 @@ const AllOrdersDataTab = ({
                   }
                 </span>
               )}
-            </button>
-            <button
-              className="btn btn-primary btn-small"
-              onClick={() => onEditOrder && onEditOrder(null)}
-              title="Add Order"
-            >
-              <i className="fa-solid fa-plus"></i> Add Order
-            </button>
-            <button
-              className="btn btn-secondary btn-small"
-              onClick={handleExport}
-              title="Export"
-            >
-              <i className="fa-solid fa-download"></i> Export
             </button>
           </div>
           <div className="table-info-text">
@@ -1177,9 +1167,12 @@ const AllOrdersDataTab = ({
                     order.paymentStatus
                   );
 
+                  // Use stable key to prevent remounting and flickering
+                  const orderKey = order._id || order.orderId || `order-${idx}`;
+                  
                   return (
                     <tr
-                      key={order._id || order.orderId || idx}
+                      key={orderKey}
                       className="table-row-clickable"
                       onDoubleClick={() => onEditOrder && onEditOrder(order)}
                     >

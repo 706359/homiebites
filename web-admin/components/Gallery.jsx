@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import api from '../lib/api';
 import './Gallery.css';
@@ -14,19 +14,93 @@ const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [expandedCategory, setExpandedCategory] = useState(null); // Only one category can be expanded at a time
   const [itemsPerRow, setItemsPerRow] = useState(4); // Default: show one row (4 items on desktop)
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
+  const touchStartRef = useRef(null);
+  const touchEndRef = useRef(null);
 
   // Fetch gallery items from backend
   useEffect(() => {
     let refreshInterval;
     let visibilityInterval;
 
-    const loadGalleryItems = async (showLoading = false) => {
+    const loadGalleryItems = async (showLoading = false, useCache = true) => {
       try {
         if (showLoading) {
           setLoading(true);
         }
+
+        // Try to load from cache first for fast initial render
+        if (useCache && typeof window !== 'undefined') {
+          try {
+            const cachedData = localStorage.getItem('homiebites_gallery_data');
+            const cacheTimestamp = localStorage.getItem('homiebites_gallery_data_timestamp');
+            
+            if (cachedData && cacheTimestamp) {
+              const cacheAge = Date.now() - parseInt(cacheTimestamp, 10);
+              const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+              
+              // Use cache if it's less than 5 minutes old
+              if (cacheAge < CACHE_DURATION) {
+                try {
+                  const parsed = JSON.parse(cachedData);
+                  if (Array.isArray(parsed) && parsed.length > 0) {
+                    // Process cached data
+                    const items = parsed
+                      .filter((item) => {
+                        return (
+                          item.isActive !== false &&
+                          item.imageUrl &&
+                          item.imageUrl.trim() !== ''
+                        );
+                      })
+                      .map((item) => {
+                        let imageUrl = item.imageUrl;
+                        if (
+                          imageUrl &&
+                          !imageUrl.startsWith('/') &&
+                          !imageUrl.startsWith('http://') &&
+                          !imageUrl.startsWith('https://')
+                        ) {
+                          imageUrl = '/' + imageUrl;
+                        }
+                        return {
+                          id: item._id || item.id,
+                          name: item.name,
+                          price: item.price,
+                          category: item.category || 'Other',
+                          imageUrl: imageUrl,
+                          details: item.details || null,
+                        };
+                      });
+
+                    if (items.length > 0) {
+                      setGalleryItems(items);
+                      if (showLoading) {
+                        setLoading(false);
+                      }
+                      // Still fetch fresh data in background if cache is older than 1 minute
+                      if (cacheAge > 60 * 1000) {
+                        loadGalleryItems(false, false); // Fetch fresh data without showing loading
+                      }
+                      return;
+                    }
+                  }
+                } catch (parseError) {
+                  // If cache parse fails, continue to API fetch
+                  if (process.env.NODE_ENV === 'development') {
+                    console.warn('[Gallery] Cache parse failed:', parseError);
+                  }
+                }
+              }
+            }
+          } catch (cacheError) {
+            // If cache read fails, continue to API fetch
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('[Gallery] Cache read failed:', cacheError);
+            }
+          }
+        }
+
+        // Fetch from API
         const response = await api.getGallery();
 
         if (process.env.NODE_ENV === 'development') {
@@ -40,6 +114,18 @@ const Gallery = () => {
         }
 
         if (response.success && response.data && Array.isArray(response.data)) {
+          // Save to cache
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('homiebites_gallery_data', JSON.stringify(response.data));
+              localStorage.setItem('homiebites_gallery_data_timestamp', String(Date.now()));
+            } catch (storageError) {
+              if (process.env.NODE_ENV === 'development') {
+                console.warn('[Gallery] Failed to save to cache:', storageError);
+              }
+            }
+          }
+
           // Map backend data to gallery format and filter only active items with images
           const items = response.data
             .filter((item) => {
@@ -122,22 +208,39 @@ const Gallery = () => {
       }
     };
 
-    // Initial load with loading state
-    loadGalleryItems(true);
+    // Initial load with loading state - will use cache if available for fast load
+    loadGalleryItems(true, true);
 
-    // Refresh gallery every 60 seconds to pick up new items automatically (reduced from 5s for better performance)
+    // Refresh gallery every 5 minutes (cache duration) to pick up new items automatically
     refreshInterval = setInterval(() => {
       // Only refresh if tab is visible to avoid unnecessary API calls
       if (!document.hidden) {
-        loadGalleryItems(false);
+        loadGalleryItems(false, false); // Always fetch fresh data on interval
       }
-    }, 60000);
+    }, 5 * 60 * 1000);
 
-    // Also listen for visibility changes - refresh when tab becomes visible
+    // Also listen for visibility changes - refresh if cache is stale
     const handleVisibilityChange = () => {
-      if (!document.hidden && process.env.NODE_ENV === 'development') {
-        console.log('[Gallery] Tab became visible, refreshing...');
-        loadGalleryItems(false);
+      if (!document.hidden) {
+        // Check if cache is stale before refreshing
+        if (typeof window !== 'undefined') {
+          try {
+            const cacheTimestamp = localStorage.getItem('homiebites_gallery_data_timestamp');
+            if (cacheTimestamp) {
+              const cacheAge = Date.now() - parseInt(cacheTimestamp, 10);
+              // Only refresh if cache is older than 2 minutes
+              if (cacheAge > 2 * 60 * 1000) {
+                loadGalleryItems(false, false);
+              }
+            } else {
+              // No cache, fetch fresh data
+              loadGalleryItems(false, false);
+            }
+          } catch (e) {
+            // If check fails, fetch fresh data
+            loadGalleryItems(false, false);
+          }
+        }
       }
     };
 
@@ -145,12 +248,21 @@ const Gallery = () => {
 
     // Listen for custom events to trigger immediate refresh (from admin panel)
     const handleGalleryUpdate = () => {
+      // Clear cache and fetch fresh data when gallery is updated
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem('homiebites_gallery_data');
+          localStorage.removeItem('homiebites_gallery_data_timestamp');
+        } catch (e) {
+          // Ignore errors
+        }
+      }
       if (process.env.NODE_ENV === 'development') {
         console.log(
           '[Gallery] Received gallery update event, refreshing immediately...'
         );
       }
-      loadGalleryItems(false);
+      loadGalleryItems(false, false);
     };
 
     window.addEventListener('gallery-updated', handleGalleryUpdate);
@@ -195,6 +307,28 @@ const Gallery = () => {
     setSelectedImage(null);
     // Restore body scroll when modal is closed
     document.body.style.overflow = '';
+  };
+
+  // Touch event handlers for swipe to close
+  const onTouchStart = (e) => {
+    touchEndRef.current = null;
+    touchStartRef.current = e.targetTouches[0].clientY;
+  };
+
+  const onTouchMove = (e) => {
+    touchEndRef.current = e.targetTouches[0].clientY;
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStartRef.current || !touchEndRef.current) return;
+    const distance = touchStartRef.current - touchEndRef.current;
+    const isSwipeDown = distance < -50; // Swipe down to close
+    if (isSwipeDown) {
+      closeModal();
+    }
+    // Reset touch positions
+    touchStartRef.current = null;
+    touchEndRef.current = null;
   };
 
   // Close modal on ESC key
