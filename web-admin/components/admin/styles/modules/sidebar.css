@@ -6,7 +6,7 @@
   position: fixed;
   left: 0;
   top: 0;
-  width: 180px;
+  width: 260px;
   height: 100vh;
   height: 100dvh;
   min-height: 100vh;
@@ -29,7 +29,7 @@
 }
 
 .admin-sidebar.collapsed {
-  width: 70px;
+  width: 80px;
   box-shadow:
     2px 0 8px rgba(0, 0, 0, 0.05),
     1px 0 3px rgba(0, 0, 0, 0.04);
@@ -185,7 +185,7 @@
   align-items: center;
   justify-content: flex-start;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 11px 14px;
   background: transparent;
   color: var(--admin-text-secondary, #64748b);
   font-size: var(--admin-fs-base-mid);
