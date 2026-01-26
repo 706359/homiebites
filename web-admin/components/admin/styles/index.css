@@ -222,7 +222,8 @@ html.admin-active .login-page-wrapper .btn {
 }
 
 /* Ensure all inputs, selects, and textareas have proper text visibility */
-.admin-dashboard input:not([type='checkbox']):not([type='radio']):not([type='file']),
+.admin-dashboard
+  input:not([type='checkbox']):not([type='radio']):not([type='file']),
 .admin-dashboard select,
 .admin-dashboard textarea {
   line-height: 1.5 !important;
@@ -231,7 +232,8 @@ html.admin-active .login-page-wrapper .btn {
 
 /* Buttons - ensure text is fully visible */
 .admin-dashboard .btn,
-.admin-dashboard button:not([type='submit']):not([type='button']):not([type='reset']) {
+.admin-dashboard
+  button:not([type='submit']):not([type='button']):not([type='reset']) {
   line-height: 1.5 !important;
   display: inline-flex !important;
   align-items: center !important;
@@ -244,7 +246,7 @@ html.admin-active .login-page-wrapper .btn {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  margin-left: 260px;
+  margin-left: 180px;
   min-height: 100vh;
   min-height: 100dvh;
   background: var(--admin-bg-secondary, #f9fafb);
@@ -253,13 +255,13 @@ html.admin-active .login-page-wrapper .btn {
     width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   overflow-x: hidden;
   position: relative;
-  width: calc(100% - 260px);
+  width: calc(100% - 180px);
   will-change: margin-left, width;
 }
 
 .admin-main.sidebar-collapsed {
-  margin-left: 80px;
-  width: calc(100% - 80px);
+  margin-left: 70px;
+  width: calc(100% - 70px);
 }
 
 /* When sidebar is auto-hidden, use full width */
@@ -294,14 +296,14 @@ html.admin-active .login-page-wrapper .btn {
   }
 
   .admin-main {
-    margin-left: 260px;
+    margin-left: 180px;
   }
 
   .admin-main.sidebar-collapsed {
     margin-left: 80px;
     width: calc(100% - 80px);
   }
-  
+
   .admin-main.sidebar-auto-hidden {
     margin-left: 0 !important;
     width: 100% !important;
@@ -359,11 +361,11 @@ html.admin-active .login-page-wrapper .btn {
 
   /* Optimize sidebar on laptop */
   .admin-sidebar {
-    width: 260px;
+    width: 180px;
   }
 
   .admin-sidebar.collapsed {
-    width: 80px;
+    width: 70px;
   }
 
   /* Ensure proper spacing */
@@ -413,7 +415,7 @@ html.admin-active .login-page-wrapper .btn {
   .admin-main.sidebar-collapsed {
     margin-left: 0 !important;
   }
-  
+
   .admin-main.sidebar-auto-hidden {
     margin-left: 0 !important;
     width: 100% !important;
@@ -494,7 +496,7 @@ html.admin-active .login-page-wrapper .btn {
   .admin-main.sidebar-collapsed {
     margin-left: 0 !important;
   }
-  
+
   .admin-main.sidebar-auto-hidden {
     margin-left: 0 !important;
     width: 100% !important;
@@ -542,7 +544,7 @@ html.admin-active .login-page-wrapper .btn {
   }
 
   /* Hide non-essential elements on mobile for cleaner UI */
-  
+
   /* Subtitles and descriptions */
   .top-nav-subtitle,
   .settings-section-subtitle,
