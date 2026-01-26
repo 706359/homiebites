@@ -5,6 +5,7 @@ import {
   isAdmin,
 } from '../../../../lib/middleware/auth.js';
 import Order from '../../../../lib/models/Order.js';
+import { parseOrderDate } from '../../../../components/admin/utils/dateUtils.js';
 
 export async function POST(request) {
   try {
@@ -71,8 +72,22 @@ export async function POST(request) {
         let value = '';
 
         if (cell.value !== null && cell.value !== undefined) {
+          // For date cells, try to get the formatted text first to preserve the exact date
           if (cell.value instanceof Date) {
-            value = cell.value;
+            // Try to get the formatted text value from Excel to preserve the original date format
+            try {
+              // ExcelJS provides text property for formatted cell values
+              const formattedValue = cell.text;
+              // If we have a formatted text value, use it to preserve the exact date as displayed
+              if (formattedValue && typeof formattedValue === 'string' && formattedValue.trim()) {
+                value = formattedValue.trim();
+              } else {
+                // Fallback to Date object - will be handled in date parsing
+                value = cell.value;
+              }
+            } catch (e) {
+              value = cell.value;
+            }
           } else if (typeof cell.value === 'object') {
             if (cell.value.text !== undefined) {
               value = cell.value.text;
@@ -199,127 +214,95 @@ export async function POST(request) {
           order.date !== null &&
           order.date !== ''
         ) {
-          let parsedDate = null;
+          let day = null;
+          let month = null;
+          let year = null;
           const originalDateValue = order.date;
 
+          // Extract date components directly from string to avoid timezone issues
           if (typeof order.date === 'number') {
+            // Excel serial date number
             const excelEpoch = new Date(Date.UTC(1899, 11, 30));
             const days = Math.floor(order.date);
-
             const adjustedDays = order.date >= 60 ? days - 1 : days;
-
-            parsedDate = new Date(
+            const tempDate = new Date(
               excelEpoch.getTime() + adjustedDays * 86400000
             );
-          } else if (
-            order.date instanceof Date &&
-            !isNaN(order.date.getTime())
-          ) {
-            const localYear = order.date.getFullYear();
-            const localMonth = order.date.getMonth();
-            const localDay = order.date.getDate();
-
-            parsedDate = new Date(
-              Date.UTC(localYear, localMonth, localDay, 0, 0, 0, 0)
-            );
+            day = tempDate.getUTCDate();
+            month = tempDate.getUTCMonth();
+            year = tempDate.getUTCFullYear();
+          } else if (order.date instanceof Date && !isNaN(order.date.getTime())) {
+            // Excel Date objects are typically stored in UTC
+            // Use UTC methods to extract the exact date components to avoid timezone shifts
+            day = order.date.getUTCDate();
+            month = order.date.getUTCMonth();
+            year = order.date.getUTCFullYear();
           } else {
+            // Parse from string - extract components directly from string format
             const dateStr = String(order.date).trim();
-
-            if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
-              parsedDate = new Date(dateStr + 'T00:00:00Z');
-            } else if (/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(dateStr)) {
-              const parts = dateStr.split('/');
-              const part1 = parseInt(parts[0]);
-              const part2 = parseInt(parts[1]);
-              let year = parseInt(parts[2]);
-
+            
+            // Try to parse "5-Feb-24" or "5-Feb-2024" format
+            if (/^\d{1,2}-[A-Za-z]{3}-\d{2,4}$/i.test(dateStr)) {
+              const parts = dateStr.split('-');
+              day = parseInt(parts[0], 10);
+              const monthStr = parts[1].toLowerCase();
+              year = parseInt(parts[2], 10);
+              
+              const monthNames = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+              month = monthNames.findIndex((m) => monthStr.startsWith(m));
+              
               if (year < 100) {
                 year = year < 50 ? 2000 + year : 1900 + year;
               }
-
-              if (part1 <= 12 && part2 <= 31) {
-                parsedDate = new Date(
-                  Date.UTC(year, part1 - 1, part2, 0, 0, 0, 0)
-                );
-              } else if (part2 <= 12 && part1 <= 31) {
-                parsedDate = new Date(
-                  Date.UTC(year, part2 - 1, part1, 0, 0, 0, 0)
-                );
-              } else {
-                parsedDate = new Date(
-                  Date.UTC(year, part1 - 1, part2, 0, 0, 0, 0)
-                );
+            }
+            // Try to parse "DD/MM/YYYY" or "MM/DD/YYYY" format
+            else if (/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(dateStr)) {
+              const parts = dateStr.split('/');
+              // Assume DD/MM/YYYY format (Indian format)
+              day = parseInt(parts[0], 10);
+              month = parseInt(parts[1], 10) - 1;
+              year = parseInt(parts[2], 10);
+              if (year < 100) {
+                year = year < 50 ? 2000 + year : 1900 + year;
               }
-            } else if (/^\d{1,2}-\d{1,2}-\d{2,4}$/.test(dateStr)) {
+            }
+            // Try to parse "YYYY-MM-DD" format
+            else if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
               const parts = dateStr.split('-');
-              let year = parseInt(parts[2]);
-              const yearFull =
-                year < 100 ? (year < 50 ? 2000 + year : 1900 + year) : year;
-
-              parsedDate = new Date(
-                Date.UTC(
-                  yearFull,
-                  parseInt(parts[1]) - 1,
-                  parseInt(parts[0]),
-                  0,
-                  0,
-                  0,
-                  0
-                )
-              );
-            } else if (/^\d{1,2}-[A-Za-z]{3}-\d{2,4}$/i.test(dateStr)) {
-              const parts = dateStr.split('-');
-              const day = parseInt(parts[0], 10);
-              const monthStr = parts[1].toLowerCase();
-              let year = parseInt(parts[2], 10);
-              const monthNames = [
-                'jan',
-                'feb',
-                'mar',
-                'apr',
-                'may',
-                'jun',
-                'jul',
-                'aug',
-                'sep',
-                'oct',
-                'nov',
-                'dec',
-              ];
-              const monthIndex = monthNames.findIndex((m) =>
-                monthStr.startsWith(m)
-              );
-              if (monthIndex !== -1 && day > 0 && day <= 31) {
-                if (year < 100) {
-                  year = year < 50 ? 2000 + year : 1900 + year;
-                }
-                parsedDate = new Date(
-                  Date.UTC(year, monthIndex, day, 0, 0, 0, 0)
-                );
+              year = parseInt(parts[0], 10);
+              month = parseInt(parts[1], 10) - 1;
+              day = parseInt(parts[2], 10);
+            }
+            // Fallback: use parseOrderDate and extract components
+            else {
+              const parsedDate = parseOrderDate(order.date);
+              if (parsedDate && !isNaN(parsedDate.getTime())) {
+                day = parsedDate.getDate();
+                month = parsedDate.getMonth();
+                year = parsedDate.getFullYear();
               }
-            } else {
-              parsedDate = new Date(dateStr);
             }
           }
 
-          if (parsedDate && !isNaN(parsedDate.getTime())) {
+          // Create date using extracted components in Indian timezone context
+          if (day !== null && month !== null && year !== null && day > 0 && day <= 31 && month >= 0 && month <= 11) {
             const minDate = new Date(2000, 0, 1);
             const maxDate = new Date(2100, 11, 31);
+            const finalDate = new Date(year, month, day, 0, 0, 0, 0);
 
-            if (parsedDate >= minDate && parsedDate <= maxDate) {
-              const utcYear = parsedDate.getUTCFullYear();
-              const utcMonth = parsedDate.getUTCMonth();
-              const utcDay = parsedDate.getUTCDate();
-
-              order.date = new Date(
-                Date.UTC(utcYear, utcMonth, utcDay, 0, 0, 0, 0)
-              );
-
-              order._billingMonth = utcMonth + 1;
-              order._billingYear = utcYear;
+            if (finalDate >= minDate && finalDate <= maxDate) {
+              // Store the date with exact components (no timezone conversion)
+              order.date = finalDate;
+              order._billingMonth = month + 1;
+              order._billingYear = year;
+              
+              // Debug logging to verify date parsing
+              if (process.env.NODE_ENV === 'development') {
+                console.log(`[uploadExcel] Parsed date: original="${originalDateValue}", extracted=${year}-${month + 1}-${day}, finalDate=${finalDate.toISOString()}`);
+              }
             } else {
               console.error(
-                `[uploadExcel] ❌ Date out of range: ${parsedDate.toISOString()}, original: ${originalDateValue}`
+                `[uploadExcel] ❌ Date out of range: ${year}-${month + 1}-${day}, original: ${originalDateValue}`
               );
               order.date = undefined;
             }
@@ -327,7 +310,6 @@ export async function POST(request) {
             console.error(
               `[uploadExcel] ❌ Failed to parse date: "${originalDateValue}"`
             );
-
             order.date = undefined;
           }
         } else {
@@ -345,7 +327,11 @@ export async function POST(request) {
         if (typeof order.unitPrice !== 'number' || isNaN(order.unitPrice)) {
           order.unitPrice = 0;
         }
-        order.totalAmount = (order.unitPrice || 0) * (order.quantity || 1);
+        // Only calculate totalAmount if it's not already set from Excel file
+        // This preserves the total amount from the Excel file (even if it's 0)
+        if (order.totalAmount === undefined || order.totalAmount === null || isNaN(order.totalAmount)) {
+          order.totalAmount = (order.unitPrice || 0) * (order.quantity || 1);
+        }
         ordersToImport.push(order);
       } catch (rowErr) {
         console.error('[uploadExcel] Row error:', rowErr);
@@ -367,30 +353,20 @@ export async function POST(request) {
       try {
         const od = ordersToImport[i];
 
-        let orderDate;
-        if (od.date) {
-          if (od.date instanceof Date) {
-            orderDate = od.date;
-          } else if (typeof od.date === 'string') {
-            orderDate = new Date(od.date + 'T00:00:00Z');
-          } else {
-            orderDate = new Date(od.date);
-          }
-
-          if (isNaN(orderDate.getTime())) {
-            validationErrors.push({
-              index: i + 2,
-              error: 'Invalid date format',
-            });
-            continue;
-          }
-        } else {
-          validationErrors.push({ index: i + 2, error: 'Date is required' });
+        // The date should already be parsed correctly in the previous step
+        // Use the date directly from od.date which was set with correct components
+        if (!od.date || !(od.date instanceof Date) || isNaN(od.date.getTime())) {
+          validationErrors.push({
+            index: i + 2,
+            error: 'Invalid date format',
+          });
           continue;
         }
 
-        const billingMonth = od._billingMonth || orderDate.getUTCMonth() + 1;
-        const billingYear = od._billingYear || orderDate.getUTCFullYear();
+        // Use the billing month/year that were set during parsing, or extract from the date
+        // Extract using local date methods since the date was created with local components
+        const billingMonth = od._billingMonth || (od.date.getMonth() + 1);
+        const billingYear = od._billingYear || od.date.getFullYear();
 
         if (!od.deliveryAddress || !od.deliveryAddress.trim()) {
           validationErrors.push({
@@ -408,11 +384,28 @@ export async function POST(request) {
               ? 'Unpaid'
               : 'Pending';
 
-        const calculatedTotalAmount =
-          (Number(od.quantity) || 1) *
-          (typeof od.unitPrice === 'number' && !isNaN(od.unitPrice)
-            ? od.unitPrice
-            : 0);
+        // Use stored totalAmount/total if present, otherwise calculate from quantity * unitPrice
+        let finalTotalAmount = null;
+        if (od.totalAmount !== undefined && od.totalAmount !== null) {
+          const parsed = parseFloat(String(od.totalAmount));
+          if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) {
+            finalTotalAmount = parsed;
+          }
+        }
+        if (finalTotalAmount === null && od.total !== undefined && od.total !== null) {
+          const parsed = parseFloat(String(od.total));
+          if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) {
+            finalTotalAmount = parsed;
+          }
+        }
+        // Only calculate if totalAmount/total is not present
+        if (finalTotalAmount === null) {
+          finalTotalAmount =
+            (Number(od.quantity) || 1) *
+            (typeof od.unitPrice === 'number' && !isNaN(od.unitPrice)
+              ? od.unitPrice
+              : 0);
+        }
 
         const finalBillingMonth = od._billingMonth || billingMonth;
         const finalBillingYear = od._billingYear || billingYear;
@@ -421,7 +414,7 @@ export async function POST(request) {
           ...(od.orderId && od.orderId.trim()
             ? { orderId: String(od.orderId).trim() }
             : {}),
-          date: od.date,
+          date: od.date, // Date already set with correct components
           billingMonth: finalBillingMonth,
           billingYear: finalBillingYear,
           deliveryAddress: String(od.deliveryAddress).trim(),
@@ -430,7 +423,7 @@ export async function POST(request) {
             typeof od.unitPrice === 'number' && !isNaN(od.unitPrice)
               ? od.unitPrice
               : 0,
-          totalAmount: calculatedTotalAmount,
+          totalAmount: finalTotalAmount,
           status: od.status || 'DELIVERED',
           paymentStatus: paymentStatus,
           paymentMode: od.paymentMode || od.payment_mode || 'Online',

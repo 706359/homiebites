@@ -193,11 +193,18 @@ const AdminDashboard = () => {
       .filter(Boolean).length;
 
     // 2. Count website orders from last 7 days (matching NotificationDropdown logic)
+    // Exclude Excel uploads - only count actual website/API orders
     const websiteOrdersCount = list.filter((order) => {
-      // Check if order is from website
+      // Exclude Excel uploads explicitly
+      if (order.source === 'excel') {
+        return false;
+      }
+      
+      // Check if order is from website or API
+      // Only use paymentMode as fallback if source is not set (legacy orders)
       const isWebsiteOrder = order.source === 'website' || 
                             order.source === 'api' ||
-                            (order.paymentMode && order.paymentMode.toLowerCase() === 'online');
+                            (!order.source && order.paymentMode && order.paymentMode.toLowerCase() === 'online');
       
       if (!isWebsiteOrder) return false;
       
@@ -1558,11 +1565,11 @@ const AdminDashboard = () => {
     const tabInfoMap = {
       dashboard: {
         title: 'Dashboard',
-        subtitle: 'Overview of your business metrics',
+        subtitle: 'Overview of your business metrics and performance',
       },
       allOrdersData: {
-        title: 'All Orders Data',
-        subtitle: 'View and manage all orders',
+        title: 'All Orders',
+        subtitle: 'View and manage all orders across all time periods',
       },
       currentMonthOrders: {
         title: 'Current Month Orders',
@@ -1574,19 +1581,19 @@ const AdminDashboard = () => {
       },
       customers: {
         title: 'Customers',
-        subtitle: 'Manage and analyze customer data',
+        subtitle: 'Manage and analyze customer data and addresses',
       },
       reports: {
         title: 'Reports',
-        subtitle: 'Generate and manage business reports',
+        subtitle: 'Generate and export business reports',
       },
       pendingAmounts: {
-        title: 'Payment Management',
-        subtitle: 'Track and manage payment collections',
+        title: 'Pending Amounts',
+        subtitle: 'Track and manage pending payment collections',
       },
       settings: {
         title: 'Settings',
-        subtitle: 'Configure your application settings',
+        subtitle: 'Configure your application settings and preferences',
       },
       todayOrder: {
         title: 'Today Order',
@@ -1595,6 +1602,18 @@ const AdminDashboard = () => {
       menuPrice: {
         title: 'Menu & Price',
         subtitle: 'Manage your menu items, categories, and pricing',
+      },
+      reviews: {
+        title: 'Reviews & Feedback',
+        subtitle: 'View and manage customer reviews and feedback',
+      },
+      offers: {
+        title: 'Special Offers',
+        subtitle: 'Create and manage special offers and promotions',
+      },
+      financialSummary: {
+        title: 'Financial Summary',
+        subtitle: 'View comprehensive financial reports and summaries',
       },
     };
 

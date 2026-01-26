@@ -136,15 +136,22 @@ const NotificationDropdown = ({
   });
 
   // 2. Website orders (recent ones, last 7 days)
+  // Exclude Excel uploads - only show actual website/API orders
   const sevenDaysAgo = new Date(now);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   
   const websiteOrders = ordersArray
     .filter((order) => {
-      // Check if order is from website
+      // Exclude Excel uploads explicitly
+      if (order.source === 'excel') {
+        return false;
+      }
+      
+      // Check if order is from website or API
+      // Only use paymentMode as fallback if source is not set (legacy orders)
       const isWebsiteOrder = order.source === 'website' || 
                             order.source === 'api' ||
-                            (order.paymentMode && order.paymentMode.toLowerCase() === 'online');
+                            (!order.source && order.paymentMode && order.paymentMode.toLowerCase() === 'online');
       
       if (!isWebsiteOrder) return false;
       

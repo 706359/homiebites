@@ -170,7 +170,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   const cancelRate =
     orders.length > 0 ? (cancelledOrders.length / orders.length) * 100 : 0;
 
-  // Get all unique years from orders
+  // Get all unique years from orders, and always include current year
   const yearsInData = new Set();
   orders.forEach((o) => {
     try {
@@ -180,6 +180,12 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
       }
     } catch (e) {}
   });
+  // Always include current year even if no data exists yet
+  yearsInData.add(currentYear);
+  // Also include last year for comparison
+  if (yearsInData.size > 0) {
+    yearsInData.add(lastYear);
+  }
   const sortedYears = Array.from(yearsInData).sort((a, b) => a - b);
 
   // Calculate revenue for all 12 months with year-over-year comparison
@@ -222,6 +228,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
         }
       });
 
+      // Always include year entry, even if no orders (for consistent chart display)
       monthData.years[year] = {
         revenue: getTotalRevenue(monthOrders),
         orders: monthOrders.length,
@@ -313,6 +320,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
           return sum + (isNaN(amount) ? 0 : amount);
         }, 0);
 
+      // Always include year entry, even if no orders (for consistent chart display)
       monthData.years[year] = {
         cash: cashAmount,
         online: onlineAmount,
@@ -657,9 +665,11 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                       );
 
                       return monthlyRevenueData.map((monthData, idx) => {
-                        const yearEntries = Object.entries(
-                          monthData.years
-                        ).sort(([a], [b]) => a - b);
+                        // Ensure all years from sortedYears are included, even if no data
+                        const yearEntries = sortedYears.map(year => {
+                          const data = monthData.years[year] || { revenue: 0, orders: 0 };
+                          return [year.toString(), data];
+                        }).sort(([a], [b]) => parseInt(a) - parseInt(b));
 
                         return (
                           <div
@@ -781,9 +791,11 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                       );
 
                       return monthlyPaymentModeData.map((monthData, idx) => {
-                        const yearEntries = Object.entries(
-                          monthData.years
-                        ).sort(([a], [b]) => a - b);
+                        // Ensure all years from sortedYears are included, even if no data
+                        const yearEntries = sortedYears.map(year => {
+                          const data = monthData.years[year] || { cash: 0, online: 0 };
+                          return [year.toString(), data];
+                        }).sort(([a], [b]) => parseInt(a) - parseInt(b));
 
                         return (
                           <div

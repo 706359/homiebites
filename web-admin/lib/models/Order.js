@@ -43,8 +43,11 @@ OrderSchema.pre('save', function (next) {
       if (this.date instanceof Date) {
         d = this.date;
       } else if (typeof this.date === 'string') {
+        // Parse date string without forcing UTC to preserve date components
         if (/^\d{4}-\d{2}-\d{2}$/.test(this.date)) {
-          d = new Date(this.date + 'T00:00:00Z');
+          // Extract components directly from string to avoid timezone issues
+          const [y, m, day] = this.date.split('-').map(Number);
+          d = new Date(y, m - 1, day, 0, 0, 0, 0);
         } else {
           d = new Date(this.date);
         }
@@ -53,13 +56,20 @@ OrderSchema.pre('save', function (next) {
       }
 
       if (!isNaN(d.getTime())) {
-        this.billingMonth = d.getUTCMonth() + 1;
-        this.billingYear = d.getUTCFullYear();
+        // Use local date components (not UTC) to preserve the exact date
+        this.billingMonth = d.getMonth() + 1;
+        this.billingYear = d.getFullYear();
       }
     }
   }
 
-  if (this.unitPrice !== undefined && this.quantity !== undefined) {
+  // Only calculate totalAmount if it's not already explicitly set
+  // This allows manual overrides (e.g., when totalAmount should be different from quantity * unitPrice)
+  if (
+    (this.totalAmount === undefined || this.totalAmount === null) &&
+    this.unitPrice !== undefined &&
+    this.quantity !== undefined
+  ) {
     this.totalAmount = Number(this.unitPrice) * (Number(this.quantity) || 1);
   }
 

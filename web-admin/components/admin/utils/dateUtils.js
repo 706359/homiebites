@@ -9,8 +9,12 @@ export const parseOrderDate = (dateValue) => {
     const dateStr = String(dateValue).trim();
 
     if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
-      const isoStr = dateStr.includes('T') ? dateStr : dateStr + 'T00:00:00Z';
-      const date = new Date(isoStr);
+      // Extract components directly to avoid timezone issues
+      const parts = dateStr.split(/[T\s]/)[0].split('-');
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      const date = new Date(year, month, day, 0, 0, 0, 0);
       return isNaN(date.getTime()) ? null : date;
     }
 
@@ -91,19 +95,20 @@ export const formatDate = (dateValue, options = {}) => {
   const date = parseOrderDate(dateValue);
   if (!date) return 'N/A';
 
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const year = date.getUTCFullYear();
+  // Use local date components (not UTC) to preserve the exact date
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
 
   if (Object.keys(options).length > 0) {
     const defaultOptions = {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
-      timeZone: 'UTC',
+      timeZone: 'Asia/Kolkata', // Indian Standard Time
       ...options,
     };
-    return date.toLocaleDateString('en-US', defaultOptions);
+    return date.toLocaleDateString('en-IN', defaultOptions);
   }
 
   return `${day}/${month}/${year}`;

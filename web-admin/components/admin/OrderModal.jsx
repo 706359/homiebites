@@ -646,11 +646,38 @@ const OrderModal = ({
           cleanOrderData.billingYear = normalizedOrder.billingYear;
         }
 
-        const calculatedTotal = calculateTotalAmount(
-          normalizedOrder.quantity || 1,
-          normalizedOrder.unitPrice || 0
-        );
-        cleanOrderData.totalAmount = calculatedTotal;
+        // Use stored totalAmount/total if present, otherwise calculate from quantity * unitPrice
+        // This allows manual overrides (e.g., when totalAmount should be different from calculated value)
+        let finalTotalAmount = null;
+        
+        // Check totalAmount first
+        if (
+          normalizedOrder.totalAmount !== undefined &&
+          normalizedOrder.totalAmount !== null
+        ) {
+          const parsed = parseFloat(String(normalizedOrder.totalAmount));
+          if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) {
+            finalTotalAmount = parsed;
+          }
+        }
+        
+        // Fallback to total field if totalAmount is not available
+        if (finalTotalAmount === null && normalizedOrder.total !== undefined && normalizedOrder.total !== null) {
+          const parsed = parseFloat(String(normalizedOrder.total));
+          if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) {
+            finalTotalAmount = parsed;
+          }
+        }
+        
+        // Only calculate if totalAmount/total is not present
+        if (finalTotalAmount === null) {
+          finalTotalAmount = calculateTotalAmount(
+            normalizedOrder.quantity || 1,
+            normalizedOrder.unitPrice || 0
+          );
+        }
+        
+        cleanOrderData.totalAmount = finalTotalAmount;
 
         await onSave(editingOrder.orderId || editingOrder._id, cleanOrderData);
 
@@ -1702,14 +1729,27 @@ const OrderModal = ({
           <span className="order-form-total-value">
             ₹
             {formatCurrency(
-              calculateTotalAmount(
-                editingOrder
-                  ? editingOrder.quantity || 1
-                  : newOrder.quantity || 1,
-                editingOrder
-                  ? editingOrder.unitPrice || 0
-                  : newOrder.unitPrice || 0
-              )
+              (() => {
+                const order = editingOrder || newOrder;
+                // Use stored totalAmount/total if present, otherwise calculate
+                if (order.totalAmount !== undefined && order.totalAmount !== null) {
+                  const parsed = parseFloat(String(order.totalAmount));
+                  if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) {
+                    return parsed;
+                  }
+                }
+                if (order.total !== undefined && order.total !== null) {
+                  const parsed = parseFloat(String(order.total));
+                  if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) {
+                    return parsed;
+                  }
+                }
+                // Fallback to calculation
+                return calculateTotalAmount(
+                  order.quantity || 1,
+                  order.unitPrice || 0
+                );
+              })()
             )}
           </span>
         </div>

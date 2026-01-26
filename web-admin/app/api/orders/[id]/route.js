@@ -124,48 +124,44 @@ export async function PUT(request, { params }) {
       }
     }
 
-    if (update.quantity !== undefined || update.unitPrice !== undefined) {
-      const quantity =
-        Number(
-          update.quantity !== undefined
-            ? update.quantity
-            : existingOrder.quantity
-        ) || 1;
-      const unitPrice =
-        Number(
-          update.unitPrice !== undefined
-            ? update.unitPrice
-            : existingOrder.unitPrice
-        ) || 0;
-      update.totalAmount = quantity * unitPrice;
+    // Only calculate totalAmount if it's not explicitly provided in the update
+    // This allows manual overrides (e.g., when totalAmount should be different from calculated value)
+    if (update.totalAmount === undefined || update.totalAmount === null) {
+      // Only calculate if totalAmount is not provided
+      if (update.quantity !== undefined || update.unitPrice !== undefined) {
+        const quantity =
+          Number(
+            update.quantity !== undefined
+              ? update.quantity
+              : existingOrder.quantity
+          ) || 1;
+        const unitPrice =
+          Number(
+            update.unitPrice !== undefined
+              ? update.unitPrice
+              : existingOrder.unitPrice
+          ) || 0;
+        update.totalAmount = quantity * unitPrice;
+      } else if (existingOrder.quantity !== undefined && existingOrder.unitPrice !== undefined) {
+        // Fallback: calculate from existing values if totalAmount is missing
+        const quantity = Number(existingOrder.quantity) || 1;
+        const unitPrice = Number(existingOrder.unitPrice) || 0;
+        update.totalAmount = quantity * unitPrice;
+      }
+    } else {
+      // totalAmount is explicitly provided - use it as-is (preserve manual overrides)
+      update.totalAmount = Number(update.totalAmount) || 0;
+    }
 
+    // Set priceOverride flag if unitPrice is being updated
+    if (update.unitPrice !== undefined) {
       try {
         const settings = await Settings.getSettings();
         const defaultUnitPrice = settings.defaultUnitPrice || 0;
-        update.priceOverride = unitPrice !== defaultUnitPrice;
+        update.priceOverride = Number(update.unitPrice) !== defaultUnitPrice;
       } catch (e) {
         update.priceOverride = false;
       }
-    }
-
-    if (
-      update.quantity !== undefined ||
-      update.unitPrice !== undefined ||
-      update.totalAmount === undefined
-    ) {
-      const finalQuantity =
-        Number(
-          update.quantity !== undefined
-            ? update.quantity
-            : existingOrder.quantity
-        ) || 1;
-      const finalUnitPrice =
-        Number(
-          update.unitPrice !== undefined
-            ? update.unitPrice
-            : existingOrder.unitPrice
-        ) || 0;
-      update.totalAmount = finalQuantity * finalUnitPrice;
     }
 
     let updatedOrder;
