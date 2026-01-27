@@ -1,7 +1,7 @@
 import { parseFontSize, applyAdminFontSize } from './fontSize.js';
 
 export const syncSidebarFontSize = () => {
-  const key = localStorage.getItem('homiebites_font_size') || '16';
+  const key = localStorage.getItem('homiebites_font_size') || '18';
   const v = parseFontSize(key);
   applyAdminFontSize(v ?? 16);
 };

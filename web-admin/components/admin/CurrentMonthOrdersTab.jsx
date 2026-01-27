@@ -6,6 +6,7 @@ import { getFilteredOrdersByDate } from './utils/calculations.js';
 import { formatDate, parseOrderDate } from './utils/dateUtils.js';
 import {
   formatCurrency,
+  getOrderAmount,
   getTotalRevenue,
   isPaidStatus,
   isPendingStatus,
@@ -383,56 +384,56 @@ const CurrentMonthOrdersTab = ({
 
   return (
     <div className="admin-content">
-      <div className="admin-stats">
-        <div className="stat-card">
-          <i className="fa-solid fa-coins"></i>
-          <div>
-            <h3>₹{formatCurrency(currentMonthStats.revenue)}</h3>
-            <p>This Month Revenue</p>
+      <div className="kitchen-tab">
+        <div className="kitchen-tab-stats">
+          <div className="stat-card">
+            <i className="fa-solid fa-coins"></i>
+            <div>
+              <h3>₹{formatCurrency(currentMonthStats.revenue)}</h3>
+              <p>This Month Revenue</p>
+            </div>
+          </div>
+          <div className="stat-card">
+            <i className="fa-solid fa-shopping-cart"></i>
+            <div>
+              <h3>{currentMonthStats.total}</h3>
+              <p>Total Orders</p>
+            </div>
+          </div>
+          <div className="stat-card">
+            <i className="fa-solid fa-exclamation-triangle icon-color-warning"></i>
+            <div>
+              <h3>₹{formatCurrency(currentMonthStats.pendingAmount)}</h3>
+              <p>Pending Payments</p>
+              <p className="stat-card-subtitle">
+                {currentMonthStats.pendingCount} orders
+              </p>
+            </div>
+          </div>
+          <div className="stat-card">
+            <i className="fa-solid fa-chart-line icon-color-success"></i>
+            <div>
+              <h3>
+                {currentMonthStats.growth === Infinity
+                  ? 'New'
+                  : `${currentMonthStats.growth >= 0 ? '+' : ''}${currentMonthStats.growth.toFixed(
+                      1
+                    )}%`}
+              </h3>
+              <p>
+                vs Last Month{' '}
+                {currentMonthStats.growth !== Infinity && (
+                  <span className="stat-card-arrow">
+                    {currentMonthStats.growth >= 0 ? '↑' : '↓'}
+                  </span>
+                )}
+              </p>
+            </div>
           </div>
         </div>
-        <div className="stat-card">
-          <i className="fa-solid fa-shopping-cart"></i>
-          <div>
-            <h3>{currentMonthStats.total}</h3>
-            <p>Total Orders</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <i className="fa-solid fa-exclamation-triangle icon-color-warning"></i>
-          <div>
-            <h3>₹{formatCurrency(currentMonthStats.pendingAmount)}</h3>
-            <p>Pending Payments</p>
-            <p className="stat-card-subtitle">
-              {currentMonthStats.pendingCount} orders
-            </p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <i className="fa-solid fa-chart-line icon-color-success"></i>
-          <div>
-            <h3>
-              {currentMonthStats.growth === Infinity
-                ? 'New'
-                : `${currentMonthStats.growth >= 0 ? '+' : ''}${currentMonthStats.growth.toFixed(
-                    1
-                  )}%`}
-            </h3>
-            <p>
-              vs Last Month{' '}
-              {currentMonthStats.growth !== Infinity && (
-                <span className="stat-card-arrow">
-                  {currentMonthStats.growth >= 0 ? '↑' : '↓'}
-                </span>
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
 
-      <div className="dashboard-card dashboard-card-spaced">
-        <div className="filter-bar-flex">
-          <div className="flex flex-wrap gap-8">
+        <div className="kitchen-tab-actions">
+          <div className="kitchen-tab-actions-left flex flex-wrap gap-8">
             <button
               className={`btn ${quickFilter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-small`}
               onClick={() => {
@@ -473,7 +474,6 @@ const CurrentMonthOrdersTab = ({
               This Week ({quickFilterCounts.thisWeek})
             </button>
           </div>
-
           <div className="flex flex-wrap gap-8">
             <button
               className={`btn ${quickFilter === 'pending' ? 'btn-primary' : 'btn-ghost'} btn-small`}
@@ -496,20 +496,29 @@ const CurrentMonthOrdersTab = ({
               Paid ({quickFilterCounts.paid})
             </button>
           </div>
-
-          <div>
+          <div className="kitchen-tab-actions-right" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <input
               type="text"
               className="input-field search-input-with-icon"
               placeholder="Search by address, order ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ minWidth: 200, maxWidth: 280 }}
             />
+            <button
+              type="button"
+              className="btn btn-ghost btn-small"
+              onClick={handleExport}
+              title="Export to CSV"
+            >
+              <i className="fa-solid fa-download mr-6"></i>
+              Export
+            </button>
           </div>
         </div>
-      </div>
 
-      <div className="dashboard-card">
+        <div className="kitchen-tab-card">
+        <div className="kitchen-tab-body-inner" style={{ paddingBottom: 0 }}>
         <div className="flex justify-between items-center mb-16">
           <div className="text-secondary text-base">
             Showing {startIndex + 1}-
@@ -580,9 +589,7 @@ const CurrentMonthOrdersTab = ({
                         <td>₹{formatCurrency(order.unitPrice || 0)}</td>
                         <td>
                           ₹
-                          {formatCurrency(
-                            order.total || order.totalAmount || 0
-                          )}
+                          {formatCurrency(getOrderAmount(order))}
                         </td>
                         <td>{order.mode || 'N/A'}</td>
                         <td>
@@ -683,6 +690,7 @@ const CurrentMonthOrdersTab = ({
             </div>
           </>
         )}
+        </div>
       </div>
 
       {showAddOrderModal && (
@@ -731,6 +739,7 @@ const CurrentMonthOrdersTab = ({
           setShowAddressSuggestions={setShowAddressSuggestions}
         />
       )}
+      </div>
     </div>
   );
 };

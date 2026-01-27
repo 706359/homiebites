@@ -8,6 +8,7 @@ import {
   clearAdminFontSize,
   parseFontSize,
   applyAdminFontSize,
+  ADMIN_FONT_SIZE_DEFAULT,
 } from '../../components/admin/utils/fontSize.js';
 
 export default function AdminLayout({ children }) {
@@ -27,7 +28,7 @@ export default function AdminLayout({ children }) {
           ? localStorage.getItem('homiebites_font_size')
           : null
       );
-      applyAdminFontSize(v ?? 16);
+      applyAdminFontSize(v ?? ADMIN_FONT_SIZE_DEFAULT);
     }
   }, [pathname]);
 

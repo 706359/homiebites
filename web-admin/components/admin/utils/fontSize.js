@@ -1,48 +1,73 @@
 /**
- * Admin dashboard font size: 12px–20px in 0.25px steps.
- * Only affects admin. Uses --admin-base-font-size + .admin-active on html
- * so rem-based --admin-fs-* scale finely without touching globals.
+ * Admin dashboard font size: three presets only (enterprise-style).
+ * Small 17px | Normal 18px | Large 19px.
+ * Uses --admin-base-font-size + .admin-active on html so rem-based
+ * --admin-fs-* scale correctly across the entire dashboard.
  */
-export const ADMIN_FONT_SIZE_MIN = 12;
-export const ADMIN_FONT_SIZE_MAX = 20;
-export const ADMIN_FONT_SIZE_STEP = 0.25;
-export const ADMIN_FONT_SIZE_DEFAULT = 16;
+export const ADMIN_FONT_SIZE_SMALL = 17;
+export const ADMIN_FONT_SIZE_NORMAL = 18;
+export const ADMIN_FONT_SIZE_LARGE = 19;
 
-const LEGACY_MAP = { small: 14, medium: 16, large: 18, 'extra-large': 20 };
+export const ADMIN_FONT_SIZE_MIN = ADMIN_FONT_SIZE_SMALL;
+export const ADMIN_FONT_SIZE_MAX = ADMIN_FONT_SIZE_LARGE;
+export const ADMIN_FONT_SIZE_DEFAULT = ADMIN_FONT_SIZE_NORMAL;
+
+/** Preset options for Settings UI: value (px) and label */
+export const ADMIN_FONT_SIZE_OPTIONS = [
+  { value: ADMIN_FONT_SIZE_SMALL, label: 'Small', px: 17 },
+  { value: ADMIN_FONT_SIZE_NORMAL, label: 'Normal', px: 18 },
+  { value: ADMIN_FONT_SIZE_LARGE, label: 'Large', px: 19 },
+];
+
+/** Legacy keys (e.g. from old settings) map to preset px */
+const LEGACY_MAP = {
+  small: ADMIN_FONT_SIZE_SMALL,
+  normal: ADMIN_FONT_SIZE_NORMAL,
+  large: ADMIN_FONT_SIZE_LARGE,
+  medium: ADMIN_FONT_SIZE_NORMAL,
+  'extra-large': ADMIN_FONT_SIZE_LARGE,
+};
 
 /**
- * Snap to nearest step and clamp. Avoids float noise in storage and DOM.
+ * Snap to nearest preset (17, 18, or 19).
  * @param {number} v
- * @param {number} [step] - default ADMIN_FONT_SIZE_STEP
  * @returns {number}
  */
-export function roundToStep(v, step = ADMIN_FONT_SIZE_STEP) {
+export function roundToStep(v) {
   const n = Number(v);
   if (Number.isNaN(n)) return ADMIN_FONT_SIZE_DEFAULT;
-  const ticks = Math.round(n / step) * step;
-  return Math.max(
-    ADMIN_FONT_SIZE_MIN,
-    Math.min(ADMIN_FONT_SIZE_MAX, Math.round(ticks * 100) / 100)
-  );
+  const opts = [ADMIN_FONT_SIZE_SMALL, ADMIN_FONT_SIZE_NORMAL, ADMIN_FONT_SIZE_LARGE];
+  let best = ADMIN_FONT_SIZE_DEFAULT;
+  let bestDist = Infinity;
+  for (const px of opts) {
+    const d = Math.abs(n - px);
+    if (d < bestDist) {
+      bestDist = d;
+      best = px;
+    }
+  }
+  return best;
 }
 
 /**
  * @param {string|number} v - From settings, localStorage, or event
- * @returns {number|null} 12–20 or null
+ * @returns {number|null} 17, 18, or 19, or null
  */
 export function parseFontSize(v) {
   if (v == null) return null;
-  const n = parseFloat(String(v).trim());
+  const s = String(v).trim().toLowerCase();
+  const legacy = LEGACY_MAP[s];
+  if (legacy != null) return legacy;
+  const n = parseFloat(s);
   if (!Number.isNaN(n) && n >= ADMIN_FONT_SIZE_MIN && n <= ADMIN_FONT_SIZE_MAX)
-    return n;
-  const legacy = LEGACY_MAP[String(v).toLowerCase()];
-  return legacy ?? null;
+    return roundToStep(n);
+  return null;
 }
 
 /**
  * Apply font size to admin: sets --admin-base-font-size on :root and
  * adds .admin-active to html. index.css uses that for font-size.
- * @param {number|string} value - 12–20; will be rounded to step
+ * @param {number|string} value - 17, 18, or 19 (or legacy key); snap to preset
  */
 export function applyAdminFontSize(value) {
   if (typeof document === 'undefined') return;
@@ -54,26 +79,21 @@ export function applyAdminFontSize(value) {
 }
 
 /**
- * Remove admin font-size so the rest of the site uses html default.
- * Call when leaving /admin (e.g. layout unmount).
+ * Remove admin font-size when leaving /admin.
  */
 export function clearAdminFontSize() {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
   root.classList.remove('admin-active');
   root.style.removeProperty('--admin-base-font-size');
-  root.style.fontSize = ''; /* in case any older code set it */
+  root.style.fontSize = '';
 }
 
 /**
- * Format for display: "16" or "14.25" (minimal decimals).
- * @param {number} v
- * @returns {string}
+ * Format for display: "17", "18", "19".
  */
 export function formatFontSizeDisplay(v) {
   const n = Number(v);
   if (Number.isNaN(n)) return String(ADMIN_FONT_SIZE_DEFAULT);
-  return n % 1 === 0
-    ? String(Math.round(n))
-    : String(Math.round(n * 100) / 100);
+  return String(roundToStep(n));
 }

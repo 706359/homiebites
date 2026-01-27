@@ -5,6 +5,7 @@ import { formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
 import {
   extractOrderIdSequence,
   formatCurrency,
+  getOrderAmount,
   getOverdueOrders,
   getTotalRevenue,
   isPaidStatus,
@@ -484,48 +485,49 @@ const PendingAmountsTab = ({
 
   return (
     <div className="admin-content">
-      <div className="admin-stats">
-        <div className="stat-card">
-          <i className="fa-solid fa-check-circle icon-success"></i>
-          <div>
-            <h3>₹{formatCurrency(summaryStats.totalPaid)}</h3>
-            <p>Total Paid</p>
-            <p className="stat-card-subtitle">
-              {summaryStats.totalPaidCount} orders
-            </p>
+      <div className="kitchen-tab">
+        <div className="kitchen-tab-stats">
+          <div className="stat-card">
+            <i className="fa-solid fa-check-circle icon-success"></i>
+            <div>
+              <h3>₹{formatCurrency(summaryStats.totalPaid)}</h3>
+              <p>Total Paid</p>
+              <p className="stat-card-subtitle">
+                {summaryStats.totalPaidCount} orders
+              </p>
+            </div>
+          </div>
+          <div className="stat-card">
+            <i className="fa-solid fa-exclamation-triangle pending-warning-text"></i>
+            <div>
+              <h3>₹{formatCurrency(summaryStats.pending)}</h3>
+              <p>Pending</p>
+              <p className="stat-card-subtitle">
+                {summaryStats.pendingCount} orders
+              </p>
+            </div>
+          </div>
+          <div className="stat-card">
+            <i className="fa-solid fa-times-circle icon-danger"></i>
+            <div>
+              <h3>₹{formatCurrency(summaryStats.overdue)}</h3>
+              <p>Overdue</p>
+              <p className="stat-card-subtitle">
+                {summaryStats.overdueCount} orders
+              </p>
+            </div>
+          </div>
+          <div className="stat-card">
+            <i className="fa-solid fa-calendar-alt icon-accent"></i>
+            <div>
+              <h3>₹{formatCurrency(summaryStats.thisMonth)}</h3>
+              <p>This Month</p>
+              <p className="stat-card-subtitle">
+                {summaryStats.thisMonthCount} orders
+              </p>
+            </div>
           </div>
         </div>
-        <div className="stat-card">
-          <i className="fa-solid fa-exclamation-triangle pending-warning-text"></i>
-          <div>
-            <h3>₹{formatCurrency(summaryStats.pending)}</h3>
-            <p>Pending</p>
-            <p className="stat-card-subtitle">
-              {summaryStats.pendingCount} orders
-            </p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <i className="fa-solid fa-times-circle icon-danger"></i>
-          <div>
-            <h3>₹{formatCurrency(summaryStats.overdue)}</h3>
-            <p>Overdue</p>
-            <p className="stat-card-subtitle">
-              {summaryStats.overdueCount} orders
-            </p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <i className="fa-solid fa-calendar-alt icon-accent"></i>
-          <div>
-            <h3>₹{formatCurrency(summaryStats.thisMonth)}</h3>
-            <p>This Month</p>
-            <p className="stat-card-subtitle">
-              {summaryStats.thisMonthCount} orders
-            </p>
-          </div>
-        </div>
-      </div>
 
       <div className="dashboard-card margin-bottom-24">
         <div className="pending-filter-bar">
@@ -672,9 +674,7 @@ const PendingAmountsTab = ({
                             ₹
                           </span>
                           <span className="pending-payment-amount-value">
-                            {formatCurrency(
-                              order.total || order.totalAmount || 0
-                            )}
+                            {formatCurrency(getOrderAmount(order))}
                           </span>
                         </div>
                       </td>
@@ -853,6 +853,7 @@ const PendingAmountsTab = ({
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

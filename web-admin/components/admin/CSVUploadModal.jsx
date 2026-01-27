@@ -524,7 +524,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div
-        className="modal-container max-w-800"
+        className="modal-container large"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { parseOrderDate } from './utils/dateUtils.js';
-import { formatCurrency, isPendingStatus } from './utils/orderUtils.js';
+import { formatCurrency, getOrderAmount, isPendingStatus } from './utils/orderUtils.js';
 
 function getTimeAgo(date) {
   if (!date) return 'N/A';
@@ -27,7 +27,7 @@ const NotificationDropdown = ({
   onViewPendingAmounts,
 }) => {
   const dropdownRef = useRef(null);
-  
+
   // Ensure orders is an array
   const ordersArray = Array.isArray(orders) ? orders : [];
 
@@ -64,16 +64,18 @@ const NotificationDropdown = ({
       // Check if payment is pending
       const isPending = isPendingStatus(order.status, order.paymentStatus);
       if (!isPending) return false;
-      
+
       try {
-        const orderDate = parseOrderDate(order.date || order.order_date || null);
+        const orderDate = parseOrderDate(
+          order.date || order.order_date || null
+        );
         if (!orderDate) return false;
-        
+
         const orderDateMidnight = new Date(orderDate);
         orderDateMidnight.setHours(0, 0, 0, 0);
-        
+
         const isOver30Days = orderDateMidnight < thirtyDaysAgo;
-        
+
         if (process.env.NODE_ENV === 'development' && isOver30Days) {
           const daysPending = Math.floor(
             (now - orderDateMidnight) / (1000 * 60 * 60 * 24)
@@ -85,24 +87,30 @@ const NotificationDropdown = ({
             paymentStatus: order.paymentStatus,
           });
         }
-        
+
         return isOver30Days;
       } catch (e) {
         if (process.env.NODE_ENV === 'development') {
-          console.warn('[NotificationDropdown] Error parsing order date:', e, order);
+          console.warn(
+            '[NotificationDropdown] Error parsing order date:',
+            e,
+            order
+          );
         }
         return false;
       }
     })
     .map((order) => {
       try {
-        const orderDate = parseOrderDate(order.date || order.order_date || null);
+        const orderDate = parseOrderDate(
+          order.date || order.order_date || null
+        );
         const orderDateMidnight = new Date(orderDate);
         orderDateMidnight.setHours(0, 0, 0, 0);
         const daysPending = Math.floor(
           (now - orderDateMidnight) / (1000 * 60 * 60 * 24)
         );
-        
+
         return {
           order,
           orderDate,
@@ -120,8 +128,8 @@ const NotificationDropdown = ({
     const timeAgo = getTimeAgo(orderDate);
     const address =
       order.deliveryAddress || order.customerAddress || order.address || 'N/A';
-    const amount = order.total || order.totalAmount || 0;
-    
+    const amount = getOrderAmount(order);
+
     notifications.push({
       id: `overdue-${order._id || order.orderId}`,
       type: 'overdue',
@@ -139,27 +147,32 @@ const NotificationDropdown = ({
   // Exclude Excel uploads - only show actual website/API orders
   const sevenDaysAgo = new Date(now);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  
+
   const websiteOrders = ordersArray
     .filter((order) => {
       // Exclude Excel uploads explicitly
       if (order.source === 'excel') {
         return false;
       }
-      
+
       // Check if order is from website or API
       // Only use paymentMode as fallback if source is not set (legacy orders)
-      const isWebsiteOrder = order.source === 'website' || 
-                            order.source === 'api' ||
-                            (!order.source && order.paymentMode && order.paymentMode.toLowerCase() === 'online');
-      
+      const isWebsiteOrder =
+        order.source === 'website' ||
+        order.source === 'api' ||
+        (!order.source &&
+          order.paymentMode &&
+          order.paymentMode.toLowerCase() === 'online');
+
       if (!isWebsiteOrder) return false;
-      
+
       try {
-        const orderDate = parseOrderDate(order.date || order.order_date || null);
+        const orderDate = parseOrderDate(
+          order.date || order.order_date || null
+        );
         if (!orderDate) return false;
         const isRecent = orderDate >= sevenDaysAgo;
-        
+
         if (process.env.NODE_ENV === 'development' && isRecent) {
           console.log('[NotificationDropdown] Found website order:', {
             orderId: order.orderId,
@@ -167,18 +180,24 @@ const NotificationDropdown = ({
             paymentMode: order.paymentMode,
           });
         }
-        
+
         return isRecent;
       } catch (e) {
         if (process.env.NODE_ENV === 'development') {
-          console.warn('[NotificationDropdown] Error parsing website order date:', e, order);
+          console.warn(
+            '[NotificationDropdown] Error parsing website order date:',
+            e,
+            order
+          );
         }
         return false;
       }
     })
     .map((order) => {
       try {
-        const orderDate = parseOrderDate(order.date || order.order_date || null);
+        const orderDate = parseOrderDate(
+          order.date || order.order_date || null
+        );
         return { order, orderDate };
       } catch (e) {
         return null;
@@ -192,8 +211,8 @@ const NotificationDropdown = ({
     const timeAgo = getTimeAgo(orderDate);
     const address =
       order.deliveryAddress || order.customerAddress || order.address || 'N/A';
-    const amount = order.total || order.totalAmount || 0;
-    
+    const amount = getOrderAmount(order);
+
     notifications.push({
       id: `website-${order._id || order.orderId}`,
       type: 'website',
@@ -218,8 +237,8 @@ const NotificationDropdown = ({
   if (process.env.NODE_ENV === 'development') {
     console.log('[NotificationDropdown] Final notifications:', {
       total: notifications.length,
-      overdue: notifications.filter(n => n.type === 'overdue').length,
-      website: notifications.filter(n => n.type === 'website').length,
+      overdue: notifications.filter((n) => n.type === 'overdue').length,
+      website: notifications.filter((n) => n.type === 'website').length,
     });
   }
 
@@ -237,7 +256,7 @@ const NotificationDropdown = ({
           <i className="fa-solid fa-times"></i>
         </button>
       </div>
-      
+
       <div className="notification-dropdown-content">
         {notifications.length === 0 ? (
           <div className="notification-dropdown-empty">
@@ -265,11 +284,19 @@ const NotificationDropdown = ({
                 </div>
                 <div className="notification-item-content">
                   <div className="notification-item-header">
-                    <h4 className="notification-item-title">{notification.title}</h4>
-                    <span className="notification-item-time">{notification.timeAgo}</span>
+                    <h4 className="notification-item-title">
+                      {notification.title}
+                    </h4>
+                    <span className="notification-item-time">
+                      {notification.timeAgo}
+                    </span>
                   </div>
-                  <p className="notification-item-message">{notification.message}</p>
-                  <p className="notification-item-details">{notification.details}</p>
+                  <p className="notification-item-message">
+                    {notification.message}
+                  </p>
+                  <p className="notification-item-details">
+                    {notification.details}
+                  </p>
                 </div>
                 {notification.type === 'overdue' && (
                   <div className="notification-item-badge">
@@ -281,7 +308,7 @@ const NotificationDropdown = ({
           </div>
         )}
       </div>
-      
+
       {notifications.length > 0 && (
         <div className="notification-dropdown-footer">
           {notifications.some((n) => n.type === 'overdue') && (

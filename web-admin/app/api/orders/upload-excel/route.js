@@ -489,8 +489,13 @@ export async function POST(request) {
           if (ordersToUpdate.length > 0) {
             for (const orderData of ordersToUpdate) {
               try {
-                const calculatedTotal =
-                  (orderData.unitPrice || 0) * (orderData.quantity || 1);
+                // Use totalAmount from Excel file; only calculate if not present
+                const totalToSet =
+                  orderData.totalAmount !== undefined &&
+                  orderData.totalAmount !== null &&
+                  !isNaN(parseFloat(orderData.totalAmount))
+                    ? parseFloat(orderData.totalAmount)
+                    : (orderData.unitPrice || 0) * (orderData.quantity || 1);
                 const result = await Order.findOneAndUpdate(
                   { orderId: orderData.orderId },
                   {
@@ -499,7 +504,7 @@ export async function POST(request) {
                       deliveryAddress: orderData.deliveryAddress,
                       quantity: orderData.quantity,
                       unitPrice: orderData.unitPrice,
-                      totalAmount: calculatedTotal,
+                      totalAmount: totalToSet,
                       status: orderData.status,
                       paymentStatus: orderData.paymentStatus,
                       paymentMode: orderData.paymentMode,

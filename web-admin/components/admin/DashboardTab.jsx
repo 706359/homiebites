@@ -5,6 +5,7 @@ import { formatDate, parseOrderDate } from './utils/dateUtils.js';
 import {
   extractOrderIdSequence,
   formatCurrency,
+  getOrderAmount,
   getTotalRevenue,
   isPendingStatus,
 } from './utils/orderUtils.js';
@@ -648,123 +649,118 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
 
           <div className="dashboard-charts-container">
             <div className="dashboard-chart-full-width">
-              <div className="dashboard-card widget">
-                <h3 className="dashboard-section-title">
-                  <i className="fa-solid fa-chart-line icon-opacity"></i>
-                  Revenue Trend (Year-over-Year Comparison)
-                </h3>
-                <div className="chart-container">
-                  {monthlyRevenueData.length > 0 ? (
-                    (() => {
-                      // Find max revenue across all months and years for scaling
-                      const maxRevenue = Math.max(
-                        ...monthlyRevenueData.flatMap((m) =>
-                          Object.values(m.years).map((y) => y.revenue)
-                        ),
-                        1
-                      );
-
-                      return monthlyRevenueData.map((monthData, idx) => {
-                        // Ensure all years from sortedYears are included, even if no data
-                        const yearEntries = sortedYears.map(year => {
-                          const data = monthData.years[year] || { revenue: 0, orders: 0 };
-                          return [year.toString(), data];
-                        }).sort(([a], [b]) => parseInt(a) - parseInt(b));
+              <div className="dashboard-card widget revenue-trend-card">
+                <div className="revenue-trend-header">
+                  <h3 className="dashboard-section-title revenue-trend-title">
+                    <i className="fa-solid fa-chart-line"></i>
+                    Revenue Trend (Year-over-Year Comparison)
+                  </h3>
+                  {sortedYears.length > 1 && monthlyRevenueData.length > 0 && (
+                    <div className="revenue-trend-legend">
+                      {sortedYears.map((year) => {
+                        const isCurrentYear = year === now.getFullYear();
+                        const isLastYear = year === now.getFullYear() - 1;
+                        return (
+                          <div key={year} className="revenue-trend-legend-item">
+                            <span
+                              className={`revenue-trend-legend-dot ${
+                                isCurrentYear
+                                  ? 'revenue-trend-legend-current'
+                                  : isLastYear
+                                    ? 'revenue-trend-legend-last'
+                                    : 'revenue-trend-legend-other'
+                              }`}
+                            />
+                            <span>{year}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                {monthlyRevenueData.length > 0 ? (
+                  <div className="revenue-trend-chart">
+                    <div className="revenue-trend-y-axis">
+                      {(() => {
+                        const maxRev = Math.max(
+                          ...monthlyRevenueData.flatMap((m) =>
+                            Object.values(m.years).map((y) => y.revenue)
+                          ),
+                          1
+                        );
+                        const steps = [0, 0.25, 0.5, 0.75, 1];
+                        return steps.map((pct, i) => (
+                          <div key={i} className="revenue-trend-y-tick">
+                            ₹{formatCurrency(Math.round(pct * maxRev))}
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                    <div className="revenue-trend-bars-wrap">
+                      {monthlyRevenueData.map((monthData, idx) => {
+                        const maxRevenue = Math.max(
+                          ...monthlyRevenueData.flatMap((m) =>
+                            Object.values(m.years).map((y) => y.revenue)
+                          ),
+                          1
+                        );
+                        const yearEntries = sortedYears
+                          .map((year) => ({
+                            year,
+                            ...(monthData.years[year] || { revenue: 0, orders: 0 }),
+                          }))
+                          .sort((a, b) => a.year - b.year);
 
                         return (
-                          <div
-                            key={idx}
-                            className={`bar-chart-item ${
-                              yearEntries.length > 1
-                                ? 'bar-chart-item-multi-year'
-                                : 'bar-chart-item-single-year'
-                            }`}
-                          >
-                            <div className="chart-bars-container">
-                              {yearEntries.map(([year, data]) => {
-                                const barHeightPercent =
-                                  maxRevenue > 0
-                                    ? (data.revenue / maxRevenue) * 100
-                                    : 0;
-                                const isCurrentYear =
-                                  parseInt(year) === now.getFullYear();
-                                const isLastYear =
-                                  parseInt(year) === now.getFullYear() - 1;
-
+                          <div key={idx} className="revenue-trend-month-row">
+                            <div className="revenue-trend-month-label">
+                              {monthData.monthName}
+                            </div>
+                            <div className="revenue-trend-month-bars">
+                              {yearEntries.map(({ year, revenue, orders }) => {
+                                const widthPct = maxRevenue > 0 ? (revenue / maxRevenue) * 100 : 0;
+                                const isCurrentYear = year === now.getFullYear();
+                                const isLastYear = year === now.getFullYear() - 1;
                                 return (
                                   <div
                                     key={year}
-                                    className={`chart-year-entry ${
-                                      yearEntries.length > 1
-                                        ? 'chart-year-entry-multi'
-                                        : 'chart-year-entry-single'
-                                    }`}
+                                    className="revenue-trend-bar-row"
+                                    title={`${monthData.monthName} ${year}: ₹${formatCurrency(revenue)} (${orders} orders)`}
                                   >
-                                    <div
-                                      className={`chart-bar ${
-                                        data.revenue > 0
-                                          ? ''
-                                          : 'chart-bar-empty'
-                                      } ${
-                                        isCurrentYear
-                                          ? 'chart-bar-current-year'
-                                          : isLastYear
-                                            ? 'chart-bar-last-year'
-                                            : 'chart-bar-other-year'
-                                      }`}
-                                      data-height={barHeightPercent.toFixed(2)}
-                                      title={`${monthData.monthName} ${year}: ₹${formatCurrency(
-                                        data.revenue
-                                      )} (${data.orders} orders)`}
-                                    ></div>
-                                    {yearEntries.length > 1 && (
-                                      <span className="text-xs text-light chart-year-label">
-                                        {year.toString().slice(-2)}
-                                      </span>
-                                    )}
+                                    <span className="revenue-trend-year-tag">
+                                      {String(year).slice(-2)}
+                                    </span>
+                                    <div className="revenue-trend-bar-track">
+                                      <div
+                                        className={`revenue-trend-bar-fill ${
+                                          isCurrentYear
+                                            ? 'revenue-trend-bar-current'
+                                            : isLastYear
+                                              ? 'revenue-trend-bar-last'
+                                              : 'revenue-trend-bar-other'
+                                        }`}
+                                        style={{ width: `${widthPct}%` }}
+                                      />
+                                    </div>
+                                    <span className="revenue-trend-value">
+                                      ₹{formatCurrency(revenue)}
+                                    </span>
                                   </div>
                                 );
                               })}
                             </div>
-                            <span className="text-xs text-light text-center font-medium chart-month-label">
-                              {monthData.monthName}
-                            </span>
                           </div>
                         );
-                      });
-                    })()
-                  ) : (
-                    <div className="dashboard-empty-state">
-                      <i className="fa-solid fa-chart-line dashboard-empty-state-icon"></i>
-                      <p className="empty-state-text">
-                        No revenue data available
-                      </p>
-                      <p className="dashboard-empty-text">
-                        Start adding orders to see your revenue trends
-                      </p>
+                      })}
                     </div>
-                  )}
-                </div>
-                {sortedYears.length > 1 && (
-                  <div className="chart-legend-container">
-                    {sortedYears.map((year) => {
-                      const isCurrentYear = year === now.getFullYear();
-                      const isLastYear = year === now.getFullYear() - 1;
-                      return (
-                        <div key={year} className="chart-legend-item">
-                          <div
-                            className={`chart-legend-color ${
-                              isCurrentYear
-                                ? 'chart-legend-color-current'
-                                : isLastYear
-                                  ? 'chart-legend-color-last'
-                                  : 'chart-legend-color-other'
-                            }`}
-                          />
-                          <span>{year}</span>
-                        </div>
-                      );
-                    })}
+                  </div>
+                ) : (
+                  <div className="revenue-trend-empty">
+                    <i className="fa-solid fa-chart-line revenue-trend-empty-icon"></i>
+                    <p className="revenue-trend-empty-title">No revenue data available</p>
+                    <p className="revenue-trend-empty-desc">
+                      Start adding orders to see your revenue trends
+                    </p>
                   </div>
                 )}
               </div>
@@ -864,7 +860,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                       ></div>
                                     </div>
                                     {yearEntries.length > 1 && (
-                                      <span className="text-xs text-light chart-year-label">
+                                      <span className="chart-year-label">
                                         {year.toString().slice(-2)}
                                       </span>
                                     )}
@@ -872,7 +868,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                 );
                               })}
                             </div>
-                            <span className="text-xs text-light text-center font-medium chart-month-label">
+                            <span className="chart-month-label">
                               {monthData.monthName}
                             </span>
                           </div>
@@ -930,7 +926,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
           {recentOrders.length > 0 && (
             <div className="dashboard-section">
               <div className="recent-orders-header">
-                <h3 className="dashboard-section-title m-0">
+                <h3 className="dashboard-section-title recent-orders-title">
                   <i className="fa-solid fa-clock-rotate-left icon-opacity"></i>
                   Recent Orders (Last 10)
                 </h3>
@@ -980,11 +976,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                             <td>{order.quantity || 1}</td>
                             <td>
                               ₹
-                              {formatCurrency(
-                                order.total ||
-                                  order.totalAmount ||
-                                  (order.quantity || 1) * (order.unitPrice || 0)
-                              )}
+                              {formatCurrency(getOrderAmount(order))}
                             </td>
                             <td>{order.mode || 'N/A'}</td>
                             <td>

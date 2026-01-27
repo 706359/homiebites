@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import EmptyState from './EmptyState.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
 import { formatDate, parseOrderDate } from './utils/dateUtils.js';
 import {
@@ -124,200 +123,149 @@ const TodayOrderTab = ({
 
   return (
     <div className="admin-content">
-      <div className="dashboard-card table-container-card">
-        {/* Stats Card */}
-        <div className="stat-card" style={{ marginBottom: '24px' }}>
-          <i className="fa-solid fa-clipboard-list"></i>
-          <div>
-            <h3>{todayOrders.length}</h3>
-            <p>{todayOrders.length === 1 ? 'Order' : 'Orders'} for Today</p>
+      <div className="kitchen-tab">
+        {/* Stats row – theme colors only */}
+        <div className="kitchen-tab-stats">
+          <div className="stat-card">
+            <i className="fa-solid fa-clipboard-list"></i>
+            <div>
+              <h3>{todayOrders.length}</h3>
+              <p>{todayOrders.length === 1 ? 'Order' : 'Orders'} for Today</p>
+            </div>
+          </div>
+          <div className="stat-card">
+            <i className="fa-solid fa-rupee-sign"></i>
+            <div>
+              <h3>{formatCurrency(totalAmount)}</h3>
+              <p>Total Amount</p>
+            </div>
           </div>
         </div>
 
-        {/* Search and Filters Section */}
-        <div className="action-bar">
-          <div className="search-input-wrapper">
-            <input
-              type="text"
-              className="input-field search-input-with-icon"
-              placeholder="Search by address, order ID, or customer name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+        {/* Actions: search left, summary right */}
+        <div className="kitchen-tab-actions">
+          <div className="kitchen-tab-actions-left">
+            <div className="search-input-wrapper" style={{ minWidth: 200, flex: '1 1 280px', maxWidth: 360 }}>
+              <input
+                type="text"
+                className="input-field search-input-with-icon"
+                placeholder="Search by address, order ID, or customer name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
           </div>
-          <div className="table-info-text">
-            {todayOrders.length} {todayOrders.length === 1 ? 'order' : 'orders'}
+          <div className="kitchen-tab-actions-right">
+            <span className="table-info-text">
+              {todayOrders.length} {todayOrders.length === 1 ? 'order' : 'orders'}
+            </span>
           </div>
         </div>
 
-        {/* Orders Table Section */}
-        {todayOrders.length === 0 ? (
-          <div className="dashboard-card" style={{ padding: '60px 20px' }}>
-            <EmptyState
-              icon="fa-calendar-day"
-              title="No orders for today"
-              message={
-                searchQuery
+        {/* Table or empty state */}
+        <div className="kitchen-tab-card">
+          {todayOrders.length === 0 ? (
+            <div className="kitchen-tab-empty">
+              <i className="fa-solid fa-calendar-day kitchen-tab-empty-icon" aria-hidden />
+              <h3 className="kitchen-tab-empty-title">No orders for today</h3>
+              <p className="kitchen-tab-empty-desc">
+                {searchQuery
                   ? 'No orders match your search criteria.'
-                  : "You don't have any orders for today yet."
-              }
-            />
-          </div>
-        ) : (
-          <div className="orders-table-container">
-            <table className="orders-table">
-              <thead>
-                <tr>
-                  <th className="col-orderid">Order ID</th>
-                  <th>Customer Address</th>
-                  <th>Date</th>
-                  <th className="col-mode">Mode</th>
-                  <th>Quantity</th>
-                  <th>Amount</th>
-                  <th className="col-status">Status</th>
-                  <th style={{ textAlign: 'center', width: '280px' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {todayOrders.map((order) => {
-                  const orderDate = parseOrderDate(order.date || order.order_date || null);
-                  const totalAmount = getOrderAmount(order);
-                  const status = order.status || order.paymentStatus || 'Pending';
-                  const isPaid = status.toLowerCase() === 'paid';
-                  
-                  return (
-                    <tr key={order._id || order.orderId || order.id}>
-                      <td>
-                        <span className="badge badge-info" style={{ fontWeight: '600' }}>
-                          <i className="fa-solid fa-hashtag" style={{ marginRight: '4px' }}></i>
-                          {order.orderId || 'N/A'}
-                        </span>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <i className="fa-solid fa-location-dot" style={{ 
-                            color: 'var(--admin-accent)', 
-                            fontSize: 'var(--admin-fs-base)' 
-                          }}></i>
-                          <span className="order-row-address">{order.deliveryAddress || order.customerAddress || order.address || 'N/A'}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <i className="fa-solid fa-calendar" style={{ 
-                            color: 'var(--admin-text-secondary)', 
-                            fontSize: 'var(--admin-fs-sm)' 
-                          }}></i>
-                          <span className="order-row-date">{orderDate ? formatDate(orderDate) : 'N/A'}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="badge">
-                          {order.mode || 'N/A'}
-                        </span>
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <span className="badge badge-info">
-                          {order.quantity || 1}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="order-row-price" style={{ color: 'var(--admin-success)' }}>
+                  : "You don't have any orders for today yet."}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="orders-table-container">
+                <table className="orders-table">
+                  <thead>
+                    <tr>
+                      <th className="col-orderid">Order ID</th>
+                      <th>Customer Address</th>
+                      <th>Date</th>
+                      <th className="col-mode">Mode</th>
+                      <th>Quantity</th>
+                      <th>Amount</th>
+                      <th className="col-status">Status</th>
+                      <th style={{ textAlign: 'center', width: '280px' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {todayOrders.map((order) => {
+                      const orderDate = parseOrderDate(order.date || order.order_date || null);
+                      const rowAmount = getOrderAmount(order);
+                      const status = order.status || order.paymentStatus || 'Pending';
+                      const isPaid = status.toLowerCase() === 'paid';
+                      return (
+                        <tr key={order._id || order.orderId || order.id}>
+                          <td>
+                            <span className="badge badge-info" style={{ fontWeight: '600' }}>
+                              <i className="fa-solid fa-hashtag" style={{ marginRight: '4px' }}></i>
+                              {order.orderId || 'N/A'}
+                            </span>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <i className="fa-solid fa-location-dot" style={{ color: 'var(--admin-accent)', fontSize: 'var(--admin-fs-base)' }}></i>
+                              <span className="order-row-address">{order.deliveryAddress || order.customerAddress || order.address || 'N/A'}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <i className="fa-solid fa-calendar" style={{ color: 'var(--admin-text-secondary)', fontSize: 'var(--admin-fs-sm)' }}></i>
+                              <span className="order-row-date">{orderDate ? formatDate(orderDate) : 'N/A'}</span>
+                            </div>
+                          </td>
+                          <td><span className="badge">{order.mode || 'N/A'}</span></td>
+                          <td style={{ textAlign: 'center' }}>
+                            <span className="badge badge-info">{order.quantity || 1}</span>
+                          </td>
+                          <td>
+                            <span className="order-row-price" style={{ color: 'var(--admin-success)' }}>
+                              {formatCurrency(rowAmount)}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`badge ${isPaid ? 'badge-success' : 'badge-warning'}`}>
+                              <i className={`fa-solid ${isPaid ? 'fa-check-circle' : 'fa-clock'}`} style={{ marginRight: '4px' }}></i>
+                              {status}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'center', minWidth: '280px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
+                              <button className="btn btn-small" onClick={() => handleAccept(order)} title="Accept and add to system" style={{ background: 'var(--admin-success)', color: 'white', border: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                <i className="fa-solid fa-check"></i>
+                                <span style={{ marginLeft: '6px' }}>Accept</span>
+                              </button>
+                              <button className="btn btn-small" onClick={() => handleCancel(order)} title="Cancel order" style={{ background: 'var(--admin-warning)', color: 'white', border: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                <i className="fa-solid fa-times"></i>
+                                <span style={{ marginLeft: '6px' }}>Cancel</span>
+                              </button>
+                              <button className="btn btn-small" onClick={() => handleDelete(order)} title="Delete order" style={{ background: 'var(--admin-danger)', color: 'white', border: 'none', whiteSpace: 'nowrap', flexShrink: 0, minWidth: '40px' }}>
+                                <i className="fa-solid fa-trash"></i>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ backgroundColor: 'var(--admin-bg-secondary)', borderTop: '2px solid var(--admin-border)', fontWeight: '600' }}>
+                      <td colSpan="5" style={{ textAlign: 'right', padding: '16px 20px' }}><strong>Total:</strong></td>
+                      <td style={{ padding: '16px 20px' }}>
+                        <span className="order-row-price" style={{ color: 'var(--admin-success)', fontSize: 'var(--admin-fs-md)', fontWeight: '700' }}>
                           {formatCurrency(totalAmount)}
                         </span>
                       </td>
-                      <td>
-                        <span className={`badge ${isPaid ? 'badge-success' : 'badge-warning'}`}>
-                          <i className={`fa-solid ${isPaid ? 'fa-check-circle' : 'fa-clock'}`} style={{ marginRight: '4px' }}></i>
-                          {status}
-                        </span>
-                      </td>
-                      <td style={{ textAlign: 'center', minWidth: '280px' }}>
-                        <div style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: '8px', 
-                          justifyContent: 'center', 
-                          flexWrap: 'nowrap',
-                          whiteSpace: 'nowrap'
-                        }}>
-                          <button
-                            className="btn btn-small"
-                            onClick={() => handleAccept(order)}
-                            title="Accept and add to system"
-                            style={{
-                              background: 'var(--admin-success)',
-                              color: 'white',
-                              border: 'none',
-                              whiteSpace: 'nowrap',
-                              flexShrink: 0
-                            }}
-                          >
-                            <i className="fa-solid fa-check"></i>
-                            <span style={{ marginLeft: '6px' }}>Accept</span>
-                          </button>
-                          <button
-                            className="btn btn-small"
-                            onClick={() => handleCancel(order)}
-                            title="Cancel order"
-                            style={{
-                              background: 'var(--admin-warning)',
-                              color: 'white',
-                              border: 'none',
-                              whiteSpace: 'nowrap',
-                              flexShrink: 0
-                            }}
-                          >
-                            <i className="fa-solid fa-times"></i>
-                            <span style={{ marginLeft: '6px' }}>Cancel</span>
-                          </button>
-                          <button
-                            className="btn btn-small"
-                            onClick={() => handleDelete(order)}
-                            title="Delete order"
-                            style={{
-                              background: 'var(--admin-danger)',
-                              color: 'white',
-                              border: 'none',
-                              whiteSpace: 'nowrap',
-                              flexShrink: 0,
-                              minWidth: '40px'
-                            }}
-                          >
-                            <i className="fa-solid fa-trash"></i>
-                          </button>
-                        </div>
-                      </td>
+                      <td colSpan="2"></td>
                     </tr>
-                  );
-                })}
-              </tbody>
-              {todayOrders.length > 0 && (
-                <tfoot>
-                  <tr style={{ 
-                    backgroundColor: '#f9fafb', 
-                    borderTop: '2px solid #e5e7eb',
-                    fontWeight: '600'
-                  }}>
-                    <td colSpan="5" style={{ textAlign: 'right', padding: '16px 20px' }}>
-                      <strong>Total:</strong>
-                    </td>
-                    <td style={{ padding: '16px 20px' }}>
-                      <span className="order-row-price" style={{ 
-                        color: 'var(--admin-success)', 
-                        fontSize: '16px',
-                        fontWeight: '700'
-                      }}>
-                        {formatCurrency(totalAmount)}
-                      </span>
-                    </td>
-                    <td colSpan="2"></td>
-                  </tr>
-                </tfoot>
-              )}
-            </table>
-          </div>
-        )}
+                  </tfoot>
+                </table>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -313,7 +313,8 @@ const AllAddressesTab = ({
 
   return (
     <div className="admin-content">
-      <div className="admin-stats customer-stats-row">
+      <div className="kitchen-tab">
+      <div className="kitchen-tab-stats admin-stats customer-stats-row">
         <div className="stat-card stat-card-gradient-accent customer-stat-card">
           <div className="customer-stat-content">
             <h3 className="customer-stat-number">{segments.total}</h3>
@@ -997,9 +998,7 @@ const AllAddressesTab = ({
                                 <td>{order.quantity || 1}</td>
                                 <td>
                                   ₹
-                                  {formatCurrency(
-                                    order.total || order.totalAmount || 0
-                                  )}
+                                  {formatCurrency(getOrderAmount(order))}
                                 </td>
                                 <td>
                                   <span
@@ -1039,6 +1038,7 @@ const AllAddressesTab = ({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

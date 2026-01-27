@@ -211,13 +211,7 @@ const OrderModal = ({
         errors.unitPrice = 'Unit price cannot exceed ₹1000';
       }
 
-      const calculatedTotal = (order.quantity || 1) * (order.unitPrice || 0);
-      if (
-        order.totalAmount &&
-        Math.abs(order.totalAmount - calculatedTotal) > 0.01
-      ) {
-        errors.totalAmount = 'Total amount mismatch';
-      }
+      // Allow totalAmount to differ from quantity*unitPrice (manual overrides from Excel, etc.)
 
       if (!order.mode) {
         errors.mode = 'Mode is required';
@@ -1726,32 +1720,57 @@ const OrderModal = ({
         </div>
         <div className="order-form-total">
           <span className="order-form-total-label">Total Amount</span>
-          <span className="order-form-total-value">
-            ₹
-            {formatCurrency(
-              (() => {
-                const order = editingOrder || newOrder;
-                // Use stored totalAmount/total if present, otherwise calculate
-                if (order.totalAmount !== undefined && order.totalAmount !== null) {
-                  const parsed = parseFloat(String(order.totalAmount));
-                  if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) {
-                    return parsed;
-                  }
+          {editingOrder ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontWeight: 600 }}>₹</span>
+              <input
+                type="number"
+                className={`input-field ${formErrors.totalAmount ? 'error' : ''}`}
+                style={{ width: '120px' }}
+                min="0"
+                step="1"
+                value={
+                  (editingOrder.totalAmount !== undefined &&
+                  editingOrder.totalAmount !== null &&
+                  editingOrder.totalAmount !== '')
+                    ? Number(editingOrder.totalAmount)
+                    : calculateTotalAmount(
+                        editingOrder.quantity || 1,
+                        editingOrder.unitPrice || 0
+                      )
                 }
-                if (order.total !== undefined && order.total !== null) {
-                  const parsed = parseFloat(String(order.total));
-                  if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) {
-                    return parsed;
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value);
+                  onEditingOrderChange(
+                    'totalAmount',
+                    !isNaN(v) && v >= 0 ? v : ''
+                  );
+                }}
+                title="Editable – use value from Excel when different from qty × rate"
+              />
+              <span className="helper-text" style={{ margin: 0 }}>
+                (editable – use Excel value when different from qty × rate)
+              </span>
+            </div>
+          ) : (
+            <span className="order-form-total-value">
+              ₹
+              {formatCurrency(
+                (() => {
+                  const order = newOrder;
+                  if (order.totalAmount !== undefined && order.totalAmount !== null) {
+                    const parsed = parseFloat(String(order.totalAmount));
+                    if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) return parsed;
                   }
-                }
-                // Fallback to calculation
-                return calculateTotalAmount(
-                  order.quantity || 1,
-                  order.unitPrice || 0
-                );
-              })()
-            )}
-          </span>
+                  if (order.total !== undefined && order.total !== null) {
+                    const parsed = parseFloat(String(order.total));
+                    if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) return parsed;
+                  }
+                  return calculateTotalAmount(order.quantity || 1, order.unitPrice || 0);
+                })()
+              )}
+            </span>
+          )}
         </div>
         <div className="modal-footer">
           <button

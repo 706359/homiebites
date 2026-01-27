@@ -34,7 +34,7 @@
 }
 
 .today-order-title {
-  font-size: 32px;
+  font-size: var(--admin-fs-3xl);
   font-weight: 700;
   margin: 0 0 8px 0;
   display: flex;
@@ -45,12 +45,12 @@
 }
 
 .today-order-title i {
-  font-size: 28px;
+  font-size: var(--admin-fs-2xl-mid);
   opacity: 0.95;
 }
 
 .today-order-subtitle {
-  font-size: 16px;
+  font-size: var(--admin-fs-md);
   margin: 0;
   opacity: 0.9;
   font-weight: 400;
@@ -90,7 +90,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: var(--admin-fs-xl);
   flex-shrink: 0;
 }
 
@@ -100,7 +100,7 @@
 }
 
 .stat-value {
-  font-size: 28px;
+  font-size: var(--admin-fs-2xl-mid);
   font-weight: 700;
   line-height: 1;
   margin-bottom: 4px;
@@ -108,7 +108,7 @@
 }
 
 .stat-label {
-  font-size: 13px;
+  font-size: var(--admin-fs-sm-mid);
   opacity: 0.9;
   font-weight: 500;
   text-transform: uppercase;
@@ -140,7 +140,7 @@
 
 .search-icon {
   color: #9ca3af;
-  font-size: 18px;
+  font-size: var(--admin-fs-lg);
   margin-right: 12px;
   flex-shrink: 0;
 }
@@ -149,7 +149,7 @@
   flex: 1;
   border: none;
   outline: none;
-  font-size: 15px;
+  font-size: var(--admin-fs-base-mid);
   color: #1f2937;
   background: transparent;
   padding: 0;
@@ -215,7 +215,7 @@
 .today-order-table th {
   padding: 16px 20px;
   text-align: left;
-  font-size: 13px;
+  font-size: var(--admin-fs-sm-mid);
   font-weight: 600;
   color: #374151;
   text-transform: uppercase;
@@ -247,7 +247,7 @@
 
 .today-order-table td {
   padding: 20px;
-  font-size: 14px;
+  font-size: var(--admin-fs-base);
   color: #1f2937;
   vertical-align: middle;
 }
@@ -266,12 +266,12 @@
   padding: 8px 14px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: var(--admin-fs-sm-mid);
   box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
 }
 
 .order-id-badge i {
-  font-size: 11px;
+  font-size: var(--admin-fs-xs);
   opacity: 0.9;
 }
 
@@ -290,7 +290,7 @@
 
 .address-content i {
   color: #667eea;
-  font-size: 14px;
+  font-size: var(--admin-fs-base);
 }
 
 /* Date Cell */
@@ -307,7 +307,7 @@
 
 .date-content i {
   color: #9ca3af;
-  font-size: 13px;
+  font-size: var(--admin-fs-sm-mid);
 }
 
 /* Mode Cell */
@@ -321,7 +321,7 @@
   color: #374151;
   padding: 6px 12px;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: var(--admin-fs-sm-mid);
   font-weight: 500;
 }
 
@@ -340,7 +340,7 @@
   padding: 6px 12px;
   border-radius: 6px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: var(--admin-fs-base);
   min-width: 40px;
 }
 
@@ -351,7 +351,7 @@
 
 .amount-value {
   font-weight: 700;
-  font-size: 15px;
+  font-size: var(--admin-fs-base-mid);
   color: #059669;
 }
 
@@ -366,13 +366,13 @@
   gap: 6px;
   padding: 8px 14px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: var(--admin-fs-sm-mid);
   font-weight: 600;
   white-space: nowrap;
 }
 
 .status-badge i {
-  font-size: 12px;
+  font-size: var(--admin-fs-sm);
 }
 
 .status-badge.status-paid,
@@ -413,7 +413,7 @@
   padding: 10px 16px;
   border: none;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: var(--admin-fs-sm-mid);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -422,7 +422,7 @@
 }
 
 .btn-action i {
-  font-size: 12px;
+  font-size: var(--admin-fs-sm);
 }
 
 .btn-action:hover {
@@ -473,13 +473,13 @@
   }
 
   .today-order-title {
-    font-size: 28px;
+    font-size: var(--admin-fs-2xl-mid);
   }
 
   .today-order-table th,
   .today-order-table td {
     padding: 16px;
-    font-size: 13px;
+    font-size: var(--admin-fs-sm-mid);
   }
 }
 
@@ -496,11 +496,11 @@
   }
 
   .today-order-title {
-    font-size: 24px;
+    font-size: var(--admin-fs-2xl);
   }
 
   .today-order-subtitle {
-    font-size: 14px;
+    font-size: var(--admin-fs-base);
   }
 
   .today-order-stat-card {
@@ -537,30 +537,30 @@
   }
 
   .today-order-title {
-    font-size: 20px;
+    font-size: var(--admin-fs-xl);
   }
 
   .today-order-title i {
-    font-size: 18px;
+    font-size: var(--admin-fs-lg);
   }
 
   .stat-value {
-    font-size: 24px;
+    font-size: var(--admin-fs-2xl);
   }
 
   .today-order-table th,
   .today-order-table td {
     padding: 12px;
-    font-size: 12px;
+    font-size: var(--admin-fs-sm);
   }
 
   .order-id-badge {
     padding: 6px 10px;
-    font-size: 11px;
+    font-size: var(--admin-fs-xs);
   }
 
   .btn-action {
     padding: 8px 12px;
-    font-size: 12px;
+    font-size: var(--admin-fs-sm);
   }
 }

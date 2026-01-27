@@ -128,101 +128,37 @@ textarea.settings-input-field {
   padding-left: 32px;
 }
 
-.settings-font-size-control {
+/* Font size presets: Small 17px, Normal 18px, Large 19px */
+.settings-font-size-presets {
   display: inline-flex;
   align-items: center;
-  gap: 0;
-  background: var(--admin-bg, #ffffff);
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.settings-font-size-preset-btn {
+  padding: 10px 16px;
+  border-radius: 10px;
   border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 12px;
-  padding: 4px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.settings-font-size-control:focus-within {
-  border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
-}
-
-.settings-font-size-btn {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  min-height: 40px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
+  background: var(--admin-bg, #ffffff);
   color: var(--admin-text-secondary, #6b7280);
-  font-size: var(--admin-fs-base-mid);
+  font-size: var(--admin-fs-base);
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
 }
 
-.settings-font-size-btn i {
-  font-size: var(--admin-fs-base);
-  font-weight: 600;
-}
-
-.settings-font-size-btn:hover:not(:disabled) {
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+.settings-font-size-preset-btn:hover {
+  border-color: var(--admin-accent, #449031);
   color: var(--admin-accent, #449031);
-  transform: scale(1.05);
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.08));
 }
 
-.settings-font-size-btn:active:not(:disabled) {
-  transform: scale(0.95);
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.15));
-}
-
-.settings-font-size-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  background: transparent;
-}
-
-.settings-font-size-btn:disabled:hover {
-  transform: none;
-}
-
-.settings-font-size-input {
-  width: 70px;
-  height: 40px;
-  padding: 0 12px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--admin-text-primary, #1e293b);
-  font-size: var(--admin-fs-lg);
-  font-weight: 700;
-  text-align: center;
-  margin: 0 4px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  -moz-appearance: textfield;
-}
-
-.settings-font-size-input::-webkit-outer-spin-button,
-.settings-font-size-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.settings-font-size-input:focus {
-  outline: none;
-  background: var(--admin-bg-secondary, #f9fafb);
-}
-
-.settings-font-size-unit {
-  font-size: var(--admin-fs-sm-mid);
+.settings-font-size-preset-btn--active {
+  border-color: var(--admin-accent, #449031);
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.12));
+  color: var(--admin-accent, #449031);
   font-weight: 600;
-  color: var(--admin-text-secondary, #6b7280);
-  padding: 0 12px 0 4px;
-  user-select: none;
 }
 
 .settings-form-hint {

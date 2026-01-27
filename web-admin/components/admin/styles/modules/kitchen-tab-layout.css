@@ -1,0 +1,145 @@
+/* ========================================================================
+   KITCHEN TAB LAYOUT MODULE
+   Shared layout for admin tabs – theme colors only (--admin-*).
+   Use for consistent structure: stats, actions, body.
+   ======================================================================== */
+
+.kitchen-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.kitchen-tab-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.kitchen-tab-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  background: var(--admin-bg, #ffffff);
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 12px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.kitchen-tab-actions-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.kitchen-tab-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.kitchen-tab-body {
+  flex: 1;
+  min-width: 0;
+  background: var(--admin-bg, #ffffff);
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 12px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.kitchen-tab-body-inner {
+  padding: 20px 24px;
+}
+
+.kitchen-tab-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--admin-text-secondary, #6b7280);
+}
+
+.kitchen-tab-empty-icon {
+  font-size: var(--admin-fs-display, 3rem);
+  color: var(--admin-text-light, #9ca3af);
+  margin-bottom: 12px;
+  opacity: 0.7;
+}
+
+.kitchen-tab-empty-title {
+  font-size: var(--admin-fs-xl, 1.25rem);
+  font-weight: 700;
+  color: var(--admin-text-primary, #111827);
+  margin: 0 0 6px 0;
+}
+
+.kitchen-tab-empty-desc {
+  font-size: var(--admin-fs-base, 0.875rem);
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+  max-width: 360px;
+}
+
+/* Card-style block for tab content (alternative to kitchen-tab-body) */
+.kitchen-tab-card {
+  background: var(--admin-bg, #ffffff);
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 12px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .kitchen-tab {
+    gap: 18px;
+  }
+
+  .kitchen-tab-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .kitchen-tab-actions {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .kitchen-tab-actions-left,
+  .kitchen-tab-actions-right {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .kitchen-tab-body-inner {
+    padding: 16px;
+  }
+
+  .kitchen-tab-empty {
+    padding: 36px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .kitchen-tab-stats {
+    grid-template-columns: 1fr;
+  }
+}

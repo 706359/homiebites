@@ -1,33 +1,33 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState, Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import api from '../../lib/api-admin.js';
 import { logout } from '../../lib/auth-admin.js';
 import { setupGlobalErrorHandlers } from '../../lib/globalErrorHandler.js';
 import monitoringService from '../../lib/monitoring.js';
-import ErrorBoundary from './ErrorBoundary.jsx';
-import Sidebar from './Sidebar.jsx';
-import TopNav from './TopNav.jsx';
 import { useNotification } from './contexts/NotificationContext.jsx';
+import ErrorBoundary from './ErrorBoundary.jsx';
 import { useFastDataSync } from './hooks/useFastDataSync.js';
 import { useSessionManager } from './hooks/useSessionManager.js';
+import PremiumLoader from './PremiumLoader.jsx';
 import SessionTimeoutModal from './SessionTimeoutModal.jsx';
+import Sidebar from './Sidebar.jsx';
+import TopNav from './TopNav.jsx';
 import dataSyncManager from './utils/dataSyncManager.js';
 import { parseOrderDate } from './utils/dateUtils.js';
-import { isPendingStatus } from './utils/orderUtils.js';
+import {
+  applyAdminFontSize,
+  parseFontSize,
+  roundToStep,
+} from './utils/fontSize.js';
 import {
   getNotificationDuration,
   getNotificationMessage,
 } from './utils/notificationMessages.js';
+import { isPendingStatus } from './utils/orderUtils.js';
 import './utils/sidebarFontSizeFix.js';
 import { autoFixThemeOnLoad } from './utils/themeFixer.js';
-import {
-  parseFontSize,
-  applyAdminFontSize,
-  roundToStep,
-} from './utils/fontSize.js';
-import PremiumLoader from './PremiumLoader.jsx';
 
 // Lazy load heavy admin components for better performance
 const AllAddressesTab = lazy(() => import('./AllAddressesTab.jsx'));
@@ -199,15 +199,18 @@ const AdminDashboard = () => {
       if (order.source === 'excel') {
         return false;
       }
-      
+
       // Check if order is from website or API
       // Only use paymentMode as fallback if source is not set (legacy orders)
-      const isWebsiteOrder = order.source === 'website' || 
-                            order.source === 'api' ||
-                            (!order.source && order.paymentMode && order.paymentMode.toLowerCase() === 'online');
-      
+      const isWebsiteOrder =
+        order.source === 'website' ||
+        order.source === 'api' ||
+        (!order.source &&
+          order.paymentMode &&
+          order.paymentMode.toLowerCase() === 'online');
+
       if (!isWebsiteOrder) return false;
-      
+
       try {
         const orderDate = parseOrderDate(
           order.date || order.order_date || null
@@ -273,7 +276,7 @@ const AdminDashboard = () => {
       localStorage.getItem('homiebites_primary_color') || '#449031';
     const savedSecondaryColor =
       localStorage.getItem('homiebites_secondary_color') || '#B8D84E';
-    const savedFontSize = localStorage.getItem('homiebites_font_size') || '16';
+    const savedFontSize = localStorage.getItem('homiebites_font_size') || '18';
     const savedFontFamily =
       localStorage.getItem('homiebites_font_family') || 'Baloo 2';
 
@@ -462,7 +465,7 @@ const AdminDashboard = () => {
     if (!isMounted || typeof window === 'undefined') return;
 
     const sync = () => {
-      const key = localStorage.getItem('homiebites_font_size') || '16';
+      const key = localStorage.getItem('homiebites_font_size') || '18';
       const v = parseFontSize(key);
       applyAdminFontSize(v ?? 16);
     };
@@ -501,7 +504,10 @@ const AdminDashboard = () => {
             await logout();
             window.location.href = '/admin';
           } catch (fallbackError) {
-            console.error('[AdminDashboard] Fallback logout error:', fallbackError);
+            console.error(
+              '[AdminDashboard] Fallback logout error:',
+              fallbackError
+            );
             window.location.href = '/admin';
           }
         }
@@ -992,7 +998,7 @@ const AdminDashboard = () => {
       // Accept order means updating its status to accepted/confirmed
       // and ensuring it's properly recorded in the system
       const apiOrderId = order._id || order.id || order.orderId;
-      
+
       await fastUpdate(
         apiOrderId,
         {
@@ -1016,8 +1022,7 @@ const AdminDashboard = () => {
         (error) => {
           console.error('Error accepting order:', error);
           if (showNotification) {
-            const errorMessage =
-              error?.message || 'Failed to accept order';
+            const errorMessage = error?.message || 'Failed to accept order';
             showNotification(
               errorMessage,
               'error',
@@ -1042,7 +1047,7 @@ const AdminDashboard = () => {
     try {
       // Cancel order means updating its status to cancelled
       const apiOrderId = order._id || order.id || order.orderId;
-      
+
       await fastUpdate(
         apiOrderId,
         {
@@ -1066,8 +1071,7 @@ const AdminDashboard = () => {
         (error) => {
           console.error('Error cancelling order:', error);
           if (showNotification) {
-            const errorMessage =
-              error?.message || 'Failed to cancel order';
+            const errorMessage = error?.message || 'Failed to cancel order';
             showNotification(
               errorMessage,
               'error',
@@ -1127,17 +1131,24 @@ const AdminDashboard = () => {
               ? 'Your profile and password have been updated'
               : 'Your profile has been updated successfully';
           } else if (newSettings.kitchenSettings) {
-            const { kitchenEnabled, kitchenClosedFrom, kitchenClosedTo } = newSettings.kitchenSettings;
+            const { kitchenEnabled, kitchenClosedFrom, kitchenClosedTo } =
+              newSettings.kitchenSettings;
             const statusText = kitchenEnabled ? 'open' : 'closed';
             if (kitchenClosedFrom && kitchenClosedTo) {
-              const fromDate = new Date(kitchenClosedFrom).toLocaleDateString('en-IN', {
-                day: 'numeric',
-                month: 'short',
-              });
-              const toDate = new Date(kitchenClosedTo).toLocaleDateString('en-IN', {
-                day: 'numeric',
-                month: 'short',
-              });
+              const fromDate = new Date(kitchenClosedFrom).toLocaleDateString(
+                'en-IN',
+                {
+                  day: 'numeric',
+                  month: 'short',
+                }
+              );
+              const toDate = new Date(kitchenClosedTo).toLocaleDateString(
+                'en-IN',
+                {
+                  day: 'numeric',
+                  month: 'short',
+                }
+              );
               message = `Kitchen is now ${statusText} (${fromDate} - ${toDate})`;
             } else if (!kitchenEnabled) {
               message = 'Kitchen is now closed for today';
@@ -1175,7 +1186,9 @@ const AdminDashboard = () => {
               applyAdminFontSize(px);
               // Dispatch event to notify all components
               window.dispatchEvent(
-                new CustomEvent('adminFontSizeChanged', { detail: { fontSize: px } })
+                new CustomEvent('adminFontSizeChanged', {
+                  detail: { fontSize: px },
+                })
               );
               // Update settings state to preserve fontSize
               if (typeof setSettings === 'function') {
@@ -1215,13 +1228,15 @@ const AdminDashboard = () => {
               }
             }
             if (newSettings.themeSettings.autoHideSidebar !== undefined) {
-              const savedAutoHideValue = Boolean(newSettings.themeSettings.autoHideSidebar);
+              const savedAutoHideValue = Boolean(
+                newSettings.themeSettings.autoHideSidebar
+              );
               // Update settings state IMMEDIATELY - this is the source of truth
               // The Sidebar component reads from settings prop, so this update will take effect immediately
               if (typeof setSettings === 'function') {
-                setSettings((prev) => ({ 
-                  ...prev, 
-                  autoHideSidebar: savedAutoHideValue
+                setSettings((prev) => ({
+                  ...prev,
+                  autoHideSidebar: savedAutoHideValue,
                 }));
               }
               // Reload settings from database after a delay to ensure the persisted value is loaded
@@ -1731,7 +1746,9 @@ const AdminDashboard = () => {
                   exportedAt: new Date().toISOString(),
                 };
                 const dataStr = JSON.stringify(settingsToExport, null, 2);
-                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const dataBlob = new Blob([dataStr], {
+                  type: 'application/json',
+                });
                 const url = URL.createObjectURL(dataBlob);
                 const link = document.createElement('a');
                 link.href = url;

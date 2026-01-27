@@ -532,7 +532,7 @@
 }
 
 .notification-dropdown-empty i {
-  font-size: 48px;
+  font-size: var(--admin-fs-display);
   margin-bottom: 16px;
   opacity: 0.5;
 }

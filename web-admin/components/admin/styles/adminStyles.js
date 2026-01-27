@@ -17,6 +17,7 @@ import './modules/notifications.css';
 import './modules/inputs.css';
 import './modules/utilities.css';
 import './modules/dashboard.css';
+import './modules/kitchen-tab-layout.css';
 import './modules/pending-amounts.css';
 import './modules/menu-price.css';
 import './modules/offers.css';

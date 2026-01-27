@@ -208,7 +208,7 @@ const ReportsTab = ({
           const monthStr = month ? monthNames[month - 1] : 'N/A';
           return `${idx + 1},"${date ? date.toLocaleDateString() : ''}","${
             o.deliveryAddress || o.customerAddress || o.address || 'N/A'
-          }","${o.quantity || 1}","${o.unitPrice || 0}","${o.total || o.totalAmount || 0}","${
+          }","${o.quantity || 1}","${o.unitPrice || 0}","${getOrderAmount(o)}","${
             o.mode || 'N/A'
           }","${o.status || 'N/A'}","${o.paymentMode || 'N/A'}","${
             month ? `${monthStr}'${year.toString().slice(-2)}` : 'N/A'

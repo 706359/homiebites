@@ -5,9 +5,7 @@ import {
   parseFontSize,
   applyAdminFontSize,
   roundToStep,
-  ADMIN_FONT_SIZE_MIN,
-  ADMIN_FONT_SIZE_MAX,
-  ADMIN_FONT_SIZE_STEP,
+  ADMIN_FONT_SIZE_OPTIONS,
   ADMIN_FONT_SIZE_DEFAULT,
 } from './utils/fontSize.js';
 
@@ -1957,79 +1955,35 @@ const SettingsTab = ({
                     </p>
                   </div>
                   <div className="settings-form-group settings-form-group-full">
-                    <label
-                      className="settings-form-label"
-                      htmlFor="admin-font-size-input"
-                    >
+                    <label className="settings-form-label" id="admin-font-size-label">
                       <i className="fa-solid fa-text-height"></i>
                       <span>Font size (admin dashboard only)</span>
                     </label>
                     <div
-                      className="settings-font-size-control"
+                      className="settings-font-size-presets"
                       role="group"
-                      aria-label={`Font size ${ADMIN_FONT_SIZE_MIN}–${ADMIN_FONT_SIZE_MAX} px`}
+                      aria-labelledby="admin-font-size-label"
+                      aria-label="Font size: Small 17px, Normal 18px, Large 19px"
                     >
-                      <button
-                        type="button"
-                        className="btn btn-ghost settings-font-size-btn"
-                        onClick={() =>
-                          applyFontSize(
-                            (appearanceSettings.fontSize ??
-                              ADMIN_FONT_SIZE_DEFAULT) - ADMIN_FONT_SIZE_STEP
-                          )
-                        }
-                        disabled={
-                          (appearanceSettings.fontSize ??
-                            ADMIN_FONT_SIZE_DEFAULT) <= ADMIN_FONT_SIZE_MIN
-                        }
-                        aria-label="Decrease by 0.25 px"
-                      >
-                        <i className="fa-solid fa-minus" aria-hidden />
-                      </button>
-                      <input
-                        id="admin-font-size-input"
-                        type="number"
-                        min={ADMIN_FONT_SIZE_MIN}
-                        max={ADMIN_FONT_SIZE_MAX}
-                        step={ADMIN_FONT_SIZE_STEP}
-                        value={
-                          appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT
-                        }
-                        onChange={(e) => applyFontSize(e.target.value)}
-                        onBlur={(e) => applyFontSize(e.target.value)}
-                        className="settings-font-size-input"
-                        aria-label={`Font size in px, ${ADMIN_FONT_SIZE_MIN} to ${ADMIN_FONT_SIZE_MAX}`}
-                        aria-valuemin={ADMIN_FONT_SIZE_MIN}
-                        aria-valuemax={ADMIN_FONT_SIZE_MAX}
-                        aria-valuenow={
-                          appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT
-                        }
-                      />
-                      <span className="settings-font-size-unit" aria-hidden>
-                        px
-                      </span>
-                      <button
-                        type="button"
-                        className="btn btn-ghost settings-font-size-btn"
-                        onClick={() =>
-                          applyFontSize(
-                            (appearanceSettings.fontSize ??
-                              ADMIN_FONT_SIZE_DEFAULT) + ADMIN_FONT_SIZE_STEP
-                          )
-                        }
-                        disabled={
-                          (appearanceSettings.fontSize ??
-                            ADMIN_FONT_SIZE_DEFAULT) >= ADMIN_FONT_SIZE_MAX
-                        }
-                        aria-label="Increase by 0.25 px"
-                      >
-                        <i className="fa-solid fa-plus" aria-hidden />
-                      </button>
+                      {ADMIN_FONT_SIZE_OPTIONS.map((opt) => {
+                        const active =
+                          (appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT) === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            className={`settings-font-size-preset-btn ${active ? 'settings-font-size-preset-btn--active' : ''}`}
+                            onClick={() => applyFontSize(opt.value)}
+                            aria-pressed={active}
+                            aria-label={`${opt.label} (${opt.px}px)`}
+                          >
+                            {opt.label} ({opt.px}px)
+                          </button>
+                        );
+                      })}
                     </div>
                     <p className="settings-form-hint">
-                      {ADMIN_FONT_SIZE_MIN}–{ADMIN_FONT_SIZE_MAX} px in{' '}
-                      {ADMIN_FONT_SIZE_STEP} px steps. Applies immediately; save
-                      to persist.
+                      Small 17px · Normal 18px · Large 19px. Applies immediately; save to persist.
                     </p>
                   </div>
                   

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
 import { formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
-import { isPendingStatus, sortOrdersByOrderId } from './utils/orderUtils.js';
+import { getOrderAmount, isPendingStatus, sortOrdersByOrderId } from './utils/orderUtils.js';
 
 function getTimeAgo(date) {
   if (!date) return 'N/A';
@@ -84,7 +84,7 @@ const NotificationsTab = ({
       type: 'payment',
       title: isOverdue ? 'Payment Overdue' : 'Payment Pending',
       message: `Order #${order.orderId || 'N/A'} from ${address}`,
-      details: `₹${order.total || order.totalAmount || 0} • ${daysPending} days pending`,
+      details: `₹${getOrderAmount(order)} • ${daysPending} days pending`,
       timeAgo,
       read: false,
       action: isOverdue ? 'viewPendingPayments' : 'sendReminder',
@@ -122,7 +122,7 @@ const NotificationsTab = ({
       message: `Order #${order.orderId || 'N/A'} from ${
         order.deliveryAddress || order.customerAddress || order.address || 'N/A'
       }`,
-      details: `₹${order.total || order.totalAmount || 0} • ${order.mode || 'N/A'} • ${
+      details: `₹${getOrderAmount(order)} • ${order.mode || 'N/A'} • ${
         order.status || 'N/A'
       }`,
       timeAgo,

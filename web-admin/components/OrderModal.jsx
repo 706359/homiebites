@@ -981,13 +981,13 @@ Please confirm. Thank you! 🙏`;
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <i
                   className="fa-solid fa-exclamation-triangle"
-                  style={{ fontSize: '20px', color: '#dc2626' }}
+                  style={{ fontSize: 'var(--admin-fs-xl, 20px)', color: '#dc2626' }}
                 ></i>
                 <div>
                   <strong style={{ display: 'block', marginBottom: '4px' }}>
                     Kitchen is Closed
                   </strong>
-                  <p style={{ margin: 0, fontSize: '14px' }}>{kitchenStatus.message}</p>
+                  <p style={{ margin: 0, fontSize: 'var(--admin-fs-base, 14px)' }}>{kitchenStatus.message}</p>
                 </div>
               </div>
             </div>
@@ -1087,7 +1087,7 @@ Please confirm. Thank you! 🙏`;
               <span className="error-message">{validationErrors.deliveryAddress}</span>
             )}
             {deliveryMode === 'outside' && (
-              <p className="helper-text" style={{ marginTop: '4px', fontSize: '12px', color: '#666' }}>
+              <p className="helper-text" style={{ marginTop: '4px', fontSize: 'var(--admin-fs-sm, 12px)', color: '#666' }}>
                 {t('order.outsideAddressHelper') || 'Note: Please provide your original address for reference. Order will be handed over at the main gate of Panchsheel Greens-1 only (no home delivery for outside orders).'}
               </p>
             )}
@@ -1247,7 +1247,7 @@ Please confirm. Thank you! 🙏`;
           <div className="form-group">
             <label>
               {t('order.preferredDeliveryTime') || 'Preferred Delivery Time'} *
-              <span className="helper-text-inline" style={{ marginLeft: '8px', fontSize: '12px', fontWeight: 'normal' }}>
+              <span className="helper-text-inline" style={{ marginLeft: '8px', fontSize: 'var(--admin-fs-sm, 12px)', fontWeight: 'normal' }}>
                 (e.g., 08:30, 14:00)
               </span>
             </label>
@@ -1271,7 +1271,7 @@ Please confirm. Thank you! 🙏`;
             {validationErrors.preferredDeliveryTime && (
               <span className="error-message">{validationErrors.preferredDeliveryTime}</span>
             )}
-            <p className="helper-text" style={{ marginTop: '4px', fontSize: '12px', color: '#666' }}>
+            <p className="helper-text" style={{ marginTop: '4px', fontSize: 'var(--admin-fs-sm, 12px)', color: '#666' }}>
               {t('order.preferredTimeHelper') || 'Please note: Delivery may arrive 10 minutes earlier or later than your preferred time.'}
             </p>
           </div>
@@ -1482,12 +1482,12 @@ Please confirm. Thank you! 🙏`;
                   marginBottom: '20px'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <i className="fa-solid fa-info-circle" style={{ color: '#f59e0b', fontSize: '18px', marginTop: '2px' }}></i>
+                    <i className="fa-solid fa-info-circle" style={{ color: '#f59e0b', fontSize: 'var(--admin-fs-lg, 18px)', marginTop: '2px' }}></i>
                     <div>
                       <strong style={{ display: 'block', marginBottom: '8px', color: '#92400e' }}>
                         {t('order.deliveryTimeDisclaimer') || 'Delivery Time Disclaimer'}
                       </strong>
-                      <p style={{ margin: 0, fontSize: '14px', color: '#78350f', lineHeight: '1.5' }}>
+                      <p style={{ margin: 0, fontSize: 'var(--admin-fs-base, 14px)', color: '#78350f', lineHeight: '1.5' }}>
                         {t('order.deliveryTimeDisclaimerText') || 'Please note that your order may arrive up to 10 minutes earlier or later than your preferred delivery time due to traffic conditions and order volume. We appreciate your understanding.'}
                       </p>
                     </div>
@@ -1500,10 +1500,10 @@ Please confirm. Thank you! 🙏`;
                   padding: '16px',
                   border: '1px solid #e5e7eb'
                 }}>
-                  <h3 style={{ marginTop: 0, marginBottom: '12px', fontSize: '16px' }}>
+                  <h3 style={{ marginTop: 0, marginBottom: '12px', fontSize: 'var(--admin-fs-md, 16px)' }}>
                     {t('order.orderSummary') || 'Order Summary'}
                   </h3>
-                  <div style={{ fontSize: '14px', lineHeight: '1.8' }}>
+                  <div style={{ fontSize: 'var(--admin-fs-base, 14px)', lineHeight: '1.8' }}>
                     <div><strong>Customer:</strong> {pendingOrderData.customerName}</div>
                     <div><strong>Address:</strong> {pendingOrderData.addressText}</div>
                     <div><strong>Date:</strong> {pendingOrderData.formattedDate}</div>

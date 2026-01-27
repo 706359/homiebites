@@ -32,56 +32,57 @@
   line-height: 1.5;
 }
 
-.offers-stats {
+.offers-tab .offers-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-.stat-card {
-  background: var(--admin-bg-white);
-  border: 1px solid var(--admin-border-color);
+/* Scoped to offers-tab only – avoids duplicate/override of cards.css .stat-card */
+.offers-tab .stat-card {
+  background: var(--admin-bg, #ffffff);
+  border: 1px solid var(--admin-border, #e5e7eb);
   border-radius: 12px;
   padding: 1.5rem;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   transition: all 0.2s ease;
 }
 
-.stat-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+.offers-tab .stat-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
 }
 
-.stat-card-success {
-  border-color: var(--primary-green);
-  background: rgba(68, 144, 49, 0.05);
+.offers-tab .stat-card-success {
+  border-color: var(--admin-accent, #449031);
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.08));
 }
 
-.stat-card-warning {
-  border-color: var(--primary-orange);
-  background: rgba(196, 92, 45, 0.05);
+.offers-tab .stat-card-warning {
+  border-color: var(--admin-secondary, #c45c2d);
+  background: var(--admin-secondary-light, rgba(196, 92, 45, 0.08));
 }
 
-.stat-value {
-  font-size: 2.5rem;
+.offers-tab .stat-value {
+  font-size: var(--admin-fs-2xl, 1.5rem);
   font-weight: 700;
-  color: var(--admin-text-primary);
+  color: var(--admin-text-primary, #111827);
   margin-bottom: 0.5rem;
 }
 
-.stat-card-success .stat-value {
-  color: var(--primary-green);
+.offers-tab .stat-card-success .stat-value {
+  color: var(--admin-accent, #449031);
 }
 
-.stat-card-warning .stat-value {
-  color: var(--primary-orange);
+.offers-tab .stat-card-warning .stat-value {
+  color: var(--admin-secondary, #c45c2d);
 }
 
-.stat-label {
-  font-size: 0.9rem;
-  color: var(--admin-text-secondary);
+.offers-tab .stat-label {
+  font-size: var(--admin-fs-base, 0.875rem);
+  color: var(--admin-text-secondary, #6b7280);
   font-weight: 500;
 }
 

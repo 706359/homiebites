@@ -43,6 +43,10 @@
   max-width: 800px;
 }
 
+.admin-dashboard .modal-container.max-width-540 {
+  max-width: 540px;
+}
+
 .admin-dashboard .modal-container.full {
   max-width: 95%;
 }
@@ -840,7 +844,7 @@
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  font-size: 28px;
+  font-size: var(--admin-fs-2xl-mid);
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
@@ -884,7 +888,7 @@
 }
 
 .session-timeout-number {
-  font-size: 36px;
+  font-size: var(--admin-fs-3xl);
   font-weight: 700;
   color: var(--admin-accent, #449031);
   line-height: 1;
@@ -900,7 +904,7 @@
 }
 
 .session-timeout-separator {
-  font-size: 36px;
+  font-size: var(--admin-fs-3xl);
   font-weight: 700;
   color: var(--admin-text-primary, #1e293b);
   line-height: 1;
@@ -954,7 +958,7 @@
   .session-timeout-icon {
     width: 56px;
     height: 56px;
-    font-size: 24px;
+    font-size: var(--admin-fs-2xl);
     margin-bottom: 12px;
   }
 
@@ -972,11 +976,11 @@
   }
 
   .session-timeout-number {
-    font-size: 28px;
+    font-size: var(--admin-fs-2xl-mid);
   }
 
   .session-timeout-separator {
-    font-size: 28px;
+    font-size: var(--admin-fs-2xl-mid);
   }
 
   .session-timeout-footer {

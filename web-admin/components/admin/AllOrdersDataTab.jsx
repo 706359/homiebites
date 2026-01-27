@@ -5,6 +5,7 @@ import {
   extractOrderIdSequence,
   formatBillingMonth,
   formatCurrency,
+  getOrderAmount,
   isPaidStatus,
   isPendingStatus,
   sortOrdersByOrderId,
@@ -617,7 +618,7 @@ const AllOrdersDataTab = ({
           }
           return `${idx + 1},"${date ? date.toLocaleDateString() : ''}","${
             o.deliveryAddress || o.customerAddress || o.address || 'N/A'
-          }","${o.quantity || 1}","${o.unitPrice || 0}","${o.total || o.totalAmount || 0}","${
+          }","${o.quantity || 1}","${o.unitPrice || 0}","${getOrderAmount(o)}","${
             o.mode || 'N/A'
           }","${o.status || 'N/A'}","${o.paymentMode || 'N/A'}","${
             month ? formatBillingMonth(month, year) : 'N/A'
@@ -653,9 +654,10 @@ const AllOrdersDataTab = ({
 
   return (
     <div className="admin-content">
-      <div className="dashboard-card table-container-card">
-        <div className="action-bar">
-          <div className="search-input-wrapper">
+      <div className="kitchen-tab">
+      <div className="kitchen-tab-actions dashboard-card table-container-card" style={{ marginBottom: 0 }}>
+        <div className="kitchen-tab-actions-left" style={{ flex: '1 1 320px', minWidth: 0 }}>
+          <div className="search-input-wrapper" style={{ minWidth: 200, maxWidth: 360 }}>
             <input
               type="text"
               className="input-field search-input-with-icon"
@@ -664,46 +666,48 @@ const AllOrdersDataTab = ({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="action-buttons-group">
-            <button
-              className="btn btn-ghost btn-small filter-icon-btn"
-              onClick={() => setShowFilterWrapper(!showFilterWrapper)}
-              title="Filters"
-            >
-              <i className="fa-solid fa-filter"></i>
-              {(allOrdersFilterPaymentStatus ||
-                filterStatus ||
-                filterMode ||
-                filterPayment ||
-                filterAddress ||
-                dateRangeFrom ||
-                dateRangeTo ||
-                allOrdersFilterMonth ||
-                filterYear) && (
-                <span className="filter-badge">
-                  {
-                    [
-                      allOrdersFilterPaymentStatus,
-                      filterStatus,
-                      filterMode,
-                      filterPayment,
-                      filterAddress,
-                      dateRangeFrom,
-                      dateRangeTo,
-                      allOrdersFilterMonth,
-                      filterYear,
-                    ].filter(Boolean).length
-                  }
-                </span>
-              )}
-            </button>
-          </div>
-          <div className="table-info-text">
+          <button
+            className="btn btn-ghost btn-small filter-icon-btn"
+            onClick={() => setShowFilterWrapper(!showFilterWrapper)}
+            title="Filters"
+          >
+            <i className="fa-solid fa-filter"></i>
+            {(allOrdersFilterPaymentStatus ||
+              filterStatus ||
+              filterMode ||
+              filterPayment ||
+              filterAddress ||
+              dateRangeFrom ||
+              dateRangeTo ||
+              allOrdersFilterMonth ||
+              filterYear) && (
+              <span className="filter-badge">
+                {
+                  [
+                    allOrdersFilterPaymentStatus,
+                    filterStatus,
+                    filterMode,
+                    filterPayment,
+                    filterAddress,
+                    dateRangeFrom,
+                    dateRangeTo,
+                    allOrdersFilterMonth,
+                    filterYear,
+                  ].filter(Boolean).length
+                }
+              </span>
+            )}
+          </button>
+        </div>
+        <div className="kitchen-tab-actions-right">
+          <span className="table-info-text">
             Showing {startIndex + 1}-
             {Math.min(startIndex + recordsPerPage, filteredOrders.length)} of{' '}
             {filteredOrders.length} orders
-          </div>
+          </span>
         </div>
+      </div>
+      <div className="dashboard-card table-container-card" style={{ marginTop: 24 }}>
 
         {showFilterWrapper && (
           <div className="filter-wrapper-dropdown">
@@ -1213,11 +1217,7 @@ const AllOrdersDataTab = ({
                         <div className="order-row-total">
                           <span className="order-row-total-symbol">₹</span>
                           <span className="order-row-total-value">
-                            {formatCurrency(
-                              order.total ||
-                                order.totalAmount ||
-                                (order.quantity || 1) * (order.unitPrice || 0)
-                            )}
+                            {formatCurrency(getOrderAmount(order))}
                           </span>
                         </div>
                       </td>
@@ -1370,6 +1370,7 @@ const AllOrdersDataTab = ({
             <span>per page</span>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

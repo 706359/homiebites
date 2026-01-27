@@ -26,7 +26,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
           localStorage.getItem('homiebites_primary_color') || '#449031';
         const fontFamily =
           localStorage.getItem('homiebites_font_family') || 'Baloo 2';
-        const fontSize = localStorage.getItem('homiebites_font_size') || '16';
+        const fontSize = localStorage.getItem('homiebites_font_size') || '18';
 
         const root = document.documentElement;
         const loginWrapper = document.querySelector('.login-page-wrapper');
