@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import ReviewForm from './ReviewForm';
 import './Testimonials.css';
+import Icon from './ui/Icon.jsx';
 
 const Testimonials = () => {
   const { t } = useLanguage();
@@ -70,9 +71,10 @@ const Testimonials = () => {
     return (
       <div className="review-stars" data-rating={rating}>
         {[1, 2, 3, 4, 5].map((star) => (
-          <i
+          <Icon
             key={star}
-            className={`fa-solid fa-star ${star <= rating ? 'active' : ''}`}
+            name="star"
+            className={star <= rating ? 'active' : ''}
           />
         ))}
       </div>
@@ -116,8 +118,7 @@ const Testimonials = () => {
               className="btn btn-primary btn-small"
               onClick={() => setShowReviewForm(true)}
             >
-              <i className="fa-solid fa-pen"></i>{' '}
-              {t('reviews.writeReview') || 'Write a Review'}
+              <Icon name="pen" /> {t('reviews.writeReview') || 'Write a Review'}
             </button>
           </div>
           <p className="testimonials-loading">
@@ -142,8 +143,7 @@ const Testimonials = () => {
             className="btn btn-primary btn-small"
             onClick={() => setShowReviewForm(true)}
           >
-            <i className="fa-solid fa-pen"></i>{' '}
-            {t('reviews.writeReview') || 'Write a Review'}
+            <Icon name="pen" /> {t('reviews.writeReview') || 'Write a Review'}
           </button>
         </div>
 
@@ -154,69 +154,72 @@ const Testimonials = () => {
               const reviewId = review._id || review.id;
               const isExpanded = expandedCardId === reviewId;
               return (
-              <div
-                key={reviewId}
-                className={`review-card ${review.featured ? 'review-card-featured' : ''} ${isExpanded ? 'review-card-expanded' : ''}`}
-                data-rating={rating}
-                data-review-id={reviewId}
-                onClick={(e) => {
-                  // Only handle click on mobile (below 480px)
-                  // Check if we're on mobile by checking window width or using a class
-                  if (window.innerWidth <= 480) {
-                    if (isExpanded) {
-                      setExpandedCardId(null);
-                    } else {
-                      setExpandedCardId(reviewId);
+                <div
+                  key={reviewId}
+                  className={`review-card ${review.featured ? 'review-card-featured' : ''} ${isExpanded ? 'review-card-expanded' : ''}`}
+                  data-rating={rating}
+                  data-review-id={reviewId}
+                  onClick={(e) => {
+                    // Only handle click on mobile (below 480px)
+                    // Check if we're on mobile by checking window width or using a class
+                    if (window.innerWidth <= 480) {
+                      if (isExpanded) {
+                        setExpandedCardId(null);
+                      } else {
+                        setExpandedCardId(reviewId);
+                      }
                     }
-                  }
-                }}
-              >
-                <div className="review-card-header">
-                  <div className="author-avatar">
-                    {(review.userName || review.name || 'Customer')
-                      .charAt(0)
-                      .toUpperCase()}
-                  </div>
-                  {review.featured && (
-                    <span className="review-featured-badge" title="Featured Review">
-                      <i className="fa-solid fa-star"></i>
-                    </span>
-                  )}
-                </div>
-                <div className="review-card-body">
-                  <div className="review-author-name">
-                    <strong>
-                      {review.userName || review.name || 'Customer'}
-                    </strong>
-                  </div>
-                  {review.userLocation || review.location ? (
-                    <div className="review-location">
-                      <i className="fa-solid fa-location-dot"></i>{' '}
-                      {review.userLocation || review.location}
+                  }}
+                >
+                  <div className="review-card-header">
+                    <div className="author-avatar">
+                      {(review.userName || review.name || 'Customer')
+                        .charAt(0)
+                        .toUpperCase()}
                     </div>
-                  ) : null}
-                  <div className="review-rating-section">
-                    {renderStars(review.rating || 5)}
-                    <span className="review-rating-number">
-                      {review.rating || 5}/5
-                    </span>
+                    {review.featured && (
+                      <span
+                        className="review-featured-badge"
+                        title="Featured Review"
+                      >
+                        <Icon name="star" />
+                      </span>
+                    )}
                   </div>
-                  <p className="review-comment">
-                    {review.comment || review.text}
-                  </p>
-                  <div className="review-date">
-                    <i className="fa-solid fa-calendar"></i>{' '}
-                    {review.createdAt ? formatDate(review.createdAt) : ''}
+                  <div className="review-card-body">
+                    <div className="review-author-name">
+                      <strong>
+                        {review.userName || review.name || 'Customer'}
+                      </strong>
+                    </div>
+                    {review.userLocation || review.location ? (
+                      <div className="review-location">
+                        <Icon name="location-dot" />{' '}
+                        {review.userLocation || review.location}
+                      </div>
+                    ) : null}
+                    <div className="review-rating-section">
+                      {renderStars(review.rating || 5)}
+                      <span className="review-rating-number">
+                        {review.rating || 5}/5
+                      </span>
+                    </div>
+                    <p className="review-comment">
+                      {review.comment || review.text}
+                    </p>
+                    <div className="review-date">
+                      <Icon name="calendar" />{' '}
+                      {review.createdAt ? formatDate(review.createdAt) : ''}
+                    </div>
                   </div>
                 </div>
-              </div>
               );
             })}
           </div>
         ) : (
           <div className="no-reviews">
             <div className="no-reviews-icon-wrapper">
-              <i className="fa-solid fa-star"></i>
+              <Icon name="star" />
             </div>
             <h3 className="no-reviews-title">
               {t('reviews.noReviewsTitle') ||

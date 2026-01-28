@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import Icon from '../ui/Icon.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
 
 import {
@@ -300,7 +301,7 @@ const AllAddressesTab = ({
       <div className="admin-content">
         <div className="dashboard-card empty-state-center">
           <div className="empty-state">
-            <i className="fa-solid fa-users empty-state-icon"></i>
+            <Icon name="users" className="empty-state-icon"/>
             <p>No orders found</p>
             <p className="empty-state-text">
               Add some orders to see customer data here
@@ -322,21 +323,21 @@ const AllAddressesTab = ({
           </div>
         </div>
         <div className="stat-card stat-card-gradient-warning customer-stat-card">
-          <i className="fa-solid fa-crown customer-stat-icon customer-stat-icon-green"></i>
+          <Icon name="crown" className="customer-stat-icon customer-stat-icon-green"/>
           <div className="customer-stat-content">
             <h3 className="customer-stat-number">{segments.superVip}</h3>
             <p className="customer-stat-label">Super VIP (≥₹15k)</p>
           </div>
         </div>
         <div className="stat-card stat-card-gradient-warning customer-stat-card">
-          <i className="fa-solid fa-star customer-stat-icon customer-stat-icon-green"></i>
+          <Icon name="star" className="customer-stat-icon customer-stat-icon-green"/>
           <div className="customer-stat-content">
             <h3 className="customer-stat-number">{segments.vip}</h3>
             <p className="customer-stat-label">VIP (₹8k-₹15k)</p>
           </div>
         </div>
         <div className="stat-card stat-card-gradient-secondary customer-stat-card">
-          <i className="fa-solid fa-user customer-stat-icon customer-stat-icon-light"></i>
+          <Icon name="user" className="customer-stat-icon customer-stat-icon-light"/>
           <div className="customer-stat-content">
             <h3 className="customer-stat-number">{segments.regular}</h3>
             <p className="customer-stat-label">Regular Customers</p>
@@ -393,14 +394,14 @@ const AllAddressesTab = ({
                 onClick={() => setViewMode('table')}
                 title="Table View"
               >
-                <i className="fa-solid fa-table"></i>
+                <Icon name="table"/>
               </button>
               <button
                 className={`btn btn-ghost btn-icon ${viewMode === 'cards' ? 'active' : ''}`}
                 onClick={() => setViewMode('cards')}
                 title="Card View"
               >
-                <i className="fa-solid fa-th"></i>
+                <Icon name="th"/>
               </button>
             </div>
             {(searchQuery ||
@@ -415,7 +416,7 @@ const AllAddressesTab = ({
                 }}
                 title="Clear Filters"
               >
-                <i className="fa-solid fa-xmark"></i> Clear
+                <Icon name="xmark"/> Clear
               </button>
             )}
           </div>
@@ -454,7 +455,7 @@ const AllAddressesTab = ({
             {filteredCustomers.length === 0 ? (
               <div className="empty-state-center">
                 <div className="empty-state">
-                  <i className="fa-solid fa-users empty-state-icon"></i>
+                  <Icon name="users" className="empty-state-icon"/>
                   <p>No customers found</p>
                   <p className="empty-state-text">
                     {orders.length > 0 && customerStats.length === 0
@@ -478,11 +479,10 @@ const AllAddressesTab = ({
                       >
                         Address
                         {sortBy === 'address' && (
-                          <i
-                            className={`fa-solid fa-arrow-${
-                              sortOrder === 'asc' ? 'up' : 'down'
-                            } ml-6 text-xs`}
-                          ></i>
+                          <Icon
+                            name={`arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
+                            className="ml-6 text-xs"
+                          />
                         )}
                       </th>
                       <th
@@ -491,11 +491,10 @@ const AllAddressesTab = ({
                       >
                         Orders
                         {sortBy === 'totalOrders' && (
-                          <i
-                            className={`fa-solid fa-arrow-${
-                              sortOrder === 'asc' ? 'up' : 'down'
-                            } ml-6 text-xs`}
-                          ></i>
+                          <Icon
+                            name={`arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
+                            className="ml-6 text-xs"
+                          />
                         )}
                       </th>
                       <th
@@ -504,11 +503,10 @@ const AllAddressesTab = ({
                       >
                         Total Spent
                         {sortBy === 'totalSpent' && (
-                          <i
-                            className={`fa-solid fa-arrow-${
-                              sortOrder === 'asc' ? 'up' : 'down'
-                            } ml-6 text-xs`}
-                          ></i>
+                          <Icon
+                            name={`arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
+                            className="ml-6 text-xs"
+                          />
                         )}
                       </th>
                       <th
@@ -517,11 +515,10 @@ const AllAddressesTab = ({
                       >
                         Avg Order
                         {sortBy === 'avgOrderValue' && (
-                          <i
-                            className={`fa-solid fa-arrow-${
-                              sortOrder === 'asc' ? 'up' : 'down'
-                            } ml-6 text-xs`}
-                          ></i>
+                          <Icon
+                            name={`arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
+                            className="ml-6 text-xs"
+                          />
                         )}
                       </th>
                       <th
@@ -530,11 +527,10 @@ const AllAddressesTab = ({
                       >
                         Last Order
                         {sortBy === 'lastOrder' && (
-                          <i
-                            className={`fa-solid fa-arrow-${
-                              sortOrder === 'asc' ? 'up' : 'down'
-                            } ml-6 text-xs`}
-                          ></i>
+                          <Icon
+                            name={`arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
+                            className="ml-6 text-xs"
+                          />
                         )}
                       </th>
                       <th>Segment</th>
@@ -621,7 +617,7 @@ const AllAddressesTab = ({
                                   onViewOrders(customer.address);
                               }}
                             >
-                              <i className="fa-solid fa-list"></i>
+                              <Icon name="list"/>
                             </button>
                           </td>
                         </tr>
@@ -640,7 +636,7 @@ const AllAddressesTab = ({
                         }
                         disabled={currentPage === 1}
                       >
-                        <i className="fa-solid fa-chevron-left"></i> Previous
+                        <Icon name="chevron-left"/> Previous
                       </button>
                       <span className="pagination-info">
                         Page {currentPage} of {totalPages}
@@ -652,7 +648,7 @@ const AllAddressesTab = ({
                         }
                         disabled={currentPage === totalPages}
                       >
-                        Next <i className="fa-solid fa-chevron-right"></i>
+                        Next <Icon name="chevron-right"/>
                       </button>
                     </div>
                     <div className="pagination-container">
@@ -683,7 +679,7 @@ const AllAddressesTab = ({
           {filteredCustomers.length === 0 ? (
             <div className="dashboard-card grid-col-full empty-state-center">
               <div className="empty-state">
-                <i className="fa-solid fa-users empty-state-icon"></i>
+                <Icon name="users" className="empty-state-icon"/>
                 <p>No customers found</p>
                 <p className="empty-state-text">
                   {orders.length > 0 && customerStats.length === 0
@@ -762,12 +758,12 @@ const AllAddressesTab = ({
                     </div>
                     {customer.isInactive ? (
                       <span className="customer-card-enhanced-status-badge inactive">
-                        <i className="fa-solid fa-clock"></i>
+                        <Icon name="clock"/>
                         <span>Inactive</span>
                       </span>
                     ) : (
                       <span className="customer-card-enhanced-status-badge active">
-                        <i className="fa-solid fa-check-circle"></i>
+                        <Icon name="check-circle"/>
                         <span>Active</span>
                       </span>
                     )}
@@ -781,7 +777,7 @@ const AllAddressesTab = ({
                     <div className="customer-card-enhanced-stats">
                       <div className="customer-card-enhanced-stat-item">
                         <div className="customer-card-enhanced-stat-icon">
-                          <i className="fa-solid fa-shopping-cart"></i>
+                          <Icon name="shopping-cart"/>
                         </div>
                         <div className="customer-card-enhanced-stat-content">
                           <span className="customer-card-enhanced-stat-label">
@@ -795,7 +791,7 @@ const AllAddressesTab = ({
 
                       <div className="customer-card-enhanced-stat-item highlight">
                         <div className="customer-card-enhanced-stat-icon">
-                          <i className="fa-solid fa-rupee-sign"></i>
+                          <Icon name="rupee-sign"/>
                         </div>
                         <div className="customer-card-enhanced-stat-content">
                           <span className="customer-card-enhanced-stat-label">
@@ -809,7 +805,7 @@ const AllAddressesTab = ({
 
                       <div className="customer-card-enhanced-stat-item">
                         <div className="customer-card-enhanced-stat-icon">
-                          <i className="fa-solid fa-chart-line"></i>
+                          <Icon name="chart-line"/>
                         </div>
                         <div className="customer-card-enhanced-stat-content">
                           <span className="customer-card-enhanced-stat-label">
@@ -825,13 +821,13 @@ const AllAddressesTab = ({
                     <div className="customer-card-enhanced-footer">
                       <div className="customer-card-enhanced-meta">
                         <div className="customer-card-enhanced-meta-item">
-                          <i className="fa-solid fa-calendar"></i>
+                          <Icon name="calendar"/>
                           <span>
                             Last: {formatDateDiff(customer.lastOrderDate)}
                           </span>
                         </div>
                         <div className="customer-card-enhanced-meta-item">
-                          <i className="fa-solid fa-clock"></i>
+                          <Icon name="clock"/>
                           <span>{customer.preferredMode}</span>
                         </div>
                       </div>
@@ -846,7 +842,7 @@ const AllAddressesTab = ({
                         if (onViewOrders) onViewOrders(customer.address);
                       }}
                     >
-                      <i className="fa-solid fa-list"></i> View Orders
+                      <Icon name="list"/> View Orders
                     </button>
                   </div>
                 </div>
@@ -864,7 +860,7 @@ const AllAddressesTab = ({
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
             >
-              <i className="fa-solid fa-chevron-left"></i> Previous
+              <Icon name="chevron-left"/> Previous
             </button>
             <span className="pagination-info">
               Page {currentPage} of {totalPages}
@@ -876,7 +872,7 @@ const AllAddressesTab = ({
               }
               disabled={currentPage === totalPages}
             >
-              Next <i className="fa-solid fa-chevron-right"></i>
+              Next <Icon name="chevron-right"/>
             </button>
           </div>
         </div>
@@ -894,7 +890,7 @@ const AllAddressesTab = ({
                 className="btn btn-ghost btn-icon modal-close"
                 onClick={() => setShowCustomerModal(false)}
               >
-                <i className="fa-solid fa-times"></i>
+                <Icon name="times"/>
               </button>
             </div>
             <div className="modal-body">

@@ -26,16 +26,16 @@
   align-items: center;
 }
 
-.review-stars-inline .fa-star {
+.review-stars-inline .lucide-icon {
   font-size: var(--admin-fs-sm);
   color: #d1d5db;
 }
 
-.review-stars-inline .fa-star.star-filled {
+.review-stars-inline .lucide-icon.star-filled {
   color: #fbbf24;
 }
 
-.review-stars-inline .fa-star.star-empty {
+.review-stars-inline .lucide-icon.star-empty {
   color: #e5e7eb;
 }
 

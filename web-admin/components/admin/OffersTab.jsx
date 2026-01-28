@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Icon from '../ui/Icon.jsx';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance.js';
 import api from '../../lib/api-admin.js';
 import ConfirmationModal from './ConfirmationModal.jsx';
@@ -233,7 +234,7 @@ const OffersTab = ({
           </p>
         </div>
         <button className="btn btn-primary" onClick={handleAddOffer}>
-          <i className="fa-solid fa-plus"></i> Add New Offer
+          <Icon name="plus"/> Add New Offer
         </button>
       </div>
 
@@ -254,13 +255,13 @@ const OffersTab = ({
 
       {offers.length === 0 ? (
         <div className="empty-state">
-          <i className="fa-solid fa-tag empty-state-icon"></i>
+          <Icon name="tag" className="empty-state-icon"/>
           <h3 className="empty-state-title">No offers yet</h3>
           <p className="empty-state-message">
             Create your first special offer to attract more customers
           </p>
           <button className="btn btn-primary" onClick={handleAddOffer}>
-            <i className="fa-solid fa-plus"></i> Add Your First Offer
+            <Icon name="plus"/> Add Your First Offer
           </button>
         </div>
       ) : (
@@ -305,7 +306,7 @@ const OffersTab = ({
                       onClick={() => handleEditOffer(offer)}
                       title="Edit offer"
                     >
-                      <i className="fa-solid fa-edit"></i>
+                      <Icon name="edit"/>
                     </button>
                     <button
                       className="btn-icon btn-icon-danger"
@@ -315,7 +316,7 @@ const OffersTab = ({
                       }}
                       title="Delete offer"
                     >
-                      <i className="fa-solid fa-trash"></i>
+                      <Icon name="trash"/>
                     </button>
                   </div>
                 </div>
@@ -385,7 +386,7 @@ const OffersTab = ({
                 className="modal-close"
                 onClick={() => setShowAddModal(false)}
               >
-                <i className="fa-solid fa-times"></i>
+                <Icon name="times"/>
               </button>
             </div>
             <div className="modal-body">
@@ -508,7 +509,7 @@ const OffersTab = ({
                         className="btn-icon btn-icon-danger"
                         onClick={() => handleRemoveTerm(index)}
                       >
-                        <i className="fa-solid fa-times"></i>
+                        <Icon name="times"/>
                       </button>
                     )}
                   </div>
@@ -518,7 +519,7 @@ const OffersTab = ({
                   className="btn btn-ghost btn-small"
                   onClick={handleAddTerm}
                 >
-                  <i className="fa-solid fa-plus"></i> Add Term
+                  <Icon name="plus"/> Add Term
                 </button>
               </div>
 
@@ -573,7 +574,7 @@ const OffersTab = ({
                 className="btn btn-primary"
                 onClick={() => handleSaveOffer(false)}
               >
-                <i className="fa-solid fa-save"></i> Add Offer
+                <Icon name="save"/> Add Offer
               </button>
             </div>
           </div>
@@ -593,7 +594,7 @@ const OffersTab = ({
                 className="modal-close"
                 onClick={() => setShowEditModal(false)}
               >
-                <i className="fa-solid fa-times"></i>
+                <Icon name="times"/>
               </button>
             </div>
             <div className="modal-body">
@@ -716,7 +717,7 @@ const OffersTab = ({
                         className="btn-icon btn-icon-danger"
                         onClick={() => handleRemoveTerm(index)}
                       >
-                        <i className="fa-solid fa-times"></i>
+                        <Icon name="times"/>
                       </button>
                     )}
                   </div>
@@ -726,7 +727,7 @@ const OffersTab = ({
                   className="btn btn-ghost btn-small"
                   onClick={handleAddTerm}
                 >
-                  <i className="fa-solid fa-plus"></i> Add Term
+                  <Icon name="plus"/> Add Term
                 </button>
               </div>
 
@@ -781,7 +782,7 @@ const OffersTab = ({
                 className="btn btn-primary"
                 onClick={() => handleSaveOffer(true)}
               >
-                <i className="fa-solid fa-save"></i> Save Changes
+                <Icon name="save"/> Save Changes
               </button>
             </div>
           </div>

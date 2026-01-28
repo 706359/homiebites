@@ -831,9 +831,9 @@
 
   /* Export button specific fix */
   .action-bar .btn[title*="Export"],
-  .action-bar .btn:has(i.fa-download),
+  .action-bar .btn:has(.lucide-icon),
   .action-buttons-group .btn[title*="Export"],
-  .action-buttons-group .btn:has(i.fa-download) {
+  .action-buttons-group .btn:has(.lucide-icon) {
     min-width: 0 !important;
     max-width: calc(50% - 4px) !important;
     flex: 0 1 calc(50% - 4px) !important;

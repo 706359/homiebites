@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import Icon from '../ui/Icon.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
 import { getFilteredOrdersByDate } from './utils/calculations.js';
 import { formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
@@ -488,7 +489,7 @@ const PendingAmountsTab = ({
       <div className="kitchen-tab">
         <div className="kitchen-tab-stats">
           <div className="stat-card">
-            <i className="fa-solid fa-check-circle icon-success"></i>
+            <Icon name="check-circle" className="icon-success"/>
             <div>
               <h3>₹{formatCurrency(summaryStats.totalPaid)}</h3>
               <p>Total Paid</p>
@@ -498,7 +499,7 @@ const PendingAmountsTab = ({
             </div>
           </div>
           <div className="stat-card">
-            <i className="fa-solid fa-exclamation-triangle pending-warning-text"></i>
+            <Icon name="exclamation-triangle" className="pending-warning-text"/>
             <div>
               <h3>₹{formatCurrency(summaryStats.pending)}</h3>
               <p>Pending</p>
@@ -508,7 +509,7 @@ const PendingAmountsTab = ({
             </div>
           </div>
           <div className="stat-card">
-            <i className="fa-solid fa-times-circle icon-danger"></i>
+            <Icon name="times-circle" className="icon-danger"/>
             <div>
               <h3>₹{formatCurrency(summaryStats.overdue)}</h3>
               <p>Overdue</p>
@@ -518,7 +519,7 @@ const PendingAmountsTab = ({
             </div>
           </div>
           <div className="stat-card">
-            <i className="fa-solid fa-calendar-alt icon-accent"></i>
+            <Icon name="calendar-alt" className="icon-accent"/>
             <div>
               <h3>₹{formatCurrency(summaryStats.thisMonth)}</h3>
               <p>This Month</p>
@@ -573,7 +574,7 @@ const PendingAmountsTab = ({
                 }}
                 title="Clear all filters"
               >
-                <i className="fa-solid fa-xmark pending-clear-filter-icon"></i>
+                <Icon name="xmark" className="pending-clear-filter-icon"/>
                 Clear
               </button>
             )}
@@ -583,7 +584,7 @@ const PendingAmountsTab = ({
                 onClick={handleBulkMarkAsPaid}
                 disabled={pendingPayments.length === 0}
               >
-                <i className="fa-solid fa-check-circle pending-mark-paid-icon"></i>
+                <Icon name="check-circle" className="pending-mark-paid-icon"/>
                 Mark All as Paid
               </button>
             </div>
@@ -614,7 +615,7 @@ const PendingAmountsTab = ({
                 <tr>
                   <td colSpan="6" className="pending-table-empty-message">
                     <div className="pending-table-empty-content">
-                      <i className="fa-solid fa-inbox pending-table-empty-icon"></i>
+                      <Icon name="inbox" className="pending-table-empty-icon"/>
                       <p className="pending-table-empty-text">
                         {searchQuery ||
                         filterUrgency !== 'all' ||
@@ -693,7 +694,7 @@ const PendingAmountsTab = ({
                       </td>
                       <td>
                         <div className="pending-payment-order-id">
-                          <i className="fa-solid fa-hashtag"></i>
+                          <Icon name="hashtag"/>
                           <span className="monospace-text">
                             {order.orderId || 'N/A'}
                           </span>
@@ -707,7 +708,7 @@ const PendingAmountsTab = ({
                           }
                           title="Mark as Paid"
                         >
-                          <i className="fa-solid fa-check-circle"></i>
+                          <Icon name="check-circle"/>
                           <span>Mark Paid</span>
                         </button>
                       </td>
@@ -727,7 +728,7 @@ const PendingAmountsTab = ({
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
               >
-                <i className="fa-solid fa-chevron-left"></i> Previous
+                <Icon name="chevron-left"/> Previous
               </button>
               <span className="pagination-info">
                 Page {currentPage} of {totalPages}
@@ -739,7 +740,7 @@ const PendingAmountsTab = ({
                 }
                 disabled={currentPage >= totalPages}
               >
-                Next <i className="fa-solid fa-chevron-right"></i>
+                Next <Icon name="chevron-right"/>
               </button>
             </div>
             <div className="pagination-container">
@@ -767,7 +768,7 @@ const PendingAmountsTab = ({
         <div className="dashboard-grid-item two-thirds">
           <div className="dashboard-card">
             <h3 className="dashboard-section-title">
-              <i className="fa-solid fa-chart-area pending-chart-icon"></i>
+              <Icon name="chart-area" className="pending-chart-icon"/>
               Payment Collection Timeline (30 days)
             </h3>
             <div className="pending-timeline-section">
@@ -810,7 +811,7 @@ const PendingAmountsTab = ({
         <div className="dashboard-grid-item third-width">
           <div className="dashboard-card">
             <h3 className="dashboard-section-title">
-              <i className="fa-solid fa-chart-pie pending-chart-icon"></i>
+              <Icon name="chart-pie" className="pending-chart-icon"/>
               Payment Mode Breakdown
             </h3>
             <div className="pending-payment-mode-section">

@@ -126,7 +126,9 @@
   border-radius: 12px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid rgba(229, 231, 235, 0.5);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .gallery-item:hover {
@@ -135,7 +137,9 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(68, 144, 49, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 8px 24px rgba(68, 144, 49, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .gallery-item::before {
@@ -198,40 +202,6 @@
   padding-top: 1rem;
 }
 
-.gallery-view-all-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1.25rem;
-  background: rgba(68, 144, 49, 0.25);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #6bc94c;
-  border: 1px solid rgba(68, 144, 49, 0.4);
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 8px rgba(68, 144, 49, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.gallery-view-all-btn:hover {
-  background: rgba(68, 144, 49, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-color: rgba(68, 144, 49, 0.6);
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(68, 144, 49, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.gallery-view-all-btn i {
-  transition: transform 0.25s ease;
-}
-
-.gallery-view-all-btn:hover i {
-  transform: translateY(1px);
-}
-
 /* --- Empty state (compact, dark) --- */
 
 .gallery-empty-state {
@@ -244,7 +214,9 @@
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(229, 231, 235, 0.5);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .gallery-empty-icon {
@@ -259,7 +231,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(68, 144, 49, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 2px 8px rgba(68, 144, 49, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .gallery-empty-icon i {

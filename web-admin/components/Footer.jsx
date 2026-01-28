@@ -3,11 +3,8 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLanguage } from '../contexts/LanguageContext';
-import {
-  getFormattedPhone,
-  getPhoneLink,
-  getWhatsAppLink,
-} from '../lib/businessConstants';
+import { getFormattedPhone, getPhoneLink } from '../lib/businessConstants';
+import Icon from './ui/Icon.jsx';
 import './Footer.css';
 
 const Footer = ({ onOrderClick }) => {
@@ -74,11 +71,11 @@ const Footer = ({ onOrderClick }) => {
             className="btn btn-primary btn-small"
             type="button"
           >
-            <i className="fa-brands fa-whatsapp"></i>{' '}
+            <Icon name="whatsapp" />{' '}
             {t('common.orderOnWhatsApp')}
           </button>
           <a href={getPhoneLink()} className="btn btn-secondary btn-small">
-            <i className="fa-solid fa-phone"></i> {t('common.call')}{' '}
+            <Icon name="phone" /> {t('common.call')}{' '}
             {getFormattedPhone()}
           </a>
         </div>
@@ -116,7 +113,9 @@ const Footer = ({ onOrderClick }) => {
           <h4>{t('footer.help')}</h4>
           <ul>
             <li>
-              <a href="/#faq" onClick={(e) => handleHashLink(e, '#faq')}>{t('common.faq')}</a>
+              <a href="/#faq" onClick={(e) => handleHashLink(e, '#faq')}>
+                {t('common.faq')}
+              </a>
             </li>
             <li>
               <a
@@ -137,7 +136,7 @@ const Footer = ({ onOrderClick }) => {
             </li>
             <li>
               <Link href="/admin" className="admin-link">
-                <i className="fa-solid fa-shield-halved"></i>{' '}
+                <Icon name="shield-halved" />{' '}
                 {t('footer.adminLogin')}
               </Link>
             </li>
@@ -153,6 +152,11 @@ const Footer = ({ onOrderClick }) => {
       </div>
 
       <div className="footer-bottom">
+        <div className="footer-fssai">
+          <p>
+            <strong>{t('footer.fssaiLabel')}</strong> {t('footer.fssaiNumber')}
+          </p>
+        </div>
         <p>{t('footer.copyright')}</p>
         <div className="footer-legal-links">
           <Link href="/privacy">Privacy Policy</Link>

@@ -10,48 +10,66 @@ export const getSessionExpiresAt = () =>
   new Date(Date.now() + SESSION_TTL_MS).toISOString();
 
 /**
- * Refresh session expiration time
+ * Client-side auth check (reads from non-HttpOnly cookie)
+ * For checking if user is logged in (does not have access to token)
  */
-export const refreshSession = () => {
-  if (typeof window === 'undefined') return false;
-  
+export const isAuthenticated = () => {
+  if (typeof document === 'undefined') return false;
+
   try {
-    const tokenMeta = localStorage.getItem('homiebites_token_meta');
-    if (!tokenMeta) return false;
-
-    const meta = JSON.parse(tokenMeta);
-    if (!meta) return false;
-
-    // Update expiration time
-    const newExpiresAt = getSessionExpiresAt();
-    localStorage.setItem(
-      'homiebites_token_meta',
-      JSON.stringify({ ...meta, expiresAt: newExpiresAt })
+    // Try to get from cookie (non-HttpOnly flag readable by JS)
+    const cookies = document.cookie.split(';');
+    return cookies.some((cookie) =>
+      cookie.trim().startsWith('homiebites_admin=true')
     );
+  } catch {
+    return false;
+  }
+};
 
-    // Update last activity timestamp
-    localStorage.setItem(
-      'homiebites_last_activity',
-      Date.now().toString()
-    );
+/**
+ * Refresh session by calling API endpoint
+ * Server will refresh the secure httpOnly token
+ */
+export const refreshSession = async () => {
+  if (typeof window === 'undefined') return false;
 
-    return true;
+  try {
+    const apiUrl =
+      typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL
+        ? String(process.env.NEXT_PUBLIC_API_URL).replace(/\/$/, '')
+        : '';
+
+    const response = await fetch(`${apiUrl}/api/auth/refresh-session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include cookies automatically
+    });
+
+    if (response.ok) {
+      updateLastActivity();
+      return true;
+    }
+    return false;
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('[Auth] refreshSession error:', e);
+      console.warn('[Auth] refreshSession error:', error);
     }
     return false;
   }
 };
 
 /**
- * Get last activity timestamp
+ * Get last activity timestamp from sessionStorage
+ * sessionStorage is cleared when tab closes (more secure than localStorage)
  */
 export const getLastActivity = () => {
   if (typeof window === 'undefined') return null;
-  
+
   try {
-    const lastActivity = localStorage.getItem('homiebites_last_activity');
+    const lastActivity = sessionStorage.getItem('homiebites_last_activity');
     return lastActivity ? parseInt(lastActivity, 10) : null;
   } catch {
     return null;
@@ -60,12 +78,13 @@ export const getLastActivity = () => {
 
 /**
  * Update last activity timestamp
+ * Uses sessionStorage instead of localStorage for security
  */
 export const updateLastActivity = () => {
   if (typeof window === 'undefined') return;
-  
+
   try {
-    localStorage.setItem('homiebites_last_activity', Date.now().toString());
+    sessionStorage.setItem('homiebites_last_activity', Date.now().toString());
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.warn('[Auth] updateLastActivity error:', error);
@@ -78,11 +97,11 @@ export const updateLastActivity = () => {
  */
 export const isSessionInactive = () => {
   if (typeof window === 'undefined') return false;
-  
+
   try {
     const lastActivity = getLastActivity();
     if (!lastActivity) return false;
-    
+
     const timeSinceActivity = Date.now() - lastActivity;
     return timeSinceActivity >= INACTIVITY_TIMEOUT_MS;
   } catch {
@@ -90,41 +109,83 @@ export const isSessionInactive = () => {
   }
 };
 
-/** Removes token, admin, user, token_meta, and last_activity from localStorage. */
-export const clearAuthStorage = () => {
+/**
+ * Logout user - call API to clear server-side session
+ * Client-side cookies will be cleared by Set-Cookie headers
+ */
+export const logout = async () => {
   try {
-    localStorage.removeItem(ADMIN_KEY);
-    localStorage.removeItem('homiebites_admin');
-    localStorage.removeItem('homiebites_user');
-    localStorage.removeItem('homiebites_token');
-    localStorage.removeItem('homiebites_token_meta');
-    localStorage.removeItem('homiebites_last_activity');
-  } catch (e) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[Auth] clearAuthStorage error:', e);
+    const apiUrl =
+      typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL
+        ? String(process.env.NEXT_PUBLIC_API_URL).replace(/\/$/, '')
+        : '';
+
+    // Call logout endpoint
+    fetch(`${apiUrl}/api/auth/logout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include cookies
+    }).catch(() => {
+      // Ignore errors - user will be logged out anyway
+    });
+
+    // Clear client-side session storage
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.clear();
+      } catch (e) {
+        // Ignore errors
+      }
     }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Auth] Logout completed, session cleared');
+    }
+  } catch (error) {
+    console.error('[Auth] Error during logout:', error);
   }
 };
 
 /**
- * If homiebites_token_meta.expiresAt exists and is in the past, clears auth storage and returns true.
- * Use to force re-login when the session has expired (e.g. browser was closed for too long).
+ * Check session validity (verify with server)
  */
-export const checkSessionAndClearIfExpired = () => {
+export const checkSessionAndClearIfExpired = async () => {
   if (typeof window === 'undefined') return false;
+
   try {
-    const raw = localStorage.getItem('homiebites_token_meta');
-    if (!raw) return false;
-    const meta = JSON.parse(raw);
-    if (!meta || !meta.expiresAt) return false;
-    if (new Date(meta.expiresAt) >= new Date()) return false;
-    clearAuthStorage();
-    return true;
-  } catch {
+    const apiUrl =
+      typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL
+        ? String(process.env.NEXT_PUBLIC_API_URL).replace(/\/$/, '')
+        : '';
+
+    const response = await fetch(`${apiUrl}/api/auth/verify`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include cookies
+    });
+
+    if (!response.ok) {
+      // Session invalid or expired
+      await logout();
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[Auth] Session check error:', error);
+    }
     return false;
   }
 };
 
+/**
+ * Deprecated - Use API authentication instead
+ */
 export const login = (username, password) => {
   console.warn(
     'login() from auth-admin.js is deprecated. Use API authentication instead.'
@@ -132,57 +193,9 @@ export const login = (username, password) => {
   return { success: false, error: 'Please use API authentication' };
 };
 
-export const logout = async () => {
-  try {
-    // Try to call logout API endpoint if available
-    try {
-      const token = typeof window !== 'undefined' 
-        ? localStorage.getItem('homiebites_token') 
-        : null;
-      
-      if (token) {
-        const apiUrl = typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL
-          ? String(process.env.NEXT_PUBLIC_API_URL).replace(/\/$/, '')
-          : '';
-        
-        // Call logout endpoint (fire and forget - don't wait for response)
-        fetch(`${apiUrl}/api/auth/logout`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        }).catch(() => {
-          // Ignore errors - we'll clear local storage anyway
-        });
-      }
-    } catch (apiError) {
-      // Ignore API errors - we'll clear local storage anyway
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('[Auth] Logout API call failed (non-critical):', apiError);
-      }
-    }
-
-    // Clear local storage
-    clearAuthStorage();
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Auth] Logout completed, localStorage cleared');
-    }
-  } catch (error) {
-    console.error('[Auth] Error during logout:', error);
-    try {
-      clearAuthStorage();
-    } catch (clearError) {
-      console.error('[Auth] Error clearing localStorage:', clearError);
-    }
-  }
-};
-
-export const isAuthenticated = () => {
-  return localStorage.getItem(ADMIN_KEY) === 'true';
-};
-
+/**
+ * Deprecated - Use requireAuth middleware instead
+ */
 export const requireAuth = () => {
   if (!isAuthenticated()) {
     return false;

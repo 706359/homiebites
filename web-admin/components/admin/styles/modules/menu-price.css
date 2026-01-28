@@ -320,17 +320,12 @@
   color: var(--admin-accent, #449031);
 }
 
-.menu-item-action-toggle i.fa-toggle-on {
+.menu-item-action-toggle .lucide-icon {
   color: var(--admin-accent, #449031);
 }
 
-.menu-item-action-toggle i.fa-toggle-off {
-  color: var(--admin-text-secondary, #6b7280);
-}
-
-.menu-item-action-toggle i.fa-spinner {
+.menu-item-action-toggle .lucide-icon-spin {
   color: var(--admin-accent, #449031);
-  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {

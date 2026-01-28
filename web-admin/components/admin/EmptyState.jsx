@@ -1,5 +1,5 @@
 const EmptyState = ({
-  icon = 'fa-inbox',
+  icon = 'inbox',
   title = 'No data found',
   message = 'Try adjusting your filters',
   onClearFilters,
@@ -9,19 +9,19 @@ const EmptyState = ({
 }) => {
   return (
     <div className="admin-empty-state">
-      <i className={`fa-solid ${icon} empty-state-icon-large`}></i>
+      <Icon name={icon} className="empty-state-icon-large" />
       <h3 className="empty-state-title">{title}</h3>
       {message && <p className="empty-state-message">{message}</p>}
       <div className="empty-state-actions">
         {onClearFilters && (
           <button className="btn btn-ghost btn-small" onClick={onClearFilters}>
-            <i className="fa-solid fa-filter-circle-xmark"></i>{' '}
+            <Icon name="filter-circle-xmark"/>{' '}
             {clearFiltersLabel}
           </button>
         )}
         {onAddOrder && (
           <button className="btn btn-primary btn-small" onClick={onAddOrder}>
-            <i className="fa-solid fa-plus"></i> {addOrderLabel}
+            <Icon name="plus"/> {addOrderLabel}
           </button>
         )}
       </div>

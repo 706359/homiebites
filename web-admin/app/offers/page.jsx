@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Icon from '../../components/ui/Icon.jsx';
 import { useEffect, useState } from 'react';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
@@ -114,7 +115,7 @@ export default function OffersPage() {
               {t('offers.title') || 'Special Offers & Discounts'}
             </h1>
             <div className="no-offers-container">
-              <i className="fa-solid fa-tag no-offers-icon"></i>
+              <Icon name="tag" className="no-offers-icon"/>
               <h2 className="no-offers-title">
                 {t('offers.noOffersTitle') || 'No Active Offers'}
               </h2>
@@ -124,10 +125,10 @@ export default function OffersPage() {
               </p>
               <div className="no-offers-actions">
                 <a href="/#gallery" className="btn btn-primary">
-                  <i className="fa-solid fa-images"></i> View Gallery
+                  <Icon name="images"/> View Gallery
                 </a>
                 <Link href="/" className="btn btn-secondary">
-                  <i className="fa-solid fa-home"></i> Go Home
+                  <Icon name="home"/> Go Home
                 </Link>
               </div>
             </div>
@@ -196,7 +197,7 @@ export default function OffersPage() {
                   className="btn btn-primary offer-cta-btn"
                   onClick={() => handleGetDeal(offer)}
                 >
-                  <i className="fa-solid fa-whatsapp"></i>{' '}
+                  <Icon name="whatsapp"/>{' '}
                   {offer.ctaText || t('offers.getDeal') || 'Get This Deal'}
                 </button>
               </div>

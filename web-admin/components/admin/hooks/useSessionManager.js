@@ -1,11 +1,15 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { logout, checkSessionAndClearIfExpired, getSessionExpiresAt } from '../../../lib/auth-admin.js';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  checkSessionAndClearIfExpired,
+  getSessionExpiresAt,
+  logout,
+} from '../../../lib/auth-admin.js';
 import { useNotification } from '../contexts/NotificationContext.jsx';
 
 /**
  * Enterprise-level session management hook
- * 
+ *
  * Features:
  * - Inactivity timeout (default: 30 minutes)
  * - Absolute session timeout (24 hours)
@@ -31,6 +35,7 @@ export const useSessionManager = (options = {}) => {
   const inactivityTimerRef = useRef(null);
   const warningTimerRef = useRef(null);
   const absoluteTimeoutRef = useRef(null);
+  const absoluteCheckIntervalRef = useRef(null);
   const lastActivityRef = useRef(Date.now());
   const warningShownRef = useRef(false);
   const sessionRefreshIntervalRef = useRef(null);
@@ -91,7 +96,8 @@ export const useSessionManager = (options = {}) => {
     const timeSinceLastActivity = now - lastActivityRef.current;
 
     // Only refresh if significant time has passed (avoid excessive refreshes)
-    if (timeSinceLastActivity > 60000) { // 1 minute
+    if (timeSinceLastActivity > 60000) {
+      // 1 minute
       refreshSession();
     } else {
       lastActivityRef.current = now;
@@ -140,64 +146,67 @@ export const useSessionManager = (options = {}) => {
   /**
    * Handle session expiration
    */
-  const handleSessionExpired = useCallback(async (reason = 'timeout') => {
-    setIsSessionActive(false);
-    setShowWarningModal(false);
+  const handleSessionExpired = useCallback(
+    async (reason = 'timeout') => {
+      setIsSessionActive(false);
+      setShowWarningModal(false);
 
-    // Clear all timers
-    if (inactivityTimerRef.current) {
-      clearTimeout(inactivityTimerRef.current);
-    }
-    if (warningTimerRef.current) {
-      clearTimeout(warningTimerRef.current);
-    }
-    if (absoluteTimeoutRef.current) {
-      clearTimeout(absoluteTimeoutRef.current);
-    }
-    if (sessionRefreshIntervalRef.current) {
-      clearInterval(sessionRefreshIntervalRef.current);
-    }
-
-    // Show notification
-    const reasonMessage =
-      reason === 'inactivity'
-        ? 'Session expired due to inactivity'
-        : reason === 'absolute'
-        ? 'Session expired'
-        : 'Session expired';
-
-    showNotification({
-      type: 'error',
-      message: reasonMessage + '. Please login again.',
-      duration: 5000,
-    });
-
-    // Call custom handler if provided
-    if (onSessionExpired) {
-      onSessionExpired(reason);
-    }
-
-    // Perform logout
-    try {
-      await logout();
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('[SessionManager] Error during logout:', error);
+      // Clear all timers
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
       }
-    }
+      if (warningTimerRef.current) {
+        clearTimeout(warningTimerRef.current);
+      }
+      if (absoluteTimeoutRef.current) {
+        clearTimeout(absoluteTimeoutRef.current);
+      }
+      if (sessionRefreshIntervalRef.current) {
+        clearInterval(sessionRefreshIntervalRef.current);
+      }
 
-    // Redirect to login
-    window.location.href = '/admin';
-  }, [onSessionExpired, showNotification]);
+      // Show notification
+      const reasonMessage =
+        reason === 'inactivity'
+          ? 'Session expired due to inactivity'
+          : reason === 'absolute'
+            ? 'Session expired'
+            : 'Session expired';
+
+      showNotification({
+        type: 'error',
+        message: reasonMessage + '. Please login again.',
+        duration: 5000,
+      });
+
+      // Call custom handler if provided
+      if (onSessionExpired) {
+        onSessionExpired(reason);
+      }
+
+      // Perform logout
+      try {
+        await logout();
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[SessionManager] Error during logout:', error);
+        }
+      }
+
+      // Redirect to login
+      window.location.href = '/admin';
+    },
+    [onSessionExpired, showNotification]
+  );
 
   /**
-   * Check absolute session timeout (24 hours)
+   * Check absolute session timeout (24 hours). Returns Promise<boolean>.
    */
-  const checkAbsoluteTimeout = useCallback(() => {
-    if (typeof window === 'undefined') return;
+  const checkAbsoluteTimeout = useCallback(async () => {
+    if (typeof window === 'undefined') return false;
 
     try {
-      const expired = checkSessionAndClearIfExpired();
+      const expired = await checkSessionAndClearIfExpired();
       if (expired) {
         handleSessionExpired('absolute');
         return true;
@@ -205,7 +214,10 @@ export const useSessionManager = (options = {}) => {
       return false;
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('[SessionManager] Error checking absolute timeout:', error);
+        console.error(
+          '[SessionManager] Error checking absolute timeout:',
+          error
+        );
       }
       return false;
     }
@@ -268,86 +280,88 @@ export const useSessionManager = (options = {}) => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Check if session is already expired
-    if (checkAbsoluteTimeout()) {
-      return;
-    }
+    let cancelled = false;
+    const teardownRef = { current: null };
 
-    // Set initial activity time
-    lastActivityRef.current = Date.now();
+    (async () => {
+      // Check if session is already expired (await: returns boolean)
+      const expired = await checkAbsoluteTimeout();
+      if (cancelled || expired) return;
 
-    // Start inactivity timer
-    startInactivityTimer();
+      // Set initial activity time
+      lastActivityRef.current = Date.now();
 
-    // Check absolute timeout every minute
-    const absoluteCheckInterval = setInterval(() => {
-      if (checkAbsoluteTimeout()) {
-        clearInterval(absoluteCheckInterval);
-      }
-    }, 60000); // Check every minute
+      // Start inactivity timer
+      startInactivityTimer();
 
-    // Activity event listeners
-    const activityEvents = [
-      'mousedown',
-      'mousemove',
-      'keypress',
-      'scroll',
-      'touchstart',
-      'click',
-      'keydown',
-    ];
+      // Check absolute timeout every minute
+      absoluteCheckIntervalRef.current = setInterval(() => {
+        checkAbsoluteTimeout().then((expired) => {
+          if (expired && absoluteCheckIntervalRef.current) {
+            clearInterval(absoluteCheckIntervalRef.current);
+            absoluteCheckIntervalRef.current = null;
+          }
+        });
+      }, 60000); // Check every minute
 
-    const throttledHandleActivity = (() => {
-      let lastCall = 0;
-      const throttleDelay = 1000; // Throttle to once per second
+      // Activity event listeners
+      const activityEvents = [
+        'mousedown',
+        'mousemove',
+        'keypress',
+        'scroll',
+        'touchstart',
+        'click',
+        'keydown',
+      ];
 
-      return () => {
-        const now = Date.now();
-        if (now - lastCall >= throttleDelay) {
-          lastCall = now;
-          handleActivity();
+      const throttledHandleActivity = (() => {
+        let lastCall = 0;
+        const throttleDelay = 1000; // Throttle to once per second
+
+        return () => {
+          const now = Date.now();
+          if (now - lastCall >= throttleDelay) {
+            lastCall = now;
+            handleActivity();
+          }
+        };
+      })();
+
+      activityEvents.forEach((event) => {
+        window.addEventListener(event, throttledHandleActivity, {
+          passive: true,
+        });
+      });
+
+      // Register cleanup so useEffect return can run it on unmount
+      teardownRef.current = () => {
+        activityEvents.forEach((event) => {
+          window.removeEventListener(event, throttledHandleActivity);
+        });
+        if (absoluteCheckIntervalRef.current) {
+          clearInterval(absoluteCheckIntervalRef.current);
+          absoluteCheckIntervalRef.current = null;
+        }
+        if (inactivityTimerRef.current) {
+          clearTimeout(inactivityTimerRef.current);
+          inactivityTimerRef.current = null;
+        }
+        if (warningTimerRef.current) {
+          clearTimeout(warningTimerRef.current);
+          warningTimerRef.current = null;
+        }
+        if (absoluteTimeoutRef.current) {
+          clearTimeout(absoluteTimeoutRef.current);
+          absoluteTimeoutRef.current = null;
         }
       };
     })();
 
-    activityEvents.forEach((event) => {
-      window.addEventListener(event, throttledHandleActivity, { passive: true });
-    });
-
-    // Update time remaining in warning modal
-    let timeUpdateInterval = null;
-    if (showWarningModal) {
-      timeUpdateInterval = setInterval(() => {
-        const remaining = inactivityTimeout - (Date.now() - lastActivityRef.current);
-        if (remaining > 0) {
-          setTimeRemaining(Math.max(0, remaining));
-        } else {
-          handleSessionExpired('inactivity');
-        }
-      }, 1000);
-    }
-
-    // Cleanup
+    // Cleanup on unmount
     return () => {
-      activityEvents.forEach((event) => {
-        window.removeEventListener(event, throttledHandleActivity);
-      });
-
-      if (inactivityTimerRef.current) {
-        clearTimeout(inactivityTimerRef.current);
-      }
-      if (warningTimerRef.current) {
-        clearTimeout(warningTimerRef.current);
-      }
-      if (absoluteTimeoutRef.current) {
-        clearTimeout(absoluteTimeoutRef.current);
-      }
-      if (absoluteCheckInterval) {
-        clearInterval(absoluteCheckInterval);
-      }
-      if (timeUpdateInterval) {
-        clearInterval(timeUpdateInterval);
-      }
+      cancelled = true;
+      if (teardownRef.current) teardownRef.current();
     };
   }, [
     startInactivityTimer,
@@ -363,7 +377,8 @@ export const useSessionManager = (options = {}) => {
     if (!showWarningModal) return;
 
     const interval = setInterval(() => {
-      const remaining = inactivityTimeout - (Date.now() - lastActivityRef.current);
+      const remaining =
+        inactivityTimeout - (Date.now() - lastActivityRef.current);
       if (remaining > 0) {
         setTimeRemaining(Math.max(0, remaining));
       } else {

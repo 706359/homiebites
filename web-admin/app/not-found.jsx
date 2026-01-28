@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Icon from '../components/ui/Icon.jsx';
 import Link from 'next/link';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
@@ -21,7 +22,7 @@ export default function NotFound() {
       <div className="not-found-container">
         <div className="not-found-content">
           <div className="not-found-icon">
-            <i className="fa-solid fa-triangle-exclamation"></i>
+            <Icon name="triangle-exclamation"/>
           </div>
           <h1 className="not-found-title">404</h1>
           <h2 className="not-found-subtitle">

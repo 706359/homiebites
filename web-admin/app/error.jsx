@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Icon from '../components/ui/Icon.jsx';
 import Link from 'next/link';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
@@ -25,7 +26,7 @@ export default function Error({ error, reset }) {
       <div className="error-container">
         <div className="error-content">
           <div className="error-icon">
-            <i className="fa-solid fa-circle-exclamation"></i>
+            <Icon name="circle-exclamation"/>
           </div>
           <h1 className="error-title">
             {t('error.title') || 'Something went wrong!'}

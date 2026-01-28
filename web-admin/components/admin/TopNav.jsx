@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Icon from '../ui/Icon.jsx';
 import NotificationDropdown from './NotificationDropdown.jsx';
 
 const TopNav = ({
@@ -23,7 +24,8 @@ const TopNav = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [recentSearches, setRecentSearches] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
+  const [showNotificationDropdown, setShowNotificationDropdown] =
+    useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -122,22 +124,22 @@ const TopNav = ({
   const quickActions = [
     {
       label: 'Add new order',
-      icon: 'fa-plus',
+      icon: 'plus',
       action: () => setActiveTab('currentMonthOrders'),
     },
     {
       label: 'Generate report',
-      icon: 'fa-file-alt',
+      icon: 'file-alt',
       action: () => setActiveTab('reports'),
     },
     {
       label: 'View analytics',
-      icon: 'fa-chart-line',
+      icon: 'chart-line',
       action: () => setActiveTab('analytics'),
     },
     {
       label: 'Pending payments',
-      icon: 'fa-exclamation-triangle',
+      icon: 'exclamation-triangle',
       action: () => setActiveTab('pendingAmounts'),
     },
   ];
@@ -151,7 +153,7 @@ const TopNav = ({
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Toggle sidebar"
           >
-            <i className="fa-solid fa-bars"></i>
+            <Icon name="bars" />
           </button>
           {tabTitle ? (
             <div className="top-nav-tab-info">
@@ -174,9 +176,9 @@ const TopNav = ({
               aria-label="Refresh"
             >
               {refreshing ? (
-                <i className="fa-solid fa-spinner fa-spin"></i>
+                <Icon name="spinner" spin />
               ) : (
-                <i className="fa-solid fa-rotate"></i>
+                <Icon name="rotate" />
               )}
               <span className="tooltip">Refresh</span>
             </button>
@@ -188,7 +190,7 @@ const TopNav = ({
               title="Add New Order"
               aria-label="Add New Order"
             >
-              <i className="fa-solid fa-plus"></i>
+              <Icon name="plus" />
               <span className="tooltip">Add New Order</span>
             </button>
           )}
@@ -198,7 +200,7 @@ const TopNav = ({
             title="Search"
             aria-label="Search"
           >
-            <i className="fa-solid fa-search"></i>
+            <Icon name="search" />
             <span className="tooltip">Search</span>
           </button>
           <button
@@ -207,9 +209,11 @@ const TopNav = ({
               unreadNotifications > 0 ? ` (${unreadNotifications} new)` : ''
             }`}
             aria-label="Notifications"
-            onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
+            onClick={() =>
+              setShowNotificationDropdown(!showNotificationDropdown)
+            }
           >
-            <i className="fa-solid fa-bell"></i>
+            <Icon name="bell" />
             {unreadNotifications > 0 && (
               <span className="top-nav-badge">
                 {unreadNotifications > 99 ? '99+' : unreadNotifications}
@@ -217,12 +221,10 @@ const TopNav = ({
             )}
             <span className="tooltip">
               Notifications
-              {unreadNotifications > 0
-                ? ` (${unreadNotifications} new)`
-                : ''}
+              {unreadNotifications > 0 ? ` (${unreadNotifications} new)` : ''}
             </span>
           </button>
-          
+
           {/* Notification Dropdown */}
           <NotificationDropdown
             orders={orders}
@@ -276,7 +278,7 @@ const TopNav = ({
                 onClick={() => setShowSearchModal(false)}
                 aria-label="Close search"
               >
-                <i className="fa-solid fa-times"></i>
+                <Icon name="times" />
               </button>
             </div>
             <div className="global-search-content">
@@ -290,7 +292,7 @@ const TopNav = ({
                         className="global-search-item"
                         onClick={() => handleSearch(search)}
                       >
-                        <i className="fa-solid fa-clock-rotate-left"></i>
+                        <Icon name="clock-rotate-left" />
                         {search}
                       </button>
                     ))}
@@ -309,7 +311,7 @@ const TopNav = ({
                         setShowSearchModal(false);
                       }}
                     >
-                      <i className={`fa-solid ${action.icon}`}></i>
+                      <Icon name={action.icon} />
                       {action.label}
                     </button>
                   ))}

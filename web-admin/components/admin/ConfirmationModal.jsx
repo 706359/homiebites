@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 
+import Icon from '../ui/Icon.jsx';
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -73,28 +74,28 @@ const ConfirmationModal = ({
     switch (type) {
       case 'danger':
         return {
-          icon: 'fa-exclamation-triangle',
+          icon: 'exclamation-triangle',
           iconColor: 'var(--admin-danger, #dc2626)',
           iconBg: 'rgba(220, 38, 38, 0.1)',
           confirmBtn: 'btn-special danger',
         };
       case 'success':
         return {
-          icon: 'fa-check-circle',
+          icon: 'check-circle',
           iconColor: 'var(--admin-success, #16a34a)',
           iconBg: 'rgba(22, 163, 74, 0.1)',
           confirmBtn: 'btn-primary',
         };
       case 'info':
         return {
-          icon: 'fa-info-circle',
+          icon: 'info-circle',
           iconColor: 'var(--admin-accent, #449031)',
           iconBg: 'rgba(68, 144, 49, 0.1)',
           confirmBtn: 'btn-primary',
         };
       default:
         return {
-          icon: 'fa-exclamation-circle',
+          icon: 'exclamation-circle',
           iconColor: 'var(--admin-warning, #f59e0b)',
           iconBg: 'rgba(245, 158, 11, 0.1)',
           confirmBtn: 'btn-secondary',
@@ -117,7 +118,7 @@ const ConfirmationModal = ({
         <div className="modal-header">
           <div className="flex-center">
             <div className="modal-icon-box">
-              <i className={`fa-solid ${styles.icon}`}></i>
+              <Icon name={styles.icon} />
             </div>
             <h2 id="confirmation-modal-title">{title}</h2>
           </div>
@@ -142,7 +143,7 @@ const ConfirmationModal = ({
           >
             {isLoading ? (
               <>
-                <i className="fa-solid fa-spinner fa-spin"></i> Processing...
+                <Icon name="spinner" spin /> Processing...
               </>
             ) : (
               confirmText

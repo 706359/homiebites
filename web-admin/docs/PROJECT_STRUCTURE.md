@@ -73,7 +73,7 @@ web-admin/
 
 | File                   | Role                                                                                                                     |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `app/layout.jsx`       | Root: metadata, SEO, OG, manifest, fonts (Baloo 2, Font Awesome), `ClientLayout`                                         |
+| `app/layout.jsx`       | Root: metadata, SEO, OG, manifest, fonts (Baloo 2), Lucide icons via `components/ui/Icon.jsx`, `ClientLayout`             |
 | `app/ClientLayout.jsx` | `LanguageProvider` → `NotificationProvider`, `FontSettingsLoader`, `LanguageHandler`, `ScrollToTop`, `HashScrollHandler` |
 | `app/admin/layout.jsx` | Admin-only: swap manifest to `admin-manifest.json`, register `admin-sw.js` (scope `/admin/`)                             |
 | `app/error.jsx`        | Global error UI (Header, Footer, try-again, go-home, dev error details)                                                  |

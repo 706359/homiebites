@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import Icon from '../ui/Icon.jsx';
 import { adminFeatures } from './utils/adminConfig.js';
 
 // Helper function to check kitchen status
@@ -309,7 +310,7 @@ const Sidebar = ({
                 }}
                 title={sidebarCollapsed ? feature.name : ''}
               >
-                <i className={`fa-solid ${feature.icon}`}></i>
+                <Icon name={feature.icon} />
                 {!sidebarCollapsed && <span>{feature.name}</span>}
               </button>
             );
@@ -326,9 +327,10 @@ const Sidebar = ({
           {!sidebarCollapsed && (
             <span className="sidebar-collapse-text">Collapse</span>
           )}
-          <i
-            className={`fa-solid ${sidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'}`}
-          ></i>
+          <Icon
+            name={sidebarCollapsed ? 'chevron-right' : 'chevron-left'}
+            className="sidebar-chevron-icon"
+          />
         </button>
 
         <div className="sidebar-profile-section" ref={profileDropdownRef}>
@@ -351,7 +353,7 @@ const Sidebar = ({
                     .slice(0, 2)}
                 </span>
               ) : (
-                <i className="fa-solid fa-user"></i>
+                <Icon name="user" />
               )}
             </div>
             {!sidebarCollapsed && (
@@ -361,10 +363,11 @@ const Sidebar = ({
                     {currentUser?.name || 'Admin'}
                   </span>
                 </div>
-                <i
-                  className={`fa-solid fa-chevron-${showProfileDropdown ? 'up' : 'down'} sidebar-profile-chevron`}
+                <Icon
+                  name={showProfileDropdown ? 'chevron-up' : 'chevron-down'}
+                  className="sidebar-profile-chevron"
                   aria-hidden
-                ></i>
+                />
               </>
             )}
           </button>
@@ -383,7 +386,7 @@ const Sidebar = ({
                         .slice(0, 2)}
                     </span>
                   ) : (
-                    <i className="fa-solid fa-user"></i>
+                    <Icon name="user" />
                   )}
                 </div>
                 <span className="sidebar-profile-dropdown-name">
@@ -401,7 +404,7 @@ const Sidebar = ({
                 }}
               >
                 <span className="sidebar-profile-dropdown-icon">
-                  <i className="fa-solid fa-cog"></i>
+                  <Icon name="cog" />
                 </span>
                 <span>Settings</span>
               </button>
@@ -418,7 +421,7 @@ const Sidebar = ({
                     }}
                   >
                     <span className="sidebar-profile-dropdown-icon">
-                      <i className="fa-solid fa-sign-out-alt"></i>
+                      <Icon name="sign-out-alt" />
                     </span>
                     <span>Logout</span>
                   </button>
@@ -438,7 +441,7 @@ const Sidebar = ({
             title="Logout"
             aria-label="Logout"
           >
-            <i className="fa-solid fa-sign-out-alt"></i>
+            <Icon name="sign-out-alt" />
           </button>
         )}
       </div>

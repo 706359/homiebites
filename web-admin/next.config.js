@@ -43,7 +43,7 @@ const nextConfig = {
 
   // Experimental Features
   experimental: {
-    optimizePackageImports: ['react-icons', '@fortawesome/fontawesome-free'],
+    optimizePackageImports: ['react-icons', 'lucide-react'],
   },
 
   // Turbopack Configuration: set root so Next.js doesn't use a parent lockfile's directory
@@ -59,6 +59,7 @@ const nextConfig = {
     const isDev = process.env.NODE_ENV === 'development';
 
     return [
+      // Global security headers for all routes
       {
         source: '/:path*',
         headers: [
@@ -77,6 +78,37 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains; preload',
+          },
+          {
+            key: 'Permissions-Policy',
+            value:
+              'geolocation=(), microphone=(), camera=(), clipboard-read=(), clipboard-write=(self)',
+          },
+          {
+            key: 'X-Permitted-Cross-Domain-Policies',
+            value: 'none',
+          },
+        ],
+      },
+      // Strict CSP for admin routes
+      {
+        source: '/admin/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: isDev
+              ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com; connect-src 'self' https://api.sendgrid.com; frame-ancestors 'none';"
+              : "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com; connect-src 'self' https://api.sendgrid.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self';",
+          },
+          {
+            key: 'X-Content-Security-Policy',
+            value: isDev
+              ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com; connect-src 'self' https://api.sendgrid.com; frame-ancestors 'none';"
+              : "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com; connect-src 'self' https://api.sendgrid.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self';",
           },
         ],
       },

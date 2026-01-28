@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
+import Icon from '../ui/Icon.jsx';
 const NETWORK_ERROR_PATTERN =
   /network|connect|unable to connect|not available|fetch|internet|connection refused|failed to fetch/i;
 
@@ -47,8 +48,8 @@ const OfflineBanner = ({
   return (
     <div className="offline-banner" role="alert" aria-live="polite">
       <div className="offline-banner__inner">
-        <i
-          className={`fa-solid ${isOfflineState ? 'fa-wifi' : 'fa-cloud-exclamation'}`}
+        <Icon
+          name={isOfflineState ? 'wifi' : 'cloud-exclamation'}
           aria-hidden
         />
         <span>
@@ -62,7 +63,7 @@ const OfflineBanner = ({
             className="btn btn-ghost btn-small offline-banner__retry"
             onClick={() => onRetry()}
           >
-            <i className="fa-solid fa-rotate-right" aria-hidden /> Retry
+            <Icon name="rotate-right" aria-hidden /> Retry
           </button>
         )}
       </div>

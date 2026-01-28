@@ -1,8 +1,13 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import Icon from '../ui/Icon.jsx';
 import { parseOrderDate } from './utils/dateUtils.js';
-import { formatCurrency, getOrderAmount, isPendingStatus } from './utils/orderUtils.js';
+import {
+  formatCurrency,
+  getOrderAmount,
+  isPendingStatus,
+} from './utils/orderUtils.js';
 
 function getTimeAgo(date) {
   if (!date) return 'N/A';
@@ -133,7 +138,7 @@ const NotificationDropdown = ({
     notifications.push({
       id: `overdue-${order._id || order.orderId}`,
       type: 'overdue',
-      icon: 'fa-exclamation-triangle',
+      icon: 'exclamation-triangle',
       title: 'Payment Overdue',
       message: `Order #${order.orderId || 'N/A'} from ${address}`,
       details: `${formatCurrency(amount)} • ${daysPending} days pending`,
@@ -216,7 +221,7 @@ const NotificationDropdown = ({
     notifications.push({
       id: `website-${order._id || order.orderId}`,
       type: 'website',
-      icon: 'fa-globe',
+      icon: 'globe',
       title: 'New Website Order',
       message: `Order #${order.orderId || 'N/A'} from ${address}`,
       details: `${formatCurrency(amount)} • ${order.mode || 'N/A'} • ${order.status || 'N/A'}`,
@@ -253,14 +258,14 @@ const NotificationDropdown = ({
           onClick={onClose}
           aria-label="Close notifications"
         >
-          <i className="fa-solid fa-times"></i>
+          <Icon name="times" />
         </button>
       </div>
 
       <div className="notification-dropdown-content">
         {notifications.length === 0 ? (
           <div className="notification-dropdown-empty">
-            <i className="fa-solid fa-bell-slash"></i>
+            <Icon name="bell-slash" />
             <p>No new notifications</p>
             <span>All caught up!</span>
           </div>
@@ -280,7 +285,7 @@ const NotificationDropdown = ({
                 }}
               >
                 <div className="notification-item-icon">
-                  <i className={`fa-solid ${notification.icon}`}></i>
+                  <Icon name={notification.icon} />
                 </div>
                 <div className="notification-item-content">
                   <div className="notification-item-header">
@@ -300,7 +305,7 @@ const NotificationDropdown = ({
                 </div>
                 {notification.type === 'overdue' && (
                   <div className="notification-item-badge">
-                    <i className="fa-solid fa-exclamation"></i>
+                    <Icon name="exclamation" />
                   </div>
                 )}
               </div>
@@ -321,7 +326,7 @@ const NotificationDropdown = ({
                 onClose();
               }}
             >
-              <i className="fa-solid fa-exclamation-triangle"></i>
+              <Icon name="exclamation-triangle" />
               View All Pending Amounts
             </button>
           )}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { getLanguageName, getSupportedLanguages } from '../shared/utils/i18n';
 import { useLanguage } from '../contexts/LanguageContext';
+import { getLanguageName, getSupportedLanguages } from '../shared/utils/i18n';
+import Icon from './ui/Icon.jsx';
 
 const LanguageSwitcher = () => {
   const { language, changeLanguage } = useLanguage();
@@ -59,7 +60,7 @@ const LanguageSwitcher = () => {
         <span className="language-name">
           {getLanguageName(currentLanguage)}
         </span>
-        <i className={`fa-solid fa-chevron-${isOpen ? 'up' : 'down'}`}></i>
+        <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} />
       </button>
 
       {isOpen && (
@@ -75,7 +76,7 @@ const LanguageSwitcher = () => {
               <span className="language-flag">{languageFlags[lang]}</span>
               <span className="language-name">{getLanguageName(lang)}</span>
               {lang === language && (
-                <i className="fa-solid fa-check language-check"></i>
+                <Icon name="check" className="language-check" />
               )}
             </button>
           ))}

@@ -2,6 +2,7 @@
 
 import { Component } from 'react';
 
+import Icon from '../ui/Icon.jsx';
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
@@ -49,7 +50,7 @@ class ErrorBoundary extends Component {
         <div className="admin-error-state">
           <div className="error-boundary-container">
             <div className="error-boundary-icon-wrapper">
-              <i className="fa-solid fa-exclamation-triangle error-boundary-icon"></i>
+              <Icon name="exclamation-triangle" className="error-boundary-icon"/>
             </div>
             <h2 className="error-boundary-title">Something went wrong</h2>
             <p className="error-boundary-message">
@@ -58,7 +59,7 @@ class ErrorBoundary extends Component {
             </p>
             <div className="error-boundary-actions">
               <button className="btn btn-primary" onClick={this.handleReset}>
-                <i className="fa-solid fa-rotate-right"></i> Try Again
+                <Icon name="rotate-right"/> Try Again
               </button>
               <button
                 className="btn btn-ghost"
@@ -66,7 +67,7 @@ class ErrorBoundary extends Component {
                   window.location.reload();
                 }}
               >
-                <i className="fa-solid fa-refresh"></i> Refresh Page
+                <Icon name="refresh"/> Refresh Page
               </button>
             </div>
             {process.env.NODE_ENV === 'development' && this.state.error && (

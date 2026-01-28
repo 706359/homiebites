@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import Icon from '../ui/Icon.jsx';
 import { useState, useMemo, useEffect } from 'react';
 import PremiumLoader from './PremiumLoader.jsx';
 import api from '../../lib/api-admin.js';
@@ -1354,7 +1355,7 @@ const ReportsTab = ({
         {/* Section 1: Order Reports & Export */}
         <div className="dashboard-card reports-section-card">
           <h3 className="reports-section-title">
-            <i className="fa-solid fa-shopping-cart"></i>
+            <Icon name="shopping-cart"/>
             Order Reports & Export
           </h3>
           <div className="reports-buttons-grid">
@@ -1365,7 +1366,7 @@ const ReportsTab = ({
                 setShowGenerator(true);
               }}
             >
-              <i className="fa-solid fa-chart-bar"></i>
+              <Icon name="chart-bar"/>
               Sales Report
             </button>
             <button
@@ -1375,7 +1376,7 @@ const ReportsTab = ({
                 setShowGenerator(true);
               }}
             >
-              <i className="fa-solid fa-money-bill-wave"></i>
+              <Icon name="money-bill-wave"/>
               Payment Report
             </button>
             <button
@@ -1383,7 +1384,7 @@ const ReportsTab = ({
               onClick={handleExportAllOrders}
               title="Export all orders data"
             >
-              <i className="fa-solid fa-download"></i>
+              <Icon name="download"/>
               Export All Orders
             </button>
             <button
@@ -1391,7 +1392,7 @@ const ReportsTab = ({
               onClick={handleExportCurrentMonth}
               title="Export current month orders"
             >
-              <i className="fa-solid fa-download"></i>
+              <Icon name="download"/>
               Export Current Month
             </button>
             <button
@@ -1399,7 +1400,7 @@ const ReportsTab = ({
               onClick={handleExportPendingPayments}
               title="Export pending payments"
             >
-              <i className="fa-solid fa-download"></i>
+              <Icon name="download"/>
               Export Pending Payments
             </button>
             <button
@@ -1407,7 +1408,7 @@ const ReportsTab = ({
               onClick={handleExportFinancialSummary}
               title="Export financial summary"
             >
-              <i className="fa-solid fa-download"></i>
+              <Icon name="download"/>
               Export Financial Summary
             </button>
             <button
@@ -1415,7 +1416,7 @@ const ReportsTab = ({
               onClick={() => handleExportAnalytics('monthly')}
               title="Export monthly analytics"
             >
-              <i className="fa-solid fa-download"></i>
+              <Icon name="download"/>
               Export Monthly Analytics
             </button>
           </div>
@@ -1424,7 +1425,7 @@ const ReportsTab = ({
         {/* Section 2: Data Import/Export */}
         <div className="dashboard-card reports-section-card">
           <h3 className="reports-section-title">
-            <i className="fa-solid fa-file-import"></i>
+            <Icon name="file-import"/>
             Data Import/Export
           </h3>
           <div className="reports-buttons-grid">
@@ -1434,7 +1435,7 @@ const ReportsTab = ({
                 onClick={onLoadExcelFile}
                 title="Upload CSV file to import orders"
               >
-                <i className="fa-solid fa-upload"></i>
+                <Icon name="upload"/>
                 Upload CSV (Import Orders)
               </button>
             )}
@@ -1443,7 +1444,7 @@ const ReportsTab = ({
               onClick={handleExportAddresses}
               title="Export customer addresses"
             >
-              <i className="fa-solid fa-download"></i>
+              <Icon name="download"/>
               Export Addresses
             </button>
             <button
@@ -1451,7 +1452,7 @@ const ReportsTab = ({
               onClick={handleExportReviews}
               title="Export reviews data"
             >
-              <i className="fa-solid fa-download"></i>
+              <Icon name="download"/>
               Export Reviews
             </button>
             <button
@@ -1459,7 +1460,7 @@ const ReportsTab = ({
               onClick={handleExportMenu}
               title="Export menu items to CSV"
             >
-              <i className="fa-solid fa-file-export"></i>
+              <Icon name="file-export"/>
               Export Menu Items
             </button>
             <button
@@ -1467,7 +1468,7 @@ const ReportsTab = ({
               onClick={handleImportMenu}
               title="Import predefined menu items"
             >
-              <i className="fa-solid fa-file-import"></i>
+              <Icon name="file-import"/>
               Import Menu Items
             </button>
           </div>
@@ -1476,7 +1477,7 @@ const ReportsTab = ({
         {/* Section 3: Backup & Restore */}
         <div className="dashboard-card reports-section-card">
           <h3 className="reports-section-title">
-            <i className="fa-solid fa-database"></i>
+            <Icon name="database"/>
             Backup & Restore
           </h3>
           <div className="reports-buttons-grid">
@@ -1486,7 +1487,7 @@ const ReportsTab = ({
                 onClick={onBackup}
                 title="Create backup of all data"
               >
-                <i className="fa-solid fa-save"></i>
+                <Icon name="save"/>
                 Create Backup
               </button>
             )}
@@ -1496,7 +1497,7 @@ const ReportsTab = ({
                 onClick={onRestore}
                 title="Restore data from backup"
               >
-                <i className="fa-solid fa-rotate"></i>
+                <Icon name="rotate"/>
                 Restore from Backup
               </button>
             )}
@@ -1506,7 +1507,7 @@ const ReportsTab = ({
                 onClick={onExportSettings}
                 title="Export settings configuration"
               >
-                <i className="fa-solid fa-file-export"></i>
+                <Icon name="file-export"/>
                 Export Settings
               </button>
             )}
@@ -1531,7 +1532,7 @@ const ReportsTab = ({
                 }}
                 title="Delete all orders (dangerous)"
               >
-                <i className="fa-solid fa-trash"></i>
+                <Icon name="trash"/>
                 Clear All Orders
               </button>
             )}
@@ -1543,7 +1544,7 @@ const ReportsTab = ({
       <div className="reports-stats-summary mb-24">
         <div className="stat-card">
           <div className="stat-card-icon">
-            <i className="fa-solid fa-shopping-cart"></i>
+            <Icon name="shopping-cart"/>
           </div>
           <div className="stat-card-content">
             <div className="stat-card-value">
@@ -1554,7 +1555,7 @@ const ReportsTab = ({
         </div>
         <div className="stat-card">
           <div className="stat-card-icon">
-            <i className="fa-solid fa-indian-rupee-sign"></i>
+            <Icon name="indian-rupee-sign"/>
           </div>
           <div className="stat-card-content">
             <div className="stat-card-value">
@@ -1569,7 +1570,7 @@ const ReportsTab = ({
         </div>
         <div className="stat-card">
           <div className="stat-card-icon">
-            <i className="fa-solid fa-check-circle"></i>
+            <Icon name="check-circle"/>
           </div>
           <div className="stat-card-content">
             <div className="stat-card-value">
@@ -1582,7 +1583,7 @@ const ReportsTab = ({
         </div>
         <div className="stat-card">
           <div className="stat-card-icon">
-            <i className="fa-solid fa-clock"></i>
+            <Icon name="clock"/>
           </div>
           <div className="stat-card-content">
             <div className="stat-card-value">
@@ -1603,7 +1604,7 @@ const ReportsTab = ({
             setShowGenerator(true);
           }}
         >
-          <i className="fa-solid fa-chart-bar"></i>
+          <Icon name="chart-bar"/>
           <span>Sales Report</span>
         </button>
         <button
@@ -1613,7 +1614,7 @@ const ReportsTab = ({
             setShowGenerator(true);
           }}
         >
-          <i className="fa-solid fa-money-bill-wave"></i>
+          <Icon name="money-bill-wave"/>
           <span>Payment Report</span>
         </button>
         <button
@@ -1623,7 +1624,7 @@ const ReportsTab = ({
             setShowGenerator(true);
           }}
         >
-          <i className="fa-solid fa-calendar-alt"></i>
+          <Icon name="calendar-alt"/>
           <span>Monthly Statement</span>
         </button>
         <button
@@ -1634,7 +1635,7 @@ const ReportsTab = ({
             setShowGenerator(true);
           }}
         >
-          <i className="fa-solid fa-map-marker-alt"></i>
+          <Icon name="map-marker-alt"/>
           <span>Area-wise Report</span>
         </button>
         <button
@@ -1644,7 +1645,7 @@ const ReportsTab = ({
             setShowGenerator(true);
           }}
         >
-          <i className="fa-solid fa-users"></i>
+          <Icon name="users"/>
           <span>Customer Report</span>
         </button>
         <button
@@ -1654,7 +1655,7 @@ const ReportsTab = ({
             setShowGenerator(true);
           }}
         >
-          <i className="fa-solid fa-chart-line"></i>
+          <Icon name="chart-line"/>
           <span>Growth Report</span>
         </button>
       </div>
@@ -1668,7 +1669,7 @@ const ReportsTab = ({
                 className="btn btn-ghost btn-icon modal-close"
                 onClick={() => setShowGenerator(false)}
               >
-                <i className="fa-solid fa-times"></i>
+                <Icon name="times"/>
               </button>
             </div>
             <div className="modal-body">
@@ -1864,13 +1865,13 @@ const ReportsTab = ({
                 className="btn btn-secondary"
                 onClick={handlePreviewReport}
               >
-                <i className="fa-solid fa-file-alt"></i> Preview
+                <Icon name="file-alt"/> Preview
               </button>
               <button
                 className="btn btn-primary"
                 onClick={handleGenerateReport}
               >
-                <i className="fa-solid fa-download"></i> Download
+                <Icon name="download"/> Download
               </button>
             </div>
           </div>
@@ -1881,7 +1882,7 @@ const ReportsTab = ({
         <div className="dashboard-card reports-card-compact">
           <div className="reports-card-header">
             <h3 className="dashboard-section-title mb-0">
-              <i className="fa-solid fa-clock"></i>
+              <Icon name="clock"/>
               Automated Reports
               <span className="badge badge-warning badge-small">Coming soon</span>
             </h3>
@@ -1890,7 +1891,7 @@ const ReportsTab = ({
               disabled
               title="Coming soon"
             >
-              <i className="fa-solid fa-plus"></i> Add
+              <Icon name="plus"/> Add
             </button>
           </div>
           <div className="reports-table-compact">
@@ -1915,13 +1916,13 @@ const ReportsTab = ({
                           className="btn btn-ghost btn-icon action-icon-edit"
                           title="Edit"
                         >
-                          <i className="fa-solid fa-pencil"></i>
+                          <Icon name="pencil"/>
                         </button>
                         <button
                           className="btn btn-ghost btn-icon action-icon-delete"
                           title="Delete"
                         >
-                          <i className="fa-solid fa-trash"></i>
+                          <Icon name="trash"/>
                         </button>
                       </div>
                     </td>
@@ -1935,7 +1936,7 @@ const ReportsTab = ({
         <div className="dashboard-card reports-card-compact">
           <div className="reports-card-header">
             <h3 className="dashboard-section-title mb-0">
-              <i className="fa-solid fa-history"></i>
+              <Icon name="history"/>
               Recent Reports (Last 30 days)
               <span className="badge badge-warning badge-small">Coming soon</span>
             </h3>
@@ -1955,7 +1956,7 @@ const ReportsTab = ({
                   <tr>
                     <td colSpan={4} className="text-center">
                       <div className="empty-state">
-                        <i className="fa-solid fa-inbox empty-state-icon"></i>
+                        <Icon name="inbox" className="empty-state-icon"/>
                         <p>No reports generated yet</p>
                       </div>
                     </td>
@@ -1971,7 +1972,7 @@ const ReportsTab = ({
                           className="btn btn-ghost btn-icon"
                           title="Download"
                         >
-                          <i className="fa-solid fa-download"></i>
+                          <Icon name="download"/>
                         </button>
                       </td>
                     </tr>
@@ -1989,13 +1990,13 @@ const ReportsTab = ({
           <div className="modal-container" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>
-                <i className="fa-solid fa-eye"></i> Preview: {previewData.type}
+                <Icon name="eye"/> Preview: {previewData.type}
               </h2>
               <button
                 className="btn btn-ghost btn-icon modal-close"
                 onClick={() => setShowPreview(false)}
               >
-                <i className="fa-solid fa-times"></i>
+                <Icon name="times"/>
               </button>
             </div>
             <div className="modal-body">
@@ -2070,7 +2071,7 @@ const ReportsTab = ({
                   handleGenerateReport();
                 }}
               >
-                <i className="fa-solid fa-download"></i> Download Full Report
+                <Icon name="download"/> Download Full Report
               </button>
             </div>
           </div>

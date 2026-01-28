@@ -24,10 +24,16 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    if (checkSessionAndClearIfExpired()) {
-      router.replace('/admin');
-      return;
-    }
+    let cancelled = false;
+    (async () => {
+      const expired = await checkSessionAndClearIfExpired();
+      if (!cancelled && expired) {
+        router.replace('/admin');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   return (

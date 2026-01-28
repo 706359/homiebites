@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import Icon from '../ui/Icon.jsx';
 import api from '../../lib/api-admin.js';
 import PremiumLoader from './PremiumLoader.jsx';
 import { formatDate, formatDateMonthDay } from './utils/dateUtils.js';
@@ -274,11 +275,10 @@ const ReviewsTab = ({
     return (
       <div className="review-stars-inline">
         {[1, 2, 3, 4, 5].map((star) => (
-          <i
+          <Icon
             key={star}
-            className={`fa-solid fa-star ${
-              star <= rating ? 'star-filled' : 'star-empty'
-            }`}
+            name="star"
+            className={star <= rating ? 'star-filled' : 'star-empty'}
           />
         ))}
       </div>
@@ -299,14 +299,14 @@ const ReviewsTab = ({
       <div className="dashboard-card">
         <div className="dashboard-section-header">
           <h2 className="dashboard-section-title">
-            <i className="fa-solid fa-star"></i>
+            <Icon name="star"/>
             Reviews Overview
           </h2>
         </div>
         <div className="reviews-stats-grid">
           <div className="stat-card">
             <div className="stat-card-icon">
-              <i className="fa-solid fa-comments"></i>
+              <Icon name="comments"/>
             </div>
             <div className="stat-card-content">
               <h3>{stats.total}</h3>
@@ -315,7 +315,7 @@ const ReviewsTab = ({
           </div>
           <div className="stat-card">
             <div className="stat-card-icon">
-              <i className="fa-solid fa-check-circle"></i>
+              <Icon name="check-circle"/>
             </div>
             <div className="stat-card-content">
               <h3>{stats.approved}</h3>
@@ -324,7 +324,7 @@ const ReviewsTab = ({
           </div>
           <div className="stat-card">
             <div className="stat-card-icon">
-              <i className="fa-solid fa-clock"></i>
+              <Icon name="clock"/>
             </div>
             <div className="stat-card-content">
               <h3>{stats.pending}</h3>
@@ -333,7 +333,7 @@ const ReviewsTab = ({
           </div>
           <div className="stat-card">
             <div className="stat-card-icon">
-              <i className="fa-solid fa-star"></i>
+              <Icon name="star"/>
             </div>
             <div className="stat-card-content">
               <h3>{stats.avgRating}</h3>
@@ -342,7 +342,7 @@ const ReviewsTab = ({
           </div>
           <div className="stat-card">
             <div className="stat-card-icon">
-              <i className="fa-solid fa-heart"></i>
+              <Icon name="heart"/>
             </div>
             <div className="stat-card-content">
               <h3>{stats.featured}</h3>
@@ -356,7 +356,7 @@ const ReviewsTab = ({
       <div className="dashboard-card filter-bar-card">
         <div className="filter-bar-container">
           <div className="search-input-wrapper">
-            <i className="fa-solid fa-search search-input-icon"></i>
+            <Icon name="search" className="search-input-icon"/>
             <input
               type="text"
               className="input-field search-input-with-icon"
@@ -406,7 +406,7 @@ const ReviewsTab = ({
         {paginatedReviews.length === 0 ? (
           <div className="empty-state-center">
             <div className="empty-state">
-              <i className="fa-solid fa-comments empty-state-icon"></i>
+              <Icon name="comments" className="empty-state-icon"/>
               <p>No reviews found</p>
               <p className="empty-state-text">
                 {searchQuery || filterStatus !== 'all' || filterRating !== 'all'
@@ -489,7 +489,7 @@ const ReviewsTab = ({
                             onClick={() => handleApprove(review._id || review.id)}
                             title="Approve"
                           >
-                            <i className="fa-solid fa-check"></i>
+                            <Icon name="check"/>
                           </button>
                         )}
                         {review.isApproved && (
@@ -498,7 +498,7 @@ const ReviewsTab = ({
                             onClick={() => handleReject(review._id || review.id)}
                             title="Reject"
                           >
-                            <i className="fa-solid fa-times"></i>
+                            <Icon name="times"/>
                           </button>
                         )}
                         <button
@@ -506,7 +506,7 @@ const ReviewsTab = ({
                           onClick={() => handleEdit(review)}
                           title="Edit"
                         >
-                          <i className="fa-solid fa-pencil"></i>
+                          <Icon name="pencil"/>
                         </button>
                         <button
                           className={`btn btn-icon ${
@@ -522,14 +522,14 @@ const ReviewsTab = ({
                           }
                           title={review.featured ? 'Unfeature' : 'Feature'}
                         >
-                          <i className="fa-solid fa-heart"></i>
+                          <Icon name="heart"/>
                         </button>
                         <button
                           className="btn btn-icon action-icon-delete"
                           onClick={() => handleDelete(review._id || review.id)}
                           title="Delete"
                         >
-                          <i className="fa-solid fa-trash"></i>
+                          <Icon name="trash"/>
                         </button>
                       </div>
                     </td>
@@ -548,7 +548,7 @@ const ReviewsTab = ({
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
-              <i className="fa-solid fa-chevron-left"></i> Previous
+              <Icon name="chevron-left"/> Previous
             </button>
             <div className="pagination-info">
               Page {currentPage} of {totalPages}
@@ -560,7 +560,7 @@ const ReviewsTab = ({
               }
               disabled={currentPage === totalPages}
             >
-              Next <i className="fa-solid fa-chevron-right"></i>
+              Next <Icon name="chevron-right"/>
             </button>
             <div className="pagination-records">
               <label>Records per page:</label>
@@ -598,7 +598,7 @@ const ReviewsTab = ({
                   setEditingReview(null);
                 }}
               >
-                <i className="fa-solid fa-times"></i>
+                <Icon name="times"/>
               </button>
             </div>
             <div className="modal-body">

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import Icon from '../ui/Icon.jsx';
 import SkeletonLoader from './SkeletonLoader.jsx';
 import { formatDate, parseOrderDate } from './utils/dateUtils.js';
 import {
@@ -671,7 +672,7 @@ const AllOrdersDataTab = ({
             onClick={() => setShowFilterWrapper(!showFilterWrapper)}
             title="Filters"
           >
-            <i className="fa-solid fa-filter"></i>
+            <Icon name="filter"/>
             {(allOrdersFilterPaymentStatus ||
               filterStatus ||
               filterMode ||
@@ -718,14 +719,14 @@ const AllOrdersDataTab = ({
                 onClick={() => setShowFilterWrapper(false)}
                 title="Close"
               >
-                <i className="fa-solid fa-times"></i>
+                <Icon name="times"/>
               </button>
             </div>
             <div className="filter-wrapper-content">
               <div className="filter-wrapper-section">
                 <label className="filter-label">Payment Status</label>
                 <div className="premium-select-wrapper">
-                  <i className="fa-solid fa-credit-card select-icon"></i>
+                  <Icon name="credit-card" className="select-icon"/>
                   <select
                     className="input-field filter-select premium-select"
                     value={allOrdersFilterPaymentStatus}
@@ -745,14 +746,14 @@ const AllOrdersDataTab = ({
                     <option value="unpaid">Unpaid</option>
                     <option value="pending">Pending</option>
                   </select>
-                  <i className="fa-solid fa-chevron-down dropdown-icon"></i>
+                  <Icon name="chevron-down" className="dropdown-icon"/>
                 </div>
               </div>
 
               <div className="filter-wrapper-section">
                 <label className="filter-label">Status</label>
                 <div className="premium-select-wrapper">
-                  <i className="fa-solid fa-filter select-icon"></i>
+                  <Icon name="filter" className="select-icon"/>
                   <select
                     className="input-field filter-select premium-select"
                     value={filterStatus}
@@ -774,7 +775,7 @@ const AllOrdersDataTab = ({
                       </option>
                     ))}
                   </select>
-                  <i className="fa-solid fa-chevron-down dropdown-icon"></i>
+                  <Icon name="chevron-down" className="dropdown-icon"/>
                 </div>
               </div>
 
@@ -935,7 +936,7 @@ const AllOrdersDataTab = ({
                     }
                   }}
                 >
-                  <i className="fa-solid fa-xmark"></i> Clear All
+                  <Icon name="xmark"/> Clear All
                 </button>
                 <button
                   className="btn btn-primary btn-small"
@@ -958,7 +959,7 @@ const AllOrdersDataTab = ({
                 onClick={() => removeFilter(filter)}
               >
                 {filter.label}
-                <i className="fa-solid fa-times"></i>
+                <Icon name="times"/>
               </span>
             ))}
           </div>
@@ -1140,7 +1141,7 @@ const AllOrdersDataTab = ({
                 <tr>
                   <td colSpan={13} className="empty-state-cell">
                     <div className="empty-state">
-                      <i className="fa-solid fa-inbox empty-state-icon"></i>
+                      <Icon name="inbox" className="empty-state-icon"/>
                       <p>No orders found</p>
                       <p className="empty-state-text">
                         Try adjusting your filters
@@ -1308,7 +1309,7 @@ const AllOrdersDataTab = ({
                             }}
                             title="Edit"
                           >
-                            <i className="fa-solid fa-pencil"></i>
+                            <Icon name="pencil"/>
                           </button>
                           <button
                             className="btn btn-ghost btn-icon action-icon-delete"
@@ -1319,7 +1320,7 @@ const AllOrdersDataTab = ({
                             }}
                             title="Delete"
                           >
-                            <i className="fa-solid fa-trash"></i>
+                            <Icon name="trash"/>
                           </button>
                         </div>
                       </td>
@@ -1338,7 +1339,7 @@ const AllOrdersDataTab = ({
               onClick={() => onPageChange && onPageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
-              <i className="fa-solid fa-chevron-left"></i> Previous
+              <Icon name="chevron-left"/> Previous
             </button>
             <span className="pagination-info">
               Page {currentPage} of {totalPages || 1}
@@ -1348,7 +1349,7 @@ const AllOrdersDataTab = ({
               onClick={() => onPageChange && onPageChange(currentPage + 1)}
               disabled={currentPage >= totalPages}
             >
-              Next <i className="fa-solid fa-chevron-right"></i>
+              Next <Icon name="chevron-right"/>
             </button>
           </div>
           <div className="pagination-container">

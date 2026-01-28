@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import Icon from '../ui/Icon.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
 import { getProfitStats } from './utils/calculations.js';
 import { formatDate, parseOrderDate } from './utils/dateUtils.js';
@@ -460,7 +461,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     return (
       <div className="admin-content" ref={dashboardContainerRef}>
         <div className="dashboard-empty-state">
-          <i className="fa-solid fa-chart-line dashboard-empty-state-icon"></i>
+          <Icon name="chart-line" className="dashboard-empty-state-icon" />
           <h2>No Orders Found</h2>
           <p className="dashboard-empty-text">
             No orders are currently loaded. Please check:
@@ -510,7 +511,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 }
               }}
             >
-              <i className="fa-solid fa-rupee-sign"></i>
+              <Icon name="rupee-sign" />
               <div>
                 <h3>₹{formatCurrency(allTimeRevenue)}</h3>
                 <p>Total Revenue</p>
@@ -552,7 +553,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 }
               }}
             >
-              <i className="fa-solid fa-shopping-cart icon-color-accent"></i>
+              <Icon name="shopping-cart" className="icon-color-accent" />
               <div>
                 <h3>{allTimeTotal}</h3>
                 <p>Total Orders</p>
@@ -580,7 +581,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 }
               }}
             >
-              <i className="fa-solid fa-exclamation-triangle stat-card-icon-warning"></i>
+              <Icon name="exclamation-triangle" className="stat-card-icon-warning" />
               <div>
                 <h3>₹{formatCurrency(allTimeUnpaidAmount)}</h3>
                 <p>Pending Payments</p>
@@ -611,7 +612,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 }
               }}
             >
-              <i className="fa-solid fa-users icon-color-accent"></i>
+              <Icon name="users" className="icon-color-accent" />
               <div>
                 <h3>{allUniqueAddresses}</h3>
                 <p>Total Customers</p>
@@ -619,29 +620,19 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
               </div>
             </div>
             <div className="stat-card">
-              <i className="fa-solid fa-chart-line stat-card-icon-success"></i>
+              <Icon name="chart-line" className="stat-card-icon-success" />
               <div>
                 <h3>₹{formatCurrency(allTimeAvgOrderValue)}</h3>
                 <p>Avg Order Value</p>
               </div>
             </div>
             <div className="stat-card">
-              <i className="fa-solid fa-chart-line stat-card-icon-success"></i>
+              <Icon name="chart-line" className="stat-card-icon-success" />
               <div>
                 <h3>₹{formatCurrency(profitStats.profit)}</h3>
                 <p>Profit After Expenses</p>
                 <p className="stat-card-subtitle">
                   {profitStats.profitMarginPercent.toFixed(1)}% margin
-                </p>
-              </div>
-            </div>
-            <div className="stat-card">
-              <i className="fa-solid fa-percent stat-card-icon-secondary"></i>
-              <div>
-                <h3>{profitStats.profitMarginPercent.toFixed(1)}%</h3>
-                <p>Profit Margin</p>
-                <p className="stat-card-subtitle">
-                  Target: {profitStats.targetProfitMargin}%
                 </p>
               </div>
             </div>
@@ -652,7 +643,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
               <div className="dashboard-card widget revenue-trend-card">
                 <div className="revenue-trend-header">
                   <h3 className="dashboard-section-title revenue-trend-title">
-                    <i className="fa-solid fa-chart-line"></i>
+                    <Icon name="chart-line" />
                     Revenue Trend (Year-over-Year Comparison)
                   </h3>
                   {sortedYears.length > 1 && monthlyRevenueData.length > 0 && (
@@ -707,7 +698,10 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                         const yearEntries = sortedYears
                           .map((year) => ({
                             year,
-                            ...(monthData.years[year] || { revenue: 0, orders: 0 }),
+                            ...(monthData.years[year] || {
+                              revenue: 0,
+                              orders: 0,
+                            }),
                           }))
                           .sort((a, b) => a.year - b.year);
 
@@ -718,9 +712,14 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                             </div>
                             <div className="revenue-trend-month-bars">
                               {yearEntries.map(({ year, revenue, orders }) => {
-                                const widthPct = maxRevenue > 0 ? (revenue / maxRevenue) * 100 : 0;
-                                const isCurrentYear = year === now.getFullYear();
-                                const isLastYear = year === now.getFullYear() - 1;
+                                const widthPct =
+                                  maxRevenue > 0
+                                    ? (revenue / maxRevenue) * 100
+                                    : 0;
+                                const isCurrentYear =
+                                  year === now.getFullYear();
+                                const isLastYear =
+                                  year === now.getFullYear() - 1;
                                 return (
                                   <div
                                     key={year}
@@ -756,8 +755,10 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                   </div>
                 ) : (
                   <div className="revenue-trend-empty">
-                    <i className="fa-solid fa-chart-line revenue-trend-empty-icon"></i>
-                    <p className="revenue-trend-empty-title">No revenue data available</p>
+                    <Icon name="chart-line" className="revenue-trend-empty-icon" />
+                    <p className="revenue-trend-empty-title">
+                      No revenue data available
+                    </p>
                     <p className="revenue-trend-empty-desc">
                       Start adding orders to see your revenue trends
                     </p>
@@ -769,7 +770,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
             <div className="dashboard-chart-full-width">
               <div className="dashboard-card widget">
                 <h3 className="dashboard-section-title">
-                  <i className="fa-solid fa-chart-bar icon-opacity"></i>
+                  <Icon name="chart-bar" className="icon-opacity" />
                   Payment Mode Trend (Year-over-Year Comparison)
                 </h3>
                 <div className="chart-container">
@@ -788,10 +789,15 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
 
                       return monthlyPaymentModeData.map((monthData, idx) => {
                         // Ensure all years from sortedYears are included, even if no data
-                        const yearEntries = sortedYears.map(year => {
-                          const data = monthData.years[year] || { cash: 0, online: 0 };
-                          return [year.toString(), data];
-                        }).sort(([a], [b]) => parseInt(a) - parseInt(b));
+                        const yearEntries = sortedYears
+                          .map((year) => {
+                            const data = monthData.years[year] || {
+                              cash: 0,
+                              online: 0,
+                            };
+                            return [year.toString(), data];
+                          })
+                          .sort(([a], [b]) => parseInt(a) - parseInt(b));
 
                         return (
                           <div
@@ -877,7 +883,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                     })()
                   ) : (
                     <div className="dashboard-empty-state">
-                      <i className="fa-solid fa-chart-bar dashboard-empty-state-icon"></i>
+                      <Icon name="chart-bar" className="dashboard-empty-state-icon" />
                       <p className="empty-state-text">
                         No payment mode data available
                       </p>
@@ -927,7 +933,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
             <div className="dashboard-section">
               <div className="recent-orders-header">
                 <h3 className="dashboard-section-title recent-orders-title">
-                  <i className="fa-solid fa-clock-rotate-left icon-opacity"></i>
+                  <Icon name="clock-rotate-left" className="icon-opacity" />
                   Recent Orders (Last 10)
                 </h3>
                 <button
@@ -974,10 +980,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                 'N/A'}
                             </td>
                             <td>{order.quantity || 1}</td>
-                            <td>
-                              ₹
-                              {formatCurrency(getOrderAmount(order))}
-                            </td>
+                            <td>₹{formatCurrency(getOrderAmount(order))}</td>
                             <td>{order.mode || 'N/A'}</td>
                             <td>
                               <span

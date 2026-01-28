@@ -1,4 +1,5 @@
 import { useLanguage } from '../contexts/LanguageContext';
+import Icon from '../ui/Icon.jsx';
 import './HowItWorks.css';
 
 const HowItWorks = ({ onOrderClick }) => {
@@ -7,7 +8,7 @@ const HowItWorks = ({ onOrderClick }) => {
   const steps = [
     {
       number: '01',
-      icon: 'fa-message',
+      icon: 'message',
       title: t('howItWorks.step1Title') || 'Contact Us',
       description:
         t('howItWorks.step1Desc') ||
@@ -15,7 +16,7 @@ const HowItWorks = ({ onOrderClick }) => {
     },
     {
       number: '02',
-      icon: 'fa-utensils',
+      icon: 'utensils',
       title: t('howItWorks.step2Title') || 'Choose Your Meal',
       description:
         t('howItWorks.step2Desc') ||
@@ -23,7 +24,7 @@ const HowItWorks = ({ onOrderClick }) => {
     },
     {
       number: '03',
-      icon: 'fa-clock',
+      icon: 'clock',
       title: t('howItWorks.step3Title') || 'Confirm Details',
       description:
         t('howItWorks.step3Desc') ||
@@ -31,7 +32,7 @@ const HowItWorks = ({ onOrderClick }) => {
     },
     {
       number: '04',
-      icon: 'fa-truck',
+      icon: 'truck',
       title: t('howItWorks.step4Title') || 'Enjoy Fresh Food',
       description:
         t('howItWorks.step4Desc') ||
@@ -60,7 +61,7 @@ const HowItWorks = ({ onOrderClick }) => {
             <div key={index} className="how-it-works-step">
               <div className="step-content">
                 <div className="step-icon">
-                  <i className={`fa-solid ${step.icon}`} aria-hidden="true"></i>
+                  <Icon name={step.icon}} aria-hidden="true"/>
                 </div>
                 <div className="step-body">
                   <h3 className="step-title">{step.title}</h3>

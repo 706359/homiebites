@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import Icon from '../ui/Icon.jsx';
 import { useNotification } from './contexts/NotificationContext.jsx';
 
 const NotificationWrapper = () => {
@@ -38,15 +39,15 @@ const NotificationWrapper = () => {
   const getIcon = (type) => {
     switch (type) {
       case 'success':
-        return 'fa-circle-check';
+        return 'circle-check';
       case 'error':
-        return 'fa-circle-exclamation';
+        return 'circle-exclamation';
       case 'warning':
-        return 'fa-triangle-exclamation';
+        return 'triangle-exclamation';
       case 'info':
-        return 'fa-circle-info';
+        return 'circle-info';
       default:
-        return 'fa-circle-info';
+        return 'circle-info';
     }
   };
 
@@ -108,7 +109,7 @@ const NotificationWrapper = () => {
         >
           <div className="admin-notification-content">
             <div className="admin-notification-icon" aria-hidden="true">
-              <i className={`fa-solid ${getIcon(notification.type)}`}></i>
+              <Icon name={getIcon(notification.type)} />
             </div>
             <div className="admin-notification-body">
               <div className="admin-notification-message">
@@ -132,7 +133,7 @@ const NotificationWrapper = () => {
             aria-label={`Close ${getTypeLabel(notification.type)} notification`}
             type="button"
           >
-            <i className="fa-solid fa-xmark" aria-hidden="true"></i>
+            <Icon name="xmark" aria-hidden="true" />
           </button>
           {notification.duration > 0 && (
             <div className="admin-notification-progress" aria-hidden="true">

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import Icon from '../ui/Icon.jsx';
 import EmptyState from './EmptyState.jsx';
 import OrderModal from './OrderModal.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
@@ -387,21 +388,21 @@ const CurrentMonthOrdersTab = ({
       <div className="kitchen-tab">
         <div className="kitchen-tab-stats">
           <div className="stat-card">
-            <i className="fa-solid fa-coins"></i>
+            <Icon name="coins"/>
             <div>
               <h3>₹{formatCurrency(currentMonthStats.revenue)}</h3>
               <p>This Month Revenue</p>
             </div>
           </div>
           <div className="stat-card">
-            <i className="fa-solid fa-shopping-cart"></i>
+            <Icon name="shopping-cart"/>
             <div>
               <h3>{currentMonthStats.total}</h3>
               <p>Total Orders</p>
             </div>
           </div>
           <div className="stat-card">
-            <i className="fa-solid fa-exclamation-triangle icon-color-warning"></i>
+            <Icon name="exclamation-triangle" className="icon-color-warning"/>
             <div>
               <h3>₹{formatCurrency(currentMonthStats.pendingAmount)}</h3>
               <p>Pending Payments</p>
@@ -411,7 +412,7 @@ const CurrentMonthOrdersTab = ({
             </div>
           </div>
           <div className="stat-card">
-            <i className="fa-solid fa-chart-line icon-color-success"></i>
+            <Icon name="chart-line" className="icon-color-success"/>
             <div>
               <h3>
                 {currentMonthStats.growth === Infinity
@@ -450,7 +451,7 @@ const CurrentMonthOrdersTab = ({
                 if (onPageChange) onPageChange(1);
               }}
             >
-              <i className="fa-solid fa-calendar-day mr-6"></i>
+              <Icon name="calendar-day" className="mr-6"/>
               Today ({quickFilterCounts.today})
             </button>
             <button
@@ -460,7 +461,7 @@ const CurrentMonthOrdersTab = ({
                 if (onPageChange) onPageChange(1);
               }}
             >
-              <i className="fa-solid fa-calendar mr-6"></i>
+              <Icon name="calendar" className="mr-6"/>
               Yesterday ({quickFilterCounts.yesterday})
             </button>
             <button
@@ -470,7 +471,7 @@ const CurrentMonthOrdersTab = ({
                 if (onPageChange) onPageChange(1);
               }}
             >
-              <i className="fa-solid fa-calendar-week mr-6"></i>
+              <Icon name="calendar-week" className="mr-6"/>
               This Week ({quickFilterCounts.thisWeek})
             </button>
           </div>
@@ -482,7 +483,7 @@ const CurrentMonthOrdersTab = ({
                 if (onPageChange) onPageChange(1);
               }}
             >
-              <i className="fa-solid fa-exclamation-triangle mr-6"></i>
+              <Icon name="exclamation-triangle" className="mr-6"/>
               Pending ({quickFilterCounts.pending})
             </button>
             <button
@@ -492,7 +493,7 @@ const CurrentMonthOrdersTab = ({
                 if (onPageChange) onPageChange(1);
               }}
             >
-              <i className="fa-solid fa-check-circle mr-6"></i>
+              <Icon name="check-circle" className="mr-6"/>
               Paid ({quickFilterCounts.paid})
             </button>
           </div>
@@ -511,7 +512,7 @@ const CurrentMonthOrdersTab = ({
               onClick={handleExport}
               title="Export to CSV"
             >
-              <i className="fa-solid fa-download mr-6"></i>
+              <Icon name="download" className="mr-6"/>
               Export
             </button>
           </div>
@@ -529,7 +530,7 @@ const CurrentMonthOrdersTab = ({
 
         {filteredOrders.length === 0 ? (
           <EmptyState
-            icon="fa-inbox"
+            icon="inbox"
             title="No orders found"
             message="Try adjusting your filters or add a new order"
             addOrderLabel="Add New Order"
@@ -628,7 +629,7 @@ const CurrentMonthOrdersTab = ({
                               }}
                               title="Edit"
                             >
-                              <i className="fa-solid fa-pencil"></i>
+                              <Icon name="pencil"/>
                             </button>
                             <button
                               className="btn btn-ghost btn-icon action-icon-delete"
@@ -639,7 +640,7 @@ const CurrentMonthOrdersTab = ({
                               }}
                               title="Delete"
                             >
-                              <i className="fa-solid fa-trash"></i>
+                              <Icon name="trash"/>
                             </button>
                           </div>
                         </td>
@@ -657,7 +658,7 @@ const CurrentMonthOrdersTab = ({
                   onClick={() => onPageChange && onPageChange(currentPage - 1)}
                   disabled={currentPage === 1}
                 >
-                  <i className="fa-solid fa-chevron-left"></i> Previous
+                  <Icon name="chevron-left"/> Previous
                 </button>
                 <span className="pagination-info">
                   Page {currentPage} of {totalPages || 1}
@@ -667,7 +668,7 @@ const CurrentMonthOrdersTab = ({
                   onClick={() => onPageChange && onPageChange(currentPage + 1)}
                   disabled={currentPage >= totalPages}
                 >
-                  Next <i className="fa-solid fa-chevron-right"></i>
+                  Next <Icon name="chevron-right"/>
                 </button>
               </div>
               <div className="pagination-container">

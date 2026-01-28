@@ -50,14 +50,18 @@
   -webkit-backdrop-filter: blur(12px);
   color: rgba(255, 255, 255, 0.95) !important;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 16px rgba(68, 144, 49, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 4px 16px rgba(68, 144, 49, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .btn-primary:hover:not(:disabled) {
   background: rgba(61, 131, 41, 0.9);
   border-color: rgba(255, 255, 255, 0.3);
   color: rgba(255, 255, 255, 1) !important;
-  box-shadow: 0 6px 20px rgba(68, 144, 49, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 6px 20px rgba(68, 144, 49, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
   transform: translateY(-1px);
 }
 
@@ -65,7 +69,9 @@
   background: rgba(61, 131, 41, 0.95);
   border-color: rgba(255, 255, 255, 0.25);
   color: rgba(255, 255, 255, 0.9) !important;
-  box-shadow: 0 2px 8px rgba(68, 144, 49, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 2px 8px rgba(68, 144, 49, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transform: translateY(0);
 }
 
@@ -76,14 +82,18 @@
   -webkit-backdrop-filter: blur(12px);
   color: rgba(255, 255, 255, 0.95) !important;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 16px rgba(196, 92, 45, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 4px 16px rgba(196, 92, 45, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .btn-secondary:hover:not(:disabled) {
   background: rgba(176, 79, 37, 0.9);
   border-color: rgba(255, 255, 255, 0.3);
   color: rgba(255, 255, 255, 1) !important;
-  box-shadow: 0 6px 20px rgba(196, 92, 45, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 6px 20px rgba(196, 92, 45, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
   transform: translateY(-1px);
 }
 
@@ -91,7 +101,9 @@
   background: rgba(176, 79, 37, 0.95);
   border-color: rgba(255, 255, 255, 0.25);
   color: rgba(255, 255, 255, 0.9) !important;
-  box-shadow: 0 2px 8px rgba(196, 92, 45, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 2px 8px rgba(196, 92, 45, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transform: translateY(0);
 }
 
@@ -102,7 +114,9 @@
   -webkit-backdrop-filter: blur(12px);
   color: var(--admin-text-secondary);
   border: 1px solid rgba(229, 231, 235, 0.5);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .btn-ghost:hover:not(:disabled) {
@@ -111,7 +125,9 @@
   -webkit-backdrop-filter: blur(12px);
   color: var(--primary-green);
   border-color: rgba(68, 144, 49, 0.4);
-  box-shadow: 0 4px 12px rgba(68, 144, 49, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 4px 12px rgba(68, 144, 49, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transform: translateY(-1px);
 }
 
@@ -121,7 +137,9 @@
   -webkit-backdrop-filter: blur(12px);
   color: var(--primary-green);
   border-color: rgba(68, 144, 49, 0.5);
-  box-shadow: 0 2px 6px rgba(68, 144, 49, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 2px 6px rgba(68, 144, 49, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transform: translateY(0);
 }
 
@@ -132,7 +150,9 @@
   -webkit-backdrop-filter: blur(12px);
   color: var(--admin-text-primary);
   border: 1px solid rgba(229, 231, 235, 0.5);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .btn-public:hover:not(:disabled) {
@@ -141,7 +161,9 @@
   -webkit-backdrop-filter: blur(12px);
   border-color: rgba(229, 231, 235, 0.7);
   color: var(--admin-text-primary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
   transform: translateY(-1px);
 }
 
@@ -151,7 +173,9 @@
   -webkit-backdrop-filter: blur(12px);
   border-color: rgba(229, 231, 235, 0.6);
   color: var(--admin-text-primary);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
   transform: translateY(0);
 }
 
@@ -162,7 +186,9 @@
   -webkit-backdrop-filter: blur(12px);
   color: var(--btn-color, rgba(255, 255, 255, 0.95)) !important;
   border: 1px solid var(--btn-border-glass, rgba(255, 255, 255, 0.2));
-  box-shadow: 0 4px 16px var(--btn-shadow-glass, rgba(68, 144, 49, 0.25)), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 4px 16px var(--btn-shadow-glass, rgba(68, 144, 49, 0.25)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .btn-special:hover:not(:disabled) {
@@ -171,7 +197,9 @@
   -webkit-backdrop-filter: blur(12px);
   border-color: var(--btn-border-hover-glass, rgba(255, 255, 255, 0.3));
   color: var(--btn-color-hover, rgba(255, 255, 255, 1)) !important;
-  box-shadow: 0 6px 20px var(--btn-shadow-hover-glass, rgba(68, 144, 49, 0.35)), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 6px 20px var(--btn-shadow-hover-glass, rgba(68, 144, 49, 0.35)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
   transform: translateY(-1px);
 }
 
@@ -181,7 +209,9 @@
   -webkit-backdrop-filter: blur(12px);
   border-color: var(--btn-border-hover-glass, rgba(255, 255, 255, 0.25));
   color: var(--btn-color-hover, rgba(255, 255, 255, 0.9)) !important;
-  box-shadow: 0 2px 8px var(--btn-shadow-glass, rgba(68, 144, 49, 0.2)), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 2px 8px var(--btn-shadow-glass, rgba(68, 144, 49, 0.2)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transform: translateY(0);
 }
 
@@ -215,6 +245,39 @@
   --btn-border-hover-glass: rgba(255, 255, 255, 0.3);
   --btn-shadow-glass: rgba(68, 144, 49, 0.25);
   --btn-shadow-hover-glass: rgba(68, 144, 49, 0.35);
+  --btn-color: rgba(255, 255, 255, 0.95);
+  --btn-color-hover: rgba(255, 255, 255, 1);
+}
+
+.btn-special.success {
+  --btn-bg-glass: rgba(34, 197, 94, 0.85);
+  --btn-bg-hover-glass: rgba(22, 163, 74, 0.9);
+  --btn-border-glass: rgba(255, 255, 255, 0.2);
+  --btn-border-hover-glass: rgba(255, 255, 255, 0.3);
+  --btn-shadow-glass: rgba(34, 197, 94, 0.25);
+  --btn-shadow-hover-glass: rgba(34, 197, 94, 0.35);
+  --btn-color: rgba(255, 255, 255, 0.95);
+  --btn-color-hover: rgba(255, 255, 255, 1);
+}
+
+.btn-special.warning {
+  --btn-bg-glass: rgba(245, 158, 11, 0.85);
+  --btn-bg-hover-glass: rgba(217, 119, 6, 0.9);
+  --btn-border-glass: rgba(255, 255, 255, 0.2);
+  --btn-border-hover-glass: rgba(255, 255, 255, 0.3);
+  --btn-shadow-glass: rgba(245, 158, 11, 0.25);
+  --btn-shadow-hover-glass: rgba(245, 158, 11, 0.35);
+  --btn-color: rgba(255, 255, 255, 0.95);
+  --btn-color-hover: rgba(255, 255, 255, 1);
+}
+
+.btn-special.info {
+  --btn-bg-glass: rgba(59, 130, 246, 0.85);
+  --btn-bg-hover-glass: rgba(37, 99, 235, 0.9);
+  --btn-border-glass: rgba(255, 255, 255, 0.2);
+  --btn-border-hover-glass: rgba(255, 255, 255, 0.3);
+  --btn-shadow-glass: rgba(59, 130, 246, 0.25);
+  --btn-shadow-hover-glass: rgba(59, 130, 246, 0.35);
   --btn-color: rgba(255, 255, 255, 0.95);
   --btn-color-hover: rgba(255, 255, 255, 1);
 }
@@ -340,26 +403,26 @@ a.btn,
 }
 
 /* Reset button margins when in flex containers */
-[class*="actions"],
-[class*="buttons"],
-[class*="-actions"],
-[class*="-buttons"] {
+[class*='actions'],
+[class*='buttons'],
+[class*='-actions'],
+[class*='-buttons'] {
   display: flex;
   margin: 0;
   padding: 0;
   align-items: stretch;
 }
 
-[class*="actions"] .btn,
-[class*="buttons"] .btn,
-[class*="-actions"] .btn,
-[class*="-buttons"] .btn {
+[class*='actions'] .btn,
+[class*='buttons'] .btn,
+[class*='-actions'] .btn,
+[class*='-buttons'] .btn {
   margin: 0 !important;
 }
 
 /* Fix button alignment in vertical flex containers */
-[style*="flex-direction: column"] .btn,
-[style*="flex-direction:column"] .btn {
+[style*='flex-direction: column'] .btn,
+[style*='flex-direction:column'] .btn {
   width: 100%;
   margin: 0 !important;
   align-self: stretch;
@@ -370,7 +433,7 @@ a.btn,
 .offer-actions,
 .hero-actions,
 .section-actions,
-[class*="-actions"] {
+[class*='-actions'] {
   margin: 0;
   padding-left: 0;
   padding-right: 0;
@@ -380,7 +443,7 @@ a.btn,
 .offer-actions .btn,
 .hero-actions .btn,
 .section-actions .btn,
-[class*="-actions"] .btn {
+[class*='-actions'] .btn {
   margin-left: 0 !important;
   margin-right: 0 !important;
 }
@@ -442,6 +505,21 @@ a.btn,
 @keyframes spin {
   to {
     transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Lucide React icons */
+.lucide-icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.lucide-icon-spin {
+  animation: lucide-spin 1s linear infinite;
+}
+@keyframes lucide-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -776,9 +854,9 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   /* Safe area insets for notched devices */
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
-
 
 /* Account for fixed header when scrolling to main content */
 main#main-content {
@@ -1352,7 +1430,9 @@ button.whatsapp-order-link:active {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .menu-btn:active {
@@ -3079,12 +3159,8 @@ button.whatsapp-order-link:active {
 }
 
 /* Ensure plus/minus icons display correctly */
-.faq-page .faq-icon.fa-plus::before {
-  content: '\f067' !important;
-}
-
-.faq-page .faq-icon.fa-minus::before {
-  content: '\f068' !important;
+.faq-page .faq-icon {
+  flex-shrink: 0;
 }
 
 .faq-page .faq-answer {
@@ -3587,7 +3663,9 @@ button.whatsapp-order-link:active {
   border-radius: 12px;
   padding: 2rem;
   border: 1px solid rgba(229, 231, 235, 0.5);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .account-section h2 {
@@ -3632,7 +3710,9 @@ button.whatsapp-order-link:active {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .address-card.default {
@@ -3677,7 +3757,9 @@ button.whatsapp-order-link:active {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .order-header {
@@ -3943,26 +4025,26 @@ input:not([type='checkbox']):not([type='radio']):not([type='submit']):not(
 }
 
 /* Make placeholder option text smaller in all select dropdowns */
-select option[value=""] {
+select option[value=''] {
   font-size: 0.85rem !important;
   color: rgba(0, 0, 0, 0.5) !important;
 }
 
 /* Style select when placeholder is selected - apply smaller font */
-select:not([value]):not([value=""]),
-select[value=""] {
+select:not([value]):not([value='']),
+select[value=''] {
   color: rgba(0, 0, 0, 0.5);
 }
 
 /* Additional rule for select elements with placeholder class */
 select.placeholder-selected,
-select:has(option[value=""]:checked) {
+select:has(option[value='']:checked) {
   color: rgba(0, 0, 0, 0.5) !important;
   font-size: 0.85rem !important;
 }
 
 /* Ensure all empty value options are styled */
-select option:first-child[value=""] {
+select option:first-child[value=''] {
   font-size: 0.85rem !important;
   color: rgba(0, 0, 0, 0.5) !important;
 }
@@ -4034,7 +4116,9 @@ select:focus {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 0 0 3px rgba(68, 144, 49, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 input:not([type='checkbox']):not([type='radio']):disabled,
@@ -4556,8 +4640,6 @@ html.dark-theme .faq-footer p {
 html.dark-theme .faq-footer a {
   color: var(--primary-orange);
 }
-
-
 
 /* OrderModal dark theme overrides */
 html.dark-theme .order-modal {

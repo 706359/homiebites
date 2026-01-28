@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Icon from '../ui/Icon.jsx';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
 import PremiumLoader from './PremiumLoader.jsx';
 import {
@@ -578,37 +579,37 @@ const SettingsTab = ({
     {
       id: 'general',
       label: 'General',
-      icon: 'fa-cog',
+      icon: 'cog',
       description: 'Business & Pricing',
     },
     {
       id: 'orders',
       label: 'Orders',
-      icon: 'fa-shopping-cart',
+      icon: 'shopping-cart',
       description: 'Order Configuration',
     },
     {
       id: 'notifications',
       label: 'Notifications',
-      icon: 'fa-bell',
+      icon: 'bell',
       description: 'Alerts & Preferences',
     },
     {
       id: 'data',
       label: 'Data',
-      icon: 'fa-database',
+      icon: 'database',
       description: 'Backup & Restore',
     },
     {
       id: 'profile',
       label: 'Profile',
-      icon: 'fa-user',
+      icon: 'user',
       description: 'User Account',
     },
     {
       id: 'appearance',
       label: 'Appearance',
-      icon: 'fa-palette',
+      icon: 'palette',
       description: 'Font & display',
     },
   ];
@@ -624,7 +625,7 @@ const SettingsTab = ({
               onClick={() => setActiveTab(tab.id)}
               title={tab.description}
             >
-              <i className={`fa-solid ${tab.icon}`}></i>
+              <Icon name={tab.icon} />
               <span>{tab.label}</span>
             </button>
           ))}
@@ -637,7 +638,7 @@ const SettingsTab = ({
             <div className="dashboard-card">
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper">
-                  <i className="fa-solid fa-building"></i>
+                  <Icon name="building"/>
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title">
@@ -652,7 +653,7 @@ const SettingsTab = ({
                 <div className="settings-form-grid">
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-store"></i>
+                      <Icon name="store"/>
                       <span>Business Name</span>
                     </label>
                     <input
@@ -670,7 +671,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-phone"></i>
+                      <Icon name="phone"/>
                       <span>Contact Number</span>
                     </label>
                     <input
@@ -688,7 +689,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-envelope"></i>
+                      <Icon name="envelope"/>
                       <span>Email Address</span>
                     </label>
                     <input
@@ -706,7 +707,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group settings-form-group-full">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-location-dot"></i>
+                      <Icon name="location-dot"/>
                       <span>Business Address</span>
                     </label>
                     <textarea
@@ -724,7 +725,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-brands fa-whatsapp"></i>
+                      <Icon name="whatsapp"/>
                       <span>WhatsApp Number</span>
                     </label>
                     <input
@@ -745,7 +746,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-clock"></i>
+                      <Icon name="clock"/>
                       <span>Delivery Timings</span>
                     </label>
                     <input
@@ -763,7 +764,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-indian-rupee-sign"></i>
+                      <Icon name="indian-rupee-sign"/>
                       <span>Minimum Order Value</span>
                     </label>
                     <div className="settings-input-with-symbol">
@@ -785,7 +786,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-truck"></i>
+                      <Icon name="truck"/>
                       <span>Delivery Charge</span>
                     </label>
                     <div className="settings-input-with-symbol">
@@ -807,7 +808,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group settings-form-group-full">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-bullhorn"></i>
+                      <Icon name="bullhorn"/>
                       <span>Announcement</span>
                     </label>
                     <textarea
@@ -832,7 +833,7 @@ const SettingsTab = ({
                     className="btn btn-primary btn-large"
                     onClick={handleSaveBusinessInfo}
                   >
-                    <i className="fa-solid fa-save"></i>
+                    <Icon name="save"/>
                     <span>Save Business Information</span>
                   </button>
                 </div>
@@ -842,7 +843,7 @@ const SettingsTab = ({
             <div className="dashboard-card">
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper">
-                  <i className="fa-solid fa-indian-rupee-sign"></i>
+                  <Icon name="indian-rupee-sign"/>
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title">
@@ -857,7 +858,7 @@ const SettingsTab = ({
                 <div className="settings-form-grid">
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-tag"></i>
+                      <Icon name="tag"/>
                       <span>Default Unit Price</span>
                     </label>
                     <div className="settings-input-with-symbol">
@@ -879,7 +880,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-sun"></i>
+                      <Icon name="sun"/>
                       <span>Lunch Price</span>
                     </label>
                     <div className="settings-input-with-symbol">
@@ -901,7 +902,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-moon"></i>
+                      <Icon name="moon"/>
                       <span>Dinner Price</span>
                     </label>
                     <div className="settings-input-with-symbol">
@@ -923,7 +924,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-box"></i>
+                      <Icon name="box"/>
                       <span>Minimum Order Quantity</span>
                     </label>
                     <input
@@ -946,7 +947,7 @@ const SettingsTab = ({
                     className="btn btn-primary btn-large"
                     onClick={handleSavePricing}
                   >
-                    <i className="fa-solid fa-save"></i>
+                    <Icon name="save"/>
                     <span>Update Pricing</span>
                   </button>
                 </div>
@@ -957,7 +958,7 @@ const SettingsTab = ({
             <div className="dashboard-card" style={{ marginTop: '24px' }}>
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper">
-                  <i className="fa-solid fa-utensils"></i>
+                  <Icon name="utensils"/>
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title">Kitchen Status</h3>
@@ -970,7 +971,7 @@ const SettingsTab = ({
                 <div className="settings-form-grid">
                   <div className="settings-form-group-full">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-toggle-on"></i>
+                      <Icon name="toggle-on"/>
                       <span>Kitchen Status</span>
                     </label>
                     <div className="settings-toggle-switch-wrapper">
@@ -1003,7 +1004,7 @@ const SettingsTab = ({
 
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-calendar-alt"></i>
+                      <Icon name="calendar-alt"/>
                       <span>Closed From Date</span>
                       {!kitchenSettings.kitchenEnabled && (
                         <span style={{ color: '#ef4444', marginLeft: '8px' }}>*</span>
@@ -1034,7 +1035,7 @@ const SettingsTab = ({
 
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-calendar-check"></i>
+                      <Icon name="calendar-check"/>
                       <span>Closed To Date</span>
                       {!kitchenSettings.kitchenEnabled && (
                         <span style={{ color: '#ef4444', marginLeft: '8px' }}>*</span>
@@ -1071,7 +1072,7 @@ const SettingsTab = ({
                     className="btn btn-primary btn-large"
                     onClick={handleSaveKitchenSettings}
                   >
-                    <i className="fa-solid fa-save"></i>
+                    <Icon name="save"/>
                     <span>Update Kitchen Status</span>
                   </button>
                 </div>
@@ -1084,7 +1085,7 @@ const SettingsTab = ({
           <div className="dashboard-card">
             <div className="dashboard-section-header">
               <div className="dashboard-section-icon-wrapper">
-                <i className="fa-solid fa-shopping-cart"></i>
+                <Icon name="shopping-cart"/>
               </div>
               <div className="dashboard-section-title-wrapper">
                 <h3 className="dashboard-section-title">Order Configuration</h3>
@@ -1097,7 +1098,7 @@ const SettingsTab = ({
               <div className="settings-form-grid">
                 <div className="settings-form-group">
                   <label className="settings-form-label">
-                    <i className="fa-solid fa-hashtag"></i>
+                    <Icon name="hashtag"/>
                     <span>Order ID Prefix</span>
                   </label>
                   <input
@@ -1122,7 +1123,7 @@ const SettingsTab = ({
                   <div className="settings-toggle-item">
                     <div className="settings-toggle-content">
                       <div className="settings-toggle-label-wrapper">
-                        <i className="fa-solid fa-magic"></i>
+                        <Icon name="magic"/>
                         <div>
                           <span className="settings-toggle-label">
                             Auto-generate Order ID
@@ -1151,7 +1152,7 @@ const SettingsTab = ({
                   <div className="settings-toggle-item">
                     <div className="settings-toggle-content">
                       <div className="settings-toggle-label-wrapper">
-                        <i className="fa-solid fa-copy"></i>
+                        <Icon name="copy"/>
                         <div>
                           <span className="settings-toggle-label">
                             Allow Duplicate Address
@@ -1180,7 +1181,7 @@ const SettingsTab = ({
                   <div className="settings-toggle-item">
                     <div className="settings-toggle-content">
                       <div className="settings-toggle-label-wrapper">
-                        <i className="fa-solid fa-shield-halved"></i>
+                        <Icon name="shield-halved"/>
                         <div>
                           <span className="settings-toggle-label">
                             Require Payment Confirmation
@@ -1209,13 +1210,13 @@ const SettingsTab = ({
 
                 <div className="settings-form-group settings-form-group-full">
                   <label className="settings-form-label">
-                    <i className="fa-solid fa-list-check"></i>
+                    <Icon name="list-check"/>
                     <span>Order Status Options</span>
                   </label>
                   <div className="settings-status-list">
                     {orderSettings.statusOptions.map((status, idx) => (
                       <div key={idx} className="settings-status-item">
-                        <i className="fa-solid fa-circle indicator-circle-small"></i>
+                        <Icon name="circle" className="indicator-circle-small"/>
                         <span>{status}</span>
                         {orderSettings.statusOptions.length > 1 && (
                           <button
@@ -1231,7 +1232,7 @@ const SettingsTab = ({
                             }}
                             title="Remove status"
                           >
-                            <i className="fa-solid fa-times"></i>
+                            <Icon name="times"/>
                           </button>
                         )}
                       </div>
@@ -1289,7 +1290,7 @@ const SettingsTab = ({
                             }
                           }}
                         >
-                          <i className="fa-solid fa-check"></i>
+                          <Icon name="check"/>
                         </button>
                         <button
                           className="btn btn-ghost btn-small"
@@ -1298,7 +1299,7 @@ const SettingsTab = ({
                             setShowStatusInput(false);
                           }}
                         >
-                          <i className="fa-solid fa-times"></i>
+                          <Icon name="times"/>
                         </button>
                       </div>
                     ) : (
@@ -1306,7 +1307,7 @@ const SettingsTab = ({
                         className="btn btn-ghost btn-small settings-add-status-btn"
                         onClick={() => setShowStatusInput(true)}
                       >
-                        <i className="fa-solid fa-plus"></i>
+                        <Icon name="plus"/>
                         <span>Add Status</span>
                       </button>
                     )}
@@ -1318,7 +1319,7 @@ const SettingsTab = ({
                   className="btn btn-primary btn-large"
                   onClick={handleSaveOrderSettings}
                 >
-                  <i className="fa-solid fa-save"></i>
+                  <Icon name="save"/>
                   <span>Save Order Settings</span>
                 </button>
               </div>
@@ -1330,7 +1331,7 @@ const SettingsTab = ({
           <div className="dashboard-card">
             <div className="settings-section-header">
               <div className="settings-section-icon-wrapper">
-                <i className="fa-solid fa-bell"></i>
+                <Icon name="bell"/>
               </div>
               <div className="settings-section-title-wrapper">
                 <h3 className="settings-section-title">
@@ -1345,7 +1346,7 @@ const SettingsTab = ({
               <div className="settings-notification-categories">
                 <div className="settings-notification-category">
                   <div className="settings-notification-category-header">
-                    <i className="fa-solid fa-envelope"></i>
+                    <Icon name="envelope"/>
                     <h4 className="settings-notification-category-title">
                       Email Notifications
                     </h4>
@@ -1354,7 +1355,7 @@ const SettingsTab = ({
                     <div className="settings-toggle-item">
                       <div className="settings-toggle-content">
                         <div className="settings-toggle-label-wrapper">
-                          <i className="fa-solid fa-calendar-day"></i>
+                          <Icon name="calendar-day"/>
                           <div>
                             <span className="settings-toggle-label">
                               Daily Summary
@@ -1383,7 +1384,7 @@ const SettingsTab = ({
                     <div className="settings-toggle-item">
                       <div className="settings-toggle-content">
                         <div className="settings-toggle-label-wrapper">
-                          <i className="fa-solid fa-bell"></i>
+                          <Icon name="bell"/>
                           <div>
                             <span className="settings-toggle-label">
                               New Order Alert
@@ -1412,7 +1413,7 @@ const SettingsTab = ({
                     <div className="settings-toggle-item">
                       <div className="settings-toggle-content">
                         <div className="settings-toggle-label-wrapper">
-                          <i className="fa-solid fa-money-bill-wave"></i>
+                          <Icon name="money-bill-wave"/>
                           <div>
                             <span className="settings-toggle-label">
                               Payment Received
@@ -1441,7 +1442,7 @@ const SettingsTab = ({
                     <div className="settings-toggle-item">
                       <div className="settings-toggle-content">
                         <div className="settings-toggle-label-wrapper">
-                          <i className="fa-solid fa-exclamation-triangle"></i>
+                          <Icon name="exclamation-triangle"/>
                           <div>
                             <span className="settings-toggle-label">
                               Low Order Day Warning
@@ -1471,7 +1472,7 @@ const SettingsTab = ({
 
                 <div className="settings-notification-category">
                   <div className="settings-notification-category-header">
-                    <i className="fa-solid fa-message"></i>
+                    <Icon name="message"/>
                     <h4 className="settings-notification-category-title">
                       SMS Notifications
                     </h4>
@@ -1480,7 +1481,7 @@ const SettingsTab = ({
                     <div className="settings-toggle-item">
                       <div className="settings-toggle-content">
                         <div className="settings-toggle-label-wrapper">
-                          <i className="fa-solid fa-clock"></i>
+                          <Icon name="clock"/>
                           <div>
                             <span className="settings-toggle-label">
                               Payment Reminders
@@ -1509,7 +1510,7 @@ const SettingsTab = ({
                     <div className="settings-toggle-item">
                       <div className="settings-toggle-content">
                         <div className="settings-toggle-label-wrapper">
-                          <i className="fa-solid fa-check-circle"></i>
+                          <Icon name="check-circle"/>
                           <div>
                             <span className="settings-toggle-label">
                               Order Confirmations
@@ -1542,7 +1543,7 @@ const SettingsTab = ({
                   className="btn btn-primary btn-large"
                   onClick={handleSaveNotificationPrefs}
                 >
-                  <i className="fa-solid fa-save"></i>
+                  <Icon name="save"/>
                   <span>Save Notification Preferences</span>
                 </button>
               </div>
@@ -1555,7 +1556,7 @@ const SettingsTab = ({
             <div className="dashboard-card">
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper">
-                  <i className="fa-solid fa-database"></i>
+                  <Icon name="database"/>
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title">Backup & Restore</h3>
@@ -1567,7 +1568,7 @@ const SettingsTab = ({
               <div className="settings-section-body">
                 <div className="settings-backup-info">
                   <div className="settings-backup-info-item">
-                    <i className="fa-solid fa-clock"></i>
+                    <Icon name="clock"/>
                     <div>
                       <span className="settings-backup-info-label">
                         Last Backup
@@ -1581,7 +1582,7 @@ const SettingsTab = ({
 
                 <div className="settings-backup-info">
                   <p className="settings-form-hint" style={{ marginTop: '12px' }}>
-                    <i className="fa-solid fa-info-circle"></i>
+                    <Icon name="info-circle"/>
                     Backup, restore, and export functions are now available in the <strong>Reports</strong> tab.
                   </p>
                 </div>
@@ -1590,7 +1591,7 @@ const SettingsTab = ({
                   <div className="settings-toggle-item">
                     <div className="settings-toggle-content">
                       <div className="settings-toggle-label-wrapper">
-                        <i className="fa-solid fa-clock-rotate-left"></i>
+                        <Icon name="clock-rotate-left"/>
                         <div>
                           <span className="settings-toggle-label">
                             Enable Auto Backup
@@ -1620,7 +1621,7 @@ const SettingsTab = ({
                 {dataSettings.autoBackup && (
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-clock"></i>
+                      <Icon name="clock"/>
                       <span>Auto Backup Time</span>
                     </label>
                     <input
@@ -1646,7 +1647,7 @@ const SettingsTab = ({
                       className="btn btn-primary btn-large"
                       onClick={handleSaveDataSettings}
                     >
-                      <i className="fa-solid fa-save"></i>
+                      <Icon name="save"/>
                       <span>Save Backup Settings</span>
                     </button>
                   </div>
@@ -1657,7 +1658,7 @@ const SettingsTab = ({
             <div className="dashboard-card settings-danger-zone">
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper danger-zone-icon-wrapper">
-                  <i className="fa-solid fa-triangle-exclamation"></i>
+                  <Icon name="triangle-exclamation"/>
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title danger-zone-title">
@@ -1671,7 +1672,7 @@ const SettingsTab = ({
               <div className="settings-section-body">
                 <div className="settings-danger-action">
                   <div className="settings-danger-action-info">
-                    <i className="fa-solid fa-utensils"></i>
+                    <Icon name="utensils"/>
                     <div>
                       <span className="settings-danger-action-label">
                         Clear All Menu Items
@@ -1700,13 +1701,13 @@ const SettingsTab = ({
                       }
                     }}
                   >
-                    <i className="fa-solid fa-trash"></i>
+                    <Icon name="trash"/>
                     <span>Clear All Menu Items</span>
                   </button>
                 </div>
                 <div className="settings-danger-action" style={{ marginTop: '20px' }}>
                   <div className="settings-danger-action-info">
-                    <i className="fa-solid fa-trash"></i>
+                    <Icon name="trash"/>
                     <div>
                       <span className="settings-danger-action-label">
                         Clear All Data
@@ -1736,7 +1737,7 @@ const SettingsTab = ({
                       }
                     }}
                   >
-                    <i className="fa-solid fa-trash"></i>
+                    <Icon name="trash"/>
                     <span>Clear All Data</span>
                   </button>
                 </div>
@@ -1750,7 +1751,7 @@ const SettingsTab = ({
             <div className="dashboard-card">
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper">
-                  <i className="fa-solid fa-user"></i>
+                  <Icon name="user"/>
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title">
@@ -1765,7 +1766,7 @@ const SettingsTab = ({
                 <div className="settings-form-grid">
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-user"></i>
+                      <Icon name="user"/>
                       <span>Full Name</span>
                     </label>
                     <input
@@ -1780,7 +1781,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-envelope"></i>
+                      <Icon name="envelope"/>
                       <span>Email Address</span>
                     </label>
                     <input
@@ -1798,7 +1799,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-phone"></i>
+                      <Icon name="phone"/>
                       <span>Phone Number</span>
                     </label>
                     <input
@@ -1820,7 +1821,7 @@ const SettingsTab = ({
                     className="btn btn-primary btn-large"
                     onClick={handleSaveUserProfile}
                   >
-                    <i className="fa-solid fa-save"></i>
+                    <Icon name="save"/>
                     <span>Update Profile</span>
                   </button>
                 </div>
@@ -1830,7 +1831,7 @@ const SettingsTab = ({
             <div className="dashboard-card">
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper">
-                  <i className="fa-solid fa-lock"></i>
+                  <Icon name="lock"/>
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title">Change Password</h3>
@@ -1843,7 +1844,7 @@ const SettingsTab = ({
                 <div className="settings-form-grid">
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-key"></i>
+                      <Icon name="key"/>
                       <span>Current Password</span>
                     </label>
                     <input
@@ -1861,7 +1862,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-lock"></i>
+                      <Icon name="lock"/>
                       <span>New Password</span>
                     </label>
                     <input
@@ -1879,7 +1880,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-lock"></i>
+                      <Icon name="lock"/>
                       <span>Confirm New Password</span>
                     </label>
                     <input
@@ -1901,7 +1902,7 @@ const SettingsTab = ({
                     className="btn btn-primary btn-large"
                     onClick={handleSaveUserProfile}
                   >
-                    <i className="fa-solid fa-save"></i>
+                    <Icon name="save"/>
                     <span>Update Password</span>
                   </button>
                 </div>
@@ -1915,7 +1916,7 @@ const SettingsTab = ({
             <div className="dashboard-card">
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper">
-                  <i className="fa-solid fa-font"></i>
+                  <Icon name="font"/>
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title">Font style</h3>
@@ -1929,7 +1930,7 @@ const SettingsTab = ({
                 <div className="settings-form-grid">
                   <div className="settings-form-group settings-form-group-full">
                     <label className="settings-form-label">
-                      <i className="fa-solid fa-palette"></i>
+                      <Icon name="palette"/>
                       <span>My font style</span>
                     </label>
                     <select
@@ -1956,7 +1957,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group settings-form-group-full">
                     <label className="settings-form-label" id="admin-font-size-label">
-                      <i className="fa-solid fa-text-height"></i>
+                      <Icon name="text-height"/>
                       <span>Font size (admin dashboard only)</span>
                     </label>
                     <div
@@ -1993,7 +1994,7 @@ const SettingsTab = ({
                       <div className="settings-toggle-item">
                         <div className="settings-toggle-content">
                           <div className="settings-toggle-label-wrapper">
-                            <i className="fa-solid fa-eye-slash"></i>
+                            <Icon name="eye-slash"/>
                             <div>
                               <span className="settings-toggle-label">
                                 Auto-hide Sidebar
@@ -2029,7 +2030,7 @@ const SettingsTab = ({
                     className="btn btn-primary btn-large"
                     onClick={handleSaveAppearance}
                   >
-                    <i className="fa-solid fa-save"></i>
+                    <Icon name="save"/>
                     <span>Save font style</span>
                   </button>
                 </div>

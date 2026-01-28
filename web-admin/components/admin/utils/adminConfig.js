@@ -1,67 +1,67 @@
 export const adminFeatures = {
   dashboard: {
     name: 'Dashboard',
-    icon: 'fa-chart-line',
+    icon: 'chart-line',
     enabled: true,
   },
   excelViewer: {
     name: 'All Orders',
-    icon: 'fa-table',
+    icon: 'table',
     enabled: true,
   },
   orders: {
     name: 'Current Month',
-    icon: 'fa-calendar-alt',
+    icon: 'calendar-alt',
     enabled: true,
   },
   analytics: {
     name: 'Analytics',
-    icon: 'fa-chart-bar',
+    icon: 'chart-bar',
     enabled: true,
   },
   customers: {
     name: 'Customers',
-    icon: 'fa-users',
+    icon: 'users',
     enabled: true,
   },
   reports: {
     name: 'Reports',
-    icon: 'fa-file-alt',
+    icon: 'file-alt',
     enabled: true,
   },
   pendingAmounts: {
     name: 'Pending Amounts',
-    icon: 'fa-exclamation-triangle',
+    icon: 'exclamation-triangle',
     enabled: true,
   },
   todayOrder: {
     name: 'Today Order',
-    icon: 'fa-calendar-day',
+    icon: 'calendar-day',
     enabled: true,
   },
   settings: {
     name: 'Settings',
-    icon: 'fa-cog',
+    icon: 'cog',
     enabled: true,
   },
   menuPrice: {
     name: 'Menu & Price',
-    icon: 'fa-utensils',
+    icon: 'utensils',
     enabled: true,
   },
   reviews: {
     name: 'Reviews & Feedback',
-    icon: 'fa-star',
+    icon: 'star',
     enabled: true,
   },
   financialSummary: {
     name: 'Financial Summary',
-    icon: 'fa-chart-pie',
+    icon: 'chart-pie',
     enabled: true,
   },
   offers: {
     name: 'Special Offers',
-    icon: 'fa-tag',
+    icon: 'tag',
     enabled: true,
   },
 };

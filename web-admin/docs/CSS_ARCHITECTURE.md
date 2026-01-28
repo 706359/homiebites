@@ -7,7 +7,7 @@
 | Order | File                                            | Purpose                                                                                                              |
 | ----- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | 1     | `shared/styles/variables.css`                   | Tokens (`--font-primary`, `--admin-*`, colors). Loaded first so all downstream CSS can use them.                     |
-| 2     | `@fortawesome/fontawesome-free/css/all.min.css` | Icons                                                                                                                |
+| 2     | (none)                                           | Icons: Lucide React via `components/ui/Icon.jsx` (no global icon CSS).                                                |
 | 3     | `shared/styles/shared.css`                      | Shared components, section styles. Uses `variables.css` (loaded in root; no `@import` in shared).                    |
 | 4     | `styles/globals.css`                            | Buttons, inputs, modals, premium-loader base, **and** `.admin-dashboard` loader overrides (to avoid FOUC on /admin). |
 

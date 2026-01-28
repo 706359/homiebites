@@ -1,6 +1,6 @@
+import jwt from 'jsonwebtoken';
 import connectDB from '../../../../lib/db.js';
 import User from '../../../../lib/models/User.js';
-import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'homiebites_secret';
 
@@ -8,8 +8,27 @@ export async function GET(request) {
   try {
     await connectDB();
 
+    // Try to get token from Authorization header first
+    let token;
     const authHeader = request.headers.get('authorization');
-    const token = authHeader && authHeader.split(' ')[1];
+    if (authHeader && authHeader.split(' ')[1]) {
+      token = authHeader.split(' ')[1];
+    }
+
+    // If no Authorization header, try to get from HttpOnly cookie
+    if (!token) {
+      const cookies = request.headers.get('cookie');
+      if (cookies) {
+        const cookieArray = cookies.split(';');
+        for (const cookie of cookieArray) {
+          const [name, value] = cookie.trim().split('=');
+          if (name === 'homiebites_admin_token') {
+            token = value;
+            break;
+          }
+        }
+      }
+    }
 
     if (!token) {
       return Response.json(

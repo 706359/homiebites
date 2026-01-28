@@ -1,84 +1,59 @@
-import connectDB from '../../../../lib/db.js';
-import { authenticate } from '../../../../lib/middleware/auth.js';
-
 /**
  * POST /api/auth/logout
- * Logout endpoint for server-side session cleanup
- * 
- * This endpoint allows the server to:
- * - Invalidate tokens server-side (if using token blacklist)
- * - Log logout events
- * - Clean up server-side session data
+ * Logout endpoint that clears secure authentication cookies
  */
 export async function POST(request) {
   try {
-    // Authenticate the request to get user info
-    const authResult = authenticate(request);
-    
-    if (!authResult.success) {
-      // If not authenticated, still return success (client-side cleanup is sufficient)
-      return Response.json(
-        { success: true, message: 'Logout completed' },
-        { status: 200 }
-      );
-    }
-
-    const { userId } = authResult;
-
-    try {
-      await connectDB();
-      
-      // Here you could:
-      // 1. Add token to blacklist (if implementing token blacklisting)
-      // 2. Update user's last logout time
-      // 3. Log logout event
-      // 4. Clean up server-side session data
-
-      // For now, we'll just log the logout event
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Logout API] User logged out:', {
-          userId,
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      return Response.json(
-        {
-          success: true,
-          message: 'Logout completed successfully',
-          timestamp: new Date().toISOString(),
-        },
-        { status: 200 }
-      );
-    } catch (dbError) {
-      // Even if DB operations fail, return success
-      // Client-side cleanup is the primary mechanism
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('[Logout API] Database error (non-critical):', dbError);
-      }
-
-      return Response.json(
-        {
-          success: true,
-          message: 'Logout completed (client-side cleanup)',
-          timestamp: new Date().toISOString(),
-        },
-        { status: 200 }
-      );
-    }
-  } catch (error) {
-    // Always return success - client-side cleanup is sufficient
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[Logout API] Error (non-critical):', error);
-    }
-
-    return Response.json(
-      {
+    // Create response with cleared cookies
+    const response = new Response(
+      JSON.stringify({
         success: true,
-        message: 'Logout completed',
-        timestamp: new Date().toISOString(),
-      },
+        message: 'Logged out successfully',
+      }),
       { status: 200 }
     );
+
+    // Clear all auth-related cookies
+    // HttpOnly token cookie
+    response.headers.set(
+      'Set-Cookie',
+      'homiebites_admin_token=; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 UTC'
+    );
+
+    // Admin flag cookie
+    response.headers.append(
+      'Set-Cookie',
+      'homiebites_admin=; Path=/; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 UTC'
+    );
+
+    // CSRF token cookie
+    response.headers.append(
+      'Set-Cookie',
+      'homiebites_csrf_token=; Path=/; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 UTC'
+    );
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Logout API] User logged out, secure cookies cleared');
+    }
+
+    return response;
+  } catch (error) {
+    console.error('[Logout API] Error:', error);
+
+    // Still clear cookies even if error occurs
+    const response = new Response(
+      JSON.stringify({
+        success: true,
+        message: 'Logout completed',
+      }),
+      { status: 200 }
+    );
+
+    response.headers.set(
+      'Set-Cookie',
+      'homiebites_admin_token=; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 UTC'
+    );
+
+    return response;
   }
 }

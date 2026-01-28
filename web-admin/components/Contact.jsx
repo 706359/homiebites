@@ -5,6 +5,7 @@ import {
   getWhatsAppLink,
 } from '../lib/businessConstants';
 import './Contact.css';
+import Icon from './ui/Icon.jsx';
 
 const Contact = () => {
   const { t } = useLanguage();
@@ -22,7 +23,7 @@ const Contact = () => {
         <div className="contact-grid">
           <div className="contact-item">
             <h3>
-              <i className="fa-brands fa-whatsapp"></i> {t('contact.whatsapp')}
+              <Icon name="whatsapp" /> {t('contact.whatsapp')}
             </h3>
             <p>
               <a
@@ -36,7 +37,7 @@ const Contact = () => {
           </div>
           <div className="contact-item">
             <h3>
-              <i className="fa-solid fa-phone"></i> {t('contact.phone')}
+              <Icon name="phone" /> {t('contact.phone')}
             </h3>
             <p>
               <a href={getPhoneLink()}>{getFormattedPhone()}</a>
@@ -44,14 +45,13 @@ const Contact = () => {
           </div>
           <div className="contact-item">
             <h3>
-              <i className="fa-solid fa-map-marker-alt"></i>{' '}
-              {t('contact.address')}
+              <Icon name="map-marker-alt" /> {t('contact.address')}
             </h3>
             <p>{t('contact.addressValue')}</p>
           </div>
           <div className="contact-item">
             <h3>
-              <i className="fa-solid fa-clock"></i> {t('contact.timings')}
+              <Icon name="clock" /> {t('contact.timings')}
             </h3>
             <div className="contact-timings">
               <div className="timing-row">

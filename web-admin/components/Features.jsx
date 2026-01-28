@@ -6,7 +6,7 @@ const Features = () => {
 
   const features = [
     {
-      icon: 'fa-leaf',
+      icon: 'leaf',
       title: t('features.pureVeg') || '100% Pure Vegetarian',
       description:
         t('features.pureVegDesc') ||
@@ -15,7 +15,7 @@ const Features = () => {
       badge: 'Pure',
     },
     {
-      icon: 'fa-house',
+      icon: 'house',
       title: t('features.homeTaste') || 'Home-like Taste',
       description:
         t('features.homeTasteDesc') ||
@@ -24,7 +24,7 @@ const Features = () => {
       badge: 'Authentic',
     },
     {
-      icon: 'fa-droplet',
+      icon: 'droplet',
       title: t('features.lessOil') || 'Less Oil & Healthy',
       description:
         t('features.lessOilDesc') ||
@@ -33,7 +33,7 @@ const Features = () => {
       badge: 'Healthy',
     },
     {
-      icon: 'fa-truck-fast',
+      icon: 'truck-fast',
       title: t('features.onTime') || 'Fresh Daily Delivery',
       description:
         t('features.onTimeDesc') ||
@@ -42,7 +42,7 @@ const Features = () => {
       badge: 'Fresh',
     },
     {
-      icon: 'fa-fire',
+      icon: 'fire',
       title: t('features.freshDaily') || 'Cooked Fresh Daily',
       description:
         t('features.freshDailyDesc') ||
@@ -51,7 +51,7 @@ const Features = () => {
       badge: 'Daily',
     },
     {
-      icon: 'fa-heart',
+      icon: 'heart',
       title: t('features.madeWithLove') || 'Made with Love',
       description:
         t('features.madeWithLoveDesc') ||
@@ -84,7 +84,7 @@ const Features = () => {
               data-color={feature.color}
             >
               <div className="feature-icon">
-                <i className={`fa-solid ${feature.icon}`} aria-hidden />
+                <Icon name={feature.icon} aria-hidden />
               </div>
               <div className="feature-body">
                 <h3 className="feature-title">{feature.title}</h3>

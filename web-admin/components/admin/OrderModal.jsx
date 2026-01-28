@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Icon from '../ui/Icon.jsx';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
 import { parseOrderDate } from './utils/dateUtils.js';
 import {
@@ -1126,14 +1127,14 @@ const OrderModal = ({
             className="btn btn-ghost btn-icon modal-close"
             onClick={onClose}
           >
-            <i className="fa-solid fa-times"></i>
+            <Icon name="times"/>
           </button>
         </div>
         <div className="modal-body">
           <div className="form-row">
             <div className="form-group">
               <label>
-                <i className="fa-solid fa-hashtag mr-2"></i>
+                <Icon name="hashtag" className="mr-2"/>
                 Order ID
               </label>
               {editingOrder ? (
@@ -1326,7 +1327,7 @@ const OrderModal = ({
                   className="order-modal-calendar-btn"
                   title="Choose date from calendar"
                 >
-                  <i className="fa-solid fa-calendar-days"></i>
+                  <Icon name="calendar-days"/>
                 </button>
               </div>
               <span className="helper-text">Format: DD/MM/YYYY</span>
@@ -1339,7 +1340,7 @@ const OrderModal = ({
           <div className="form-row">
             <div className="form-group form-group-relative">
               <label className="required">
-                <i className="fa-solid fa-home mr-2"></i>
+                <Icon name="home" className="mr-2"/>
                 Delivery Address
               </label>
               <input
@@ -1480,10 +1481,9 @@ const OrderModal = ({
                       role="status"
                       aria-live="polite"
                     >
-                      <i
-                        className="fa-solid fa-lightbulb mr-2"
+                      <Icon name="lightbulb" className="mr-2"
                         aria-hidden="true"
-                      ></i>
+                      />
                       <span>
                         {addressSuggestions.length} suggestion
                         {addressSuggestions.length !== 1 ? 's' : ''} found
@@ -1535,7 +1535,7 @@ const OrderModal = ({
                           }`}
                         >
                           <div className="address-suggestion-content">
-                            <i className="fa-solid fa-map-marker-alt address-suggestion-icon"></i>
+                            <Icon name="map-marker-alt" className="address-suggestion-icon"/>
                             <div className="address-suggestion-content-wrapper">
                               <div className="address-suggestion-title">
                                 {addr}
@@ -1543,7 +1543,7 @@ const OrderModal = ({
                               <div className="address-suggestion-info">
                                 {info.count > 0 && (
                                   <span>
-                                    <i className="fa-solid fa-shopping-cart"></i>
+                                    <Icon name="shopping-cart"/>
                                     {info.count} order
                                     {info.count !== 1 ? 's' : ''}
                                   </span>
@@ -1557,7 +1557,7 @@ const OrderModal = ({
                                 Rs Last: ₹{info.lastPrice}
                               </span>
                             )}
-                            <i className="fa-solid fa-chevron-right address-suggestion-chevron"></i>
+                            <Icon name="chevron-right" className="address-suggestion-chevron"/>
                           </div>
                         </button>
                       );
@@ -1580,7 +1580,7 @@ const OrderModal = ({
             </div>
             <div className="form-group">
               <label className="required">
-                <i className="fa-solid fa-utensils mr-2"></i>
+                <Icon name="utensils" className="mr-2"/>
                 Mode
               </label>
               <select
@@ -1610,7 +1610,7 @@ const OrderModal = ({
           <div className="form-row">
             <div className="form-group">
               <label className="required">
-                <i className="fa-solid fa-hashtag mr-2"></i>
+                <Icon name="hashtag" className="mr-2"/>
                 Quantity
               </label>
               <input
@@ -1634,7 +1634,7 @@ const OrderModal = ({
             </div>
             <div className="form-group">
               <label className="required">
-                <i className="fa-solid fa-check-circle mr-2"></i>
+                <Icon name="check-circle" className="mr-2"/>
                 Status
               </label>
               <select
@@ -1664,7 +1664,7 @@ const OrderModal = ({
           <div className="form-row">
             <div className="form-group">
               <label className="required">
-                <i className="fa-solid fa-rupee-sign mr-2"></i>
+                <Icon name="rupee-sign" className="mr-2"/>
                 Unit Price (₹)
               </label>
               <input
@@ -1691,7 +1691,7 @@ const OrderModal = ({
             </div>
             <div className="form-group">
               <label>
-                <i className="fa-solid fa-credit-card mr-2"></i>
+                <Icon name="credit-card" className="mr-2"/>
                 Payment Mode
               </label>
               <select
@@ -1782,16 +1782,16 @@ const OrderModal = ({
           >
             {isSaving ? (
               <>
-                <i className="fa-solid fa-spinner fa-spin"></i> Saving...
+                <Icon name="spinner" spin /> Saving...
               </>
             ) : saveSuccess ? (
               <>
-                <i className="fa-solid fa-check"></i> Order{' '}
+                <Icon name="check"/> Order{' '}
                 {editingOrder ? 'Updated' : 'Added'}!
               </>
             ) : (
               <>
-                <i className="fa-solid fa-save"></i>{' '}
+                <Icon name="save"/>{' '}
                 {editingOrder ? 'Update Order' : 'Save Order'}
               </>
             )}

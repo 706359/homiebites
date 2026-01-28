@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import api from '../lib/api';
 import {
   getFormattedPhone,
   getPhoneLink,
   getWhatsAppLink,
 } from '../lib/businessConstants';
-import api from '../lib/api';
 import './SpecialOffer.css';
+import Icon from './ui/Icon.jsx';
 
 const SpecialOffer = ({ onOrderClick }) => {
   const { t } = useLanguage();
@@ -30,12 +31,14 @@ const SpecialOffer = ({ onOrderClick }) => {
         if (useCache && typeof window !== 'undefined') {
           try {
             const cachedData = localStorage.getItem('homiebites_offers_data');
-            const cacheTimestamp = localStorage.getItem('homiebites_offers_data_timestamp');
-            
+            const cacheTimestamp = localStorage.getItem(
+              'homiebites_offers_data_timestamp'
+            );
+
             if (cachedData && cacheTimestamp) {
               const cacheAge = Date.now() - parseInt(cacheTimestamp, 10);
               const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-              
+
               // Use cache if it's less than 5 minutes old
               if (cacheAge < CACHE_DURATION) {
                 try {
@@ -45,8 +48,10 @@ const SpecialOffer = ({ onOrderClick }) => {
                     const now = new Date();
                     const active = parsed.filter((offer) => {
                       if (!offer.isActive) return false;
-                      if (offer.endDate && new Date(offer.endDate) < now) return false;
-                      if (!offer.title || offer.title.trim() === '') return false;
+                      if (offer.endDate && new Date(offer.endDate) < now)
+                        return false;
+                      if (!offer.title || offer.title.trim() === '')
+                        return false;
                       return true;
                     });
 
@@ -66,7 +71,10 @@ const SpecialOffer = ({ onOrderClick }) => {
                 } catch (parseError) {
                   // If cache parse fails, continue to API fetch
                   if (process.env.NODE_ENV === 'development') {
-                    console.warn('[SpecialOffer] Cache parse failed:', parseError);
+                    console.warn(
+                      '[SpecialOffer] Cache parse failed:',
+                      parseError
+                    );
                   }
                 }
               }
@@ -93,11 +101,20 @@ const SpecialOffer = ({ onOrderClick }) => {
           // Save to cache
           if (typeof window !== 'undefined') {
             try {
-              localStorage.setItem('homiebites_offers_data', JSON.stringify(response.data));
-              localStorage.setItem('homiebites_offers_data_timestamp', String(Date.now()));
+              localStorage.setItem(
+                'homiebites_offers_data',
+                JSON.stringify(response.data)
+              );
+              localStorage.setItem(
+                'homiebites_offers_data_timestamp',
+                String(Date.now())
+              );
             } catch (storageError) {
               if (process.env.NODE_ENV === 'development') {
-                console.warn('[SpecialOffer] Failed to save to cache:', storageError);
+                console.warn(
+                  '[SpecialOffer] Failed to save to cache:',
+                  storageError
+                );
               }
             }
           }
@@ -133,11 +150,14 @@ const SpecialOffer = ({ onOrderClick }) => {
     loadOffers(true, true);
 
     // Refresh every 5 minutes (cache duration)
-    refreshInterval = setInterval(() => {
-      if (!document.hidden) {
-        loadOffers(false, false); // Always fetch fresh data on interval
-      }
-    }, 5 * 60 * 1000);
+    refreshInterval = setInterval(
+      () => {
+        if (!document.hidden) {
+          loadOffers(false, false); // Always fetch fresh data on interval
+        }
+      },
+      5 * 60 * 1000
+    );
 
     // Listen for visibility changes - refresh if cache is stale
     const handleVisibilityChange = () => {
@@ -145,7 +165,9 @@ const SpecialOffer = ({ onOrderClick }) => {
         // Check if cache is stale before refreshing
         if (typeof window !== 'undefined') {
           try {
-            const cacheTimestamp = localStorage.getItem('homiebites_offers_data_timestamp');
+            const cacheTimestamp = localStorage.getItem(
+              'homiebites_offers_data_timestamp'
+            );
             if (cacheTimestamp) {
               const cacheAge = Date.now() - parseInt(cacheTimestamp, 10);
               // Only refresh if cache is older than 2 minutes
@@ -222,7 +244,8 @@ const SpecialOffer = ({ onOrderClick }) => {
       onOrderClick();
     } else {
       // Fallback to WhatsApp if onOrderClick not provided
-      const message = activeOffer?.whatsappMessage || t('specialOffer.whatsappMessage');
+      const message =
+        activeOffer?.whatsappMessage || t('specialOffer.whatsappMessage');
       window.open(getWhatsAppLink(message), '_blank', 'noopener');
     }
   };
@@ -231,35 +254,37 @@ const SpecialOffer = ({ onOrderClick }) => {
   const offerTitle = activeOffer?.title || t('specialOffer.title');
   const offerDescription = activeOffer?.description || t('specialOffer.text');
   const offerDiscount = activeOffer?.discount || t('specialOffer.discount');
-  const offerKicker = activeOffer?.badge || t('specialOffer.intro') || 'For busy professionals and families';
+  const offerKicker =
+    activeOffer?.badge ||
+    t('specialOffer.intro') ||
+    'For busy professionals and families';
   const ctaText = activeOffer?.ctaText || t('common.orderOnWhatsApp');
 
   return (
     <section className="offer-section">
       <div className="section-container">
         <div className="offer-header">
-          {offerKicker && (
-            <span className="offer-kicker">{offerKicker}</span>
-          )}
+          {offerKicker && <span className="offer-kicker">{offerKicker}</span>}
           <h2 className="offer-title">{offerTitle}</h2>
           <p className="offer-text">
             {offerDescription}{' '}
             {offerDiscount && (
               <>
-                <strong>{offerDiscount}</strong>{' '}
-                {t('specialOffer.onTotal')}
+                <strong>{offerDiscount}</strong> {t('specialOffer.onTotal')}
               </>
             )}
           </p>
-          {activeOffer?.terms && Array.isArray(activeOffer.terms) && activeOffer.terms.length > 0 && (
-            <ul className="offer-terms">
-              {activeOffer.terms
-                .filter((term) => term && term.trim() !== '')
-                .map((term, index) => (
-                  <li key={index}>{term}</li>
-                ))}
-            </ul>
-          )}
+          {activeOffer?.terms &&
+            Array.isArray(activeOffer.terms) &&
+            activeOffer.terms.length > 0 && (
+              <ul className="offer-terms">
+                {activeOffer.terms
+                  .filter((term) => term && term.trim() !== '')
+                  .map((term, index) => (
+                    <li key={index}>{term}</li>
+                  ))}
+              </ul>
+            )}
         </div>
         <div className="offer-actions">
           <button
@@ -267,11 +292,10 @@ const SpecialOffer = ({ onOrderClick }) => {
             className="btn btn-primary btn-small"
             type="button"
           >
-            <i className="fa-brands fa-whatsapp"></i> {ctaText}
+            <Icon name="whatsapp" /> {ctaText}
           </button>
           <a href={getPhoneLink()} className="btn btn-secondary btn-small">
-            <i className="fa-solid fa-phone"></i> {t('common.call')}{' '}
-            {getFormattedPhone()}
+            <Icon name="phone" /> {t('common.call')} {getFormattedPhone()}
           </a>
         </div>
       </div>

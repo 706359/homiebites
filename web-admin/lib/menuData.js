@@ -6,7 +6,7 @@ const defaultMenuData = [
   {
     id: 1,
     category: 'Full Tiffin',
-    icon: 'fa-star',
+    icon: 'star',
     tag: 'Best Seller',
 
     items: [
@@ -17,7 +17,7 @@ const defaultMenuData = [
   {
     id: 2,
     category: 'Mix & Match Tiffin',
-    icon: 'fa-utensils',
+    icon: 'utensils',
     items: [
       { id: 1, name: '2 Sabji + 6 Rotis', price: 120 },
       { id: 2, name: '1 Sabji + 4 Rotis + Rice', price: 100 },
@@ -31,14 +31,14 @@ const defaultMenuData = [
   {
     id: 3,
     category: 'Khichdi Tiffin',
-    icon: 'fa-bowl-rice',
+    icon: 'bowl-rice',
     description: 'Full Tiffin (4 bowls)',
     items: [{ id: 1, name: 'Khichdi Meal', price: 120 }],
   },
   {
     id: 4,
     category: 'Rotis & Parathas',
-    icon: 'fa-bread-slice',
+    icon: 'bread-slice',
     items: [
       { id: 1, name: 'Plain Roti', price: 10 },
       { id: 2, name: 'Roti with Ghee', price: 12 },
@@ -50,7 +50,7 @@ const defaultMenuData = [
   {
     id: 5,
     category: 'Add-ons',
-    icon: 'fa-plus',
+    icon: 'plus',
     items: [
       { id: 1, name: 'Homemade Curd (1 Bowl)', price: 25 },
       { id: 2, name: 'Parathas + Curd Combo', price: 100 },
@@ -59,7 +59,7 @@ const defaultMenuData = [
   {
     id: 6,
     category: 'Pickup Option',
-    icon: 'fa-person-walking',
+    icon: 'person-walking',
     items: [{ id: 1, name: 'Self-Pickup (A1 Tower)', price: 100 }],
     description: 'Thali & Tiffin both available',
   },
@@ -332,7 +332,7 @@ export const convertMenuItemsToCategories = () => {
     categories.push({
       id: categoryId++,
       category: 'Full Tiffin',
-      icon: 'fa-star',
+      icon: 'star',
       tag: 'Best Seller',
       description:
         'Gravy Sabji + Dry Sabji + 4 Rotis + Rice (4 Rotis with Rice / 6 Rotis without Rice)',
@@ -353,7 +353,7 @@ export const convertMenuItemsToCategories = () => {
     categories.push({
       id: categoryId++,
       category: 'Mix & Match Tiffin',
-      icon: 'fa-utensils',
+      icon: 'utensils',
       items: menuItemsToImport.mixMatchTiffin.map((item) => ({
         id: itemIdCounter++,
         name: item.name,
@@ -371,7 +371,7 @@ export const convertMenuItemsToCategories = () => {
     categories.push({
       id: categoryId++,
       category: 'Khichdi Tiffin',
-      icon: 'fa-bowl-rice',
+      icon: 'bowl-rice',
       description: 'Full Tiffin (4 bowls)',
       items: menuItemsToImport.khichdiTiffin.map((item) => ({
         id: itemIdCounter++,
@@ -390,7 +390,7 @@ export const convertMenuItemsToCategories = () => {
     categories.push({
       id: categoryId++,
       category: 'Rotis & Parathas',
-      icon: 'fa-bread-slice',
+      icon: 'bread-slice',
       items: menuItemsToImport.rotisParathas.map((item) => ({
         id: itemIdCounter++,
         name: item.name,
@@ -408,7 +408,7 @@ export const convertMenuItemsToCategories = () => {
     categories.push({
       id: categoryId++,
       category: 'Breakfast Combos',
-      icon: 'fa-sun',
+      icon: 'sun',
       items: menuItemsToImport.breakfastCombos.map((item) => ({
         id: itemIdCounter++,
         name: item.name,
@@ -426,7 +426,7 @@ export const convertMenuItemsToCategories = () => {
     categories.push({
       id: categoryId++,
       category: 'Lunch Combos',
-      icon: 'fa-utensils',
+      icon: 'utensils',
       items: menuItemsToImport.lunchCombos.map((item) => ({
         id: itemIdCounter++,
         name: item.name,
@@ -444,7 +444,7 @@ export const convertMenuItemsToCategories = () => {
     categories.push({
       id: categoryId++,
       category: 'Dinner Combos',
-      icon: 'fa-moon',
+      icon: 'moon',
       items: menuItemsToImport.dinnerCombos.map((item) => ({
         id: itemIdCounter++,
         name: item.name,
@@ -459,7 +459,7 @@ export const convertMenuItemsToCategories = () => {
     categories.push({
       id: categoryId++,
       category: 'Add-ons',
-      icon: 'fa-plus',
+      icon: 'plus',
       items: menuItemsToImport.addOns.map((item) => ({
         id: itemIdCounter++,
         name: item.name,
@@ -477,7 +477,7 @@ export const convertMenuItemsToCategories = () => {
     categories.push({
       id: categoryId++,
       category: 'Pickup Option',
-      icon: 'fa-person-walking',
+      icon: 'person-walking',
       description: 'Thali & Tiffin both available',
       items: menuItemsToImport.pickupOption.map((item) => ({
         id: itemIdCounter++,

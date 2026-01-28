@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import Icon from '../ui/Icon.jsx';
 import { parseOrderDate } from './utils/dateUtils.js';
 import {
   formatCurrency,
@@ -25,7 +26,7 @@ const ImportantNotificationsBanner = ({
       notifications.push({
         id: 'overdue-payments',
         type: 'danger',
-        icon: 'fa-exclamation-triangle',
+        icon: 'exclamation-triangle',
         title: 'Overdue Payments',
         message: `${overdueOrders.length} order${
           overdueOrders.length > 1 ? 's' : ''
@@ -52,7 +53,7 @@ const ImportantNotificationsBanner = ({
       notifications.push({
         id: 'urgent-payments',
         type: 'warning',
-        icon: 'fa-clock',
+        icon: 'clock',
         title: 'Urgent Payments',
         message: `${urgentOrders.length} order${
           urgentOrders.length > 1 ? 's' : ''
@@ -72,7 +73,7 @@ const ImportantNotificationsBanner = ({
       notifications.push({
         id: 'high-value-pending',
         type: 'info',
-        icon: 'fa-money-bill-wave',
+        icon: 'money-bill-wave',
         title: 'High Value Pending',
         message: `${highValuePending.length} high-value order${
           highValuePending.length > 1 ? 's' : ''
@@ -123,7 +124,7 @@ const ImportantNotificationsBanner = ({
           <div key={notif.id} className="important-notification-item">
             <div className="important-notification-content">
               <div className="important-notification-icon">
-                <i className={`fa-solid ${notif.icon}`}></i>
+                <Icon name={notif.icon} />
               </div>
               <div className="important-notification-text">
                 <div className="important-notification-title">
@@ -149,7 +150,7 @@ const ImportantNotificationsBanner = ({
                   onClick={() => onDismiss(notif.id)}
                   title="Dismiss"
                 >
-                  <i className="fa-solid fa-times"></i>
+                  <Icon name="times" />
                 </button>
               )}
             </div>

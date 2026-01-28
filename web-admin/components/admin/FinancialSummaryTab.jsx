@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import Icon from '../ui/Icon.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
 import { getFilteredOrdersByDate } from './utils/calculations.js';
 import { formatDate, formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
@@ -206,14 +207,14 @@ const FinancialSummaryTab = ({
       <div className="dashboard-card">
         <div className="dashboard-section-header">
           <h2 className="dashboard-section-title">
-            <i className="fa-solid fa-chart-pie"></i>
+            <Icon name="chart-pie"/>
             Financial Overview
           </h2>
         </div>
         <div className="financial-stats-grid">
           <div className="stat-card stat-card-primary">
             <div className="stat-card-icon">
-              <i className="fa-solid fa-indian-rupee-sign"></i>
+              <Icon name="indian-rupee-sign"/>
             </div>
             <div className="stat-card-content">
               <h3>₹{formatCurrency(financialData.totalRevenue)}</h3>
@@ -225,7 +226,7 @@ const FinancialSummaryTab = ({
           </div>
           <div className="stat-card stat-card-success">
             <div className="stat-card-icon">
-              <i className="fa-solid fa-check-circle"></i>
+              <Icon name="check-circle"/>
             </div>
             <div className="stat-card-content">
               <h3>₹{formatCurrency(financialData.paidRevenue)}</h3>
@@ -237,7 +238,7 @@ const FinancialSummaryTab = ({
           </div>
           <div className="stat-card stat-card-warning">
             <div className="stat-card-icon">
-              <i className="fa-solid fa-clock"></i>
+              <Icon name="clock"/>
             </div>
             <div className="stat-card-content">
               <h3>₹{formatCurrency(financialData.pendingRevenue)}</h3>
@@ -249,7 +250,7 @@ const FinancialSummaryTab = ({
           </div>
           <div className="stat-card stat-card-info">
             <div className="stat-card-icon">
-              <i className="fa-solid fa-calculator"></i>
+              <Icon name="calculator"/>
             </div>
             <div className="stat-card-content">
               <h3>₹{formatCurrency(financialData.avgOrderValue)}</h3>
@@ -263,7 +264,7 @@ const FinancialSummaryTab = ({
       <div className="dashboard-card">
         <div className="dashboard-section-header">
           <h2 className="dashboard-section-title">
-            <i className="fa-solid fa-chart-line"></i>
+            <Icon name="chart-line"/>
             Profit & Expenses Analysis
           </h2>
           <div className="financial-settings">
@@ -298,7 +299,7 @@ const FinancialSummaryTab = ({
         <div className="profit-breakdown-grid">
           <div className="profit-card">
             <div className="profit-card-header">
-              <i className="fa-solid fa-money-bill-wave"></i>
+              <Icon name="money-bill-wave"/>
               <span>Revenue</span>
             </div>
             <div className="profit-card-value">
@@ -307,7 +308,7 @@ const FinancialSummaryTab = ({
           </div>
           <div className="profit-card">
             <div className="profit-card-header">
-              <i className="fa-solid fa-arrow-down"></i>
+              <Icon name="arrow-down"/>
               <span>Expenses ({expensePercentage}%)</span>
             </div>
             <div className="profit-card-value profit-card-expense">
@@ -316,7 +317,7 @@ const FinancialSummaryTab = ({
           </div>
           <div className="profit-card profit-card-highlight">
             <div className="profit-card-header">
-              <i className="fa-solid fa-arrow-up"></i>
+              <Icon name="arrow-up"/>
               <span>Profit</span>
             </div>
             <div className="profit-card-value profit-card-profit">
@@ -328,7 +329,7 @@ const FinancialSummaryTab = ({
           </div>
           <div className="profit-card">
             <div className="profit-card-header">
-              <i className="fa-solid fa-bullseye"></i>
+              <Icon name="bullseye"/>
               <span>Target Profit ({targetProfitMargin}%)</span>
             </div>
             <div className="profit-card-value">
@@ -351,7 +352,7 @@ const FinancialSummaryTab = ({
       <div className="dashboard-card">
         <div className="dashboard-section-header">
           <h2 className="dashboard-section-title">
-            <i className="fa-solid fa-credit-card"></i>
+            <Icon name="credit-card"/>
             Payment Method Breakdown
           </h2>
         </div>
@@ -409,7 +410,7 @@ const FinancialSummaryTab = ({
       <div className="dashboard-card">
         <div className="dashboard-section-header">
           <h2 className="dashboard-section-title">
-            <i className="fa-solid fa-calendar-day"></i>
+            <Icon name="calendar-day"/>
             Daily Breakdown (Last 30 Days)
           </h2>
         </div>

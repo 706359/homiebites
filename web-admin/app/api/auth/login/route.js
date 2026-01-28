@@ -1,8 +1,9 @@
-import connectDB from '../../../../lib/db.js';
-import User from '../../../../lib/models/User.js';
 import jwt from 'jsonwebtoken';
-import { verifyPassword } from '../../../../lib/utils/password.js';
+import connectDB from '../../../../lib/db.js';
+import { generateCSRFToken } from '../../../../lib/middleware/csrf.js';
 import { rateLimit } from '../../../../lib/middleware/security.js';
+import User from '../../../../lib/models/User.js';
+import { verifyPassword } from '../../../../lib/utils/password.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'homiebites_secret';
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -74,10 +75,13 @@ export async function POST(request) {
     const esc = emailOrUsername.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const usernameRegex = new RegExp('^' + esc + '$', 'i');
     const emailLower = emailOrUsername.toLowerCase();
-    
+
     // Normalize phone number (remove spaces, dashes, etc.)
     const normalizedPhone = emailOrUsername.replace(/[\s\-\(\)]/g, '');
-    const phoneRegex = new RegExp('^' + normalizedPhone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+    const phoneRegex = new RegExp(
+      '^' + normalizedPhone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$',
+      'i'
+    );
 
     let user;
     try {
@@ -255,9 +259,12 @@ export async function POST(request) {
           userId: user._id.toString(),
           email: user.email,
           role: user.role || 'user',
+          isAdmin:
+            user.role &&
+            (user.role.toLowerCase() === 'admin' || user.role === 'Admin'),
         },
         JWT_SECRET,
-        { expiresIn: '7d' }
+        { expiresIn: '24h' }
       );
     } catch (tokenError) {
       if (process.env.NODE_ENV === 'development')
@@ -280,59 +287,62 @@ export async function POST(request) {
       );
     }
 
-    if (user.isTemporaryPassword) {
-      if (process.env.NODE_ENV === 'development')
-        console.log('[Login API] Successful login with temporary password:', {
-          email: user?.email || emailOrUsername,
-          userId: user._id.toString(),
-          name: user.name,
-          role: user.role,
-        });
-      const successResponse = {
+    // Generate CSRF token for form submissions
+    const csrfToken = generateCSRFToken();
+
+    // Create response with secure cookies
+    const response = new Response(
+      JSON.stringify({
         success: true,
-        requirePasswordChange: true,
-        token,
+        requirePasswordChange: user.isTemporaryPassword,
+        token, // Still send token for client-side API calls
+        csrfToken, // CSRF token for form submissions
         user: {
           id: user._id.toString(),
           email: user.email,
           name: user.name,
           role: user.role || 'user',
         },
-      };
-      if (process.env.NODE_ENV === 'development')
-        console.log('[Login API] Returning success response (temp password):', {
-          ...successResponse,
-          token: '***REDACTED***',
-        });
-      return Response.json(successResponse);
-    }
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
-    if (process.env.NODE_ENV === 'development')
-      console.log('[Login API] Successful login:', {
+    // Set secure HttpOnly cookie for token (cannot be accessed by JavaScript)
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    response.headers.set(
+      'Set-Cookie',
+      `homiebites_admin_token=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=${expiresAt.toUTCString()}`
+    );
+
+    // Set admin flag cookie (non-HttpOnly for client-side checks)
+    response.headers.append(
+      'Set-Cookie',
+      `homiebites_admin=true; Path=/; SameSite=Strict; Expires=${expiresAt.toUTCString()}`
+    );
+
+    // Set CSRF token cookie (readable by JavaScript but cannot be modified by scripts)
+    response.headers.append(
+      'Set-Cookie',
+      `homiebites_csrf_token=${csrfToken}; Path=/; SameSite=Strict; Expires=${expiresAt.toUTCString()}`
+    );
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Login API] Successful login with secure cookies:', {
         email: user?.email || emailOrUsername,
         userId: user._id.toString(),
         name: user.name,
         role: user.role,
-        isTemporaryPassword: false,
+        tokenSet: !!token,
+        csrfTokenSet: !!csrfToken,
       });
+    }
 
-    const successResponse = {
-      success: true,
-      token,
-      user: {
-        id: user._id.toString(),
-        email: user.email,
-        name: user.name,
-        role: user.role || 'user',
-      },
-    };
-    if (process.env.NODE_ENV === 'development')
-      console.log('[Login API] Returning success response:', {
-        ...successResponse,
-        token: '***REDACTED***',
-      });
-
-    return Response.json(successResponse);
+    return response;
   } catch (error) {
     if (process.env.NODE_ENV === 'development')
       console.error('[Login API] Unexpected error:', {

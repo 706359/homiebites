@@ -5,6 +5,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import api from '../lib/api';
 import './Pricing.css';
 import SkeletonLoader from './SkeletonLoader';
+import Icon from './ui/Icon.jsx';
 
 const PRICING_DATA_KEY = 'homiebites_pricing_data';
 const PRICING_CACHE_TIMESTAMP_KEY = 'homiebites_pricing_cache_timestamp';
@@ -58,11 +59,13 @@ const Pricing = () => {
       if (useCache && typeof window !== 'undefined') {
         try {
           const cachedData = localStorage.getItem(PRICING_DATA_KEY);
-          const cacheTimestamp = localStorage.getItem(PRICING_CACHE_TIMESTAMP_KEY);
-          
+          const cacheTimestamp = localStorage.getItem(
+            PRICING_CACHE_TIMESTAMP_KEY
+          );
+
           if (cachedData && cacheTimestamp) {
             const cacheAge = Date.now() - parseInt(cacheTimestamp);
-            
+
             // Use cache if it's less than 5 minutes old
             if (cacheAge < CACHE_DURATION) {
               const parsed = JSON.parse(cachedData);
@@ -100,8 +103,14 @@ const Pricing = () => {
         // Save to localStorage for future use
         if (typeof window !== 'undefined') {
           try {
-            localStorage.setItem(PRICING_DATA_KEY, JSON.stringify(response.data));
-            localStorage.setItem(PRICING_CACHE_TIMESTAMP_KEY, String(Date.now()));
+            localStorage.setItem(
+              PRICING_DATA_KEY,
+              JSON.stringify(response.data)
+            );
+            localStorage.setItem(
+              PRICING_CACHE_TIMESTAMP_KEY,
+              String(Date.now())
+            );
           } catch (storageError) {
             // Ignore localStorage errors (quota exceeded, etc.)
             if (process.env.NODE_ENV === 'development') {
@@ -114,7 +123,7 @@ const Pricing = () => {
       }
     } catch (error) {
       console.error('[Pricing] Error loading pricing items:', error);
-      
+
       // On error, try to use cached data as fallback
       if (typeof window !== 'undefined') {
         try {
@@ -159,7 +168,9 @@ const Pricing = () => {
         // Check if cache is stale before refreshing
         if (typeof window !== 'undefined') {
           try {
-            const cacheTimestamp = localStorage.getItem(PRICING_CACHE_TIMESTAMP_KEY);
+            const cacheTimestamp = localStorage.getItem(
+              PRICING_CACHE_TIMESTAMP_KEY
+            );
             if (cacheTimestamp) {
               const cacheAge = Date.now() - parseInt(cacheTimestamp);
               // Only refresh if cache is older than 2 minutes
@@ -307,7 +318,7 @@ const Pricing = () => {
         {pricingItems.length === 0 ? (
           <div className="pricing-empty-state">
             <div className="pricing-empty-icon">
-              <i className="fa-solid fa-tags"></i>
+              <Icon name="tags" />
             </div>
             <h3 className="pricing-empty-title">
               {t('pricing.noItemsTitle') || 'Pricing Coming Soon'}
@@ -342,7 +353,10 @@ const Pricing = () => {
                             item.details.length > 0 && (
                               <div className="pricing-item-details">
                                 {item.details.map((detail, idx) => (
-                                  <span key={idx} className="pricing-detail-tag">
+                                  <span
+                                    key={idx}
+                                    className="pricing-detail-tag"
+                                  >
                                     {detail}
                                   </span>
                                 ))}
@@ -356,7 +370,8 @@ const Pricing = () => {
                             </span>
                           ) : (
                             <span className="pricing-price-na">
-                              {t('pricing.contactForPrice') || 'Contact for price'}
+                              {t('pricing.contactForPrice') ||
+                                'Contact for price'}
                             </span>
                           )}
                         </div>

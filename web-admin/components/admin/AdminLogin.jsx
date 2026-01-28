@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
+import Icon from '../ui/Icon.jsx';
 import api from '../../lib/api-admin.js';
 import { getSessionExpiresAt } from '../../lib/auth-admin.js';
 import { useNotification } from './contexts/NotificationContext.jsx';
@@ -224,7 +225,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
           <div className="login-content">
             <div className="login-header">
               <div className="login-icon-wrapper">
-                <i className="fa-solid fa-shield-halved"></i>
+                <Icon name="shield-halved" />
               </div>
               <h1 className="login-title">Admin Login</h1>
               <p className="login-subtitle">Access your dashboard securely</p>
@@ -233,7 +234,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
             <form onSubmit={handleSubmit} className="login-form">
               <div className="form-field">
                 <label htmlFor="email-input">
-                  <i className="fa-solid fa-envelope"></i>
+                  <Icon name="envelope" />
                   Email or Mobile Number
                 </label>
                 <input
@@ -251,7 +252,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
 
               <div className="form-field">
                 <label htmlFor="password-input">
-                  <i className="fa-solid fa-lock"></i>
+                  <Icon name="lock" />
                   Password
                 </label>
                 <input
@@ -273,12 +274,12 @@ const AdminLogin = ({ onLoginSuccess }) => {
               >
                 {loading ? (
                   <>
-                    <i className="fa-solid fa-spinner fa-spin"></i>
+                    <Icon name="spinner" spin />
                     <span>Logging in...</span>
                   </>
                 ) : (
                   <>
-                    <i className="fa-solid fa-arrow-right-to-bracket"></i>
+                    <Icon name="arrow-right-to-bracket" />
                     <span>Log In</span>
                   </>
                 )}
@@ -290,7 +291,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
                   onClick={() => router.push('/admin/forgot-password')}
                   className="admin-login-forgot-link"
                 >
-                  <i className="fa-solid fa-key"></i>
+                  <Icon name="key" />
                   Forgot Password?
                 </button>
               </div>
@@ -298,7 +299,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
 
             <div className="login-info">
               <div className="login-info-icon">
-                <i className="fa-solid fa-shield-check"></i>
+                <Icon name="shield-check" />
               </div>
               <p className="login-info-title">Secure Admin Access</p>
               <p className="admin-login-info-text">Authorized personnel only</p>

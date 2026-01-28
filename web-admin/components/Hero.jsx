@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import api from '../lib/api';
 import './Hero.css';
+import Icon from './ui/Icon.jsx';
 
 const Hero = ({ onOrderClick }) => {
   const { t } = useLanguage();
@@ -60,43 +61,56 @@ const Hero = ({ onOrderClick }) => {
 
         <div className="hero-features">
           <span className="hero-feature-item">
-            <i className="fa-solid fa-heart"></i> {t('hero.feature1') || 'Made with Love'}
+            <Icon name="heart" /> {t('hero.feature1') || 'Made with Love'}
           </span>
           <span className="hero-feature-item">
-            <i className="fa-solid fa-fire"></i> {t('hero.feature2') || 'Fresh Daily'}
+            <Icon name="fire" /> {t('hero.feature2') || 'Fresh Daily'}
           </span>
           <span className="hero-feature-item">
-            <i className="fa-solid fa-home"></i> {t('hero.feature3') || 'Home-like Taste'}
+            <Icon name="home" /> {t('hero.feature3') || 'Home-like Taste'}
           </span>
         </div>
 
         <div className="hero-benefits">
           <div className="hero-benefit-item">
-            <i className="fa-solid fa-check-circle"></i>
+            <Icon name="check-circle" />
             <div>
-              <strong>{t('hero.benefit1Title') || '100% Pure Vegetarian'}</strong>
-              <p>{t('hero.benefit1Desc') || 'Fresh, hygienic vegetarian meals prepared daily'}</p>
+              <strong>
+                {t('hero.benefit1Title') || '100% Pure Vegetarian'}
+              </strong>
+              <p>
+                {t('hero.benefit1Desc') ||
+                  'Fresh, hygienic vegetarian meals prepared daily'}
+              </p>
             </div>
           </div>
           <div className="hero-benefit-item">
-            <i className="fa-solid fa-check-circle"></i>
+            <Icon name="check-circle" />
             <div>
-              <strong>{t('hero.benefit2Title') || 'Flexible Delivery Slots'}</strong>
-              <p>{t('hero.benefit2Desc') || 'Morning (7-10 AM), Noon (12-3 PM), Night (7-9 PM)'}</p>
+              <strong>
+                {t('hero.benefit2Title') || 'Flexible Delivery Slots'}
+              </strong>
+              <p>
+                {t('hero.benefit2Desc') ||
+                  'Morning (7-10 AM), Noon (12-3 PM), Night (7-9 PM)'}
+              </p>
             </div>
           </div>
           <div className="hero-benefit-item hero-benefit-pricing">
-            <i className="fa-solid fa-check-circle"></i>
+            <Icon name="check-circle" />
             <div>
               <strong>{t('hero.benefit3Title') || 'Affordable Pricing'}</strong>
-              <p>{t('hero.benefit3Desc') || 'Home delivery on orders ₹100+ | Starting from ₹80'}</p>
+              <p>
+                {t('hero.benefit3Desc') ||
+                  'Home delivery on orders ₹100+ | Starting from ₹80'}
+              </p>
             </div>
           </div>
         </div>
 
         <div className="hero-trust-signals">
           <div className="hero-trust-item">
-            <i className="fa-solid fa-users"></i>
+            <Icon name="users" />
             <span>
               {loading || stats.totalCustomers === null
                 ? t('hero.trust1') || '500+ Happy Customers'
@@ -104,7 +118,7 @@ const Hero = ({ onOrderClick }) => {
             </span>
           </div>
           <div className="hero-trust-item">
-            <i className="fa-solid fa-calendar-check"></i>
+            <Icon name="calendar-check" />
             <span>
               {loading || stats.dailyMeals === null
                 ? t('hero.trust2') || 'Daily Fresh Meals'
@@ -112,7 +126,7 @@ const Hero = ({ onOrderClick }) => {
             </span>
           </div>
           <div className="hero-trust-item">
-            <i className="fa-solid fa-shield-halved"></i>
+            <Icon name="shield-halved" />
             <span>
               {loading || stats.totalOrders === null
                 ? t('hero.trust3') || 'Hygienic Kitchen'
@@ -122,7 +136,10 @@ const Hero = ({ onOrderClick }) => {
         </div>
 
         <div className="hero-cta-text">
-          <p>{t('hero.ctaText') || 'Experience authentic home-cooked meals delivered fresh to your doorstep every day!'}</p>
+          <p>
+            {t('hero.ctaText') ||
+              'Experience authentic home-cooked meals delivered fresh to your doorstep every day!'}
+          </p>
         </div>
 
         {/* Mobile-only Order Button */}
@@ -134,7 +151,7 @@ const Hero = ({ onOrderClick }) => {
               type="button"
               aria-label="Order Now"
             >
-              <i className="fa-brands fa-whatsapp"></i>
+              <Icon name="whatsapp" />
               {t('hero.orderNow') || t('common.orderOnWhatsApp') || 'Order Now'}
             </button>
           </div>

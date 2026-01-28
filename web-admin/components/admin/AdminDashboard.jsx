@@ -442,9 +442,7 @@ const AdminDashboard = () => {
         const oldLinks = document.querySelectorAll(
           'link[href*="fonts.googleapis.com"]'
         );
-        oldLinks.forEach((link) => {
-          if (!link.href.includes('font-awesome')) link.remove();
-        });
+        oldLinks.forEach((link) => link.remove());
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = `https://fonts.googleapis.com/css2?family=${fontName}:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap`;
@@ -1214,9 +1212,7 @@ const AdminDashboard = () => {
                 if (!hasLink && fontName) {
                   document
                     .querySelectorAll('link[href*="fonts.googleapis.com"]')
-                    .forEach((link) => {
-                      if (!link.href.includes('font-awesome')) link.remove();
-                    });
+                    .forEach((link) => link.remove());
                   const link = document.createElement('link');
                   link.rel = 'stylesheet';
                   link.href = `https://fonts.googleapis.com/css2?family=${fontName}:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap`;

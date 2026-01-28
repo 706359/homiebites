@@ -65,10 +65,11 @@ const FAQ = () => {
                 id={`faq-question-${index}`}
               >
                 <span>{faq.question}</span>
-                <i
-                  className={`fa-solid fa-${activeIndex === index ? 'minus' : 'plus'} faq-icon`}
+                <Icon
+                  name={activeIndex === index ? 'minus' : 'plus'}
+                  className="faq-icon"
                   aria-hidden="true"
-                ></i>
+                />
               </button>
               <div
                 className="faq-answer"

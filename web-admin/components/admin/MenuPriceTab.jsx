@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance.js';
 import api from '../../lib/api-admin.js';
 import { convertMenuItemsToCategories } from '../../lib/menuData.js';
+import Icon from '../ui/Icon.jsx';
 import ConfirmationModal from './ConfirmationModal.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
 import { formatCurrency } from './utils/orderUtils.js';
@@ -214,9 +215,9 @@ const MenuPriceTab = ({
             data: response?.data,
             dataType: typeof response?.data,
           });
-          setMenuItems([]);
-          setOriginalCategories([]);
-          setCategories(predefinedCategories);
+        setMenuItems([]);
+        setOriginalCategories([]);
+        setCategories(predefinedCategories);
 
         if (showNotification) {
           showNotification(
@@ -258,7 +259,7 @@ const MenuPriceTab = ({
           categoriesMap[categoryName] = {
             id: originalCategory.id,
             category: originalCategory.category,
-            icon: originalCategory.icon || 'fa-utensils',
+            icon: originalCategory.icon || 'utensils',
             tag: originalCategory.tag || '',
             description: originalCategory.description || '',
             items: [],
@@ -297,7 +298,7 @@ const MenuPriceTab = ({
           icon:
             existingItemInCategory?.categoryIcon ||
             item.categoryIcon ||
-            'fa-utensils',
+            'utensils',
           tag: existingItemInCategory?.categoryTag || item.categoryTag || '',
           description:
             existingItemInCategory?.categoryDescription ||
@@ -798,14 +799,15 @@ const MenuPriceTab = ({
         }
 
         // Determine final category: use mainCategory if provided, otherwise use category field
-        let finalCategory = formData.mainCategory || formData.category || itemCategory;
-        
+        let finalCategory =
+          formData.mainCategory || formData.category || itemCategory;
+
         // If both mainCategory and subcategory are provided, use mainCategory (subcategory is for organization)
         // The category field will be the main category (Breakfast, Lunch, or Dinner)
         if (formData.mainCategory) {
           finalCategory = formData.mainCategory;
         }
-        
+
         const newItem = {
           id: Date.now(),
           name: formData.name.trim(),
@@ -842,10 +844,10 @@ const MenuPriceTab = ({
         try {
           // Optimistically update local state first for instant feedback
           setMenuItems(updatedItems);
-          
+
           // Save to backend
           await saveMenuItemsToBackend(updatedItems);
-          
+
           // Reload in background to ensure sync (non-blocking)
           loadMenuItems().catch((reloadError) => {
             console.error('[Add Item] Background reload failed:', reloadError);
@@ -993,13 +995,17 @@ const MenuPriceTab = ({
     const performUpdate = async () => {
       try {
         // Determine final category: use mainCategory if provided, otherwise use category field
-        let finalCategory = formData.mainCategory || formData.category || selectedItem.category || '';
-        
+        let finalCategory =
+          formData.mainCategory ||
+          formData.category ||
+          selectedItem.category ||
+          '';
+
         // If mainCategory is provided, use it as the category
         if (formData.mainCategory) {
           finalCategory = formData.mainCategory;
         }
-        
+
         const updatedItem = {
           ...selectedItem,
           name: formData.name.trim(),
@@ -1024,10 +1030,10 @@ const MenuPriceTab = ({
 
         // Optimistically update local state first for instant feedback
         setMenuItems(updatedItems);
-        
+
         // Save to backend
         await saveMenuItemsToBackend(updatedItems);
-        
+
         // Reload in background to ensure sync (non-blocking)
         loadMenuItems().catch((reloadError) => {
           console.error('[Edit Item] Background reload failed:', reloadError);
@@ -1083,10 +1089,10 @@ const MenuPriceTab = ({
 
       // Optimistically update local state first for instant feedback
       setMenuItems(updatedItems);
-      
+
       // Save to backend
       await saveMenuItemsToBackend(updatedItems);
-      
+
       // Reload in background to ensure sync (non-blocking)
       loadMenuItems().catch((reloadError) => {
         console.error('[Delete Item] Background reload failed:', reloadError);
@@ -1107,7 +1113,7 @@ const MenuPriceTab = ({
     if (togglingItemId === item.id) return;
 
     setTogglingItemId(item.id);
-    
+
     // Show notification about status change
     if (showNotification) {
       showNotification(
@@ -1124,10 +1130,10 @@ const MenuPriceTab = ({
 
       // Optimistically update local state first for instant feedback
       setMenuItems(updatedItems);
-      
+
       // Save to backend
       await saveMenuItemsToBackend(updatedItems);
-      
+
       // Reload in background to ensure sync (non-blocking)
       loadMenuItems().catch((reloadError) => {
         console.error('[Toggle Status] Background reload failed:', reloadError);
@@ -1153,17 +1159,17 @@ const MenuPriceTab = ({
 
   const openEditModal = (item) => {
     setSelectedItem(item);
-    
+
     // Parse category to extract main category and subcategory
     const itemCategory = item.category || '';
     let mainCategory = '';
     let subcategory = '';
-    
+
     // Check if category is a main category (Breakfast, Lunch, Dinner)
     const mainCat = mainCategories.find(
       (cat) => cat.toLowerCase() === itemCategory.toLowerCase()
     );
-    
+
     if (mainCat) {
       mainCategory = mainCat;
       // Try to detect subcategory from item name
@@ -1174,7 +1180,7 @@ const MenuPriceTab = ({
         ...subcategoriesByMainCategory.Dinner,
       ];
       const uniqueSubcategories = [...new Set(allSubcategories)];
-      
+
       for (const subcat of uniqueSubcategories) {
         const subcatLower = subcat.toLowerCase();
         if (
@@ -1232,7 +1238,7 @@ const MenuPriceTab = ({
         subcategory = itemCategory;
       }
     }
-    
+
     setFormData({
       name: item.name || '',
       description: item.description || '',
@@ -1319,7 +1325,7 @@ const MenuPriceTab = ({
                 }}
                 title="Clear all filters"
               >
-                <i className="fa-solid fa-xmark"></i>
+                <Icon name="xmark" />
                 Clear Filters
               </button>
             )}
@@ -1338,25 +1344,29 @@ const MenuPriceTab = ({
                   setShowAddModal(true);
                 }}
               >
-                <i className="fa-solid fa-plus"></i> Add Menu Item
+                <Icon name="plus" /> Add Menu Item
               </button>
               <button
                 className="btn btn-secondary btn-small"
                 onClick={async () => {
                   try {
-                    showNotification('Syncing menu items to gallery...', 'info');
+                    showNotification(
+                      'Syncing menu items to gallery...',
+                      'info'
+                    );
                     await syncMenuItemsToGallery(menuItems, showNotification);
                   } catch (error) {
                     console.error('[Manual Sync] Error:', error);
                     showNotification(
-                      'Gallery sync failed: ' + (error.message || 'Unknown error'),
+                      'Gallery sync failed: ' +
+                        (error.message || 'Unknown error'),
                       'error'
                     );
                   }
                 }}
                 title="Sync all menu items with images to website gallery"
               >
-                <i className="fa-solid fa-sync-alt"></i> Sync to Gallery
+                <Icon name="sync-alt" /> Sync to Gallery
               </button>
             </div>
           </div>
@@ -1365,7 +1375,7 @@ const MenuPriceTab = ({
 
       {filteredMenuItems.length === 0 ? (
         <div className="empty-state-container">
-          <i className="fa-solid fa-utensils empty-state-icon"></i>
+          <Icon name="utensils" className="empty-state-icon" />
           <h3 className="mb-md">No Menu Items</h3>
           <p className="mb-xl empty-state-text">
             {searchQuery || filterCategory
@@ -1387,7 +1397,7 @@ const MenuPriceTab = ({
                 setShowAddModal(true);
               }}
             >
-              <i className="fa-solid fa-plus"></i> Add Menu Item
+              <Icon name="plus" /> Add Menu Item
             </button>
           )}
         </div>
@@ -1491,24 +1501,24 @@ const MenuPriceTab = ({
               Lunch: {
                 bg: 'var(--admin-accent-light, rgba(68, 144, 49, 0.1))',
                 color: 'var(--admin-accent, #449031)',
-                icon: 'fa-utensils',
+                icon: 'utensils',
               },
               Dinner: {
                 bg: 'var(--admin-secondary-light, rgba(196, 92, 45, 0.1))',
                 color: 'var(--admin-secondary, #c45c2d)',
-                icon: 'fa-moon',
+                icon: 'moon',
               },
               Breakfast: {
                 bg: 'rgba(255, 193, 7, 0.1)',
                 color: '#ffc107',
-                icon: 'fa-sun',
+                icon: 'sun',
               },
             };
 
             const categoryStyle = categoryColors[item.category] || {
               bg: 'var(--admin-glass-border)',
               color: 'var(--admin-text-secondary)',
-              icon: 'fa-circle',
+              icon: 'circle',
             };
 
             return (
@@ -1534,19 +1544,17 @@ const MenuPriceTab = ({
                       loading="lazy"
                     />
                     <div className="menu-item-availability-badge">
-                      <i
-                        className={`fa-solid ${
-                          item.isAvailable
-                            ? 'fa-check-circle'
-                            : 'fa-times-circle'
-                        }`}
-                      ></i>
+                      <Icon
+                        name={
+                          item.isAvailable ? 'check-circle' : 'times-circle'
+                        }
+                      />
                       <span>
                         {item.isAvailable ? 'Available' : 'Unavailable'}
                       </span>
                     </div>
                     <div className="menu-item-category-badge">
-                      <i className={`fa-solid ${categoryStyle.icon}`}></i>
+                      <Icon name={categoryStyle.icon} />
                       <span>{item.category || 'Uncategorized'}</span>
                     </div>
                   </div>
@@ -1578,7 +1586,7 @@ const MenuPriceTab = ({
                         onClick={() => openViewModal(item)}
                         title="View Item Details"
                       >
-                        <i className="fa-solid fa-eye"></i>
+                        <Icon name="eye" />
                       </button>
                       <button
                         className={`menu-item-action-btn menu-item-action-toggle ${
@@ -1590,18 +1598,16 @@ const MenuPriceTab = ({
                           togglingItemId === item.id
                             ? 'Changing status...'
                             : item.isAvailable
-                            ? 'Mark as Unavailable'
-                            : 'Mark as Available'
+                              ? 'Mark as Unavailable'
+                              : 'Mark as Available'
                         }
                       >
                         {togglingItemId === item.id ? (
-                          <i className="fa-solid fa-spinner fa-spin"></i>
+                          <Icon name="spinner" spin />
                         ) : (
-                          <i
-                            className={`fa-solid ${
-                              item.isAvailable ? 'fa-toggle-on' : 'fa-toggle-off'
-                            }`}
-                          ></i>
+                          <Icon
+                            name={item.isAvailable ? 'toggle-on' : 'toggle-off'}
+                          />
                         )}
                       </button>
                       <button
@@ -1609,14 +1615,14 @@ const MenuPriceTab = ({
                         onClick={() => openEditModal(item)}
                         title="Edit Item"
                       >
-                        <i className="fa-solid fa-pencil"></i>
+                        <Icon name="pencil" />
                       </button>
                       <button
                         className="menu-item-action-btn menu-item-action-delete"
                         onClick={() => openDeleteModal(item)}
                         title="Delete Item"
                       >
-                        <i className="fa-solid fa-trash"></i>
+                        <Icon name="trash" />
                       </button>
                     </div>
                   </div>
@@ -1636,7 +1642,7 @@ const MenuPriceTab = ({
                 className="btn btn-ghost btn-icon modal-close"
                 onClick={() => setShowAddModal(false)}
               >
-                <i className="fa-solid fa-times"></i>
+                <Icon name="times" />
               </button>
             </div>
             <div className="modal-body-compact">
@@ -1713,13 +1719,18 @@ const MenuPriceTab = ({
                   <div className="form-group menu-form-group-full">
                     <label className="menu-form-label">
                       Subcategory / Package{' '}
-                      <span className="menu-form-label-optional">(Optional)</span>
+                      <span className="menu-form-label-optional">
+                        (Optional)
+                      </span>
                     </label>
                     <select
                       className="input-field menu-form-input"
                       value={formData.subcategory}
                       onChange={(e) =>
-                        setFormData({ ...formData, subcategory: e.target.value })
+                        setFormData({
+                          ...formData,
+                          subcategory: e.target.value,
+                        })
                       }
                     >
                       <option value="">Select Subcategory</option>
@@ -1781,7 +1792,7 @@ const MenuPriceTab = ({
                 className="btn btn-primary menu-modal-btn"
                 onClick={handleAddItem}
               >
-                <i className="fa-solid fa-plus"></i> Add Item
+                <Icon name="plus" /> Add Item
               </button>
             </div>
           </div>
@@ -1797,7 +1808,7 @@ const MenuPriceTab = ({
                 className="btn btn-ghost btn-icon modal-close"
                 onClick={() => setShowEditModal(false)}
               >
-                <i className="fa-solid fa-times"></i>
+                <Icon name="times" />
               </button>
             </div>
             <div className="modal-body menu-edit-modal-body">
@@ -1877,13 +1888,18 @@ const MenuPriceTab = ({
                   <div className="form-group menu-form-group-full">
                     <label className="menu-form-label">
                       Subcategory / Package{' '}
-                      <span className="menu-form-label-optional">(Optional)</span>
+                      <span className="menu-form-label-optional">
+                        (Optional)
+                      </span>
                     </label>
                     <select
                       className="input-field menu-form-input"
                       value={formData.subcategory}
                       onChange={(e) =>
-                        setFormData({ ...formData, subcategory: e.target.value })
+                        setFormData({
+                          ...formData,
+                          subcategory: e.target.value,
+                        })
                       }
                     >
                       <option value="">Select Subcategory</option>
@@ -1951,7 +1967,7 @@ const MenuPriceTab = ({
                 className="btn btn-primary menu-modal-btn"
                 onClick={handleEditItem}
               >
-                <i className="fa-solid fa-save"></i> Save Changes
+                <Icon name="save" /> Save Changes
               </button>
             </div>
           </div>
@@ -1970,7 +1986,7 @@ const MenuPriceTab = ({
                   setSelectedItem(null);
                 }}
               >
-                <i className="fa-solid fa-times"></i>
+                <Icon name="times" />
               </button>
             </div>
             <div className="modal-body-compact">
@@ -1978,7 +1994,10 @@ const MenuPriceTab = ({
                 <div className="menu-view-image-wrapper">
                   {(() => {
                     const getImageUrl = () => {
-                      if (selectedItem.imageUrl && selectedItem.imageUrl.trim() !== '') {
+                      if (
+                        selectedItem.imageUrl &&
+                        selectedItem.imageUrl.trim() !== ''
+                      ) {
                         const imageUrl = selectedItem.imageUrl.trim();
                         if (imageUrl.startsWith('/')) {
                           return imageUrl;
@@ -2024,7 +2043,9 @@ const MenuPriceTab = ({
                           tiffin: 'FullTiffin.jpg',
                           full: 'FullTiffin.jpg',
                         };
-                        for (const [key, imageFile] of Object.entries(commonMatches)) {
+                        for (const [key, imageFile] of Object.entries(
+                          commonMatches
+                        )) {
                           if (normalizedName.includes(key)) {
                             return '/' + imageFile;
                           }
@@ -2078,14 +2099,19 @@ const MenuPriceTab = ({
                         const itemCategory = selectedItem.category || '';
                         // Check if category is a main category
                         const mainCat = mainCategories.find(
-                          (cat) => cat.toLowerCase() === itemCategory.toLowerCase()
+                          (cat) =>
+                            cat.toLowerCase() === itemCategory.toLowerCase()
                         );
                         if (mainCat) {
                           return mainCat;
                         }
                         // If not a main category, check if it's a subcategory and find its main category
                         for (const mainCat of mainCategories) {
-                          if (subcategoriesByMainCategory[mainCat]?.includes(itemCategory)) {
+                          if (
+                            subcategoriesByMainCategory[mainCat]?.includes(
+                              itemCategory
+                            )
+                          ) {
                             return `${mainCat} - ${itemCategory}`;
                           }
                         }
@@ -2101,14 +2127,16 @@ const MenuPriceTab = ({
                         selectedItem.isAvailable ? 'available' : 'unavailable'
                       }`}
                     >
-                      <i
-                        className={`fa-solid ${
+                      <Icon
+                        name={
                           selectedItem.isAvailable
-                            ? 'fa-check-circle'
-                            : 'fa-times-circle'
-                        }`}
-                      ></i>
-                      <span>{selectedItem.isAvailable ? 'Available' : 'Unavailable'}</span>
+                            ? 'check-circle'
+                            : 'times-circle'
+                        }
+                      />
+                      <span>
+                        {selectedItem.isAvailable ? 'Available' : 'Unavailable'}
+                      </span>
                     </span>
                   </div>
                   {selectedItem.imageUrl && selectedItem.imageUrl.trim() && (
@@ -2139,7 +2167,7 @@ const MenuPriceTab = ({
                   openEditModal(selectedItem);
                 }}
               >
-                <i className="fa-solid fa-pencil"></i> Edit Item
+                <Icon name="pencil" /> Edit Item
               </button>
             </div>
           </div>

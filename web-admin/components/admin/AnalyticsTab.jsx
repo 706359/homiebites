@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Icon from '../ui/Icon.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
 import {
   getFilteredOrdersByDate,
@@ -833,7 +834,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
         <div className="dashboard-main-content">
           <div className="admin-stats">
             <div className="stat-card">
-              <i className="fa-solid fa-rupee-sign"></i>
+              <Icon name="rupee-sign"/>
               <div>
                 <h3>₹{formatCurrency(keyMetrics.totalRevenue)}</h3>
                 <p>Total Revenue</p>
@@ -849,14 +850,14 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               </div>
             </div>
             <div className="stat-card">
-              <i className="fa-solid fa-shopping-cart icon-color-accent"></i>
+              <Icon name="shopping-cart" className="icon-color-accent"/>
               <div>
                 <h3>{keyMetrics.totalOrders}</h3>
                 <p>Total Orders</p>
               </div>
             </div>
             <div className="stat-card">
-              <i className="fa-solid fa-exclamation-triangle icon-color-warning"></i>
+              <Icon name="exclamation-triangle" className="icon-color-warning"/>
               <div>
                 <h3>₹{formatCurrency(keyMetrics.pendingAmount)}</h3>
                 <p>Pending Payments</p>
@@ -867,7 +868,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               </div>
             </div>
             <div className="stat-card">
-              <i className="fa-solid fa-users icon-color-accent"></i>
+              <Icon name="users" className="icon-color-accent"/>
               <div>
                 <h3>{keyMetrics.totalCustomers}</h3>
                 <p>Total Customers</p>
@@ -875,14 +876,14 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               </div>
             </div>
             <div className="stat-card">
-              <i className="fa-solid fa-chart-line icon-color-success"></i>
+              <Icon name="chart-line" className="icon-color-success"/>
               <div>
                 <h3>₹{formatCurrency(keyMetrics.avgOrderValue)}</h3>
                 <p>Avg Order Value</p>
               </div>
             </div>
             <div className="stat-card">
-              <i className="fa-solid fa-chart-line stat-card-icon-success"></i>
+              <Icon name="chart-line" className="stat-card-icon-success"/>
               <div>
                 <h3>₹{formatCurrency(keyMetrics.profitStats.profit)}</h3>
                 <p>Profit After Expenses</p>
@@ -893,7 +894,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               </div>
             </div>
             <div className="stat-card">
-              <i className="fa-solid fa-percent stat-card-icon-secondary"></i>
+              <Icon name="percent" className="stat-card-icon-secondary"/>
               <div>
                 <h3>
                   {keyMetrics.profitStats.profitMarginPercent.toFixed(1)}%
@@ -910,7 +911,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
             <div className="dashboard-grid-item full-width">
               <div className="dashboard-card">
                 <h3 className="dashboard-section-title">
-                  <i className="fa-solid fa-chart-line icon-opacity"></i>
+                  <Icon name="chart-line" className="icon-opacity"/>
                   Monthly Revenue Trend (Last 12M)
                 </h3>
                 <div className="chart-container-padding">
@@ -974,7 +975,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               <div className="dashboard-card">
                 <div className="section-header-with-select">
                   <h3 className="dashboard-section-title m-0">
-                    <i className="fa-solid fa-map-marker-alt icon-opacity"></i>
+                    <Icon name="map-marker-alt" className="icon-opacity"/>
                     Top 10 Delivery Areas
                   </h3>
                   <select
@@ -994,7 +995,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                 <div className="analytics-chart-section">
                   {topAreas.length === 0 ? (
                     <div className="analytics-empty-state-inline">
-                      <i className="fa-solid fa-inbox analytics-empty-icon-large"></i>
+                      <Icon name="inbox" className="analytics-empty-icon-large"/>
                       <p className="analytics-empty-text">
                         No delivery areas found
                       </p>
@@ -1042,7 +1043,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
               <div className="dashboard-card">
                 <div className="section-header-with-select">
                   <h3 className="dashboard-section-title m-0">
-                    <i className="fa-solid fa-credit-card icon-opacity"></i>
+                    <Icon name="credit-card" className="icon-opacity"/>
                     Payment Mode Trends
                   </h3>
                   <select
@@ -1109,7 +1110,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
             <div className="dashboard-grid-item full-width">
               <div className="dashboard-card">
                 <h3 className="dashboard-section-title">
-                  <i className="fa-solid fa-map-marker-alt icon-opacity"></i>
+                  <Icon name="map-marker-alt" className="icon-opacity"/>
                   Delivery Address Analytics (Yearly & Monthly)
                 </h3>
                 <div className="analytics-chart-container">
@@ -1117,7 +1118,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                   !deliveryAddressAnalytics.data ||
                   deliveryAddressAnalytics.data.length === 0 ? (
                     <div className="analytics-empty-state">
-                      <i className="fa-solid fa-inbox analytics-empty-icon"></i>
+                      <Icon name="inbox" className="analytics-empty-icon"/>
                       <p className="mt-16">
                         No delivery address data available
                       </p>

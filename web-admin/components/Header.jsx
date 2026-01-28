@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getOffersDataSync } from '../lib/offersData';
 import { getFormattedPhone, getPhoneLink } from '../lib/businessConstants';
+import { getOffersDataSync } from '../lib/offersData';
 import './Header.css';
 import LanguageSwitcher from './LanguageSwitcher';
+import Icon from './ui/Icon.jsx';
 
 const Header = ({ onOrderClick }) => {
   const { t } = useLanguage();
@@ -151,7 +152,7 @@ const Header = ({ onOrderClick }) => {
               title={t('common.orderOnWhatsApp')}
               type="button"
             >
-              <i className="fa-brands fa-whatsapp"></i>
+              <Icon name="whatsapp" />
               <span>+91-9958983578</span>
             </button>
             <LanguageSwitcher />
@@ -174,7 +175,11 @@ const Header = ({ onOrderClick }) => {
           </Link>
         </div>
 
-        <div className="nav-right" role="navigation" aria-label="Main navigation">
+        <div
+          className="nav-right"
+          role="navigation"
+          aria-label="Main navigation"
+        >
           <Link href="/" onClick={handleNavClick} aria-label="Home">
             {t('common.home')}
           </Link>
@@ -195,7 +200,11 @@ const Header = ({ onOrderClick }) => {
           <Link href="/pricing" onClick={handleNavClick} aria-label="Pricing">
             {t('header.pricing') || 'Price'}
           </Link>
-          <a href="/#faq" onClick={(e) => handleHashLink(e, '#faq')} aria-label="Frequently asked questions">
+          <a
+            href="/#faq"
+            onClick={(e) => handleHashLink(e, '#faq')}
+            aria-label="Frequently asked questions"
+          >
             {t('header.faq')}
           </a>
           <div className="header-action-buttons">
@@ -204,14 +213,14 @@ const Header = ({ onOrderClick }) => {
               className="btn btn-primary btn-small header-order-btn"
               type="button"
             >
-              <i className="fa-brands fa-whatsapp"></i>
+              <Icon name="whatsapp" />
               {t('hero.orderNow') || t('common.orderOnWhatsApp')}
             </button>
             <a
               href={getPhoneLink()}
               className="btn btn-secondary btn-small header-call-btn"
             >
-              <i className="fa-solid fa-phone"></i>
+              <Icon name="phone" />
               {t('common.call')}
             </a>
           </div>
@@ -222,8 +231,8 @@ const Header = ({ onOrderClick }) => {
             type="button"
             aria-expanded={isMenuOpen}
           >
-            <i className="fa-solid fa-bars menu-icon"></i>
-            <i className="fa-solid fa-xmark close-icon"></i>
+            <Icon name="bars" className="menu-icon" />
+            <Icon name="xmark" className="close-icon" />
           </button>
         </div>
       </nav>
@@ -243,7 +252,7 @@ const Header = ({ onOrderClick }) => {
           aria-label="Close menu"
           type="button"
         >
-          <i className="fa-solid fa-xmark"></i>
+          <Icon name="xmark" />
         </button>
         <div className="mobile-menu-language">
           <LanguageSwitcher />
@@ -285,7 +294,7 @@ const Header = ({ onOrderClick }) => {
             className="btn btn-primary btn-small"
             type="button"
           >
-            <i className="fa-brands fa-whatsapp"></i>
+            <Icon name="whatsapp" />
             {t('hero.orderNow') || t('common.orderOnWhatsApp')}
           </button>
           <a
@@ -293,7 +302,7 @@ const Header = ({ onOrderClick }) => {
             className="btn btn-secondary btn-small"
             onClick={handleNavClick}
           >
-            <i className="fa-solid fa-phone"></i>
+            <Icon name="phone" />
             {t('common.call')} {getFormattedPhone()}
           </a>
         </div>

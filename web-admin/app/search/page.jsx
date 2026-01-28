@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Icon from '../../components/ui/Icon.jsx';
 import { useState } from 'react';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
@@ -68,7 +69,7 @@ export default function SearchPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <button type="submit" className="btn btn-primary btn-icon">
-                <i className="fa-solid fa-magnifying-glass"></i>
+                <Icon name="magnifying-glass"/>
               </button>
             </div>
           </form>
@@ -101,7 +102,7 @@ export default function SearchPage() {
             </div>
           ) : (
             <div className="search-placeholder">
-              <i className="fa-solid fa-magnifying-glass"></i>
+              <Icon name="magnifying-glass"/>
               <p>
                 {t('search.startSearching') ||
                   'Start typing to search for dishes...'}

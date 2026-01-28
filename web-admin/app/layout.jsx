@@ -1,6 +1,5 @@
 /* CSS load order (enterprise: tokens first, then libs, shared, globals). Admin styles load from app/admin/layout.jsx via adminStyles.js. */
 import '../shared/styles/variables.css';
-import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../shared/styles/shared.css';
 import '../styles/globals.css';
 import ClientLayout from './ClientLayout';

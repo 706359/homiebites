@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Icon from '../ui/Icon.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
 import { formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
 import { getOrderAmount, isPendingStatus, sortOrdersByOrderId } from './utils/orderUtils.js';
@@ -243,13 +244,13 @@ const NotificationsTab = ({
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'order':
-        return 'fa-solid fa-shopping-cart';
+        return 'shopping-cart';
       case 'payment':
-        return 'fa-solid fa-money-bill-wave';
+        return 'money-bill-wave';
       case 'system':
-        return 'fa-solid fa-info-circle';
+        return 'info-circle';
       default:
-        return 'fa-solid fa-bell';
+        return 'bell';
     }
   };
 
@@ -291,7 +292,7 @@ const NotificationsTab = ({
             className="btn btn-ghost btn-small"
             onClick={() => setShowSettingsModal(true)}
           >
-            <i className="fa-solid fa-cog"></i> Settings
+            <Icon name="cog"/> Settings
           </button>
         </div>
       </div>
@@ -332,7 +333,7 @@ const NotificationsTab = ({
       <div className="dashboard-card">
         {filteredNotifications.length === 0 ? (
           <div className="empty-state notifications-empty-state">
-            <i className="fa-solid fa-bell-slash notifications-empty-icon"></i>
+            <Icon name="bell-slash" className="notifications-empty-icon"/>
             <p>No notifications</p>
             <p className="notifications-empty-text">
               You&apos;re all caught up!
@@ -350,8 +351,9 @@ const NotificationsTab = ({
               >
                 <div className="notification-card-grid-header">
                   <div className="notification-card-grid-icon">
-                    <i
-                      className={`${getNotificationIcon(notif.type)} ${
+                    <Icon
+                      name={getNotificationIcon(notif.type)}
+                      className={
                         notif.type === 'order'
                           ? 'notification-icon-order'
                           : notif.type === 'payment'
@@ -359,8 +361,8 @@ const NotificationsTab = ({
                             : notif.type === 'system'
                               ? 'notification-icon-system'
                               : 'notification-icon-default'
-                      }`}
-                    ></i>
+                      }
+                    />
                   </div>
                   {!notif.read && (
                     <span className="notification-badge-unread-grid">New</span>
@@ -422,7 +424,7 @@ const NotificationsTab = ({
                         }}
                         title="Mark as Read"
                       >
-                        <i className="fa-solid fa-check"></i> Read
+                        <Icon name="check"/> Read
                       </button>
                     </div>
                   </div>
@@ -445,7 +447,7 @@ const NotificationsTab = ({
                 className="btn btn-ghost btn-icon modal-close"
                 onClick={() => setShowSettingsModal(false)}
               >
-                <i className="fa-solid fa-times"></i>
+                <Icon name="times"/>
               </button>
             </div>
             <div className="modal-body">
@@ -596,7 +598,7 @@ const NotificationsTab = ({
                   setShowSettingsModal(false);
                 }}
               >
-                <i className="fa-solid fa-save"></i> Save
+                <Icon name="save"/> Save
               </button>
             </div>
           </div>

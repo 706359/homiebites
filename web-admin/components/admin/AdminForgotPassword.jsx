@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Icon from '../ui/Icon.jsx';
 import { useState } from 'react';
 
 const AdminForgotPassword = () => {
@@ -66,7 +67,7 @@ const AdminForgotPassword = () => {
           <div className="login-content">
             <div className="login-header">
               <div className="login-icon-wrapper">
-                <i className="fa-solid fa-key"></i>
+                <Icon name="key"/>
               </div>
               <h1 className="login-title">Reset Password</h1>
               <p className="login-subtitle">
@@ -76,13 +77,13 @@ const AdminForgotPassword = () => {
             <form onSubmit={handleSubmit} className="login-form">
               {error && (
                 <div className="alert alert-error">
-                  <i className="fa-solid fa-exclamation-circle"></i>
+                  <Icon name="exclamation-circle"/>
                   <span>{error}</span>
                 </div>
               )}
               {success && (
                 <div className="alert alert-success">
-                  <i className="fa-solid fa-check-circle"></i>
+                  <Icon name="check-circle"/>
                   <span>
                     Password reset email sent! Redirecting to login...
                   </span>
@@ -90,7 +91,7 @@ const AdminForgotPassword = () => {
               )}
               <div className="form-field">
                 <label htmlFor="email">
-                  <i className="fa-solid fa-envelope"></i>
+                  <Icon name="envelope"/>
                   <span>Email Address</span>
                 </label>
                 <input
@@ -111,17 +112,17 @@ const AdminForgotPassword = () => {
               >
                 {loading ? (
                   <>
-                    <i className="fa-solid fa-spinner fa-spin"></i>
+                    <Icon name="spinner" spin />
                     <span>Sending...</span>
                   </>
                 ) : success ? (
                   <>
-                    <i className="fa-solid fa-check"></i>
+                    <Icon name="check"/>
                     <span>Email Sent</span>
                   </>
                 ) : (
                   <>
-                    <i className="fa-solid fa-paper-plane"></i>
+                    <Icon name="paper-plane"/>
                     <span>Send Reset Link</span>
                   </>
                 )}
@@ -132,14 +133,14 @@ const AdminForgotPassword = () => {
                   onClick={() => router.push('/admin')}
                   className="admin-login-forgot-link"
                 >
-                  <i className="fa-solid fa-arrow-left"></i>
+                  <Icon name="arrow-left"/>
                   <span>Back to Login</span>
                 </button>
               </div>
             </form>
             <div className="login-info">
               <div className="login-info-icon">
-                <i className="fa-solid fa-shield-check"></i>
+                <Icon name="shield-check"/>
               </div>
               <p className="login-info-title">Secure Password Reset</p>
               <p className="admin-login-info-text">

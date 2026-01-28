@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAutoKeyboardAvoidance } from '../hooks/useKeyboardAvoidance';
 import './ReviewForm.css';
+import Icon from './ui/Icon.jsx';
 
 const ReviewForm = ({ onReviewSubmitted, onClose }) => {
   const { t } = useLanguage();
@@ -35,10 +36,17 @@ const ReviewForm = ({ onReviewSubmitted, onClose }) => {
   // Check for existing review when name and phone are filled
   useEffect(() => {
     const checkExisting = async () => {
-      if (formData.userName && formData.userPhone && formData.userPhone.length >= 10) {
+      if (
+        formData.userName &&
+        formData.userPhone &&
+        formData.userPhone.length >= 10
+      ) {
         try {
           const api = (await import('../lib/api')).default;
-          const result = await api.checkExistingReview(formData.userName, formData.userPhone);
+          const result = await api.checkExistingReview(
+            formData.userName,
+            formData.userPhone
+          );
           if (result.success && result.exists) {
             setExistingReview(result.data);
           } else {
@@ -62,8 +70,13 @@ const ReviewForm = ({ onReviewSubmitted, onClose }) => {
     setError('');
 
     // Validate low rating comments
-    if ((formData.rating === 1 || formData.rating === 2) && (!formData.comment || formData.comment.trim().length < 20)) {
-      setError('For low ratings, please provide a detailed comment explaining your experience (minimum 20 characters).');
+    if (
+      (formData.rating === 1 || formData.rating === 2) &&
+      (!formData.comment || formData.comment.trim().length < 20)
+    ) {
+      setError(
+        'For low ratings, please provide a detailed comment explaining your experience (minimum 20 characters).'
+      );
       return;
     }
 
@@ -83,9 +96,9 @@ const ReviewForm = ({ onReviewSubmitted, onClose }) => {
       if (data.success) {
         setIsSubmitted(true);
         const message = data.isUpdate
-          ? t('reviews.updateSuccess') || 
+          ? t('reviews.updateSuccess') ||
             'Your review has been updated successfully. It will be published after admin approval.'
-          : t('reviews.submitSuccess') || 
+          : t('reviews.submitSuccess') ||
             'Thank you! Your review has been submitted and will be published after admin approval.';
         success(message);
         setFormData({
@@ -148,14 +161,14 @@ const ReviewForm = ({ onReviewSubmitted, onClose }) => {
               aria-label="Close review form"
               type="button"
             >
-              <i className="fa-solid fa-times" aria-hidden="true"></i>
+              <Icon name="times" aria-hidden="true" />
             </button>
           )}
         </div>
 
         {isSubmitted && (
           <div className="review-success">
-            <i className="fa-solid fa-check-circle"></i>
+            <Icon name="check-circle" />
             <p>
               {t('reviews.submitSuccess') ||
                 'Thank you! Your review has been submitted and will be published after admin approval.'}
@@ -165,7 +178,7 @@ const ReviewForm = ({ onReviewSubmitted, onClose }) => {
 
         {error && (
           <div className="review-error">
-            <i className="fa-solid fa-exclamation-circle"></i>
+            <Icon name="exclamation-circle" />
             <p>{error}</p>
           </div>
         )}
@@ -174,14 +187,17 @@ const ReviewForm = ({ onReviewSubmitted, onClose }) => {
           <div className="review-confirm-dialog">
             <div className="review-confirm-content">
               <div className="review-confirm-icon">
-                <i className="fa-solid fa-exclamation-triangle"></i>
+                <Icon name="exclamation-triangle" />
               </div>
               <h4>Review Already Exists</h4>
               <p>
-                You have already submitted a review with this name and phone number.
-                Your previous review had a rating of <strong>{existingReview.rating}/5</strong>.
+                You have already submitted a review with this name and phone
+                number. Your previous review had a rating of{' '}
+                <strong>{existingReview.rating}/5</strong>.
               </p>
-              <p>Do you want to update your existing review with the new details?</p>
+              <p>
+                Do you want to update your existing review with the new details?
+              </p>
               <div className="review-confirm-actions">
                 <button
                   type="button"
@@ -263,7 +279,7 @@ const ReviewForm = ({ onReviewSubmitted, onClose }) => {
                   data-star-value={star}
                   onClick={() => setFormData({ ...formData, rating: star })}
                 >
-                  <i className="fa-solid fa-star"></i>
+                  <Icon name="star" />
                 </button>
               ))}
               <span className="rating-value">{formData.rating} / 5</span>
@@ -275,7 +291,8 @@ const ReviewForm = ({ onReviewSubmitted, onClose }) => {
               {t('reviews.comment') || 'Your Review'} *
               {(formData.rating === 1 || formData.rating === 2) && (
                 <span className="comment-requirement">
-                  {' '}(Minimum 20 characters required for low ratings)
+                  {' '}
+                  (Minimum 20 characters required for low ratings)
                 </span>
               )}
             </label>
@@ -294,17 +311,19 @@ const ReviewForm = ({ onReviewSubmitted, onClose }) => {
                     'Share your experience with HomieBites...'
               }
             />
-            {(formData.rating === 1 || formData.rating === 2) && formData.comment && (
-              <div className="comment-length-indicator">
-                {formData.comment.trim().length < 20 ? (
-                  <span className="comment-warning">
-                    {20 - formData.comment.trim().length} more characters required
-                  </span>
-                ) : (
-                  <span className="comment-success">✓ Sufficient length</span>
-                )}
-              </div>
-            )}
+            {(formData.rating === 1 || formData.rating === 2) &&
+              formData.comment && (
+                <div className="comment-length-indicator">
+                  {formData.comment.trim().length < 20 ? (
+                    <span className="comment-warning">
+                      {20 - formData.comment.trim().length} more characters
+                      required
+                    </span>
+                  ) : (
+                    <span className="comment-success">✓ Sufficient length</span>
+                  )}
+                </div>
+              )}
           </div>
 
           <button

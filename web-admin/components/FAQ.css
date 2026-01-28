@@ -131,13 +131,9 @@
   background: var(--primary-green) !important;
 }
 
-/* Ensure plus/minus icons display correctly */
-.faq-icon.fa-plus::before {
-  content: '\f067' !important;
-}
-
-.faq-icon.fa-minus::before {
-  content: '\f068' !important;
+/* FAQ expand/collapse icon (Lucide) */
+.faq-icon {
+  flex-shrink: 0;
 }
 
 .faq-answer {

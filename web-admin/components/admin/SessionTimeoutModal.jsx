@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import Icon from '../ui/Icon.jsx';
 /**
  * Session Timeout Warning Modal
  * Shows a warning when the session is about to expire due to inactivity
@@ -35,7 +36,7 @@ const SessionTimeoutModal = ({
       <div className="session-timeout-modal">
         <div className="session-timeout-header">
           <div className="session-timeout-icon">
-            <i className="fa-solid fa-clock"></i>
+            <Icon name="clock"/>
           </div>
           <h2 className="session-timeout-title">Session Timeout Warning</h2>
         </div>
@@ -66,7 +67,7 @@ const SessionTimeoutModal = ({
             className="btn btn-secondary session-timeout-btn"
             onClick={onLogout}
           >
-            <i className="fa-solid fa-sign-out-alt"></i>
+            <Icon name="sign-out-alt"/>
             Logout
           </button>
           <button
@@ -74,7 +75,7 @@ const SessionTimeoutModal = ({
             className="btn btn-primary session-timeout-btn"
             onClick={onExtendSession}
           >
-            <i className="fa-solid fa-refresh"></i>
+            <Icon name="refresh"/>
             Stay Logged In
           </button>
         </div>

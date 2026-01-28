@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import api from '../lib/api';
 import './Gallery.css';
-import PremiumLoader from './PremiumLoader';
 import SkeletonLoader from './SkeletonLoader';
+import Icon from './ui/Icon.jsx';
 
 const Gallery = () => {
   const { t } = useLanguage();
@@ -32,12 +32,14 @@ const Gallery = () => {
         if (useCache && typeof window !== 'undefined') {
           try {
             const cachedData = localStorage.getItem('homiebites_gallery_data');
-            const cacheTimestamp = localStorage.getItem('homiebites_gallery_data_timestamp');
-            
+            const cacheTimestamp = localStorage.getItem(
+              'homiebites_gallery_data_timestamp'
+            );
+
             if (cachedData && cacheTimestamp) {
               const cacheAge = Date.now() - parseInt(cacheTimestamp, 10);
               const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-              
+
               // Use cache if it's less than 5 minutes old
               if (cacheAge < CACHE_DURATION) {
                 try {
@@ -117,11 +119,20 @@ const Gallery = () => {
           // Save to cache
           if (typeof window !== 'undefined') {
             try {
-              localStorage.setItem('homiebites_gallery_data', JSON.stringify(response.data));
-              localStorage.setItem('homiebites_gallery_data_timestamp', String(Date.now()));
+              localStorage.setItem(
+                'homiebites_gallery_data',
+                JSON.stringify(response.data)
+              );
+              localStorage.setItem(
+                'homiebites_gallery_data_timestamp',
+                String(Date.now())
+              );
             } catch (storageError) {
               if (process.env.NODE_ENV === 'development') {
-                console.warn('[Gallery] Failed to save to cache:', storageError);
+                console.warn(
+                  '[Gallery] Failed to save to cache:',
+                  storageError
+                );
               }
             }
           }
@@ -212,12 +223,15 @@ const Gallery = () => {
     loadGalleryItems(true, true);
 
     // Refresh gallery every 5 minutes (cache duration) to pick up new items automatically
-    refreshInterval = setInterval(() => {
-      // Only refresh if tab is visible to avoid unnecessary API calls
-      if (!document.hidden) {
-        loadGalleryItems(false, false); // Always fetch fresh data on interval
-      }
-    }, 5 * 60 * 1000);
+    refreshInterval = setInterval(
+      () => {
+        // Only refresh if tab is visible to avoid unnecessary API calls
+        if (!document.hidden) {
+          loadGalleryItems(false, false); // Always fetch fresh data on interval
+        }
+      },
+      5 * 60 * 1000
+    );
 
     // Also listen for visibility changes - refresh if cache is stale
     const handleVisibilityChange = () => {
@@ -225,7 +239,9 @@ const Gallery = () => {
         // Check if cache is stale before refreshing
         if (typeof window !== 'undefined') {
           try {
-            const cacheTimestamp = localStorage.getItem('homiebites_gallery_data_timestamp');
+            const cacheTimestamp = localStorage.getItem(
+              'homiebites_gallery_data_timestamp'
+            );
             if (cacheTimestamp) {
               const cacheAge = Date.now() - parseInt(cacheTimestamp, 10);
               // Only refresh if cache is older than 2 minutes
@@ -581,8 +597,7 @@ const Gallery = () => {
   const mainCategories = useMemo(() => {
     return ['Breakfast', 'Lunch', 'Dinner', 'Lunch & Dinner'].filter(
       (cat) =>
-        categorizedItems[cat] &&
-        Object.keys(categorizedItems[cat]).length > 0
+        categorizedItems[cat] && Object.keys(categorizedItems[cat]).length > 0
     );
   }, [categorizedItems]);
 
@@ -643,7 +658,7 @@ const Gallery = () => {
         {galleryItems.length === 0 ? (
           <div className="gallery-empty-state">
             <div className="gallery-empty-icon">
-              <i className="fa-solid fa-images"></i>
+              <Icon name="images" />
             </div>
             <h3 className="gallery-empty-title">
               {t('gallery.noItemsTitle') || 'No Items Available'}
@@ -705,13 +720,18 @@ const Gallery = () => {
                                     item.imageUrl || 'no-img'
                                   }-${index}`}
                                   src={getImageSrc(item)}
-                                  alt={item.alt || `${item.name}${item.price ? ` - ₹${item.price}` : ''}` || 'Gallery item'}
+                                  alt={
+                                    item.alt ||
+                                    `${item.name}${item.price ? ` - ₹${item.price}` : ''}` ||
+                                    'Gallery item'
+                                  }
                                   loading="lazy"
                                   width="220"
                                   height="165"
                                   onError={(e) => {
                                     const placeholder = '/food.jpeg';
-                                    const currentSrc = e.target.src.split('?')[0];
+                                    const currentSrc =
+                                      e.target.src.split('?')[0];
                                     if (
                                       !currentSrc.endsWith(placeholder) &&
                                       !e.target.src.includes(placeholder)
@@ -770,7 +790,11 @@ const Gallery = () => {
                                   item.imageUrl || 'no-img'
                                 }-${index}`}
                                 src={getImageSrc(item)}
-                                alt={item.alt || `${item.name}${item.price ? ` - ₹${item.price}` : ''}` || 'Gallery item'}
+                                alt={
+                                  item.alt ||
+                                  `${item.name}${item.price ? ` - ₹${item.price}` : ''}` ||
+                                  'Gallery item'
+                                }
                                 loading="lazy"
                                 width="220"
                                 height="165"
@@ -808,7 +832,7 @@ const Gallery = () => {
                       {totalItems > itemsPerRow && (
                         <div className="gallery-category-footer">
                           <button
-                            className="gallery-view-all-btn"
+                            className="btn btn-ghost btn-small"
                             onClick={() => toggleCategory(mainCategory)}
                             aria-label={
                               isExpanded
@@ -818,14 +842,14 @@ const Gallery = () => {
                           >
                             {isExpanded ? (
                               <>
-                                <i className="fa-solid fa-chevron-up"></i>
+                                <Icon name="chevron-up" />
                                 {t('gallery.showLess')}
                               </>
                             ) : (
                               <>
                                 {t('gallery.viewAll')} ({totalItems}{' '}
                                 {t('common.items')})
-                                <i className="fa-solid fa-chevron-down"></i>
+                                <Icon name="chevron-down" />
                               </>
                             )}
                           </button>
@@ -878,7 +902,7 @@ const Gallery = () => {
                       <ul className="gallery-modal-details-list">
                         {selectedImage.details.map((detail, idx) => (
                           <li key={idx} className="gallery-modal-detail-item">
-                            <i className="fa-solid fa-check"></i>
+                            <Icon name="check" />
                             <span>{detail}</span>
                           </li>
                         ))}
