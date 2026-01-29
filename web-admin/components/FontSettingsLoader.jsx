@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react';
 // Use relative URL for Next.js API routes (same server)
 const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || '';
 
-/** Apply font via --font-primary on document. Used only on admin routes; website uses fixed --font-website. */
+/** Apply font via --font-primary on document. Used only on admin dashboard; website uses --font-website and is never changed. */
 function applyFontFamily(fontFamilyName) {
   if (!fontFamilyName || typeof document === 'undefined') return;
   const value = `'${fontFamilyName}', sans-serif`;
@@ -28,7 +28,7 @@ function applyFontFamily(fontFamilyName) {
   }
 }
 
-/** True if current route is admin (dashboard, login, etc.). Font family from settings applies only here. */
+/** True if current route is admin (dashboard, login, etc.). Font family/size from Settings apply only here; website is separate. */
 function isAdminRoute(pathname) {
   return (
     pathname != null &&
@@ -54,18 +54,19 @@ export default function FontSettingsLoader() {
           const settings = data.data;
           const root = document.documentElement;
 
-          // Font family: only on admin routes (--font-primary). Website uses fixed --font-website.
+          // Font family: only on admin dashboard (--font-primary). Website uses --font-website and is never changed.
           if (isAdminRoute(pathname)) {
             if (settings.fontFamily) {
               applyFontFamily(settings.fontFamily);
             } else {
               applyFontFamily('Baloo 2');
             }
+          } else {
+            // Not on admin: do not touch --font-primary; website uses --font-website only.
+            document.documentElement.style.removeProperty('--font-primary');
           }
 
-          // Font size is NOT applied here - it only applies to admin dashboard
-          // Admin font size is handled by AdminDashboard and applyAdminFontSize()
-          // which uses --admin-base-font-size and .admin-active class
+          // Font size is only applied on admin (admin layout + applyAdminFontSize); website is unchanged.
 
           // Apply primary color (website + admin)
           if (settings.primaryColor) {

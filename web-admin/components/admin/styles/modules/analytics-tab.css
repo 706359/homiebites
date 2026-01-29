@@ -25,7 +25,7 @@
 }
 
 .analytics-delivery-table thead {
-  background: var(--admin-bg-secondary);
+  background: #f3f4f6;
   position: sticky;
   top: 0;
   z-index: 10;

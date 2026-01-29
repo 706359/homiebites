@@ -413,11 +413,17 @@
   position: relative;
   -webkit-overflow-scrolling: touch;
   display: block;
-  /* Prevent flickering during auto-refresh */
-  scroll-behavior: auto; /* Instant scroll restoration, no animation */
-  /* Optimize rendering performance */
+  scroll-behavior: auto;
   contain: layout style paint;
   will-change: scroll-position;
+}
+
+/* Avoid double border when table is inside a card */
+.table-container-card .orders-table-container,
+.kitchen-tab-card .orders-table-container {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
 }
 
 .orders-table {
@@ -436,7 +442,7 @@
 }
 
 .orders-table thead {
-  background: var(--admin-bg-secondary, #f9fafb);
+  background: #f3f4f6;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -475,7 +481,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid var(--admin-border, #e5e7eb);
-  background: var(--admin-bg-secondary, #f9fafb);
+  background: #f3f4f6;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

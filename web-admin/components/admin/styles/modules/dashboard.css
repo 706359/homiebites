@@ -1310,7 +1310,7 @@
 }
 
 .recent-orders-table thead {
-  background: var(--admin-bg-secondary, #f9fafb);
+  background: #f3f4f6;
   border-bottom: 1px solid var(--admin-border, #e5e7eb);
 }
 

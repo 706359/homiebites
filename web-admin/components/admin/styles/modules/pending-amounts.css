@@ -432,6 +432,10 @@
   row-gap: 12px;
 }
 
+.pending-amounts-table thead,
+.pending-amounts-table thead th {
+  background: #f3f4f6;
+}
 .pending-amounts-table thead th {
   font-weight: 600;
   color: var(--admin-text-primary, #1e293b);
