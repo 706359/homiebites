@@ -41,6 +41,7 @@ const SettingsSchema = new mongoose.Schema(
     secondaryColor: { type: String, default: '#c45c2d' },
     theme: { type: String, default: 'light' },
     autoHideSidebar: { type: Boolean, default: false },
+    compactTables: { type: Boolean, default: false },
 
     whatsappNumber: String,
     deliveryTimings: String,

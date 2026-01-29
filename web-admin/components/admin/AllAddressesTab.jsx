@@ -301,7 +301,7 @@ const AllAddressesTab = ({
       <div className="admin-content">
         <div className="dashboard-card empty-state-center">
           <div className="empty-state">
-            <Icon name="users" className="empty-state-icon"/>
+            <Icon name="users" className="empty-state-icon" />
             <p>No orders found</p>
             <p className="empty-state-text">
               Add some orders to see customer data here
@@ -315,147 +315,393 @@ const AllAddressesTab = ({
   return (
     <div className="admin-content">
       <div className="kitchen-tab">
-      <div className="kitchen-tab-stats admin-stats customer-stats-row">
-        <div className="stat-card stat-card-gradient-accent customer-stat-card">
-          <div className="customer-stat-content">
-            <h3 className="customer-stat-number">{segments.total}</h3>
-            <p className="customer-stat-label">Total Customers</p>
-          </div>
-        </div>
-        <div className="stat-card stat-card-gradient-warning customer-stat-card">
-          <Icon name="crown" className="customer-stat-icon customer-stat-icon-green"/>
-          <div className="customer-stat-content">
-            <h3 className="customer-stat-number">{segments.superVip}</h3>
-            <p className="customer-stat-label">Super VIP (≥₹15k)</p>
-          </div>
-        </div>
-        <div className="stat-card stat-card-gradient-warning customer-stat-card">
-          <Icon name="star" className="customer-stat-icon customer-stat-icon-green"/>
-          <div className="customer-stat-content">
-            <h3 className="customer-stat-number">{segments.vip}</h3>
-            <p className="customer-stat-label">VIP (₹8k-₹15k)</p>
-          </div>
-        </div>
-        <div className="stat-card stat-card-gradient-secondary customer-stat-card">
-          <Icon name="user" className="customer-stat-icon customer-stat-icon-light"/>
-          <div className="customer-stat-content">
-            <h3 className="customer-stat-number">{segments.regular}</h3>
-            <p className="customer-stat-label">Regular Customers</p>
-          </div>
-        </div>
-        <div className="stat-card stat-card-gradient-success customer-stat-card">
-          <div className="customer-stat-content">
-            <h3 className="customer-stat-number">
-              ₹{formatCurrency(segments.totalRevenue)}
-            </h3>
-            <p className="customer-stat-label">Total Revenue</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="dashboard-card filter-bar-card filter-bar-compact">
-        <div className="filter-bar-container-compact filter-bar-layout-by-rows">
-          <div className="filter-bar-row">
-            <div className="search-input-wrapper search-input-compact search-input-flex">
-              <input
-                type="text"
-                className="input-field search-input-with-icon"
-                placeholder="Search by address..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+        <div className="kitchen-tab-stats admin-stats customer-stats-row">
+          <div className="stat-card stat-card-gradient-accent customer-stat-card">
+            <div className="customer-stat-content">
+              <h3 className="customer-stat-number">{segments.total}</h3>
+              <p className="customer-stat-label">Total Customers</p>
             </div>
-            <select
-              className="input-field filter-select-compact"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-            <select
-              className="input-field filter-select-compact"
-              value={filterSegment}
-              onChange={(e) => setFilterSegment(e.target.value)}
-            >
-              <option value="all">All Segments</option>
-              <option value="Super VIP">Super VIP</option>
-              <option value="VIP">VIP</option>
-              <option value="Regular">Regular</option>
-              <option value="New">New</option>
-            </select>
           </div>
+          <div className="stat-card stat-card-gradient-warning customer-stat-card">
+            <Icon
+              name="crown"
+              className="customer-stat-icon customer-stat-icon-green"
+            />
+            <div className="customer-stat-content">
+              <h3 className="customer-stat-number">{segments.superVip}</h3>
+              <p className="customer-stat-label">Super VIP (≥₹15k)</p>
+            </div>
+          </div>
+          <div className="stat-card stat-card-gradient-warning customer-stat-card">
+            <Icon
+              name="star"
+              className="customer-stat-icon customer-stat-icon-green"
+            />
+            <div className="customer-stat-content">
+              <h3 className="customer-stat-number">{segments.vip}</h3>
+              <p className="customer-stat-label">VIP (₹8k-₹15k)</p>
+            </div>
+          </div>
+          <div className="stat-card stat-card-gradient-secondary customer-stat-card">
+            <Icon
+              name="user"
+              className="customer-stat-icon customer-stat-icon-light"
+            />
+            <div className="customer-stat-content">
+              <h3 className="customer-stat-number">{segments.regular}</h3>
+              <p className="customer-stat-label">Regular Customers</p>
+            </div>
+          </div>
+          <div className="stat-card stat-card-gradient-success customer-stat-card">
+            <div className="customer-stat-content">
+              <h3 className="customer-stat-number">
+                ₹{formatCurrency(segments.totalRevenue)}
+              </h3>
+              <p className="customer-stat-label">Total Revenue</p>
+            </div>
+          </div>
+        </div>
 
-          <div className="filter-bar-row">
+        <div className="dashboard-card filter-bar-card filter-bar-compact customer-tab-filter-card customer-tab-filter-card-single-line">
+          <div className="search-input-wrapper search-input-compact search-input-flex">
+            <input
+              type="text"
+              className="input-field search-input-with-icon"
+              placeholder="Search by address..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <select
+            className="input-field filter-select-compact"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <select
+            className="input-field filter-select-compact filter-select-segments"
+            value={filterSegment}
+            onChange={(e) => setFilterSegment(e.target.value)}
+          >
+            <option value="all">All Segments</option>
+            <option value="Super VIP">Super VIP</option>
+            <option value="VIP">VIP</option>
+            <option value="Regular">Regular</option>
+            <option value="New">New</option>
+          </select>
+
+          {(searchQuery ||
+            filterStatus !== 'all' ||
+            filterSegment !== 'all') && (
+            <button
+              className="btn btn-ghost btn-small"
+              onClick={() => {
+                setSearchQuery('');
+                setFilterStatus('all');
+                setFilterSegment('all');
+              }}
+              title="Clear Filters"
+            >
+              <Icon name="xmark" /> Clear
+            </button>
+          )}
+
+          {inactiveCustomers.length > 0 && (
+            <div className="customer-tab-inactive-alert-inline">
+              <span className="customer-tab-inactive-alert-icon" aria-hidden>
+                <Icon name="triangle-exclamation" size={18} />
+              </span>
+              <span className="customer-tab-inactive-alert-text">
+                {inactiveCustomers.length} customers haven&apos;t ordered in 30+
+                days. Consider re-engaging.
+              </span>
+            </div>
+          )}
+
+          <div className="customer-tab-actions-group">
             <div className="view-toggle-compact">
               <button
                 className={`btn btn-ghost btn-icon ${viewMode === 'table' ? 'active' : ''}`}
                 onClick={() => setViewMode('table')}
                 title="Table View"
               >
-                <Icon name="table"/>
+                <Icon name="table" />
               </button>
               <button
                 className={`btn btn-ghost btn-icon ${viewMode === 'cards' ? 'active' : ''}`}
                 onClick={() => setViewMode('cards')}
                 title="Card View"
               >
-                <Icon name="th"/>
+                <Icon name="th" />
               </button>
             </div>
-            {(searchQuery ||
-              filterStatus !== 'all' ||
-              filterSegment !== 'all') && (
+            {inactiveCustomers.length > 0 && (
               <button
-                className="btn btn-ghost btn-small"
-                onClick={() => {
-                  setSearchQuery('');
-                  setFilterStatus('all');
-                  setFilterSegment('all');
-                }}
-                title="Clear Filters"
+                className="btn btn-special btn-small"
+                onClick={() => setFilterStatus('inactive')}
               >
-                <Icon name="xmark"/> Clear
+                View List
               </button>
             )}
           </div>
         </div>
-      </div>
 
-      {inactiveCustomers.length > 0 && (
-        <div className="dashboard-card margin-bottom-24">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-warning mb-8">
-                ⚠️ {inactiveCustomers.length} customers haven&apos;t ordered in
-                30+ days
-              </h3>
-              <p className="text-base">
-                Consider reaching out to re-engage these customers
-              </p>
-            </div>
-            <div className="action-buttons-group">
-              <button
-                className="btn btn-special btn-small"
-                onClick={() => {
-                  setFilterStatus('inactive');
-                }}
-              >
-                View List
-              </button>
+        {viewMode === 'table' ? (
+          <div className="dashboard-card table-container-card table-container-no-padding">
+            <div className="orders-table-container table-wrapper table-wrapper-min-height">
+              {filteredCustomers.length === 0 ? (
+                <div className="empty-state-center">
+                  <div className="empty-state">
+                    <Icon name="users" className="empty-state-icon" />
+                    <p>No customers found</p>
+                    <p className="empty-state-text">
+                      {orders.length > 0 && customerStats.length === 0
+                        ? `Found ${orders.length} orders, but none have valid delivery addresses.`
+                        : searchQuery ||
+                            filterStatus !== 'all' ||
+                            filterSegment !== 'all'
+                          ? 'Try adjusting your search or filters'
+                          : 'No customer data available. Add orders with delivery addresses to see customers here.'}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <table className="orders-table table-full-width">
+                    <thead>
+                      <tr>
+                        <th
+                          onClick={() => handleSort('address')}
+                          className="cursor-pointer select-none"
+                        >
+                          Address
+                          {sortBy === 'address' && (
+                            <Icon
+                              name={`arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
+                              className="ml-6 text-xs"
+                            />
+                          )}
+                        </th>
+                        <th
+                          onClick={() => handleSort('totalOrders')}
+                          className="cursor-pointer select-none"
+                        >
+                          Orders
+                          {sortBy === 'totalOrders' && (
+                            <Icon
+                              name={`arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
+                              className="ml-6 text-xs"
+                            />
+                          )}
+                        </th>
+                        <th
+                          onClick={() => handleSort('totalSpent')}
+                          className="cursor-pointer select-none"
+                        >
+                          Total Spent
+                          {sortBy === 'totalSpent' && (
+                            <Icon
+                              name={`arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
+                              className="ml-6 text-xs"
+                            />
+                          )}
+                        </th>
+                        <th
+                          onClick={() => handleSort('avgOrderValue')}
+                          className="cursor-pointer select-none"
+                        >
+                          Avg Order
+                          {sortBy === 'avgOrderValue' && (
+                            <Icon
+                              name={`arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
+                              className="ml-6 text-xs"
+                            />
+                          )}
+                        </th>
+                        <th
+                          onClick={() => handleSort('lastOrder')}
+                          className="cursor-pointer select-none"
+                        >
+                          Last Order
+                          {sortBy === 'lastOrder' && (
+                            <Icon
+                              name={`arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
+                              className="ml-6 text-xs"
+                            />
+                          )}
+                        </th>
+                        <th>Segment</th>
+                        <th>Preferred Mode</th>
+                        <th>Status</th>
+                        <th className="text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedCustomers.map((customer, idx) => {
+                        const segmentColor =
+                          customer.segment === 'Super VIP'
+                            ? 'var(--admin-warning)'
+                            : customer.segment === 'VIP'
+                              ? 'var(--admin-accent)'
+                              : customer.segment === 'Regular'
+                                ? 'var(--admin-success)'
+                                : 'var(--admin-text-secondary)';
+                        return (
+                          <tr
+                            key={idx}
+                            onClick={() => handleViewCustomer(customer)}
+                            className="cursor-pointer"
+                          >
+                            <td>
+                              <div className="font-semibold text-primary">
+                                {customer.address}
+                              </div>
+                            </td>
+                            <td>
+                              <span className="font-semibold">
+                                {customer.totalOrders}
+                              </span>
+                            </td>
+                            <td>
+                              <span className="font-bold text-accent text-sm">
+                                ₹{formatCurrency(customer.totalSpent)}
+                              </span>
+                            </td>
+                            <td>
+                              <span className="font-semibold">
+                                ₹{formatCurrency(customer.avgOrderValue)}
+                              </span>
+                            </td>
+                            <td>
+                              <span className="text-xs text-secondary">
+                                {formatDateDiff(customer.lastOrderDate)}
+                              </span>
+                            </td>
+                            <td>
+                              <span className="badge badge-small">
+                                {customer.segment === 'Super VIP'
+                                  ? '👑'
+                                  : customer.segment === 'VIP'
+                                    ? '🌟'
+                                    : customer.segment === 'Regular'
+                                      ? '📈'
+                                      : '👤'}{' '}
+                                {customer.segment}
+                              </span>
+                            </td>
+                            <td>
+                              <span className="text-xs">
+                                {customer.preferredMode}
+                              </span>
+                            </td>
+                            <td>
+                              {customer.isInactive ? (
+                                <span className="badge badge-warning badge-small">
+                                  Inactive
+                                </span>
+                              ) : (
+                                <span className="badge badge-success badge-small">
+                                  Active
+                                </span>
+                              )}
+                            </td>
+                            <td className="text-center">
+                              <div className="action-buttons-cell">
+                                <button
+                                  type="button"
+                                  className="btn btn-ghost btn-icon action-icon-edit"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleViewCustomer(customer);
+                                  }}
+                                  title="Edit"
+                                  aria-label="View customer"
+                                >
+                                  <Icon name="pencil" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-ghost btn-icon action-icon-delete"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (showNotification)
+                                      showNotification(
+                                        'Customers are derived from orders. Delete orders from All Orders to remove data.',
+                                        'info'
+                                      );
+                                  }}
+                                  title="Delete"
+                                  aria-label="Info about deleting customer data"
+                                >
+                                  <Icon name="trash" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+
+                  {totalPages > 1 && (
+                    <div className="pagination-controls">
+                      <div>
+                        <button
+                          className="btn btn-ghost btn-small"
+                          onClick={() =>
+                            setCurrentPage(Math.max(1, currentPage - 1))
+                          }
+                          disabled={currentPage === 1}
+                        >
+                          <Icon name="chevron-left" /> Previous
+                        </button>
+                        <span className="pagination-info">
+                          Page {currentPage} of {totalPages}
+                        </span>
+                        <button
+                          className="btn btn-ghost btn-small"
+                          onClick={() =>
+                            setCurrentPage(
+                              Math.min(totalPages, currentPage + 1)
+                            )
+                          }
+                          disabled={currentPage === totalPages}
+                        >
+                          Next <Icon name="chevron-right" />
+                        </button>
+                      </div>
+                      <div className="pagination-container">
+                        <span>Show:</span>
+                        <select
+                          className="pagination-select"
+                          value={itemsPerPage}
+                          onChange={(e) => {
+                            setItemsPerPage(Number(e.target.value));
+                            setCurrentPage(1);
+                          }}
+                        >
+                          <option value={10}>10</option>
+                          <option value={25}>25</option>
+                          <option value={50}>50</option>
+                          <option value={100}>100</option>
+                        </select>
+                        <span>per page</span>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
-        </div>
-      )}
-
-      {viewMode === 'table' ? (
-        <div className="dashboard-card table-container-card table-container-no-padding">
-          <div className="orders-table-container table-wrapper table-wrapper-min-height">
+        ) : (
+          <div className="customer-cards-grid">
             {filteredCustomers.length === 0 ? (
-              <div className="empty-state-center">
+              <div className="dashboard-card grid-col-full empty-state-center">
                 <div className="empty-state">
-                  <Icon name="users" className="empty-state-icon"/>
+                  <Icon name="users" className="empty-state-icon" />
                   <p>No customers found</p>
                   <p className="empty-state-text">
                     {orders.length > 0 && customerStats.length === 0
@@ -469,571 +715,376 @@ const AllAddressesTab = ({
                 </div>
               </div>
             ) : (
-              <>
-                <table className="orders-table table-full-width">
-                  <thead>
-                    <tr>
-                      <th
-                        onClick={() => handleSort('address')}
-                        className="cursor-pointer select-none"
-                      >
-                        Address
-                        {sortBy === 'address' && (
-                          <Icon
-                            name={`arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
-                            className="ml-6 text-xs"
-                          />
+              paginatedCustomers.map((customer, idx) => {
+                const segmentIcon =
+                  customer.segment === 'Super VIP'
+                    ? '👑'
+                    : customer.segment === 'VIP'
+                      ? '🌟'
+                      : customer.segment === 'Regular'
+                        ? '📈'
+                        : '👤';
+                const segmentLabel =
+                  customer.segment === 'Super VIP'
+                    ? 'Super VIP Customer'
+                    : customer.segment === 'VIP'
+                      ? 'VIP Customer'
+                      : customer.segment === 'Regular'
+                        ? 'Regular Customer'
+                        : 'New Customer';
+
+                const segmentColors = {
+                  'Super VIP': {
+                    bg: 'rgba(255, 193, 7, 0.12)',
+                    border: 'rgba(255, 193, 7, 0.3)',
+                    icon: '👑',
+                    color: '#ff9800',
+                  },
+                  VIP: {
+                    bg: 'rgba(68, 144, 49, 0.12)',
+                    border: 'rgba(68, 144, 49, 0.3)',
+                    icon: '🌟',
+                    color: '#449031',
+                  },
+                  Regular: {
+                    bg: 'rgba(59, 130, 246, 0.12)',
+                    border: 'rgba(59, 130, 246, 0.3)',
+                    icon: '📈',
+                    color: '#3b82f6',
+                  },
+                  New: {
+                    bg: 'rgba(156, 163, 175, 0.12)',
+                    border: 'rgba(156, 163, 175, 0.3)',
+                    icon: '👤',
+                    color: '#9ca3af',
+                  },
+                };
+
+                const segmentStyle =
+                  segmentColors[customer.segment] || segmentColors.New;
+
+                return (
+                  <div
+                    key={idx}
+                    className="customer-card-enhanced"
+                    data-segment={customer.segment}
+                    onClick={() => handleViewCustomer(customer)}
+                  >
+                    <div className="customer-card-enhanced-content">
+                      <h3 className="customer-card-enhanced-title">
+                        {customer.address}
+                      </h3>
+
+                      <div className="customer-card-enhanced-badges">
+                        <span className="customer-card-enhanced-segment-badge">
+                          <span className="customer-card-enhanced-segment-icon">
+                            {segmentIcon}
+                          </span>
+                          <span className="customer-card-enhanced-segment-label">
+                            {customer.segment}
+                          </span>
+                        </span>
+                        {customer.isInactive ? (
+                          <span className="customer-card-enhanced-status-badge inactive">
+                            <Icon name="clock" />
+                            <span>Inactive</span>
+                          </span>
+                        ) : (
+                          <span className="customer-card-enhanced-status-badge active">
+                            <Icon name="check-circle" />
+                            <span>Active</span>
+                          </span>
                         )}
-                      </th>
-                      <th
-                        onClick={() => handleSort('totalOrders')}
-                        className="cursor-pointer select-none"
-                      >
-                        Orders
-                        {sortBy === 'totalOrders' && (
-                          <Icon
-                            name={`arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
-                            className="ml-6 text-xs"
-                          />
-                        )}
-                      </th>
-                      <th
-                        onClick={() => handleSort('totalSpent')}
-                        className="cursor-pointer select-none"
-                      >
-                        Total Spent
-                        {sortBy === 'totalSpent' && (
-                          <Icon
-                            name={`arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
-                            className="ml-6 text-xs"
-                          />
-                        )}
-                      </th>
-                      <th
-                        onClick={() => handleSort('avgOrderValue')}
-                        className="cursor-pointer select-none"
-                      >
-                        Avg Order
-                        {sortBy === 'avgOrderValue' && (
-                          <Icon
-                            name={`arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
-                            className="ml-6 text-xs"
-                          />
-                        )}
-                      </th>
-                      <th
-                        onClick={() => handleSort('lastOrder')}
-                        className="cursor-pointer select-none"
-                      >
-                        Last Order
-                        {sortBy === 'lastOrder' && (
-                          <Icon
-                            name={`arrow-${sortOrder === 'asc' ? 'up' : 'down'}`}
-                            className="ml-6 text-xs"
-                          />
-                        )}
-                      </th>
-                      <th>Segment</th>
-                      <th>Preferred Mode</th>
-                      <th>Status</th>
-                      <th className="text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedCustomers.map((customer, idx) => {
-                      const segmentColor =
-                        customer.segment === 'Super VIP'
-                          ? 'var(--admin-warning)'
-                          : customer.segment === 'VIP'
-                            ? 'var(--admin-accent)'
-                            : customer.segment === 'Regular'
-                              ? 'var(--admin-success)'
-                              : 'var(--admin-text-secondary)';
-                      return (
-                        <tr
-                          key={idx}
-                          onClick={() => handleViewCustomer(customer)}
-                          className="cursor-pointer"
-                        >
-                          <td>
-                            <div className="font-semibold text-primary">
-                              {customer.address}
-                            </div>
-                          </td>
-                          <td>
-                            <span className="font-semibold">
-                              {customer.totalOrders}
-                            </span>
-                          </td>
-                          <td>
-                            <span className="font-bold text-accent text-sm">
-                              ₹{formatCurrency(customer.totalSpent)}
-                            </span>
-                          </td>
-                          <td>
-                            <span className="font-semibold">
-                              ₹{formatCurrency(customer.avgOrderValue)}
-                            </span>
-                          </td>
-                          <td>
-                            <span className="text-xs text-secondary">
-                              {formatDateDiff(customer.lastOrderDate)}
-                            </span>
-                          </td>
-                          <td>
-                            <span className="badge badge-small">
-                              {customer.segment === 'Super VIP'
-                                ? '👑'
-                                : customer.segment === 'VIP'
-                                  ? '🌟'
-                                  : customer.segment === 'Regular'
-                                    ? '📈'
-                                    : '👤'}{' '}
-                              {customer.segment}
-                            </span>
-                          </td>
-                          <td>
-                            <span className="text-xs">
-                              {customer.preferredMode}
-                            </span>
-                          </td>
-                          <td>
-                            {customer.isInactive ? (
-                              <span className="badge badge-warning badge-small">
-                                Inactive
-                              </span>
-                            ) : (
-                              <span className="badge badge-success badge-small">
-                                Active
-                              </span>
-                            )}
-                          </td>
-                          <td className="text-center">
-                            <button
-                              className="btn btn-primary btn-small badge-small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (onViewOrders)
-                                  onViewOrders(customer.address);
-                              }}
-                            >
-                              <Icon name="list"/>
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                      </div>
 
-                {totalPages > 1 && (
-                  <div className="pagination-controls">
-                    <div>
-                      <button
-                        className="btn btn-ghost btn-small"
-                        onClick={() =>
-                          setCurrentPage(Math.max(1, currentPage - 1))
-                        }
-                        disabled={currentPage === 1}
-                      >
-                        <Icon name="chevron-left"/> Previous
-                      </button>
-                      <span className="pagination-info">
-                        Page {currentPage} of {totalPages}
-                      </span>
-                      <button
-                        className="btn btn-ghost btn-small"
-                        onClick={() =>
-                          setCurrentPage(Math.min(totalPages, currentPage + 1))
-                        }
-                        disabled={currentPage === totalPages}
-                      >
-                        Next <Icon name="chevron-right"/>
-                      </button>
-                    </div>
-                    <div className="pagination-container">
-                      <span>Show:</span>
-                      <select
-                        className="pagination-select"
-                        value={itemsPerPage}
-                        onChange={(e) => {
-                          setItemsPerPage(Number(e.target.value));
-                          setCurrentPage(1);
-                        }}
-                      >
-                        <option value={10}>10</option>
-                        <option value={25}>25</option>
-                        <option value={50}>50</option>
-                        <option value={100}>100</option>
-                      </select>
-                      <span>per page</span>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="customer-cards-grid">
-          {filteredCustomers.length === 0 ? (
-            <div className="dashboard-card grid-col-full empty-state-center">
-              <div className="empty-state">
-                <Icon name="users" className="empty-state-icon"/>
-                <p>No customers found</p>
-                <p className="empty-state-text">
-                  {orders.length > 0 && customerStats.length === 0
-                    ? `Found ${orders.length} orders, but none have valid delivery addresses.`
-                    : searchQuery ||
-                        filterStatus !== 'all' ||
-                        filterSegment !== 'all'
-                      ? 'Try adjusting your search or filters'
-                      : 'No customer data available. Add orders with delivery addresses to see customers here.'}
-                </p>
-              </div>
-            </div>
-          ) : (
-            paginatedCustomers.map((customer, idx) => {
-              const segmentIcon =
-                customer.segment === 'Super VIP'
-                  ? '👑'
-                  : customer.segment === 'VIP'
-                    ? '🌟'
-                    : customer.segment === 'Regular'
-                      ? '📈'
-                      : '👤';
-              const segmentLabel =
-                customer.segment === 'Super VIP'
-                  ? 'Super VIP Customer'
-                  : customer.segment === 'VIP'
-                    ? 'VIP Customer'
-                    : customer.segment === 'Regular'
-                      ? 'Regular Customer'
-                      : 'New Customer';
-
-              const segmentColors = {
-                'Super VIP': {
-                  bg: 'linear-gradient(135deg, rgba(255, 193, 7, 0.15) 0%, rgba(255, 152, 0, 0.1) 100%)',
-                  border: 'rgba(255, 193, 7, 0.3)',
-                  icon: '👑',
-                  color: '#ff9800',
-                },
-                VIP: {
-                  bg: 'linear-gradient(135deg, rgba(68, 144, 49, 0.15) 0%, rgba(68, 144, 49, 0.08) 100%)',
-                  border: 'rgba(68, 144, 49, 0.3)',
-                  icon: '🌟',
-                  color: '#449031',
-                },
-                Regular: {
-                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.08) 100%)',
-                  border: 'rgba(59, 130, 246, 0.3)',
-                  icon: '📈',
-                  color: '#3b82f6',
-                },
-                New: {
-                  bg: 'linear-gradient(135deg, rgba(156, 163, 175, 0.15) 0%, rgba(156, 163, 175, 0.08) 100%)',
-                  border: 'rgba(156, 163, 175, 0.3)',
-                  icon: '👤',
-                  color: '#9ca3af',
-                },
-              };
-
-              const segmentStyle =
-                segmentColors[customer.segment] || segmentColors.New;
-
-              return (
-                <div
-                  key={idx}
-                  className="customer-card-enhanced"
-                  onClick={() => handleViewCustomer(customer)}
-                >
-                  <div className="customer-card-enhanced-header">
-                    <div className="customer-card-enhanced-segment-badge">
-                      <span className="customer-card-enhanced-segment-icon">
-                        {segmentIcon}
-                      </span>
-                      <span className="customer-card-enhanced-segment-label">
-                        {customer.segment}
-                      </span>
-                    </div>
-                    {customer.isInactive ? (
-                      <span className="customer-card-enhanced-status-badge inactive">
-                        <Icon name="clock"/>
-                        <span>Inactive</span>
-                      </span>
-                    ) : (
-                      <span className="customer-card-enhanced-status-badge active">
-                        <Icon name="check-circle"/>
-                        <span>Active</span>
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="customer-card-enhanced-body">
-                    <h3 className="customer-card-enhanced-title">
-                      {customer.address}
-                    </h3>
-
-                    <div className="customer-card-enhanced-stats">
-                      <div className="customer-card-enhanced-stat-item">
-                        <div className="customer-card-enhanced-stat-icon">
-                          <Icon name="shopping-cart"/>
-                        </div>
-                        <div className="customer-card-enhanced-stat-content">
+                      <div className="customer-card-enhanced-stats">
+                        <div className="customer-card-enhanced-stat-item">
                           <span className="customer-card-enhanced-stat-label">
-                            Total Orders
+                            Orders
                           </span>
                           <span className="customer-card-enhanced-stat-value">
                             {customer.totalOrders}
                           </span>
                         </div>
-                      </div>
-
-                      <div className="customer-card-enhanced-stat-item highlight">
-                        <div className="customer-card-enhanced-stat-icon">
-                          <Icon name="rupee-sign"/>
-                        </div>
-                        <div className="customer-card-enhanced-stat-content">
+                        <div className="customer-card-enhanced-stat-item highlight">
                           <span className="customer-card-enhanced-stat-label">
-                            Total Spent
+                            Spent
                           </span>
                           <span className="customer-card-enhanced-stat-value">
                             ₹{formatCurrency(customer.totalSpent)}
                           </span>
                         </div>
-                      </div>
-
-                      <div className="customer-card-enhanced-stat-item">
-                        <div className="customer-card-enhanced-stat-icon">
-                          <Icon name="chart-line"/>
-                        </div>
-                        <div className="customer-card-enhanced-stat-content">
+                        <div className="customer-card-enhanced-stat-item">
                           <span className="customer-card-enhanced-stat-label">
-                            Avg Order
+                            Avg
                           </span>
                           <span className="customer-card-enhanced-stat-value">
                             ₹{formatCurrency(customer.avgOrderValue)}
                           </span>
                         </div>
                       </div>
+
+                      <div className="customer-card-enhanced-meta">
+                        <span className="customer-card-enhanced-meta-item">
+                          <Icon name="calendar" />
+                          {formatDateDiff(customer.lastOrderDate)}
+                        </span>
+                        <span className="customer-card-enhanced-meta-item">
+                          <Icon name="clock" />
+                          {customer.preferredMode}
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="customer-card-enhanced-footer">
-                      <div className="customer-card-enhanced-meta">
-                        <div className="customer-card-enhanced-meta-item">
-                          <Icon name="calendar"/>
-                          <span>
-                            Last: {formatDateDiff(customer.lastOrderDate)}
-                          </span>
-                        </div>
-                        <div className="customer-card-enhanced-meta-item">
-                          <Icon name="clock"/>
-                          <span>{customer.preferredMode}</span>
-                        </div>
+                    <div className="customer-card-enhanced-actions action-buttons-cell">
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-icon action-icon-edit"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewCustomer(customer);
+                        }}
+                        title="Edit"
+                        aria-label="View customer"
+                      >
+                        <Icon name="pencil" />
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-icon action-icon-delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (showNotification)
+                            showNotification(
+                              'Customers are derived from orders. Delete orders from All Orders to remove data.',
+                              'info'
+                            );
+                        }}
+                        title="Delete"
+                        aria-label="Info about deleting customer data"
+                      >
+                        <Icon name="trash" />
+                      </button>
+                      {onViewOrders && (
+                        <button
+                          className="btn btn-ghost btn-small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onViewOrders(customer.address);
+                          }}
+                          title="View Orders"
+                        >
+                          <Icon name="list" /> View Orders
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+
+        {viewMode === 'cards' && totalPages > 1 && (
+          <div className="pagination-controls">
+            <div>
+              <button
+                className="btn btn-ghost btn-small"
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+              >
+                <Icon name="chevron-left" /> Previous
+              </button>
+              <span className="pagination-info">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                className="btn btn-ghost btn-small"
+                onClick={() =>
+                  setCurrentPage(Math.min(totalPages, currentPage + 1))
+                }
+                disabled={currentPage === totalPages}
+              >
+                Next <Icon name="chevron-right" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showCustomerModal && selectedCustomer && (
+          <div
+            className="modal-overlay"
+            onClick={() => setShowCustomerModal(false)}
+          >
+            <div
+              className="modal-container"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <nav className="modal-breadcrumb" aria-label="Breadcrumb">
+                Customers{' '}
+                <span className="modal-breadcrumb-sep" aria-hidden="true">
+                  ›
+                </span>{' '}
+                {selectedCustomer.address}
+              </nav>
+              <div className="modal-header">
+                <h2>{selectedCustomer.address} Customer Details</h2>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-icon modal-close"
+                  onClick={() => setShowCustomerModal(false)}
+                  aria-label="Close"
+                >
+                  <Icon name="times" />
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="filter-bar-flex-col">
+                  <div>
+                    <h3 className="section-title-mb">Customer Information</h3>
+                    <div className="customer-detail-grid">
+                      <div>
+                        <span className="customer-detail-label">Status:</span>
+                        <span className="badge badge-success customer-detail-value-sm">
+                          🟢 Active
+                        </span>
+                      </div>
+                      <div>
+                        <span className="customer-detail-label">
+                          Customer Since:
+                        </span>
+                        <span className="customer-detail-value">
+                          {selectedCustomer.firstOrderDate
+                            ? formatDateShort(selectedCustomer.firstOrderDate)
+                            : 'N/A'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="customer-detail-label">
+                          Total Orders:
+                        </span>
+                        <span className="customer-detail-value">
+                          {selectedCustomer.totalOrders}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="customer-detail-label">
+                          Total Spent:
+                        </span>
+                        <span className="customer-detail-value font-bold text-accent">
+                          ₹{formatCurrency(selectedCustomer.totalSpent)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="customer-detail-label">
+                          Average Order Value:
+                        </span>
+                        <span className="customer-detail-value">
+                          ₹{formatCurrency(selectedCustomer.avgOrderValue)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="customer-detail-label">
+                          Preferred Mode:
+                        </span>
+                        <span className="customer-detail-value">
+                          {selectedCustomer.preferredMode} (
+                          {selectedCustomer.preferredModePercent.toFixed(0)}%)
+                        </span>
+                      </div>
+                      <div>
+                        <span className="customer-detail-label">
+                          Payment Mode:
+                        </span>
+                        <span className="customer-detail-value">
+                          {selectedCustomer.preferredPayment} (
+                          {selectedCustomer.preferredPaymentPercent.toFixed(0)}
+                          %)
+                        </span>
+                      </div>
+                      <div>
+                        <span className="customer-detail-label">
+                          Last Order:
+                        </span>
+                        <span className="customer-detail-value">
+                          {formatDateDiff(selectedCustomer.lastOrderDate)}
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="customer-card-enhanced-actions">
-                    <button
-                      className="btn btn-primary btn-small btn-full"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (onViewOrders) onViewOrders(customer.address);
-                      }}
-                    >
-                      <Icon name="list"/> View Orders
-                    </button>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      )}
+                  <div>
+                    <h3 className="section-title-mb">
+                      Order History (Last 10)
+                    </h3>
+                    <div className="orders-table-container">
+                      <table className="orders-table">
+                        <thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Qty</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sortOrdersByOrderId(selectedCustomer.orders || [])
+                            .slice(0, 10)
+                            .map((order, idx) => {
+                              const orderDate = parseOrderDate(
+                                order.date || order.order_date || null
+                              );
+                              const dateStr = formatDate(orderDate);
+                              const isPaid =
+                                (order.status || '').toLowerCase() === 'paid';
 
-      {viewMode === 'cards' && totalPages > 1 && (
-        <div className="pagination-controls">
-          <div>
-            <button
-              className="btn btn-ghost btn-small"
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-            >
-              <Icon name="chevron-left"/> Previous
-            </button>
-            <span className="pagination-info">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              className="btn btn-ghost btn-small"
-              onClick={() =>
-                setCurrentPage(Math.min(totalPages, currentPage + 1))
-              }
-              disabled={currentPage === totalPages}
-            >
-              Next <Icon name="chevron-right"/>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showCustomerModal && selectedCustomer && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowCustomerModal(false)}
-        >
-          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{selectedCustomer.address} Customer Details</h2>
-              <button
-                className="btn btn-ghost btn-icon modal-close"
-                onClick={() => setShowCustomerModal(false)}
-              >
-                <Icon name="times"/>
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="filter-bar-flex-col">
-                <div>
-                  <h3 className="section-title-mb">Customer Information</h3>
-                  <div className="customer-detail-grid">
-                    <div>
-                      <span className="customer-detail-label">Status:</span>
-                      <span className="badge badge-success customer-detail-value-sm">
-                        🟢 Active
-                      </span>
+                              return (
+                                <tr key={idx}>
+                                  <td>{dateStr}</td>
+                                  <td>{order.quantity || 1}</td>
+                                  <td>
+                                    ₹{formatCurrency(getOrderAmount(order))}
+                                  </td>
+                                  <td>
+                                    <span
+                                      className={`badge ${
+                                        isPaid
+                                          ? 'badge-success'
+                                          : 'badge-warning'
+                                      }`}
+                                    >
+                                      {order.status || 'No Status'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                        </tbody>
+                      </table>
                     </div>
-                    <div>
-                      <span className="customer-detail-label">
-                        Customer Since:
-                      </span>
-                      <span className="customer-detail-value">
-                        {selectedCustomer.firstOrderDate
-                          ? formatDateShort(selectedCustomer.firstOrderDate)
-                          : 'N/A'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="customer-detail-label">
-                        Total Orders:
-                      </span>
-                      <span className="customer-detail-value">
-                        {selectedCustomer.totalOrders}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="customer-detail-label">
-                        Total Spent:
-                      </span>
-                      <span className="customer-detail-value font-bold text-accent">
-                        ₹{formatCurrency(selectedCustomer.totalSpent)}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="customer-detail-label">
-                        Average Order Value:
-                      </span>
-                      <span className="customer-detail-value">
-                        ₹{formatCurrency(selectedCustomer.avgOrderValue)}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="customer-detail-label">
-                        Preferred Mode:
-                      </span>
-                      <span className="customer-detail-value">
-                        {selectedCustomer.preferredMode} (
-                        {selectedCustomer.preferredModePercent.toFixed(0)}%)
-                      </span>
-                    </div>
-                    <div>
-                      <span className="customer-detail-label">
-                        Payment Mode:
-                      </span>
-                      <span className="customer-detail-value">
-                        {selectedCustomer.preferredPayment} (
-                        {selectedCustomer.preferredPaymentPercent.toFixed(0)}%)
-                      </span>
-                    </div>
-                    <div>
-                      <span className="customer-detail-label">Last Order:</span>
-                      <span className="customer-detail-value">
-                        {formatDateDiff(selectedCustomer.lastOrderDate)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="section-title-mb">Order History (Last 10)</h3>
-                  <div className="orders-table-container">
-                    <table className="orders-table">
-                      <thead>
-                        <tr>
-                          <th>Date</th>
-                          <th>Qty</th>
-                          <th>Amount</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sortOrdersByOrderId(selectedCustomer.orders || [])
-                          .slice(0, 10)
-                          .map((order, idx) => {
-                            const orderDate = parseOrderDate(
-                              order.date || order.order_date || null
-                            );
-                            const dateStr = formatDate(orderDate);
-                            const isPaid =
-                              (order.status || '').toLowerCase() === 'paid';
-
-                            return (
-                              <tr key={idx}>
-                                <td>{dateStr}</td>
-                                <td>{order.quantity || 1}</td>
-                                <td>
-                                  ₹
-                                  {formatCurrency(getOrderAmount(order))}
-                                </td>
-                                <td>
-                                  <span
-                                    className={`badge ${
-                                      isPaid ? 'badge-success' : 'badge-warning'
-                                    }`}
-                                  >
-                                    {order.status || 'No Status'}
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                      </tbody>
-                    </table>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="modal-footer">
-              <button
-                className="btn btn-secondary"
-                onClick={() => {
-                  setShowCustomerModal(false);
-                  if (onViewOrders) onViewOrders(selectedCustomer.address);
-                }}
-              >
-                View All Orders
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => setShowCustomerModal(false)}
-              >
-                Close
-              </button>
+              <div className="modal-footer">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowCustomerModal(false);
+                    if (onViewOrders) onViewOrders(selectedCustomer.address);
+                  }}
+                >
+                  View All Orders
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setShowCustomerModal(false)}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   );

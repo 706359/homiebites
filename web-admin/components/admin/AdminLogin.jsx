@@ -144,10 +144,9 @@ const AdminLogin = ({ onLoginSuccess }) => {
           showSuccess('Login successful! Redirecting to dashboard...');
 
           if (process.env.NODE_ENV === 'development') {
-            if (process.env.NODE_ENV === 'development')
-              console.log(
-                '[AdminLogin] Login successful, redirecting to dashboard'
-              );
+            console.log(
+              '[AdminLogin] Login successful, redirecting to dashboard'
+            );
           }
 
           // Add delay for user to see success message

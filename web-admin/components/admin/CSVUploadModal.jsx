@@ -1,6 +1,10 @@
-import { useRef, useState } from 'react';
-import Icon from '../ui/Icon.jsx';
+import { useEffect, useRef, useState } from 'react';
 import api from '../../lib/api-admin.js';
+import Icon from '../ui/Icon.jsx';
+import {
+  handleFocusTrapKeydown,
+  useModalFocus,
+} from './hooks/useModalFocus.js';
 
 const CSVUploadModal = ({
   show,
@@ -27,6 +31,23 @@ const CSVUploadModal = ({
   const fileInputRef = useRef(null);
   const dragCounter = useRef(0);
   const xhrRef = useRef(null);
+  const containerRef = useRef(null);
+
+  useModalFocus(show, containerRef);
+
+  useEffect(() => {
+    if (!show) return;
+    const handleKey = (e) => {
+      if (e.key === 'Escape' && !isUploading) {
+        e.preventDefault();
+        handleClose();
+        return;
+      }
+      handleFocusTrapKeydown(e, containerRef.current);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [show, isUploading]);
 
   const handleFileSelect = (selectedFile) => {
     if (!selectedFile) return;
@@ -525,16 +546,22 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div
+        ref={containerRef}
         className="modal-container large"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="csv-modal-title"
       >
         <div className="modal-header">
-          <h2>Upload Orders (CSV/Excel)</h2>
+          <h2 id="csv-modal-title">Upload Orders (CSV/Excel)</h2>
           <button
+            type="button"
             className="btn btn-ghost btn-icon modal-close"
             onClick={handleClose}
+            aria-label="Close"
           >
-            <Icon name="times"/>
+            <Icon name="times" />
           </button>
         </div>
         <div className="modal-body">
@@ -548,13 +575,16 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
               onClick={() => fileInputRef.current?.click()}
             >
               <div className="file-upload-label">
-                <Icon name="cloud-upload-alt" className="file-upload-icon file-upload-icon-style"/>
+                <Icon
+                  name="cloud-upload-alt"
+                  className="file-upload-icon file-upload-icon-style"
+                />
                 <h3 className="file-upload-text file-upload-title">
                   Drag & Drop CSV/Excel file
                 </h3>
                 <p className="file-upload-or">or</p>
                 <button className="btn btn-primary">
-                  <Icon name="folder-open"/> Browse Files
+                  <Icon name="folder-open" /> Browse Files
                 </button>
                 <p className="file-upload-hint file-upload-hint-style">
                   Supported formats: .csv, .xlsx, .xls
@@ -571,7 +601,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                 <div className="csv-file-info">
                   <div>
                     <h3 className="csv-file-name">
-                      <Icon name="file"/> {file.name}
+                      <Icon name="file" /> {file.name}
                     </h3>
                     <p className="csv-file-size">
                       {(file.size / 1024).toFixed(2)} KB
@@ -586,7 +616,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                       if (fileInputRef.current) fileInputRef.current.value = '';
                     }}
                   >
-                    <Icon name="times"/> Remove
+                    <Icon name="times" /> Remove
                   </button>
                 </div>
 
@@ -626,7 +656,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                 {validationErrors.length > 0 && (
                   <div className="alert alert-danger">
                     <div className="alert-icon">
-                      <Icon name="exclamation-triangle"/>
+                      <Icon name="exclamation-triangle" />
                     </div>
                     <div className="alert-content">
                       <div className="alert-title">Validation Errors:</div>
@@ -644,7 +674,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                 {validationErrors.length === 0 && previewData && (
                   <div className="alert alert-success">
                     <div className="alert-icon">
-                      <Icon name="circle-check"/>
+                      <Icon name="circle-check" />
                     </div>
                     <div className="alert-content">
                       <div className="alert-title">
@@ -729,11 +759,13 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
           {isUploading && !isProgressMinimized && (
             <div className="dashboard-card csv-upload-progress-container">
               <button
+                type="button"
                 onClick={() => setIsProgressMinimized(true)}
                 title="Minimize and continue in background"
                 className="csv-upload-minimize-btn tooltip-wrapper"
+                aria-label="Minimize and continue in background"
               >
-                <Icon name="window-minimize"/>
+                <Icon name="window-minimize" />
                 <span className="tooltip">
                   Minimize and continue in background
                 </span>
@@ -752,23 +784,36 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                       : `${Math.round(uploadProgress)}%`}
                   </span>
                 </div>
-                <div className="progress progress-bar-container csv-upload-progress-bar-container">
-                  <div className="progress-bar progress-fill csv-upload-progress-bar-fill" />
+                <div
+                  className="admin-progress-bar csv-upload-progress-bar-container"
+                  role="progressbar"
+                  aria-valuenow={Math.round(uploadProgress)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={`Upload progress ${Math.round(uploadProgress)}%`}
+                >
+                  <div
+                    className="admin-progress-bar-fill csv-upload-progress-bar-fill"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
                 </div>
               </div>
               <div className="csv-upload-progress-actions">
                 <button
+                  type="button"
                   className="btn btn-ghost btn-small"
                   onClick={() => setIsProgressMinimized(true)}
+                  aria-label="Continue in background"
                 >
-                  <Icon name="arrow-down"/> Continue in
-                  Background
+                  <Icon name="arrow-down" aria-hidden="true" /> Continue in Background
                 </button>
                 <button
+                  type="button"
                   className="btn btn-special danger btn-small"
                   onClick={handleCancelUpload}
+                  aria-label="Cancel upload"
                 >
-                  <Icon name="times"/> Cancel Upload
+                  <Icon name="times" aria-hidden="true" /> Cancel Upload
                 </button>
               </div>
             </div>
@@ -781,7 +826,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
             >
               <div className="csv-upload-progress-card-content">
                 <div className="avatar csv-upload-progress-avatar">
-                  <Icon name="cloud-upload-alt"/>
+                  <Icon name="cloud-upload-alt" />
                 </div>
                 <div className="csv-upload-progress-details">
                   <div className="progress-label">
@@ -794,31 +839,45 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                         : `${Math.round(uploadProgress)}%`}
                     </span>
                   </div>
-                  <div className="progress progress-bar-container">
-                    <div className="progress-bar progress-fill" />
+                  <div
+                    className="admin-progress-bar"
+                    role="progressbar"
+                    aria-valuenow={Math.round(uploadProgress)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`Upload progress ${Math.round(uploadProgress)}%`}
+                  >
+                    <div
+                      className="admin-progress-bar-fill"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
                   </div>
                 </div>
               </div>
               <div className="csv-upload-progress-actions-mini">
                 <button
+                  type="button"
                   className="btn btn-special danger btn-small"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleCancelUpload();
                   }}
                   title="Cancel Upload"
+                  aria-label="Cancel upload"
                 >
-                  <Icon name="times"/>
+                  <Icon name="times" />
                 </button>
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsProgressMinimized(false);
                   }}
                   className="csv-upload-maximize-btn"
                   title="Show full progress"
+                  aria-label="Show full progress"
                 >
-                  <Icon name="window-maximize"/>
+                  <Icon name="window-maximize" />
                 </button>
               </div>
             </div>
@@ -826,7 +885,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
 
           {uploadStatus === 'success' && (
             <div className="dashboard-card csv-upload-success">
-              <Icon name="check-circle" className="csv-upload-success-icon"/>
+              <Icon name="check-circle" className="csv-upload-success-icon" />
               <h3 className="csv-upload-success-title">Upload Complete!</h3>
               <p className="margin-bottom-24 csv-text-primary">
                 Your orders have been successfully imported.
@@ -837,8 +896,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
           {!file && (
             <div className="dashboard-card csv-format-requirements">
               <h4 className="csv-format-requirements-title">
-                <Icon name="info-circle"/> CSV Format
-                Requirements:
+                <Icon name="info-circle" /> CSV Format Requirements:
               </h4>
               <ul className="csv-format-requirements-list">
                 <li>
@@ -876,8 +934,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
                 className="btn btn-secondary btn-small csv-margin-top-16"
                 onClick={handleDownloadTemplate}
               >
-                <Icon name="download"/> Download Sample CSV
-                Template
+                <Icon name="download" /> Download Sample CSV Template
               </button>
             </div>
           )}
@@ -912,7 +969,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
               onClick={handleUpload}
               disabled={validationErrors.length > 0}
             >
-              <Icon name="upload"/> Upload{' '}
+              <Icon name="upload" /> Upload{' '}
               {previewData?.isExcel
                 ? 'Orders'
                 : previewData?.totalRows !== null &&

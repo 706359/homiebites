@@ -6,8 +6,8 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 20px;
-  padding: 22px 24px;
+  gap: var(--admin-space-lg, 20px);
+  padding: var(--admin-space-lg, 20px) var(--admin-space-xl, 24px);
   background: var(--admin-bg, #ffffff);
   border: 1px solid var(--admin-border, #e2e8f0);
   border-radius: 12px;
@@ -18,7 +18,7 @@
   position: relative;
   overflow: hidden;
   min-width: 0;
-  min-height: 96px;
+  min-height: 88px;
 }
 
 .stat-card::before {
@@ -71,7 +71,7 @@
   text-align: left;
   flex: 1;
   min-width: 0;
-  gap: 4px;
+  gap: var(--admin-space-2xs, 4px);
   align-self: stretch;
 }
 
@@ -93,7 +93,7 @@
 }
 
 .stat-card p {
-  font-size: var(--admin-fs-base);
+  font-size: var(--admin-fs-body);
   color: var(--admin-text-secondary, #64748b);
   margin: 0;
   font-weight: 500;
@@ -101,11 +101,27 @@
   text-align: left;
 }
 
+.stat-card .stat-card-value {
+  font-size: var(--admin-fs-2xl);
+  font-weight: 700;
+  color: var(--admin-text-primary, #1e293b);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.stat-card .stat-card-label {
+  font-size: var(--admin-fs-body);
+  color: var(--admin-text-secondary, #64748b);
+  margin: 0;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
 .stat-card .stat-card-subtitle {
-  font-size: var(--admin-fs-xs);
-  margin-top: 4px;
+  font-size: var(--admin-fs-caption);
+  margin-top: var(--admin-space-2xs, 4px);
   color: var(--admin-text-light, #9ca3af);
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.4;
   text-align: left;
 }
@@ -174,8 +190,8 @@
 /* Laptop view optimizations (1024px - 1440px) */
 @media (min-width: 1024px) and (max-width: 1440px) {
   .stat-card {
-    padding: 20px 22px;
-    gap: 18px;
+    padding: var(--admin-space-lg, 20px) var(--admin-space-xl, 24px);
+    gap: var(--admin-space-md, 16px);
     min-height: 100px;
   }
 
@@ -203,8 +219,8 @@
 /* Mobile responsive */
 @media (max-width: 768px) {
   .stat-card {
-    padding: 18px 20px;
-    gap: 16px;
+    padding: var(--admin-space-lg, 18px) var(--admin-space-lg, 20px);
+    gap: var(--admin-space-md, 16px);
     min-height: 88px;
   }
 
@@ -231,8 +247,8 @@
 
 @media (max-width: 480px) {
   .stat-card {
-    padding: 16px;
-    gap: 12px;
+    padding: var(--admin-space-md, 16px);
+    gap: var(--admin-space-sm, 12px);
     min-height: 80px;
     flex-direction: row;
   }

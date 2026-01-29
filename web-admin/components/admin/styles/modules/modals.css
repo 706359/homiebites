@@ -14,7 +14,7 @@
   align-items: center;
   justify-content: center;
   padding: 12px;
-  animation: fadeIn 0.2s ease;
+  animation: adminFadeIn var(--admin-duration-normal) var(--admin-ease-smooth);
 }
 
 .admin-dashboard .modal-container {
@@ -31,7 +31,7 @@
   overflow: hidden;
   z-index: 2000;
   border: 1px solid var(--admin-border, #e2e8f0);
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: adminSlideUp var(--admin-duration-slow) var(--admin-ease-smooth);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   display: flex;
@@ -51,11 +51,20 @@
   max-width: 95%;
 }
 
+.admin-dashboard .modal-breadcrumb {
+  padding: 10px 28px 0;
+  font-size: var(--admin-fs-caption);
+  color: var(--admin-text-muted, #94a3b8);
+}
+.admin-dashboard .modal-breadcrumb-sep {
+  margin: 0 6px;
+}
+
 .admin-dashboard .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 28px;
+  padding: var(--admin-space-lg, 20px) var(--admin-space-2xl, 28px);
   margin: 0;
   border-bottom: 1px solid var(--admin-border, #e2e8f0);
   background: var(--admin-bg, #ffffff);
@@ -71,7 +80,7 @@
 }
 
 .admin-dashboard .modal-header h2 {
-  font-size: var(--admin-fs-xl);
+  font-size: var(--admin-fs-h2);
   font-weight: 700;
   color: var(--admin-text-primary, #1e293b);
   margin: 0;
@@ -101,7 +110,7 @@
 }
 
 .admin-dashboard .modal-header-compact .modal-header-title {
-  font-size: var(--admin-fs-xl, 1.25rem);
+  font-size: var(--admin-fs-h2);
   font-weight: 700;
   color: var(--admin-text-primary, #1e293b);
   margin: 0;
@@ -140,7 +149,7 @@
   }
 
   .admin-dashboard .modal-header h2 {
-    font-size: var(--admin-fs-xl);
+    font-size: var(--admin-fs-h2);
   }
 
   .admin-dashboard .modal-footer {
@@ -255,7 +264,7 @@
   }
 
   .admin-dashboard .modal-header-compact .modal-header-title {
-    font-size: var(--admin-fs-lg, 1.125rem);
+    font-size: var(--admin-fs-h2);
     padding-right: 2.5rem;
   }
 
@@ -272,7 +281,7 @@
   }
 
   .admin-dashboard .modal-header-compact .modal-header-title {
-    font-size: var(--admin-fs-base-mid, 0.9375rem);
+    font-size: var(--admin-fs-h3);
     padding-right: 2.25rem;
   }
 }
@@ -314,15 +323,32 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 20px 28px;
+  padding: var(--admin-space-lg, 20px) var(--admin-space-2xl, 28px);
   margin: 0;
   border-top: 1px solid var(--admin-border, #e5e7eb);
   background: var(--admin-bg, #ffffff);
   border-radius: 0 0 20px 20px;
-  gap: 12px;
+  gap: var(--admin-space-sm, 12px);
   flex-wrap: wrap;
   box-sizing: border-box;
   flex-shrink: 0;
+}
+
+/* Confirmation modal: header title + close side-by-side */
+.admin-dashboard .confirmation-modal-header .flex-center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-sm, 12px);
+}
+
+.admin-dashboard .confirmation-modal-header .confirmation-modal-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-dashboard .modal-content {
@@ -344,37 +370,6 @@
   max-width: 960px;
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
 .global-search-modal {
   max-width: 640px;
   width: 90%;
@@ -388,7 +383,7 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(226, 232, 240, 0.8);
-  animation: modalSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: adminSlideUp var(--admin-duration-normal) var(--admin-ease-smooth);
 }
 
 .global-search-content {
@@ -511,7 +506,7 @@
   }
 
   .admin-dashboard .modal-header h2 {
-    font-size: var(--admin-fs-base-mid) !important;
+    font-size: var(--admin-fs-h3) !important;
     font-weight: 700;
     margin: 0 !important;
     padding: 0 !important;
@@ -732,10 +727,9 @@
     font-size: var(--admin-fs-xs) !important;
   }
 
-
   /* Date input mobile fix */
-  .admin-dashboard input[type="date"],
-  .admin-dashboard input[type="datetime-local"] {
+  .admin-dashboard input[type='date'],
+  .admin-dashboard input[type='datetime-local'] {
     font-size: 16px !important; /* Prevent iOS zoom */
     min-height: 44px !important;
     width: 100% !important;
@@ -811,7 +805,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  animation: fadeIn 0.2s ease;
+  animation: adminFadeIn var(--admin-duration-normal) var(--admin-ease-smooth);
 }
 
 .session-timeout-modal {
@@ -825,7 +819,7 @@
   width: 100%;
   overflow: hidden;
   border: 1px solid var(--admin-border, #e2e8f0);
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: adminSlideUp var(--admin-duration-slow) var(--admin-ease-smooth);
 }
 
 .session-timeout-header {
@@ -838,7 +832,7 @@
   width: 64px;
   height: 64px;
   margin: 0 auto 16px;
-  background: linear-gradient(135deg, #f59e0b, #f97316);
+  background: #f59e0b;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1055,4 +1049,49 @@
     font-size: var(--admin-fs-xl);
     padding-left: 16px;
   }
+}
+
+/* Keyboard shortcuts modal (enterprise UX) */
+.admin-dashboard .keyboard-shortcuts-modal {
+  max-width: 420px;
+}
+
+.admin-dashboard .keyboard-shortcuts-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-dashboard .keyboard-shortcut-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+}
+
+.admin-dashboard .keyboard-shortcut-item:last-of-type {
+  border-bottom: none;
+}
+
+.admin-dashboard .keyboard-shortcut-label {
+  font-size: var(--admin-fs-body);
+  color: var(--admin-text-primary, #1e293b);
+}
+
+.admin-dashboard .keyboard-shortcut-keys {
+  font-size: var(--admin-fs-sm);
+  font-family: inherit;
+  padding: 6px 10px;
+  background: var(--admin-bg-secondary, #f1f5f9);
+  border: 1px solid var(--admin-border, #e2e8f0);
+  border-radius: 8px;
+  color: var(--admin-text-secondary, #64748b);
+}
+
+.admin-dashboard .keyboard-shortcuts-hint {
+  margin: 16px 0 0;
+  font-size: var(--admin-fs-caption);
+  color: var(--admin-text-muted, #94a3b8);
 }

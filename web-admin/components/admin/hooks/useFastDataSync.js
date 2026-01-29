@@ -77,7 +77,7 @@ export const useFastDataSync = () => {
 
         optimisticData
           .syncDebounced(async () => {
-            const response = await api.getAllOrders({});
+            const response = await api.getAllOrders({}, { hardRefresh: true });
             if (response.success && response.data) {
               adminData.setOrders(response.data);
               optimisticData.setData(response.data);
@@ -141,28 +141,42 @@ export const useFastDataSync = () => {
           }
         }
 
-        await optimisticData.updateOptimistic(orderId, updates, async () => {
-          const response = await api.updateOrder(apiOrderId, updatePayload);
+        await optimisticData.updateOptimistic(
+          orderId,
+          updatePayload,
+          async () => {
+            const response = await api.updateOrder(apiOrderId, updatePayload);
 
-          if (!response.success) {
-            throw new Error(
-              response.error || response.message || 'Update failed'
-            );
+            if (!response.success) {
+              throw new Error(
+                response.error || response.message || 'Update failed'
+              );
+            }
+            return response;
           }
-          return response;
-        });
+        );
+
+        // Use updatePayload (with normalized paymentStatus) so Pending Amounts tab immediately shows updated records as unpaid-only
+        const mergedUpdates = { ...updates };
+        if (mergedUpdates.status && mergedUpdates.paymentStatus === undefined) {
+          const s = String(mergedUpdates.status).toLowerCase().trim();
+          mergedUpdates.paymentStatus =
+            s === 'paid' || s === 'delivered' ? 'Paid' : 'Pending';
+        } else if (mergedUpdates.status) {
+          mergedUpdates.paymentStatus = updatePayload.paymentStatus;
+        }
 
         adminData.setOrders((prevOrders) =>
           prevOrders.map((o) =>
             o._id === orderId || o.orderId === orderId || o.id === orderId
-              ? { ...o, ...updates }
+              ? { ...o, ...mergedUpdates }
               : o
           )
         );
 
         optimisticData
           .syncDebounced(async () => {
-            const response = await api.getAllOrders({});
+            const response = await api.getAllOrders({}, { hardRefresh: true });
             if (response.success && response.data) {
               adminData.setOrders(response.data);
               optimisticData.setData(response.data);
@@ -217,7 +231,7 @@ export const useFastDataSync = () => {
 
         optimisticData
           .syncDebounced(async () => {
-            const response = await api.getAllOrders({});
+            const response = await api.getAllOrders({}, { hardRefresh: true });
             if (response.success && response.data) {
               adminData.setOrders(response.data);
               optimisticData.setData(response.data);
@@ -243,11 +257,15 @@ export const useFastDataSync = () => {
   );
 
   const syncDebounced = useCallback(
-    async (delay = 300) => {
+    async (delay = 300, hardRefresh = true) => {
       return await optimisticData.syncDebounced(async () => {
-        const response = await api.getAllOrders({});
+        const response = await api.getAllOrders(
+          {},
+          { hardRefresh: !!hardRefresh }
+        );
         if (response.success && response.data) {
           adminData.setOrders(response.data);
+          optimisticData.setData(response.data);
         }
         return response;
       }, delay);

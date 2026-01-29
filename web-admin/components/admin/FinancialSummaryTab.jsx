@@ -1,8 +1,15 @@
 import { useMemo, useState } from 'react';
 import Icon from '../ui/Icon.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
-import { getFilteredOrdersByDate } from './utils/calculations.js';
-import { formatDate, formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
+import {
+  getFilteredOrdersByDate,
+  getProfitStats,
+} from './utils/calculations.js';
+import {
+  formatDate,
+  formatDateMonthDay,
+  parseOrderDate,
+} from './utils/dateUtils.js';
 import {
   formatCurrency,
   getOrderAmount,
@@ -10,7 +17,6 @@ import {
   isPaidStatus,
   isPendingStatus,
 } from './utils/orderUtils.js';
-import { getProfitStats } from './utils/calculations.js';
 
 const FinancialSummaryTab = ({
   orders = [],
@@ -154,67 +160,59 @@ const FinancialSummaryTab = ({
 
   return (
     <div className="admin-content">
-      {/* Period Selector */}
-      <div className="dashboard-card filter-bar-card">
-        <div className="filter-bar-container">
-          <div className="filter-field-group-standard">
-            <label className="filter-label-standard">Period</label>
-            <select
-              className="input-field"
-              value={period}
-              onChange={(e) => {
-                setPeriod(e.target.value);
-                if (e.target.value !== 'custom') {
-                  setCustomFrom('');
-                  setCustomTo('');
-                }
-              }}
-            >
-              <option value="today">Today</option>
-              <option value="week">Last 7 Days</option>
-              <option value="month">This Month</option>
-              <option value="year">This Year</option>
-              <option value="all">All Time</option>
-              <option value="custom">Custom Range</option>
-            </select>
+      <div className="kitchen-tab">
+        <div className="kitchen-tab-actions">
+          <div className="kitchen-tab-actions-left">
+            <div className="filter-field-group-standard">
+              <label className="filter-label-standard">Period</label>
+              <select
+                className="input-field"
+                value={period}
+                onChange={(e) => {
+                  setPeriod(e.target.value);
+                  if (e.target.value !== 'custom') {
+                    setCustomFrom('');
+                    setCustomTo('');
+                  }
+                }}
+              >
+                <option value="today">Today</option>
+                <option value="week">Last 7 Days</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+                <option value="all">All Time</option>
+                <option value="custom">Custom Range</option>
+              </select>
+            </div>
+            {period === 'custom' && (
+              <>
+                <div className="filter-field-group-standard">
+                  <label className="filter-label-standard">From</label>
+                  <input
+                    type="date"
+                    className="input-field"
+                    value={customFrom}
+                    onChange={(e) => setCustomFrom(e.target.value)}
+                  />
+                </div>
+                <div className="filter-field-group-standard">
+                  <label className="filter-label-standard">To</label>
+                  <input
+                    type="date"
+                    className="input-field"
+                    value={customTo}
+                    onChange={(e) => setCustomTo(e.target.value)}
+                  />
+                </div>
+              </>
+            )}
           </div>
-          {period === 'custom' && (
-            <>
-              <div className="filter-field-group-standard">
-                <label className="filter-label-standard">From</label>
-                <input
-                  type="date"
-                  className="input-field"
-                  value={customFrom}
-                  onChange={(e) => setCustomFrom(e.target.value)}
-                />
-              </div>
-              <div className="filter-field-group-standard">
-                <label className="filter-label-standard">To</label>
-                <input
-                  type="date"
-                  className="input-field"
-                  value={customTo}
-                  onChange={(e) => setCustomTo(e.target.value)}
-                />
-              </div>
-            </>
-          )}
         </div>
-      </div>
 
-      {/* Financial Overview Cards */}
-      <div className="dashboard-card">
-        <div className="dashboard-section-header">
-          <h2 className="dashboard-section-title">
-            <Icon name="chart-pie"/>
-            Financial Overview
-          </h2>
-        </div>
-        <div className="financial-stats-grid">
+        <div className="kitchen-tab-stats financial-stats-grid">
           <div className="stat-card stat-card-primary">
             <div className="stat-card-icon">
-              <Icon name="indian-rupee-sign"/>
+              <Icon name="indian-rupee-sign" />
             </div>
             <div className="stat-card-content">
               <h3>₹{formatCurrency(financialData.totalRevenue)}</h3>
@@ -226,7 +224,7 @@ const FinancialSummaryTab = ({
           </div>
           <div className="stat-card stat-card-success">
             <div className="stat-card-icon">
-              <Icon name="check-circle"/>
+              <Icon name="check-circle" />
             </div>
             <div className="stat-card-content">
               <h3>₹{formatCurrency(financialData.paidRevenue)}</h3>
@@ -238,7 +236,7 @@ const FinancialSummaryTab = ({
           </div>
           <div className="stat-card stat-card-warning">
             <div className="stat-card-icon">
-              <Icon name="clock"/>
+              <Icon name="clock" />
             </div>
             <div className="stat-card-content">
               <h3>₹{formatCurrency(financialData.pendingRevenue)}</h3>
@@ -250,7 +248,7 @@ const FinancialSummaryTab = ({
           </div>
           <div className="stat-card stat-card-info">
             <div className="stat-card-icon">
-              <Icon name="calculator"/>
+              <Icon name="calculator" />
             </div>
             <div className="stat-card-content">
               <h3>₹{formatCurrency(financialData.avgOrderValue)}</h3>
@@ -258,48 +256,20 @@ const FinancialSummaryTab = ({
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Profit & Expenses */}
-      <div className="dashboard-card">
+        {/* Profit & Expenses */}
+        <div className="kitchen-tab-card">
+          <div className="kitchen-tab-body-inner">
         <div className="dashboard-section-header">
           <h2 className="dashboard-section-title">
-            <Icon name="chart-line"/>
+            <Icon name="chart-line" />
             Profit & Expenses Analysis
           </h2>
-          <div className="financial-settings">
-            <div className="financial-setting-group">
-              <label>Expense %</label>
-              <input
-                type="number"
-                className="input-field input-field-small"
-                min="0"
-                max="100"
-                value={expensePercentage}
-                onChange={(e) =>
-                  setExpensePercentage(parseFloat(e.target.value) || 70)
-                }
-              />
-            </div>
-            <div className="financial-setting-group">
-              <label>Target Profit Margin %</label>
-              <input
-                type="number"
-                className="input-field input-field-small"
-                min="0"
-                max="100"
-                value={targetProfitMargin}
-                onChange={(e) =>
-                  setTargetProfitMargin(parseFloat(e.target.value) || 30)
-                }
-              />
-            </div>
-          </div>
         </div>
         <div className="profit-breakdown-grid">
           <div className="profit-card">
             <div className="profit-card-header">
-              <Icon name="money-bill-wave"/>
+              <Icon name="money-bill-wave" />
               <span>Revenue</span>
             </div>
             <div className="profit-card-value">
@@ -308,7 +278,7 @@ const FinancialSummaryTab = ({
           </div>
           <div className="profit-card">
             <div className="profit-card-header">
-              <Icon name="arrow-down"/>
+              <Icon name="arrow-down" />
               <span>Expenses ({expensePercentage}%)</span>
             </div>
             <div className="profit-card-value profit-card-expense">
@@ -317,7 +287,7 @@ const FinancialSummaryTab = ({
           </div>
           <div className="profit-card profit-card-highlight">
             <div className="profit-card-header">
-              <Icon name="arrow-up"/>
+              <Icon name="arrow-up" />
               <span>Profit</span>
             </div>
             <div className="profit-card-value profit-card-profit">
@@ -329,7 +299,7 @@ const FinancialSummaryTab = ({
           </div>
           <div className="profit-card">
             <div className="profit-card-header">
-              <Icon name="bullseye"/>
+              <Icon name="bullseye" />
               <span>Target Profit ({targetProfitMargin}%)</span>
             </div>
             <div className="profit-card-value">
@@ -346,13 +316,14 @@ const FinancialSummaryTab = ({
             </div>
           </div>
         </div>
+          </div>
       </div>
 
-      {/* Payment Method Breakdown */}
+        {/* Payment Method Breakdown */}
       <div className="dashboard-card">
         <div className="dashboard-section-header">
           <h2 className="dashboard-section-title">
-            <Icon name="credit-card"/>
+            <Icon name="credit-card" />
             Payment Method Breakdown
           </h2>
         </div>
@@ -376,7 +347,10 @@ const FinancialSummaryTab = ({
                 .map((method, idx) => {
                   const percentage =
                     financialData.totalRevenue > 0
-                      ? ((method.revenue / financialData.totalRevenue) * 100).toFixed(1)
+                      ? (
+                          (method.revenue / financialData.totalRevenue) *
+                          100
+                        ).toFixed(1)
                       : '0.0';
                   return (
                     <tr key={idx}>
@@ -410,7 +384,7 @@ const FinancialSummaryTab = ({
       <div className="dashboard-card">
         <div className="dashboard-section-header">
           <h2 className="dashboard-section-title">
-            <Icon name="calendar-day"/>
+            <Icon name="calendar-day" />
             Daily Breakdown (Last 30 Days)
           </h2>
         </div>
@@ -436,9 +410,7 @@ const FinancialSummaryTab = ({
               ) : (
                 financialData.dailyData.map((day, idx) => {
                   const avgValue =
-                    day.orders > 0
-                      ? Math.round(day.revenue / day.orders)
-                      : 0;
+                    day.orders > 0 ? Math.round(day.revenue / day.orders) : 0;
                   return (
                     <tr key={idx}>
                       <td>{formatDateMonthDay(new Date(day.date))}</td>
@@ -454,6 +426,7 @@ const FinancialSummaryTab = ({
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   );

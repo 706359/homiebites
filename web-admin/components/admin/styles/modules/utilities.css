@@ -203,17 +203,127 @@
 }
 
 /* ---- Action icons ---- */
+/* Single unified action button (menu style) */
+.action-menu-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--admin-success, #16a34a);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.action-menu-btn:hover {
+  background: var(--admin-success-hover, #15803d);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(22, 163, 74, 0.2);
+}
+
+.action-menu-btn:active {
+  transform: translateY(0);
+}
+
+.action-menu-btn i {
+  font-size: var(--admin-fs-base);
+  color: #ffffff;
+}
+
+/* Legacy action icon styles (for backwards compatibility) */
 .action-icon-edit {
-  color: var(--admin-accent, #449031);
+  color: var(--admin-success, #16a34a);
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 .action-icon-edit:hover {
-  color: var(--admin-accent-hover, #3a7a29);
+  color: var(--admin-success-hover, #15803d);
+  background: var(--admin-success-light, rgba(22, 163, 74, 0.1));
 }
 .action-icon-delete {
   color: var(--admin-danger, #dc2626);
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 .action-icon-delete:hover {
   color: var(--admin-danger-hover, #991b1b);
+  background: var(--admin-danger-light, rgba(220, 38, 38, 0.12));
+}
+
+.action-icon-approve {
+  color: var(--admin-success, #16a34a);
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+.action-icon-approve:hover {
+  color: var(--admin-success-hover, #15803d);
+  background: var(--admin-success-light, rgba(22, 163, 74, 0.1));
+}
+
+.action-icon-featured {
+  color: var(--admin-warning, #f59e0b);
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+.action-icon-featured:hover {
+  color: var(--admin-warning-hover, #d97706);
+  background: var(--admin-warning-light, rgba(245, 158, 11, 0.15));
+}
+
+.action-icon-ghost {
+  color: var(--admin-text-secondary, #64748b);
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+.action-icon-ghost:hover {
+  color: var(--admin-text-primary, #1e293b);
+  background: var(--admin-bg-tertiary, #f3f4f6);
+}
+
+/* Apply action icon colors to all btn-icon in tables */
+.action-buttons-cell .btn-icon.action-icon-edit,
+.action-buttons-group .btn-icon.action-icon-edit,
+table .btn-icon.action-icon-edit {
+  color: var(--admin-success, #16a34a) !important;
+}
+
+.action-buttons-cell .btn-icon.action-icon-edit:hover,
+.action-buttons-group .btn-icon.action-icon-edit:hover,
+table .btn-icon.action-icon-edit:hover {
+  color: var(--admin-success-hover, #15803d) !important;
+  background: var(--admin-success-light, rgba(22, 163, 74, 0.1)) !important;
+}
+
+.action-buttons-cell .btn-icon.action-icon-delete,
+.action-buttons-group .btn-icon.action-icon-delete,
+table .btn-icon.action-icon-delete {
+  color: var(--admin-danger, #dc2626) !important;
+}
+
+.action-buttons-cell .btn-icon.action-icon-delete:hover,
+.action-buttons-group .btn-icon.action-icon-delete:hover,
+table .btn-icon.action-icon-delete:hover {
+  color: var(--admin-danger-hover, #991b1b) !important;
+  background: var(--admin-danger-light, rgba(220, 38, 38, 0.12)) !important;
 }
 
 /* ---- Skeleton loaders ---- */
@@ -237,9 +347,7 @@
   height: 44px;
   flex: 1;
   min-width: 80px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+  background: #f0f0f0;
 }
 .skeleton-table-row {
   display: flex;
@@ -252,10 +360,7 @@
   height: 48px;
   flex: 1;
   min-width: 80px;
-  background: linear-gradient(90deg, #fafafa 25%, #f0f0f0 50%, #fafafa 75%);
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.2s ease-in-out infinite;
-  animation-delay: 0.1s;
+  background: #f0f0f0;
 }
 .skeleton-card-container {
   display: grid;
@@ -271,9 +376,7 @@
 }
 .skeleton-card-header {
   height: 120px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+  background: #f0f0f0;
 }
 .skeleton-card-body {
   padding: 16px;
@@ -282,9 +385,7 @@
   height: 12px;
   border-radius: 6px;
   margin-bottom: 8px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+  background: #f0f0f0;
 }
 .skeleton-card-line-full {
   width: 100%;
@@ -316,9 +417,7 @@
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+  background: #f0f0f0;
   flex-shrink: 0;
 }
 .skeleton-stat-content {
@@ -330,25 +429,13 @@
   width: 60%;
   border-radius: 6px;
   margin-bottom: 8px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+  background: #f0f0f0;
 }
 .skeleton-stat-value {
   height: 20px;
   width: 40%;
   border-radius: 6px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.2s ease-in-out infinite;
-}
-@keyframes skeleton-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
+  background: #f0f0f0;
 }
 .skeleton-action-bar {
   display: flex;
@@ -363,9 +450,7 @@
   flex: 1;
   min-width: 200px;
   border-radius: 10px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+  background: #f0f0f0;
 }
 .skeleton-action-buttons {
   display: flex;
@@ -375,9 +460,7 @@
   height: 40px;
   width: 120px;
   border-radius: 10px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+  background: #f0f0f0;
 }
 
 /* ---- Offline / connection error banner ---- */
@@ -399,7 +482,7 @@
 }
 .offline-banner i:first-child {
   color: var(--admin-warning, #f59e0b);
-  font-size: 1.1rem;
+  font-size: var(--admin-fs-lg);
 }
 .offline-banner__retry {
   margin-left: 4px;

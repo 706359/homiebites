@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Icon from '../ui/Icon.jsx';
+import KeyboardShortcutsModal from './KeyboardShortcutsModal.jsx';
 import NotificationDropdown from './NotificationDropdown.jsx';
 
 const TopNav = ({
@@ -21,6 +22,7 @@ const TopNav = ({
   onViewPendingAmounts,
 }) => {
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [recentSearches, setRecentSearches] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -29,26 +31,35 @@ const TopNav = ({
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const target = e.target;
+        const isInput =
+          /^(INPUT|TEXTAREA|SELECT)$/.test(target?.tagName) ||
+          target?.isContentEditable;
+        if (!isInput) {
+          e.preventDefault();
+          setShowShortcutsModal(true);
+        }
+      }
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
         setShowSearchModal(true);
       }
-
       if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
         e.preventDefault();
         if (onNewOrder) {
           onNewOrder();
         }
       }
-
-      if (e.key === 'Escape' && showSearchModal) {
-        setShowSearchModal(false);
+      if (e.key === 'Escape') {
+        if (showShortcutsModal) setShowShortcutsModal(false);
+        else if (showSearchModal) setShowSearchModal(false);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showSearchModal, onNewOrder]);
+  }, [showSearchModal, showShortcutsModal, onNewOrder]);
 
   useEffect(() => {
     const stored = localStorage.getItem('homiebites_recent_searches');
@@ -149,6 +160,7 @@ const TopNav = ({
       <div className="admin-top-nav">
         <div className="top-nav-left">
           <button
+            type="button"
             className="top-nav-toggle"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Toggle sidebar"
@@ -170,6 +182,7 @@ const TopNav = ({
         <div className="top-nav-right">
           {onRefresh && (
             <button
+              type="button"
               className={`top-nav-search-btn tooltip-wrapper ${refreshing ? 'opacity-70' : ''}`}
               onClick={handleRefresh}
               title="Refresh"
@@ -185,9 +198,10 @@ const TopNav = ({
           )}
           {onNewOrder && (
             <button
+              type="button"
               className="top-nav-search-btn tooltip-wrapper"
               onClick={() => onNewOrder()}
-              title="Add New Order"
+              title="Add New Order (Ctrl+N)"
               aria-label="Add New Order"
             >
               <Icon name="plus" />
@@ -195,15 +209,27 @@ const TopNav = ({
             </button>
           )}
           <button
+            type="button"
             className="top-nav-search-btn tooltip-wrapper"
             onClick={() => setShowSearchModal(true)}
-            title="Search"
+            title="Search (Ctrl+K)"
             aria-label="Search"
           >
             <Icon name="search" />
             <span className="tooltip">Search</span>
           </button>
           <button
+            type="button"
+            className="top-nav-search-btn tooltip-wrapper"
+            onClick={() => setShowShortcutsModal(true)}
+            title="Keyboard shortcuts (?)"
+            aria-label="Keyboard shortcuts"
+          >
+            <Icon name="key" />
+            <span className="tooltip">Shortcuts</span>
+          </button>
+          <button
+            type="button"
             className="top-nav-notification-btn tooltip-wrapper"
             title={`Notifications${
               unreadNotifications > 0 ? ` (${unreadNotifications} new)` : ''
@@ -225,6 +251,10 @@ const TopNav = ({
             </span>
           </button>
 
+          <KeyboardShortcutsModal
+            show={showShortcutsModal}
+            onClose={() => setShowShortcutsModal(false)}
+          />
           {/* Notification Dropdown */}
           <NotificationDropdown
             orders={orders}
@@ -287,11 +317,12 @@ const TopNav = ({
                   <h4>Recent Searches</h4>
                   <div className="global-search-list">
                     {recentSearches.map((search, idx) => (
-                      <button
-                        key={idx}
-                        className="global-search-item"
-                        onClick={() => handleSearch(search)}
-                      >
+                    <button
+                      type="button"
+                      key={idx}
+                      className="global-search-item"
+                      onClick={() => handleSearch(search)}
+                    >
                         <Icon name="clock-rotate-left" />
                         {search}
                       </button>
@@ -304,6 +335,7 @@ const TopNav = ({
                 <div className="global-search-list">
                   {quickActions.map((action, idx) => (
                     <button
+                      type="button"
                       key={idx}
                       className="global-search-item"
                       onClick={() => {

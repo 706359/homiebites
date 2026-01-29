@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getFormattedPhone, getPhoneLink } from '../lib/businessConstants';
-import Icon from './ui/Icon.jsx';
 import './Footer.css';
+import Icon from './ui/Icon.jsx';
 
 const Footer = ({ onOrderClick }) => {
   const { t } = useLanguage();
@@ -49,125 +49,147 @@ const Footer = ({ onOrderClick }) => {
   };
 
   return (
-    <footer>
-      <div className="footer-inner">
-        <div className="footer-brand">
-          <Link href="/" className="footer-logo-link">
-            <img
-              src="/logo.png"
-              alt="HomieBites"
-              className="footer-logo-img"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'block';
-              }}
-            />
-          </Link>
+    <footer
+      className="site-footer"
+      role="contentinfo"
+      aria-label="Site footer"
+      id="site-footer"
+    >
+      <div className="footer-container">
+        <div className="footer-top">
+          <div className="footer-brand">
+            <Link
+              href="/"
+              className="footer-logo-link"
+              aria-label="HomieBites – Home"
+            >
+              <img
+                src="/logo.png"
+                alt=""
+                className="footer-logo-img"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  if (e.target.nextSibling)
+                    e.target.nextSibling.style.display = 'block';
+                }}
+              />
+            </Link>
+            <p className="footer-tagline">Homemade food, delivered daily.</p>
+          </div>
+          <div className="footer-cta">
+            <button
+              onClick={onOrderClick}
+              className="footer-btn footer-btn-primary"
+              type="button"
+              aria-label={t('common.orderOnWhatsApp')}
+            >
+              <Icon name="whatsapp" aria-hidden />
+              <span>{t('common.orderOnWhatsApp')}</span>
+            </button>
+            <a
+              href={getPhoneLink()}
+              className="footer-btn footer-btn-secondary"
+              aria-label={`${t('common.call')} ${getFormattedPhone()}`}
+            >
+              <Icon name="phone" aria-hidden />
+              <span>
+                {t('common.call')} {getFormattedPhone()}
+              </span>
+            </a>
+          </div>
         </div>
 
-        <div className="footer-actions">
-          <button
-            onClick={onOrderClick}
-            className="btn btn-primary btn-small"
-            type="button"
-          >
-            <Icon name="whatsapp" />{' '}
-            {t('common.orderOnWhatsApp')}
-          </button>
-          <a href={getPhoneLink()} className="btn btn-secondary btn-small">
-            <Icon name="phone" /> {t('common.call')}{' '}
-            {getFormattedPhone()}
-          </a>
-        </div>
-      </div>
+        <nav className="footer-nav" aria-label="Footer navigation">
+          <div className="footer-column">
+            <h3 className="footer-heading">{t('footer.quickLinks')}</h3>
+            <ul className="footer-list">
+              <li>
+                <Link href="/">{t('footer.home')}</Link>
+              </li>
+              <li>
+                <a href="/#about" onClick={(e) => handleHashLink(e, '#about')}>
+                  {t('footer.aboutUs')}
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/#gallery"
+                  onClick={(e) => handleHashLink(e, '#gallery')}
+                >
+                  {t('footer.foodGallery')}
+                </a>
+              </li>
+              <li>
+                <Link href="/pricing">
+                  {t('footer.pricing') || t('header.pricing') || 'Price'}
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div className="footer-column">
+            <h3 className="footer-heading">{t('footer.help')}</h3>
+            <ul className="footer-list">
+              <li>
+                <a href="/#faq" onClick={(e) => handleHashLink(e, '#faq')}>
+                  {t('common.faq')}
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/#contact"
+                  onClick={(e) => handleHashLink(e, '#contact')}
+                >
+                  {t('footer.contactUs')}
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://wa.me/919958983578"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t('footer.whatsappSupport')}
+                </a>
+              </li>
+              <li>
+                <Link href="/admin" className="footer-admin-link">
+                  <Icon name="shield-halved" aria-hidden />
+                  {t('footer.adminLogin')}
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div className="footer-column">
+            <h3 className="footer-heading">{t('footer.serviceAreas')}</h3>
+            <ul className="footer-list footer-list-plain">
+              <li>{t('footer.panchsheelGreens1')}</li>
+            </ul>
+          </div>
+        </nav>
 
-      <div className="footer-links">
-        <div className="footer-column">
-          <h4>{t('footer.quickLinks')}</h4>
-          <ul>
-            <li>
-              <Link href="/">{t('footer.home')}</Link>
-            </li>
-            <li>
-              <a href="/#about" onClick={(e) => handleHashLink(e, '#about')}>
-                {t('footer.aboutUs')}
-              </a>
-            </li>
-            <li>
-              <a
-                href="/#gallery"
-                onClick={(e) => handleHashLink(e, '#gallery')}
-              >
-                {t('footer.foodGallery')}
-              </a>
-            </li>
-            <li>
-              <Link href="/pricing">
-                {t('footer.pricing') || t('header.pricing') || 'Price'}
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        <div className="footer-column">
-          <h4>{t('footer.help')}</h4>
-          <ul>
-            <li>
-              <a href="/#faq" onClick={(e) => handleHashLink(e, '#faq')}>
-                {t('common.faq')}
-              </a>
-            </li>
-            <li>
-              <a
-                href="/#contact"
-                onClick={(e) => handleHashLink(e, '#contact')}
-              >
-                {t('footer.contactUs')}
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://wa.me/919958983578"
-                target="_blank"
-                rel="noreferrer"
-              >
-                {t('footer.whatsappSupport')}
-              </a>
-            </li>
-            <li>
-              <Link href="/admin" className="admin-link">
-                <Icon name="shield-halved" />{' '}
-                {t('footer.adminLogin')}
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        <div className="footer-column">
-          <h4>{t('footer.serviceAreas')}</h4>
-          <ul>
-            <li>{t('footer.panchsheelGreens1')}</li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="footer-bottom">
-        <div className="footer-fssai">
-          <p>
-            <strong>{t('footer.fssaiLabel')}</strong> {t('footer.fssaiNumber')}
-          </p>
-        </div>
-        <p>{t('footer.copyright')}</p>
-        <div className="footer-legal-links">
-          <Link href="/privacy">Privacy Policy</Link>
-          <span className="footer-separator">|</span>
-          <Link href="/terms">Terms of Service</Link>
-          <span className="footer-separator">|</span>
-          <Link href="/disclaimer">Legal Disclaimer</Link>
-        </div>
-        <div className="footer-credits">
-          <p className="footer-made-by">
-            Designed & Developed by{' '}
+        <div className="footer-legal">
+          <div className="footer-fssai">
+            <span className="footer-fssai-label">{t('footer.fssaiLabel')}</span>
+            <span className="footer-fssai-number">
+              {t('footer.fssaiNumber')}
+            </span>
+          </div>
+          <div className="footer-legal-row">
+            <p className="footer-copyright">{t('footer.copyright')}</p>
+            <div className="footer-legal-links">
+              <Link href="/privacy">Privacy Policy</Link>
+              <span className="footer-dot" aria-hidden="true">
+                ·
+              </span>
+              <Link href="/terms">Terms of Service</Link>
+              <span className="footer-dot" aria-hidden="true">
+                ·
+              </span>
+              <Link href="/disclaimer">Disclaimer</Link>
+            </div>
+          </div>
+          <p className="footer-credits">
+            Designed & developed by{' '}
             <a
               href="https://oscillateinfo.com"
               target="_blank"

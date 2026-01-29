@@ -2,7 +2,11 @@ import { useState } from 'react';
 import Icon from '../ui/Icon.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
 import { formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
-import { getOrderAmount, isPendingStatus, sortOrdersByOrderId } from './utils/orderUtils.js';
+import {
+  getOrderAmount,
+  isPendingStatus,
+  sortOrdersByOrderId,
+} from './utils/orderUtils.js';
 
 function getTimeAgo(date) {
   if (!date) return 'N/A';
@@ -277,162 +281,175 @@ const NotificationsTab = ({
 
   return (
     <div className="admin-content">
-      <div className="dashboard-header">
-        <div>
-          {unreadCount > 0 && <h2>Notifications ({unreadCount} unread)</h2>}
-        </div>
-        <div className="action-buttons-group">
-          <button
-            className="btn btn-secondary btn-small"
-            onClick={handleMarkAllAsRead}
-          >
-            Mark All as Read
-          </button>
-          <button
-            className="btn btn-ghost btn-small"
-            onClick={() => setShowSettingsModal(true)}
-          >
-            <Icon name="cog"/> Settings
-          </button>
-        </div>
-      </div>
-
-      <div className="action-bar action-bar-spaced">
-        <button
-          className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-          onClick={() => setFilter('all')}
-        >
-          All ({notifications.length})
-        </button>
-        <button
-          className={`btn ${filter === 'unread' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-          onClick={() => setFilter('unread')}
-        >
-          Unread ({unreadCount})
-        </button>
-        <button
-          className={`btn ${filter === 'payments' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-          onClick={() => setFilter('payments')}
-        >
-          Payments ({paymentCount})
-        </button>
-        <button
-          className={`btn ${filter === 'orders' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-          onClick={() => setFilter('orders')}
-        >
-          Orders ({orderCount})
-        </button>
-        <button
-          className={`btn ${filter === 'system' ? 'btn-primary' : 'btn-ghost'} btn-small`}
-          onClick={() => setFilter('system')}
-        >
-          System ({systemCount})
-        </button>
-      </div>
-
-      <div className="dashboard-card">
-        {filteredNotifications.length === 0 ? (
-          <div className="empty-state notifications-empty-state">
-            <Icon name="bell-slash" className="notifications-empty-icon"/>
-            <p>No notifications</p>
-            <p className="notifications-empty-text">
-              You&apos;re all caught up!
-            </p>
+      <div className="kitchen-tab">
+        <div className="kitchen-tab-actions">
+          <div className="kitchen-tab-actions-left">
+            <span className="table-info-text">
+              {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
+            </span>
           </div>
-        ) : (
-          <div className="notification-grid-4-col list list-group">
-            {filteredNotifications.map((notif) => (
-              <div
-                key={notif.id}
-                className={`notification-card-grid list-item ${notif.read ? 'read' : 'unread'} ${
-                  notif.isOverdue ? 'overdue' : ''
-                }`}
-                onClick={() => handleAction(notif)}
-              >
-                <div className="notification-card-grid-header">
-                  <div className="notification-card-grid-icon">
-                    <Icon
-                      name={getNotificationIcon(notif.type)}
-                      className={
-                        notif.type === 'order'
-                          ? 'notification-icon-order'
-                          : notif.type === 'payment'
-                            ? 'notification-icon-payment'
-                            : notif.type === 'system'
-                              ? 'notification-icon-system'
-                              : 'notification-icon-default'
-                      }
-                    />
-                  </div>
-                  {!notif.read && (
-                    <span className="notification-badge-unread-grid">New</span>
-                  )}
-                </div>
-                <div className="notification-card-grid-content">
-                  <h4 className="notification-card-grid-title">
-                    {notif.title}
-                  </h4>
-                  <p className="notification-card-grid-message">
-                    {notif.message}
-                  </p>
-                  <p className="notification-card-grid-details">
-                    {notif.details}
-                  </p>
-                  <div className="notification-card-grid-footer">
-                    <span className="notification-card-grid-time">
-                      {notif.timeAgo}
-                    </span>
-                    <div className="notification-card-grid-actions">
-                      {notif.action === 'viewPendingPayments' && (
-                        <button
-                          className="btn btn-primary btn-small btn-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAction(notif);
-                          }}
-                        >
-                          View Payments
-                        </button>
+          <div className="kitchen-tab-actions-right">
+            <button
+              className="btn btn-secondary btn-small"
+              onClick={handleMarkAllAsRead}
+            >
+              Mark All as Read
+            </button>
+            <button
+              className="btn btn-ghost btn-small"
+              onClick={() => setShowSettingsModal(true)}
+            >
+              <Icon name="cog" /> Settings
+            </button>
+          </div>
+        </div>
+
+        <div className="kitchen-tab-actions filter-bar-compact">
+          <div
+            className="kitchen-tab-actions-left"
+            style={{ flexWrap: 'wrap', gap: '8px' }}
+          >
+            <button
+              className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+              onClick={() => setFilter('all')}
+            >
+              All ({notifications.length})
+            </button>
+            <button
+              className={`btn ${filter === 'unread' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+              onClick={() => setFilter('unread')}
+            >
+              Unread ({unreadCount})
+            </button>
+            <button
+              className={`btn ${filter === 'payments' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+              onClick={() => setFilter('payments')}
+            >
+              Payments ({paymentCount})
+            </button>
+            <button
+              className={`btn ${filter === 'orders' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+              onClick={() => setFilter('orders')}
+            >
+              Orders ({orderCount})
+            </button>
+            <button
+              className={`btn ${filter === 'system' ? 'btn-primary' : 'btn-ghost'} btn-small`}
+              onClick={() => setFilter('system')}
+            >
+              System ({systemCount})
+            </button>
+          </div>
+        </div>
+
+        <div className="kitchen-tab-card">
+          {filteredNotifications.length === 0 ? (
+            <div className="empty-state notifications-empty-state">
+              <Icon name="bell-slash" className="notifications-empty-icon" />
+              <p>No notifications</p>
+              <p className="notifications-empty-text">
+                You&apos;re all caught up!
+              </p>
+            </div>
+          ) : (
+            <div className="kitchen-tab-body-inner">
+              <div className="notification-grid-4-col list list-group">
+                {filteredNotifications.map((notif) => (
+                  <div
+                    key={notif.id}
+                    className={`notification-card-grid list-item ${notif.read ? 'read' : 'unread'} ${
+                      notif.isOverdue ? 'overdue' : ''
+                    }`}
+                    onClick={() => handleAction(notif)}
+                  >
+                    <div className="notification-card-grid-header">
+                      <div className="notification-card-grid-icon">
+                        <Icon
+                          name={getNotificationIcon(notif.type)}
+                          className={
+                            notif.type === 'order'
+                              ? 'notification-icon-order'
+                              : notif.type === 'payment'
+                                ? 'notification-icon-payment'
+                                : notif.type === 'system'
+                                  ? 'notification-icon-system'
+                                  : 'notification-icon-default'
+                          }
+                        />
+                      </div>
+                      {!notif.read && (
+                        <span className="notification-badge-unread-grid">
+                          New
+                        </span>
                       )}
-                      {notif.action === 'viewOrder' && (
-                        <button
-                          className="btn btn-primary btn-small btn-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAction(notif);
-                          }}
-                        >
-                          View Order
-                        </button>
-                      )}
-                      {notif.action === 'sendReminder' && (
-                        <button
-                          className="btn btn-secondary btn-small btn-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAction(notif);
-                          }}
-                        >
-                          Send Reminder
-                        </button>
-                      )}
-                      <button
-                        className="btn btn-ghost btn-small btn-full"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMarkAsRead(notif.id);
-                        }}
-                        title="Mark as Read"
-                      >
-                        <Icon name="check"/> Read
-                      </button>
+                    </div>
+                    <div className="notification-card-grid-content">
+                      <h4 className="notification-card-grid-title">
+                        {notif.title}
+                      </h4>
+                      <p className="notification-card-grid-message">
+                        {notif.message}
+                      </p>
+                      <p className="notification-card-grid-details">
+                        {notif.details}
+                      </p>
+                      <div className="notification-card-grid-footer">
+                        <span className="notification-card-grid-time">
+                          {notif.timeAgo}
+                        </span>
+                        <div className="notification-card-grid-actions">
+                          {notif.action === 'viewPendingPayments' && (
+                            <button
+                              className="btn btn-primary btn-small btn-full"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAction(notif);
+                              }}
+                            >
+                              View Payments
+                            </button>
+                          )}
+                          {notif.action === 'viewOrder' && (
+                            <button
+                              className="btn btn-primary btn-small btn-full"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAction(notif);
+                              }}
+                            >
+                              View Order
+                            </button>
+                          )}
+                          {notif.action === 'sendReminder' && (
+                            <button
+                              className="btn btn-secondary btn-small btn-full"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAction(notif);
+                              }}
+                            >
+                              Send Reminder
+                            </button>
+                          )}
+                          <button
+                            className="btn btn-ghost btn-small btn-full"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMarkAsRead(notif.id);
+                            }}
+                            title="Mark as Read"
+                          >
+                            <Icon name="check" /> Read
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
 
       {showSettingsModal && (
@@ -444,10 +461,12 @@ const NotificationsTab = ({
             <div className="modal-header">
               <h2>Notification Settings</h2>
               <button
+                type="button"
                 className="btn btn-ghost btn-icon modal-close"
                 onClick={() => setShowSettingsModal(false)}
+                aria-label="Close settings"
               >
-                <Icon name="times"/>
+                <Icon name="times" />
               </button>
             </div>
             <div className="modal-body">
@@ -598,7 +617,7 @@ const NotificationsTab = ({
                   setShowSettingsModal(false);
                 }}
               >
-                <Icon name="save"/> Save
+                <Icon name="save" /> Save
               </button>
             </div>
           </div>

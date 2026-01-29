@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import Icon from '../ui/Icon.jsx';
+import { usePreserveScroll } from './hooks/usePreserveScroll.js';
 import SkeletonLoader from './SkeletonLoader.jsx';
 import { formatDate, parseOrderDate } from './utils/dateUtils.js';
 import {
@@ -12,7 +13,6 @@ import {
   sortOrdersByOrderId,
 } from './utils/orderUtils.js';
 import { useDebounce } from './utils/useDebounce.js';
-import { usePreserveScroll } from './hooks/usePreserveScroll.js';
 
 const AllOrdersDataTab = ({
   orders = [],
@@ -433,6 +433,17 @@ const AllOrdersDataTab = ({
     startIndex + recordsPerPage
   );
 
+  const orderStats = useMemo(
+    () => ({
+      total: orders.length,
+      paid: orders.filter((o) => isPaidStatus(o.status, o.paymentStatus))
+        .length,
+      pending: orders.filter((o) => isPendingStatus(o.status, o.paymentStatus))
+        .length,
+    }),
+    [orders]
+  );
+
   // Preserve scroll position during auto-refresh to prevent flickering
   usePreserveScroll(orders.length, '.orders-table-container');
 
@@ -656,722 +667,788 @@ const AllOrdersDataTab = ({
   return (
     <div className="admin-content">
       <div className="kitchen-tab">
-      <div className="kitchen-tab-actions dashboard-card table-container-card" style={{ marginBottom: 0 }}>
-        <div className="kitchen-tab-actions-left" style={{ flex: '1 1 320px', minWidth: 0 }}>
-          <div className="search-input-wrapper" style={{ minWidth: 200, maxWidth: 360 }}>
-            <input
-              type="text"
-              className="input-field search-input-with-icon"
-              placeholder="Search orders..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <button
-            className="btn btn-ghost btn-small filter-icon-btn"
-            onClick={() => setShowFilterWrapper(!showFilterWrapper)}
-            title="Filters"
-          >
-            <Icon name="filter"/>
-            {(allOrdersFilterPaymentStatus ||
-              filterStatus ||
-              filterMode ||
-              filterPayment ||
-              filterAddress ||
-              dateRangeFrom ||
-              dateRangeTo ||
-              allOrdersFilterMonth ||
-              filterYear) && (
-              <span className="filter-badge">
-                {
-                  [
-                    allOrdersFilterPaymentStatus,
-                    filterStatus,
-                    filterMode,
-                    filterPayment,
-                    filterAddress,
-                    dateRangeFrom,
-                    dateRangeTo,
-                    allOrdersFilterMonth,
-                    filterYear,
-                  ].filter(Boolean).length
-                }
-              </span>
-            )}
-          </button>
-        </div>
-        <div className="kitchen-tab-actions-right">
-          <span className="table-info-text">
-            Showing {startIndex + 1}-
-            {Math.min(startIndex + recordsPerPage, filteredOrders.length)} of{' '}
-            {filteredOrders.length} orders
-          </span>
-        </div>
-      </div>
-      <div className="dashboard-card table-container-card" style={{ marginTop: 24 }}>
-
-        {showFilterWrapper && (
-          <div className="filter-wrapper-dropdown">
-            <div className="filter-wrapper-header">
-              <h3>Filters</h3>
-              <button
-                className="btn btn-ghost btn-icon"
-                onClick={() => setShowFilterWrapper(false)}
-                title="Close"
-              >
-                <Icon name="times"/>
-              </button>
+        <div className="kitchen-tab-stats">
+          <div className="stat-card">
+            <div className="stat-card-icon">
+              <Icon name="shopping-cart" />
             </div>
-            <div className="filter-wrapper-content">
-              <div className="filter-wrapper-section">
-                <label className="filter-label">Payment Status</label>
-                <div className="premium-select-wrapper">
-                  <Icon name="credit-card" className="select-icon"/>
-                  <select
-                    className="input-field filter-select premium-select"
-                    value={allOrdersFilterPaymentStatus}
-                    onChange={(e) => {
-                      setAllOrdersFilterPaymentStatus(e.target.value);
-                      if (setAllOrdersFilterPaymentStatus)
-                        setAllOrdersFilterPaymentStatus(e.target.value);
-
-                      if (e.target.value) {
-                        setFilterStatus('');
-                      }
-                    }}
-                    title="Filter by Payment Status"
-                  >
-                    <option value="">All Payment Status</option>
-                    <option value="paid">Paid</option>
-                    <option value="unpaid">Unpaid</option>
-                    <option value="pending">Pending</option>
-                  </select>
-                  <Icon name="chevron-down" className="dropdown-icon"/>
-                </div>
+            <div className="stat-card-content">
+              <div className="stat-card-value">
+                {orderStats.total.toLocaleString()}
               </div>
-
-              <div className="filter-wrapper-section">
-                <label className="filter-label">Status</label>
-                <div className="premium-select-wrapper">
-                  <Icon name="filter" className="select-icon"/>
-                  <select
-                    className="input-field filter-select premium-select"
-                    value={filterStatus}
-                    onChange={(e) => {
-                      setFilterStatus(e.target.value);
-
-                      if (e.target.value) {
-                        setAllOrdersFilterPaymentStatus('');
+              <div className="stat-card-label">Total Orders</div>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-card-icon">
+              <Icon name="check-circle" />
+            </div>
+            <div className="stat-card-content">
+              <div className="stat-card-value">
+                {orderStats.paid.toLocaleString()}
+              </div>
+              <div className="stat-card-label">Paid</div>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-card-icon">
+              <Icon name="clock" />
+            </div>
+            <div className="stat-card-content">
+              <div className="stat-card-value">
+                {orderStats.pending.toLocaleString()}
+              </div>
+              <div className="stat-card-label">Pending</div>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-card-icon">
+              <Icon name="filter" />
+            </div>
+            <div className="stat-card-content">
+              <div className="stat-card-value">
+                {filteredOrders.length.toLocaleString()}
+              </div>
+              <div className="stat-card-label">Showing</div>
+            </div>
+          </div>
+        </div>
+        <div
+          className="kitchen-tab-actions dashboard-card table-container-card"
+          style={{ marginBottom: 0 }}
+        >
+          <div
+            className="kitchen-tab-actions-left"
+            style={{ flex: '1 1 320px', minWidth: 0 }}
+          >
+            <div
+              className="search-input-wrapper"
+              style={{ minWidth: 200, maxWidth: 360 }}
+            >
+              <input
+                type="text"
+                className="input-field search-input-with-icon"
+                placeholder="Search orders..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <button
+              className="btn btn-ghost btn-small filter-icon-btn"
+              onClick={() => setShowFilterWrapper(!showFilterWrapper)}
+              title="Filters"
+            >
+              <Icon name="filter" />
+              {(allOrdersFilterPaymentStatus ||
+                filterStatus ||
+                filterMode ||
+                filterPayment ||
+                filterAddress ||
+                dateRangeFrom ||
+                dateRangeTo ||
+                allOrdersFilterMonth ||
+                filterYear) && (
+                <span className="filter-badge">
+                  {
+                    [
+                      allOrdersFilterPaymentStatus,
+                      filterStatus,
+                      filterMode,
+                      filterPayment,
+                      filterAddress,
+                      dateRangeFrom,
+                      dateRangeTo,
+                      allOrdersFilterMonth,
+                      filterYear,
+                    ].filter(Boolean).length
+                  }
+                </span>
+              )}
+            </button>
+          </div>
+          <div className="kitchen-tab-actions-right">
+            <span className="table-info-text">
+              Showing {startIndex + 1}-
+              {Math.min(startIndex + recordsPerPage, filteredOrders.length)} of{' '}
+              {filteredOrders.length} orders
+            </span>
+          </div>
+        </div>
+        <div className="kitchen-tab-card table-container-card">
+          {showFilterWrapper && (
+            <div className="filter-wrapper-dropdown">
+              <div className="filter-wrapper-header">
+                <h3>Filters</h3>
+                <button
+                  className="btn btn-ghost btn-icon"
+                  onClick={() => setShowFilterWrapper(false)}
+                  title="Close"
+                >
+                  <Icon name="times" />
+                </button>
+              </div>
+              <div className="filter-wrapper-content">
+                <div className="filter-wrapper-section">
+                  <label className="filter-label">Payment Status</label>
+                  <div className="premium-select-wrapper">
+                    <Icon name="credit-card" className="select-icon" />
+                    <select
+                      className="input-field filter-select premium-select"
+                      value={allOrdersFilterPaymentStatus}
+                      onChange={(e) => {
+                        setAllOrdersFilterPaymentStatus(e.target.value);
                         if (setAllOrdersFilterPaymentStatus)
+                          setAllOrdersFilterPaymentStatus(e.target.value);
+
+                        if (e.target.value) {
+                          setFilterStatus('');
+                        }
+                      }}
+                      title="Filter by Payment Status"
+                    >
+                      <option value="">All Payment Status</option>
+                      <option value="paid">Paid</option>
+                      <option value="unpaid">Unpaid</option>
+                      <option value="pending">Pending</option>
+                    </select>
+                    <Icon name="chevron-down" className="dropdown-icon" />
+                  </div>
+                </div>
+
+                <div className="filter-wrapper-section">
+                  <label className="filter-label">Status</label>
+                  <div className="premium-select-wrapper">
+                    <Icon name="filter" className="select-icon" />
+                    <select
+                      className="input-field filter-select premium-select"
+                      value={filterStatus}
+                      onChange={(e) => {
+                        setFilterStatus(e.target.value);
+
+                        if (e.target.value) {
                           setAllOrdersFilterPaymentStatus('');
-                      }
-                    }}
-                    title="Filter by Exact Status"
+                          if (setAllOrdersFilterPaymentStatus)
+                            setAllOrdersFilterPaymentStatus('');
+                        }
+                      }}
+                      title="Filter by Exact Status"
+                    >
+                      <option value="">All Status</option>
+                      {uniqueStatuses.map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </select>
+                    <Icon name="chevron-down" className="dropdown-icon" />
+                  </div>
+                </div>
+
+                <div className="filter-wrapper-section">
+                  <label className="filter-label">Mode</label>
+                  <select
+                    className="input-field filter-select"
+                    value={filterMode}
+                    onChange={(e) => setFilterMode(e.target.value)}
+                    title="Filter by Mode"
                   >
-                    <option value="">All Status</option>
-                    {uniqueStatuses.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
+                    <option value="">All Modes</option>
+                    {uniqueModes.map((mode) => (
+                      <option key={mode} value={mode}>
+                        {mode}
                       </option>
                     ))}
                   </select>
-                  <Icon name="chevron-down" className="dropdown-icon"/>
                 </div>
-              </div>
 
-              <div className="filter-wrapper-section">
-                <label className="filter-label">Mode</label>
-                <select
-                  className="input-field filter-select"
-                  value={filterMode}
-                  onChange={(e) => setFilterMode(e.target.value)}
-                  title="Filter by Mode"
-                >
-                  <option value="">All Modes</option>
-                  {uniqueModes.map((mode) => (
-                    <option key={mode} value={mode}>
-                      {mode}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="filter-wrapper-section">
+                  <label className="filter-label">Payment Mode</label>
+                  <select
+                    className="input-field filter-select"
+                    value={filterPayment}
+                    onChange={(e) => setFilterPayment(e.target.value)}
+                    title="Filter by Payment Mode"
+                  >
+                    <option value="">All Payment Modes</option>
+                    {uniquePaymentModes.map((pm) => (
+                      <option key={pm} value={pm}>
+                        {pm}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="filter-wrapper-section">
-                <label className="filter-label">Payment Mode</label>
-                <select
-                  className="input-field filter-select"
-                  value={filterPayment}
-                  onChange={(e) => setFilterPayment(e.target.value)}
-                  title="Filter by Payment Mode"
-                >
-                  <option value="">All Payment Modes</option>
-                  {uniquePaymentModes.map((pm) => (
-                    <option key={pm} value={pm}>
-                      {pm}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="filter-wrapper-section">
+                  <label className="filter-label">Date Range</label>
+                  <div className="filter-input-group">
+                    <input
+                      type="date"
+                      className="input-field filter-input"
+                      value={dateRangeFrom}
+                      onChange={(e) => setDateRangeFrom(e.target.value)}
+                      placeholder="From"
+                    />
+                    <span className="filter-date-separator">to</span>
+                    <input
+                      type="date"
+                      className="input-field filter-input"
+                      value={dateRangeTo}
+                      onChange={(e) => setDateRangeTo(e.target.value)}
+                      placeholder="To"
+                    />
+                  </div>
+                </div>
 
-              <div className="filter-wrapper-section">
-                <label className="filter-label">Date Range</label>
-                <div className="filter-input-group">
-                  <input
-                    type="date"
+                <div className="filter-wrapper-section">
+                  <label className="filter-label">Month</label>
+                  <select
                     className="input-field filter-input"
-                    value={dateRangeFrom}
-                    onChange={(e) => setDateRangeFrom(e.target.value)}
-                    placeholder="From"
-                  />
-                  <span className="filter-date-separator">to</span>
-                  <input
-                    type="date"
+                    value={allOrdersFilterMonth || ''}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setAllOrdersFilterMonth(v);
+                      if (setAllOrdersFilterMonth) setAllOrdersFilterMonth(v);
+                    }}
+                  >
+                    <option value="">All Months</option>
+                    {uniqueYears
+                      .flatMap((year) =>
+                        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => {
+                          const val = formatBillingMonth(m, year);
+                          if (!val) return null;
+                          const short = [
+                            'Jan',
+                            'Feb',
+                            'Mar',
+                            'Apr',
+                            'May',
+                            'Jun',
+                            'Jul',
+                            'Aug',
+                            'Sep',
+                            'Oct',
+                            'Nov',
+                            'Dec',
+                          ][m - 1];
+                          return (
+                            <option key={val} value={val}>
+                              {short}&apos;{String(year).slice(-2)}
+                            </option>
+                          );
+                        })
+                      )
+                      .filter(Boolean)}
+                  </select>
+                </div>
+
+                <div className="filter-wrapper-section">
+                  <label className="filter-label">Year</label>
+                  <select
                     className="input-field filter-input"
-                    value={dateRangeTo}
-                    onChange={(e) => setDateRangeTo(e.target.value)}
-                    placeholder="To"
-                  />
+                    value={filterYear}
+                    onChange={(e) => setFilterYear(e.target.value)}
+                  >
+                    <option value="">All Years</option>
+                    {uniqueYears.map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              </div>
 
-              <div className="filter-wrapper-section">
-                <label className="filter-label">Month</label>
-                <select
-                  className="input-field filter-input"
-                  value={allOrdersFilterMonth || ''}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setAllOrdersFilterMonth(v);
-                    if (setAllOrdersFilterMonth) setAllOrdersFilterMonth(v);
-                  }}
-                >
-                  <option value="">All Months</option>
-                  {uniqueYears
-                    .flatMap((year) =>
-                      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => {
-                        const val = formatBillingMonth(m, year);
-                        if (!val) return null;
-                        const short = [
-                          'Jan',
-                          'Feb',
-                          'Mar',
-                          'Apr',
-                          'May',
-                          'Jun',
-                          'Jul',
-                          'Aug',
-                          'Sep',
-                          'Oct',
-                          'Nov',
-                          'Dec',
-                        ][m - 1];
-                        return (
-                          <option key={val} value={val}>
-                            {short}&apos;{String(year).slice(-2)}
-                          </option>
-                        );
-                      })
-                    )
-                    .filter(Boolean)}
-                </select>
-              </div>
-
-              <div className="filter-wrapper-section">
-                <label className="filter-label">Year</label>
-                <select
-                  className="input-field filter-input"
-                  value={filterYear}
-                  onChange={(e) => setFilterYear(e.target.value)}
-                >
-                  <option value="">All Years</option>
-                  {uniqueYears.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="filter-wrapper-section">
-                <label className="filter-label">Address Search</label>
-                <div className="search-input-wrapper">
-                  <input
-                    type="text"
-                    className="input-field search-input-with-icon"
-                    value={filterAddress}
-                    onChange={(e) => setFilterAddress(e.target.value)}
-                    placeholder="Search by address..."
-                  />
+                <div className="filter-wrapper-section">
+                  <label className="filter-label">Address Search</label>
+                  <div className="search-input-wrapper">
+                    <input
+                      type="text"
+                      className="input-field search-input-with-icon"
+                      value={filterAddress}
+                      onChange={(e) => setFilterAddress(e.target.value)}
+                      placeholder="Search by address..."
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className="filter-wrapper-actions">
-                <button
-                  className="btn btn-ghost btn-small"
-                  onClick={() => {
-                    setFilterStatus('');
-                    setFilterMode('');
-                    setFilterPayment('');
-                    setFilterAddress('');
-                    setDateRangeFrom('');
-                    setDateRangeTo('');
-                    setFilterYear('');
-                    setAllOrdersFilterMonth('');
-                    setAllOrdersFilterAddress('');
-                    setAllOrdersFilterPaymentStatus('');
-                    setSearchQuery('');
-                    if (setAllOrdersFilterMonth) setAllOrdersFilterMonth('');
-                    if (setAllOrdersFilterAddress)
+                <div className="filter-wrapper-actions">
+                  <button
+                    className="btn btn-ghost btn-small"
+                    onClick={() => {
+                      setFilterStatus('');
+                      setFilterMode('');
+                      setFilterPayment('');
+                      setFilterAddress('');
+                      setDateRangeFrom('');
+                      setDateRangeTo('');
+                      setFilterYear('');
+                      setAllOrdersFilterMonth('');
                       setAllOrdersFilterAddress('');
-                    if (setAllOrdersFilterPaymentStatus)
                       setAllOrdersFilterPaymentStatus('');
-                    // Clear localStorage filters
-                    try {
-                      localStorage.removeItem('admin_all_orders_filters');
-                    } catch (error) {
-                      console.warn(
-                        'Failed to clear filters from localStorage:',
-                        error
-                      );
-                    }
-                  }}
-                >
-                  <Icon name="xmark"/> Clear All
-                </button>
-                <button
-                  className="btn btn-primary btn-small"
-                  onClick={() => setShowFilterWrapper(false)}
-                >
-                  Apply Filters
-                </button>
+                      setSearchQuery('');
+                      if (setAllOrdersFilterMonth) setAllOrdersFilterMonth('');
+                      if (setAllOrdersFilterAddress)
+                        setAllOrdersFilterAddress('');
+                      if (setAllOrdersFilterPaymentStatus)
+                        setAllOrdersFilterPaymentStatus('');
+                      // Clear localStorage filters
+                      try {
+                        localStorage.removeItem('admin_all_orders_filters');
+                      } catch (error) {
+                        console.warn(
+                          'Failed to clear filters from localStorage:',
+                          error
+                        );
+                      }
+                    }}
+                  >
+                    <Icon name="xmark" /> Clear filters
+                  </button>
+                  <button
+                    className="btn btn-primary btn-small"
+                    onClick={() => setShowFilterWrapper(false)}
+                  >
+                    Apply Filters
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {activeFilters.length > 0 && (
-          <div className="active-filters-container">
-            <span className="active-filters-label">Applied:</span>
-            {activeFilters.map((filter, idx) => (
-              <span
-                key={idx}
-                className="badge badge-info active-filter-badge"
-                onClick={() => removeFilter(filter)}
-              >
-                {filter.label}
-                <Icon name="times"/>
-              </span>
-            ))}
-          </div>
-        )}
+          {activeFilters.length > 0 && (
+            <div className="active-filters-container">
+              <span className="active-filters-label">Applied:</span>
+              {activeFilters.map((filter, idx) => (
+                <span
+                  key={idx}
+                  className="badge badge-info active-filter-badge"
+                  onClick={() => removeFilter(filter)}
+                >
+                  {filter.label}
+                  <Icon name="times" />
+                </span>
+              ))}
+            </div>
+          )}
 
-        <div className="orders-table-container">
-          <table className="orders-table" role="table" aria-label="All orders">
-            <thead>
-              <tr>
-                <th
-                  scope="col"
-                  className="sortable-header"
-                  aria-sort={
-                    sortColumn === null
-                      ? sortDirection === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : undefined
-                  }
-                  onClick={() => handleSort(null)}
-                >
-                  S.No{' '}
-                  {sortColumn === null && (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
-                <th
-                  scope="col"
-                  className="sortable-header"
-                  aria-sort={
-                    sortColumn === 'date'
-                      ? sortDirection === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : undefined
-                  }
-                  onClick={() => handleSort('date')}
-                >
-                  Date{' '}
-                  {sortColumn === 'date' &&
-                    (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
-                <th
-                  scope="col"
-                  className="sortable-header"
-                  aria-sort={
-                    sortColumn === 'address'
-                      ? sortDirection === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : undefined
-                  }
-                  onClick={() => handleSort('address')}
-                >
-                  Address{' '}
-                  {sortColumn === 'address' &&
-                    (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
-                <th
-                  scope="col"
-                  className="sortable-header"
-                  aria-sort={
-                    sortColumn === 'quantity'
-                      ? sortDirection === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : undefined
-                  }
-                  onClick={() => handleSort('quantity')}
-                >
-                  Qty{' '}
-                  {sortColumn === 'quantity' &&
-                    (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
-                <th
-                  scope="col"
-                  className="sortable-header"
-                  onClick={() => handleSort(null)}
-                >
-                  Price
-                </th>
-                <th
-                  scope="col"
-                  className="sortable-header"
-                  aria-sort={
-                    sortColumn === 'total'
-                      ? sortDirection === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : undefined
-                  }
-                  onClick={() => handleSort('total')}
-                >
-                  Total{' '}
-                  {sortColumn === 'total' &&
-                    (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
-                <th
-                  scope="col"
-                  className="sortable-header col-mode"
-                  aria-sort={
-                    sortColumn === 'mode'
-                      ? sortDirection === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : undefined
-                  }
-                  onClick={() => handleSort('mode')}
-                >
-                  Mode{' '}
-                  {sortColumn === 'mode' &&
-                    (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
-                <th
-                  scope="col"
-                  className="sortable-header col-status"
-                  aria-sort={
-                    sortColumn === 'status'
-                      ? sortDirection === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : undefined
-                  }
-                  onClick={() => handleSort('status')}
-                >
-                  Status{' '}
-                  {sortColumn === 'status' &&
-                    (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
-                <th
-                  scope="col"
-                  className="sortable-header col-payment"
-                  aria-sort={
-                    sortColumn === 'payment'
-                      ? sortDirection === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : undefined
-                  }
-                  onClick={() => handleSort('payment')}
-                >
-                  Payment{' '}
-                  {sortColumn === 'payment' &&
-                    (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
-                <th
-                  scope="col"
-                  className="sortable-header"
-                  onClick={() => handleSort(null)}
-                >
-                  Month
-                </th>
-                <th
-                  scope="col"
-                  className="sortable-header"
-                  onClick={() => handleSort(null)}
-                >
-                  Year
-                </th>
-                <th
-                  scope="col"
-                  className="sortable-header col-orderid"
-                  aria-sort={
-                    sortColumn === 'orderId'
-                      ? sortDirection === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : undefined
-                  }
-                  onClick={() => handleSort('orderId')}
-                >
-                  OrderID{' '}
-                  {sortColumn === 'orderId' &&
-                    (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
-                <th scope="col">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedOrders.length === 0 ? (
+          <div className="orders-table-container">
+            <table
+              className="orders-table"
+              role="table"
+              aria-label="All orders"
+            >
+              <thead>
                 <tr>
-                  <td colSpan={13} className="empty-state-cell">
-                    <div className="empty-state">
-                      <Icon name="inbox" className="empty-state-icon"/>
-                      <p>No orders found</p>
-                      <p className="empty-state-text">
-                        Try adjusting your filters
-                      </p>
-                    </div>
-                  </td>
+                  <th
+                    scope="col"
+                    className="sortable-header"
+                    aria-sort={
+                      sortColumn === null
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : undefined
+                    }
+                    onClick={() => handleSort(null)}
+                  >
+                    S.No{' '}
+                    {sortColumn === null &&
+                      (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    scope="col"
+                    className="sortable-header"
+                    aria-sort={
+                      sortColumn === 'date'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : undefined
+                    }
+                    onClick={() => handleSort('date')}
+                  >
+                    Date{' '}
+                    {sortColumn === 'date' &&
+                      (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    scope="col"
+                    className="sortable-header"
+                    aria-sort={
+                      sortColumn === 'address'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : undefined
+                    }
+                    onClick={() => handleSort('address')}
+                  >
+                    Address{' '}
+                    {sortColumn === 'address' &&
+                      (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    scope="col"
+                    className="sortable-header"
+                    aria-sort={
+                      sortColumn === 'quantity'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : undefined
+                    }
+                    onClick={() => handleSort('quantity')}
+                  >
+                    Qty{' '}
+                    {sortColumn === 'quantity' &&
+                      (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    scope="col"
+                    className="sortable-header"
+                    onClick={() => handleSort(null)}
+                  >
+                    Price
+                  </th>
+                  <th
+                    scope="col"
+                    className="sortable-header"
+                    aria-sort={
+                      sortColumn === 'total'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : undefined
+                    }
+                    onClick={() => handleSort('total')}
+                  >
+                    Total{' '}
+                    {sortColumn === 'total' &&
+                      (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    scope="col"
+                    className="sortable-header col-mode"
+                    aria-sort={
+                      sortColumn === 'mode'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : undefined
+                    }
+                    onClick={() => handleSort('mode')}
+                  >
+                    Mode{' '}
+                    {sortColumn === 'mode' &&
+                      (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    scope="col"
+                    className="sortable-header col-status"
+                    aria-sort={
+                      sortColumn === 'status'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : undefined
+                    }
+                    onClick={() => handleSort('status')}
+                  >
+                    Status{' '}
+                    {sortColumn === 'status' &&
+                      (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    scope="col"
+                    className="sortable-header col-payment"
+                    aria-sort={
+                      sortColumn === 'payment'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : undefined
+                    }
+                    onClick={() => handleSort('payment')}
+                  >
+                    Payment{' '}
+                    {sortColumn === 'payment' &&
+                      (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    scope="col"
+                    className="sortable-header"
+                    onClick={() => handleSort(null)}
+                  >
+                    Month
+                  </th>
+                  <th
+                    scope="col"
+                    className="sortable-header"
+                    onClick={() => handleSort(null)}
+                  >
+                    Year
+                  </th>
+                  <th
+                    scope="col"
+                    className="sortable-header col-orderid"
+                    aria-sort={
+                      sortColumn === 'orderId'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : undefined
+                    }
+                    onClick={() => handleSort('orderId')}
+                  >
+                    OrderID{' '}
+                    {sortColumn === 'orderId' &&
+                      (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th scope="col">Actions</th>
                 </tr>
-              ) : (
-                paginatedOrders.map((order, idx) => {
-                  const orderDate = parseOrderDate(
-                    order.date || order.order_date || null
-                  );
-                  const dateStr = formatDate(orderDate);
+              </thead>
+              <tbody>
+                {paginatedOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={13} className="empty-state-cell">
+                      <div className="empty-state">
+                        <Icon name="inbox" className="empty-state-icon" />
+                        <p>No orders found</p>
+                        <p className="empty-state-text">
+                          Try adjusting your filters
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedOrders.map((order, idx) => {
+                    const orderDate = parseOrderDate(
+                      order.date || order.order_date || null
+                    );
+                    const dateStr = formatDate(orderDate);
 
-                  let month, year;
-                  if (order.billingMonth && order.billingYear) {
-                    month = parseInt(order.billingMonth);
-                    year = parseInt(order.billingYear);
-                  } else if (orderDate) {
-                    month = orderDate.getUTCMonth() + 1;
-                    year = orderDate.getUTCFullYear();
-                  } else {
-                    month = null;
-                    year = null;
-                  }
-                  const isPaid = isPaidStatus(
-                    order.status,
-                    order.paymentStatus
-                  );
+                    let month, year;
+                    if (order.billingMonth && order.billingYear) {
+                      month = parseInt(order.billingMonth);
+                      year = parseInt(order.billingYear);
+                    } else if (orderDate) {
+                      month = orderDate.getUTCMonth() + 1;
+                      year = orderDate.getUTCFullYear();
+                    } else {
+                      month = null;
+                      year = null;
+                    }
+                    const isPaid = isPaidStatus(
+                      order.status,
+                      order.paymentStatus
+                    );
 
-                  // Use stable key to prevent remounting and flickering
-                  const orderKey = order._id || order.orderId || `order-${idx}`;
-                  
-                  return (
-                    <tr
-                      key={orderKey}
-                      className="table-row-clickable"
-                      onDoubleClick={() => onEditOrder && onEditOrder(order)}
-                    >
-                      <td>
-                        <div className="order-row-number">
-                          {startIndex + idx + 1}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="order-row-date">
-                          <span>{dateStr}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="order-row-address">
-                          <span>
-                            {order.deliveryAddress ||
-                              order.customerAddress ||
-                              order.address ||
-                              'N/A'}
-                          </span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="order-row-quantity">
-                          <span>{order.quantity || 1}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="order-row-price">
-                          <span className="order-row-price-symbol">₹</span>
-                          <span className="order-row-price-value">
-                            {formatCurrency(order.unitPrice || 0)}
-                          </span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="order-row-total">
-                          <span className="order-row-total-symbol">₹</span>
-                          <span className="order-row-total-value">
-                            {formatCurrency(getOrderAmount(order))}
-                          </span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="order-row-mode">
-                          <span className="order-row-mode-badge">
-                            {order.mode || 'N/A'}
-                          </span>
-                        </div>
-                      </td>
-                      <td>
-                        {(() => {
-                          const normalizedStatus = isPaidStatus(
-                            order.status,
-                            order.paymentStatus
-                          )
-                            ? 'Paid'
-                            : 'Unpaid';
-                          const currentStatus = order.status || 'Unpaid';
+                    // Use stable key to prevent remounting and flickering
+                    const orderKey =
+                      order._id || order.orderId || `order-${idx}`;
 
-                          return (
-                            <select
-                              className={`status-dropdown-enhanced ${
-                                isPaid ? 'status-paid' : 'status-unpaid'
-                              }`}
-                              value={normalizedStatus}
-                              onChange={(e) => {
+                    return (
+                      <tr
+                        key={orderKey}
+                        className="table-row-clickable"
+                        onDoubleClick={() => onEditOrder && onEditOrder(order)}
+                      >
+                        <td>
+                          <div className="order-row-number">
+                            {startIndex + idx + 1}
+                          </div>
+                        </td>
+                        <td>
+                          <div className="order-row-date">
+                            <span>{dateStr}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="order-row-address">
+                            <span>
+                              {order.deliveryAddress ||
+                                order.customerAddress ||
+                                order.address ||
+                                'N/A'}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="order-row-quantity">
+                            <span>{order.quantity || 1}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="order-row-price">
+                            <span className="order-row-price-symbol">₹</span>
+                            <span className="order-row-price-value">
+                              {formatCurrency(order.unitPrice || 0)}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="order-row-total">
+                            <span className="order-row-total-symbol">₹</span>
+                            <span className="order-row-total-value">
+                              {formatCurrency(getOrderAmount(order))}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="order-row-mode">
+                            <span className="order-row-mode-badge">
+                              {order.mode || 'N/A'}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          {(() => {
+                            const normalizedStatus = isPaidStatus(
+                              order.status,
+                              order.paymentStatus
+                            )
+                              ? 'Paid'
+                              : 'Unpaid';
+                            const currentStatus = order.status || 'Unpaid';
+
+                            return (
+                              <select
+                                className={`status-dropdown-enhanced ${
+                                  isPaid ? 'status-paid' : 'status-unpaid'
+                                }`}
+                                value={normalizedStatus}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  const newStatus = e.target.value;
+                                  if (newStatus === normalizedStatus) return;
+
+                                  const selectElement = e.target;
+
+                                  if (showConfirmation && onUpdateOrderStatus) {
+                                    showConfirmation({
+                                      title: 'Update Order Status',
+                                      message: `Are you sure you want to change the status of Order ${
+                                        order.orderId || order._id
+                                      } from "${normalizedStatus}" to "${newStatus}"?`,
+                                      type: 'info',
+                                      confirmText: 'Update Status',
+                                      onConfirm: () => {
+                                        onUpdateOrderStatus(
+                                          order._id || order.orderId,
+                                          newStatus,
+                                          true
+                                        );
+                                      },
+                                      onCancelCallback: () => {
+                                        selectElement.value = normalizedStatus;
+                                      },
+                                    });
+                                  } else if (onUpdateOrderStatus) {
+                                    onUpdateOrderStatus(
+                                      order._id || order.orderId,
+                                      newStatus,
+                                      true
+                                    );
+                                  } else {
+                                    selectElement.value = normalizedStatus;
+                                  }
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <option value="Paid">Paid</option>
+                                <option value="Unpaid">Unpaid</option>
+                              </select>
+                            );
+                          })()}
+                        </td>
+                        <td>
+                          <div className="order-row-payment-mode">
+                            <span>{order.paymentMode || 'N/A'}</span>
+                          </div>
+                        </td>
+                        <td>
+                          {month ? formatBillingMonth(month, year) : 'N/A'}
+                        </td>
+                        <td>{year || 'N/A'}</td>
+                        <td className="monospace-text">
+                          {order.orderId || 'N/A'}
+                        </td>
+                        <td>
+                          <div className="action-buttons-cell">
+                            <button
+                              type="button"
+                              className="btn btn-ghost btn-icon action-icon-edit"
+                              onClick={(e) => {
                                 e.stopPropagation();
-                                const newStatus = e.target.value;
-                                if (newStatus === normalizedStatus) return;
-
-                                const selectElement = e.target;
-
-                                if (showConfirmation && onUpdateOrderStatus) {
-                                  showConfirmation({
-                                    title: 'Update Order Status',
-                                    message: `Are you sure you want to change the status of Order ${
-                                      order.orderId || order._id
-                                    } from "${normalizedStatus}" to "${newStatus}"?`,
-                                    type: 'info',
-                                    confirmText: 'Update Status',
-                                    onConfirm: () => {
-                                      onUpdateOrderStatus(
-                                        order._id || order.orderId,
-                                        newStatus,
-                                        true
-                                      );
-                                    },
-                                    onCancelCallback: () => {
-                                      selectElement.value = normalizedStatus;
-                                    },
-                                  });
-                                } else if (onUpdateOrderStatus) {
-                                  onUpdateOrderStatus(
-                                    order._id || order.orderId,
-                                    newStatus,
-                                    true
-                                  );
-                                } else {
-                                  selectElement.value = normalizedStatus;
-                                }
+                                if (onEditOrder) onEditOrder(order);
                               }}
-                              onClick={(e) => e.stopPropagation()}
+                              title="Edit"
+                              aria-label="Edit order"
                             >
-                              <option value="Paid">Paid</option>
-                              <option value="Unpaid">Unpaid</option>
-                            </select>
-                          );
-                        })()}
-                      </td>
-                      <td>
-                        <div className="order-row-payment-mode">
-                          <span>{order.paymentMode || 'N/A'}</span>
-                        </div>
-                      </td>
-                      <td>{month ? formatBillingMonth(month, year) : 'N/A'}</td>
-                      <td>{year || 'N/A'}</td>
-                      <td className="monospace-text">
-                        {order.orderId || 'N/A'}
-                      </td>
-                      <td>
-                        <div className="action-buttons-cell">
-                          <button
-                            className="btn btn-ghost btn-icon action-icon-edit"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (onEditOrder) onEditOrder(order);
-                            }}
-                            title="Edit"
-                          >
-                            <Icon name="pencil"/>
-                          </button>
-                          <button
-                            className="btn btn-ghost btn-icon action-icon-delete"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (onDeleteOrder)
-                                onDeleteOrder(order._id || order.orderId);
-                            }}
-                            title="Delete"
-                          >
-                            <Icon name="trash"/>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                              <Icon name="pencil" />
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-ghost btn-icon action-icon-delete"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (onDeleteOrder)
+                                  onDeleteOrder(order._id || order.orderId);
+                              }}
+                              title="Delete"
+                              aria-label="Delete order"
+                            >
+                              <Icon name="trash" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        <div className="pagination-controls">
-          <div>
-            <button
-              className="btn btn-ghost btn-small"
-              onClick={() => onPageChange && onPageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <Icon name="chevron-left"/> Previous
-            </button>
-            <span className="pagination-info">
-              Page {currentPage} of {totalPages || 1}
-            </span>
-            <button
-              className="btn btn-ghost btn-small"
-              onClick={() => onPageChange && onPageChange(currentPage + 1)}
-              disabled={currentPage >= totalPages}
-            >
-              Next <Icon name="chevron-right"/>
-            </button>
-          </div>
-          <div className="pagination-container">
-            <span>Show:</span>
-            <select
-              className="pagination-select"
-              value={recordsPerPage}
-              onChange={(e) => {
-                const value = parseInt(e.target.value);
-                if (onRecordsPerPageChange) onRecordsPerPageChange(value);
-                if (onPageChange) onPageChange(1);
-              }}
-            >
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-              <option value={200}>200</option>
-            </select>
-            <span>per page</span>
+          <div className="pagination-controls">
+            <div>
+              <button
+                className="btn btn-ghost btn-small"
+                onClick={() => onPageChange && onPageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <Icon name="chevron-left" /> Previous
+              </button>
+              <span className="pagination-info">
+                Page {currentPage} of {totalPages || 1}
+              </span>
+              <button
+                className="btn btn-ghost btn-small"
+                onClick={() => onPageChange && onPageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+              >
+                Next <Icon name="chevron-right" />
+              </button>
+            </div>
+            <div className="pagination-container">
+              <span>Show:</span>
+              <select
+                className="pagination-select"
+                value={recordsPerPage}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  if (onRecordsPerPageChange) onRecordsPerPageChange(value);
+                  if (onPageChange) onPageChange(1);
+                }}
+              >
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={200}>200</option>
+              </select>
+              <span>per page</span>
+            </div>
           </div>
         </div>
-      </div>
       </div>
     </div>
   );

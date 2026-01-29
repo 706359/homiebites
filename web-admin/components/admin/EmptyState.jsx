@@ -1,3 +1,5 @@
+import Icon from '../ui/Icon.jsx';
+
 const EmptyState = ({
   icon = 'inbox',
   title = 'No data found',
@@ -15,13 +17,12 @@ const EmptyState = ({
       <div className="empty-state-actions">
         {onClearFilters && (
           <button className="btn btn-ghost btn-small" onClick={onClearFilters}>
-            <Icon name="filter-circle-xmark"/>{' '}
-            {clearFiltersLabel}
+            <Icon name="filter-circle-xmark" /> {clearFiltersLabel}
           </button>
         )}
         {onAddOrder && (
           <button className="btn btn-primary btn-small" onClick={onAddOrder}>
-            <Icon name="plus"/> {addOrderLabel}
+            <Icon name="plus" /> {addOrderLabel}
           </button>
         )}
       </div>

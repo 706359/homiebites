@@ -1,6 +1,6 @@
 import { useLanguage } from '../contexts/LanguageContext';
-import Icon from '../ui/Icon.jsx';
 import './HowItWorks.css';
+import Icon from './ui/Icon.jsx';
 
 const HowItWorks = ({ onOrderClick }) => {
   const { t } = useLanguage();
@@ -61,7 +61,7 @@ const HowItWorks = ({ onOrderClick }) => {
             <div key={index} className="how-it-works-step">
               <div className="step-content">
                 <div className="step-icon">
-                  <Icon name={step.icon}} aria-hidden="true"/>
+                  <Icon name={step.icon} aria-hidden="true" />
                 </div>
                 <div className="step-body">
                   <h3 className="step-title">{step.title}</h3>

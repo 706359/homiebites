@@ -1,9 +1,9 @@
 import ExcelJS from 'exceljs';
-import Icon from '../ui/Icon.jsx';
-import { useState, useMemo, useEffect } from 'react';
-import PremiumLoader from './PremiumLoader.jsx';
+import { useEffect, useState } from 'react';
 import api from '../../lib/api-admin.js';
 import { convertMenuItemsToCategories } from '../../lib/menuData.js';
+import Icon from '../ui/Icon.jsx';
+import PremiumLoader from './PremiumLoader.jsx';
 import {
   formatDate,
   formatDateMonthDay,
@@ -11,9 +11,9 @@ import {
 } from './utils/dateUtils.js';
 import {
   getOrderAmount,
+  getTotalRevenue,
   isPaidStatus,
   isPendingStatus,
-  getTotalRevenue,
 } from './utils/orderUtils.js';
 
 const ReportsTab = ({
@@ -205,7 +205,20 @@ const ReportsTab = ({
             month = null;
             year = null;
           }
-          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const monthNames = [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+          ];
           const monthStr = month ? monthNames[month - 1] : 'N/A';
           return `${idx + 1},"${date ? date.toLocaleDateString() : ''}","${
             o.deliveryAddress || o.customerAddress || o.address || 'N/A'
@@ -228,11 +241,22 @@ const ReportsTab = ({
   const handleExportCurrentMonth = () => {
     const now = new Date();
     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-    
+    const currentMonthEnd = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59
+    );
+
     const currentMonthOrders = orders.filter((o) => {
       const orderDate = parseOrderDate(o.date || o.order_date || null);
-      return orderDate && orderDate >= currentMonthStart && orderDate <= currentMonthEnd;
+      return (
+        orderDate &&
+        orderDate >= currentMonthStart &&
+        orderDate <= currentMonthEnd
+      );
     });
 
     let csvContent =
@@ -270,30 +294,34 @@ const ReportsTab = ({
   };
 
   const handleExportPendingPayments = () => {
-    const pendingPayments = orders.filter((o) =>
-      isPendingStatus(o.status, o.paymentStatus)
-    ).map((o) => {
-      const orderDate = parseOrderDate(o.date || o.order_date || null);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const daysPending = orderDate ? Math.floor((today - orderDate) / (1000 * 60 * 60 * 24)) : 0;
-      return {
-        ...o,
-        orderDate,
-        daysPending,
-        isOverdue: daysPending > 7,
-        isUrgent: daysPending > 3 && daysPending <= 7,
-      };
-    });
+    const pendingPayments = orders
+      .filter((o) => isPendingStatus(o.status, o.paymentStatus))
+      .map((o) => {
+        const orderDate = parseOrderDate(o.date || o.order_date || null);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const daysPending = orderDate
+          ? Math.floor((today - orderDate) / (1000 * 60 * 60 * 24))
+          : 0;
+        return {
+          ...o,
+          orderDate,
+          daysPending,
+          isOverdue: daysPending > 7,
+          isUrgent: daysPending > 3 && daysPending <= 7,
+        };
+      });
 
     let csvContent =
       'Order ID,Date,Delivery Address,Amount (₹),Days Pending,Status,Payment Mode\n';
     pendingPayments.forEach((p) => {
-      const orderDate = p.orderDate
-        ? formatDateMonthDay(p.orderDate)
-        : 'N/A';
+      const orderDate = p.orderDate ? formatDateMonthDay(p.orderDate) : 'N/A';
       const amount = getOrderAmount(p);
-      const status = p.isOverdue ? 'Overdue' : p.isUrgent ? 'Urgent' : 'Pending';
+      const status = p.isOverdue
+        ? 'Overdue'
+        : p.isUrgent
+          ? 'Urgent'
+          : 'Pending';
       csvContent += `${escapeCSV(p.orderId || p._id || 'N/A')},${escapeCSV(
         orderDate
       )},${escapeCSV(
@@ -342,22 +370,22 @@ const ReportsTab = ({
   const handleExportReviews = () => {
     const reviewsToExport = reviews.length > 0 ? reviews : reviewsData;
     if (!reviewsToExport || reviewsToExport.length === 0) {
-      if (showNotification)
-        showNotification('No reviews to export', 'warning');
+      if (showNotification) showNotification('No reviews to export', 'warning');
       return;
     }
     const csvContent =
       'Name,Email,Phone,Location,Rating,Comment,Featured,Approved,Date\n' +
       reviewsToExport
         .map((r) => {
-          const date = r.createdAt
-            ? formatDate(new Date(r.createdAt))
-            : 'N/A';
+          const date = r.createdAt ? formatDate(new Date(r.createdAt)) : 'N/A';
           return `"${r.userName || ''}","${r.userEmail || ''}","${
             r.userPhone || ''
-          }","${r.userLocation || ''}","${r.rating || 0}","${
-            (r.comment || '').replace(/"/g, '""')
-          }","${r.featured ? 'Yes' : 'No'}","${r.isApproved ? 'Yes' : 'No'}","${date}"`;
+          }","${r.userLocation || ''}","${r.rating || 0}","${(
+            r.comment || ''
+          ).replace(
+            /"/g,
+            '""'
+          )}","${r.featured ? 'Yes' : 'No'}","${r.isApproved ? 'Yes' : 'No'}","${date}"`;
         })
         .join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -374,7 +402,7 @@ const ReportsTab = ({
     const now = new Date();
     const today = new Date(now);
     today.setHours(0, 0, 0, 0);
-    
+
     const dailyData = [];
     for (let i = 29; i >= 0; i--) {
       const date = new Date(today);
@@ -433,7 +461,9 @@ const ReportsTab = ({
         const orderDate = parseOrderDate(o.date || o.order_date || null);
         if (orderDate) {
           const monthKey = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`;
-          const monthName = orderDate.toLocaleDateString('en-US', { month: 'long' });
+          const monthName = orderDate.toLocaleDateString('en-US', {
+            month: 'long',
+          });
           if (!monthStats[monthKey]) {
             monthStats[monthKey] = {
               month: monthName,
@@ -491,7 +521,10 @@ const ReportsTab = ({
         customer.totalOrders++;
         customer.totalSpent += getOrderAmount(o);
         const orderDate = parseOrderDate(o.date || o.order_date || null);
-        if (orderDate && (!customer.lastOrderDate || orderDate > customer.lastOrderDate)) {
+        if (
+          orderDate &&
+          (!customer.lastOrderDate || orderDate > customer.lastOrderDate)
+        ) {
           customer.lastOrderDate = orderDate;
         }
       }
@@ -500,7 +533,8 @@ const ReportsTab = ({
     const customers = Array.from(addressMap.values()).map((c) => ({
       ...c,
       avgOrderValue: c.totalOrders > 0 ? c.totalSpent / c.totalOrders : 0,
-      segment: c.totalSpent >= 5000 ? 'VIP' : c.totalSpent >= 2000 ? 'Regular' : 'New',
+      segment:
+        c.totalSpent >= 5000 ? 'VIP' : c.totalSpent >= 2000 ? 'Regular' : 'New',
     }));
 
     const csvContent =
@@ -585,7 +619,10 @@ const ReportsTab = ({
       type: selectedReportType,
       count: filteredOrders.length,
       orders: filteredOrders.slice(0, 50), // Show first 50 for preview
-      totalRevenue: filteredOrders.reduce((sum, o) => sum + getOrderAmount(o), 0),
+      totalRevenue: filteredOrders.reduce(
+        (sum, o) => sum + getOrderAmount(o),
+        0
+      ),
     });
     setShowPreview(true);
   };
@@ -1350,314 +1387,441 @@ const ReportsTab = ({
 
   return (
     <div className="admin-content">
-      {/* Organized Sections for Reports & Data Operations */}
-      <div className="reports-sections-container">
-        {/* Section 1: Order Reports & Export */}
-        <div className="dashboard-card reports-section-card">
-          <h3 className="reports-section-title">
-            <Icon name="shopping-cart"/>
-            Order Reports & Export
-          </h3>
-          <div className="reports-buttons-grid">
+      <div className="kitchen-tab">
+        {/* Stats row */}
+        <div className="kitchen-tab-stats reports-stats-summary">
+          <div className="stat-card">
+            <div className="stat-card-icon">
+              <Icon name="shopping-cart" />
+            </div>
+            <div className="stat-card-content">
+              <div className="stat-card-value">
+                {orders.length.toLocaleString()}
+              </div>
+              <div className="stat-card-label">Total Orders</div>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-card-icon">
+              <Icon name="indian-rupee-sign" />
+            </div>
+            <div className="stat-card-content">
+              <div className="stat-card-value">
+                ₹
+                {orders
+                  .reduce((sum, o) => sum + getOrderAmount(o), 0)
+                  .toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              </div>
+              <div className="stat-card-label">Total Revenue</div>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-card-icon">
+              <Icon name="check-circle" />
+            </div>
+            <div className="stat-card-content">
+              <div className="stat-card-value">
+                {orders
+                  .filter((o) => isPaidStatus(o.status, o.paymentStatus))
+                  .length.toLocaleString()}
+              </div>
+              <div className="stat-card-label">Paid Orders</div>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-card-icon">
+              <Icon name="clock" />
+            </div>
+            <div className="stat-card-content">
+              <div className="stat-card-value">
+                {orders
+                  .filter((o) => isPendingStatus(o.status, o.paymentStatus))
+                  .length.toLocaleString()}
+              </div>
+              <div className="stat-card-label">Pending Orders</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Report types card */}
+        <div className="kitchen-tab-card">
+          <div className="reports-card-header">
+            <h3 className="dashboard-section-title mb-0">
+              <Icon name="chart-bar" />
+              Generate report
+            </h3>
+          </div>
+          <div className="reports-grid-compact reports-type-grid-inner">
             <button
-              className="btn btn-secondary"
+              className="report-type-card"
               onClick={() => {
                 setSelectedReportType('Sales Report');
                 setShowGenerator(true);
               }}
             >
-              <Icon name="chart-bar"/>
-              Sales Report
+              <Icon name="chart-bar" />
+              <span>Sales Report</span>
             </button>
             <button
-              className="btn btn-secondary"
+              className="report-type-card"
               onClick={() => {
                 setSelectedReportType('Payment Report');
                 setShowGenerator(true);
               }}
             >
-              <Icon name="money-bill-wave"/>
-              Payment Report
+              <Icon name="money-bill-wave" />
+              <span>Payment Report</span>
             </button>
             <button
-              className="btn btn-secondary"
-              onClick={handleExportAllOrders}
-              title="Export all orders data"
+              className="report-type-card"
+              onClick={() => {
+                setSelectedReportType('Monthly Statement');
+                setShowGenerator(true);
+              }}
             >
-              <Icon name="download"/>
-              Export All Orders
+              <Icon name="calendar-alt" />
+              <span>Monthly Statement</span>
             </button>
             <button
-              className="btn btn-secondary"
-              onClick={handleExportCurrentMonth}
-              title="Export current month orders"
+              className="report-type-card"
+              onClick={() => {
+                setSelectedReportType('Area-wise Report');
+                setGroupByArea(true);
+                setShowGenerator(true);
+              }}
             >
-              <Icon name="download"/>
-              Export Current Month
+              <Icon name="map-marker-alt" />
+              <span>Area-wise Report</span>
             </button>
             <button
-              className="btn btn-secondary"
-              onClick={handleExportPendingPayments}
-              title="Export pending payments"
+              className="report-type-card"
+              onClick={() => {
+                setSelectedReportType('Customer Report');
+                setShowGenerator(true);
+              }}
             >
-              <Icon name="download"/>
-              Export Pending Payments
+              <Icon name="users" />
+              <span>Customer Report</span>
             </button>
             <button
-              className="btn btn-secondary"
-              onClick={handleExportFinancialSummary}
-              title="Export financial summary"
+              className="report-type-card"
+              onClick={() => {
+                setSelectedReportType('Growth Report');
+                setShowGenerator(true);
+              }}
             >
-              <Icon name="download"/>
-              Export Financial Summary
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={() => handleExportAnalytics('monthly')}
-              title="Export monthly analytics"
-            >
-              <Icon name="download"/>
-              Export Monthly Analytics
+              <Icon name="chart-line" />
+              <span>Growth Report</span>
             </button>
           </div>
         </div>
 
-        {/* Section 2: Data Import/Export */}
-        <div className="dashboard-card reports-section-card">
-          <h3 className="reports-section-title">
-            <Icon name="file-import"/>
-            Data Import/Export
-          </h3>
-          <div className="reports-buttons-grid">
-            {onLoadExcelFile && (
-              <button
-                className="btn btn-primary"
-                onClick={onLoadExcelFile}
-                title="Upload CSV file to import orders"
-              >
-                <Icon name="upload"/>
-                Upload CSV (Import Orders)
-              </button>
-            )}
-            <button
-              className="btn btn-secondary"
-              onClick={handleExportAddresses}
-              title="Export customer addresses"
-            >
-              <Icon name="download"/>
-              Export Addresses
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={handleExportReviews}
-              title="Export reviews data"
-            >
-              <Icon name="download"/>
-              Export Reviews
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={handleExportMenu}
-              title="Export menu items to CSV"
-            >
-              <Icon name="file-export"/>
-              Export Menu Items
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={handleImportMenu}
-              title="Import predefined menu items"
-            >
-              <Icon name="file-import"/>
-              Import Menu Items
-            </button>
+        {/* Exports & data operations – single card with subsections */}
+        <div className="kitchen-tab-card reports-exports-card">
+          <div className="reports-exports-inner">
+            <h3 className="reports-exports-title">
+              <Icon name="file-export" />
+              Exports & data
+            </h3>
+            {/* Order Reports & Export */}
+            <div className="reports-section-block">
+              <h3 className="reports-section-title">
+                <Icon name="shopping-cart" />
+                Order Reports & Export
+              </h3>
+              <div className="reports-buttons-grid">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setSelectedReportType('Sales Report');
+                    setShowGenerator(true);
+                  }}
+                >
+                  <Icon name="chart-bar" />
+                  Sales Report
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setSelectedReportType('Payment Report');
+                    setShowGenerator(true);
+                  }}
+                >
+                  <Icon name="money-bill-wave" />
+                  Payment Report
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleExportAllOrders}
+                  title="Export all orders data"
+                >
+                  <Icon name="download" />
+                  Export All Orders
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleExportCurrentMonth}
+                  title="Export current month orders"
+                >
+                  <Icon name="download" />
+                  Export Current Month
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleExportPendingPayments}
+                  title="Export pending payments"
+                >
+                  <Icon name="download" />
+                  Export Pending Payments
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleExportFinancialSummary}
+                  title="Export financial summary"
+                >
+                  <Icon name="download" />
+                  Export Financial Summary
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => handleExportAnalytics('monthly')}
+                  title="Export monthly analytics"
+                >
+                  <Icon name="download" />
+                  Export Monthly Analytics
+                </button>
+              </div>
+            </div>
+
+            {/* Data Import/Export */}
+            <div className="reports-section-block">
+              <h3 className="reports-section-title">
+                <Icon name="file-import" />
+                Data Import/Export
+              </h3>
+              <div className="reports-buttons-grid">
+                {onLoadExcelFile && (
+                  <button
+                    className="btn btn-primary"
+                    onClick={onLoadExcelFile}
+                    title="Upload CSV file to import orders"
+                  >
+                    <Icon name="upload" />
+                    Upload CSV (Import Orders)
+                  </button>
+                )}
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleExportAddresses}
+                  title="Export customer addresses"
+                >
+                  <Icon name="download" />
+                  Export Addresses
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleExportReviews}
+                  title="Export reviews data"
+                >
+                  <Icon name="download" />
+                  Export Reviews
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleExportMenu}
+                  title="Export menu items to CSV"
+                >
+                  <Icon name="file-export" />
+                  Export Menu Items
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleImportMenu}
+                  title="Import predefined menu items"
+                >
+                  <Icon name="file-import" />
+                  Import Menu Items
+                </button>
+              </div>
+            </div>
+
+            {/* Backup & Restore */}
+            <div className="reports-section-block">
+              <h3 className="reports-section-title">
+                <Icon name="database" />
+                Backup & Restore
+              </h3>
+              <div className="reports-buttons-grid">
+                {onBackup && (
+                  <button
+                    className="btn btn-primary"
+                    onClick={onBackup}
+                    title="Create backup of all data"
+                  >
+                    <Icon name="save" />
+                    Create Backup
+                  </button>
+                )}
+                {onRestore && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={onRestore}
+                    title="Restore data from backup"
+                  >
+                    <Icon name="rotate" />
+                    Restore from Backup
+                  </button>
+                )}
+                {onExportSettings && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={onExportSettings}
+                    title="Export settings configuration"
+                  >
+                    <Icon name="file-export" />
+                    Export Settings
+                  </button>
+                )}
+                {onClearAllData && (
+                  <button
+                    className="btn btn-special danger"
+                    onClick={() => {
+                      if (showConfirmation) {
+                        showConfirmation({
+                          title: 'Clear All Data',
+                          message:
+                            'Are you sure you want to clear ALL orders data? This action cannot be undone and will permanently delete all orders.',
+                          type: 'danger',
+                          confirmText: 'Clear All Data',
+                          onConfirm: async () => {
+                            await onClearAllData(true);
+                          },
+                        });
+                      } else if (onClearAllData) {
+                        onClearAllData(true);
+                      }
+                    }}
+                    title="Delete all orders (dangerous)"
+                  >
+                    <Icon name="trash" />
+                    Clear All Orders
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Section 3: Backup & Restore */}
-        <div className="dashboard-card reports-section-card">
-          <h3 className="reports-section-title">
-            <Icon name="database"/>
-            Backup & Restore
-          </h3>
-          <div className="reports-buttons-grid">
-            {onBackup && (
+        {/* Automated Reports & Recent Reports – two cards side by side */}
+        <div className="reports-side-by-side-container">
+          <div className="kitchen-tab-card reports-card-compact">
+            <div className="reports-card-header">
+              <h3 className="dashboard-section-title mb-0">
+                <Icon name="clock" />
+                Automated Reports
+                <span className="badge badge-warning badge-small">
+                  Coming soon
+                </span>
+              </h3>
               <button
-                className="btn btn-primary"
-                onClick={onBackup}
-                title="Create backup of all data"
+                className="btn btn-primary btn-small"
+                disabled
+                title="Coming soon"
               >
-                <Icon name="save"/>
-                Create Backup
+                <Icon name="plus" /> Add
               </button>
-            )}
-            {onRestore && (
-              <button
-                className="btn btn-secondary"
-                onClick={onRestore}
-                title="Restore data from backup"
-              >
-                <Icon name="rotate"/>
-                Restore from Backup
-              </button>
-            )}
-            {onExportSettings && (
-              <button
-                className="btn btn-secondary"
-                onClick={onExportSettings}
-                title="Export settings configuration"
-              >
-                <Icon name="file-export"/>
-                Export Settings
-              </button>
-            )}
-            {onClearAllData && (
-              <button
-                className="btn btn-special danger"
-                onClick={() => {
-                  if (showConfirmation) {
-                    showConfirmation({
-                      title: 'Clear All Data',
-                      message:
-                        'Are you sure you want to clear ALL orders data? This action cannot be undone and will permanently delete all orders.',
-                      type: 'danger',
-                      confirmText: 'Clear All Data',
-                      onConfirm: async () => {
-                        await onClearAllData(true);
-                      },
-                    });
-                  } else if (onClearAllData) {
-                    onClearAllData(true);
-                  }
-                }}
-                title="Delete all orders (dangerous)"
-              >
-                <Icon name="trash"/>
-                Clear All Orders
-              </button>
-            )}
+            </div>
+            <div className="reports-table-compact">
+              <table className="orders-table">
+                <thead>
+                  <tr>
+                    <th>Report</th>
+                    <th>Schedule</th>
+                    <th>Format</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {scheduledReports.map((report) => (
+                    <tr key={report.id}>
+                      <td>{report.name}</td>
+                      <td>{report.schedule}</td>
+                      <td>{report.format}</td>
+                      <td>
+                        <div className="flex-start gap-8">
+                          <button
+                            className="btn btn-ghost btn-icon action-icon-edit"
+                            title="Edit"
+                          >
+                            <Icon name="pencil" />
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-icon action-icon-delete"
+                            title="Delete"
+                          >
+                            <Icon name="trash" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Quick Stats Summary */}
-      <div className="reports-stats-summary mb-24">
-        <div className="stat-card">
-          <div className="stat-card-icon">
-            <Icon name="shopping-cart"/>
-          </div>
-          <div className="stat-card-content">
-            <div className="stat-card-value">
-              {orders.length.toLocaleString()}
+          <div className="kitchen-tab-card reports-card-compact">
+            <div className="reports-card-header">
+              <h3 className="dashboard-section-title mb-0">
+                <Icon name="history" />
+                Recent Reports (Last 30 days)
+                <span className="badge badge-warning badge-small">
+                  Coming soon
+                </span>
+              </h3>
             </div>
-            <div className="stat-card-label">Total Orders</div>
+            <div className="reports-table-compact">
+              <table className="orders-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Report Type</th>
+                    <th>Period</th>
+                    <th>Download</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportHistory.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="text-center">
+                        <div className="empty-state">
+                          <Icon name="inbox" className="empty-state-icon" />
+                          <p>No reports generated yet</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    reportHistory.map((report) => (
+                      <tr key={report.id}>
+                        <td>{report.date}</td>
+                        <td>{report.type}</td>
+                        <td>{report.period}</td>
+                        <td>
+                          <button
+                            className="btn btn-ghost btn-icon"
+                            title="Download"
+                          >
+                            <Icon name="download" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-card-icon">
-            <Icon name="indian-rupee-sign"/>
-          </div>
-          <div className="stat-card-content">
-            <div className="stat-card-value">
-              ₹{orders
-                .reduce((sum, o) => sum + getOrderAmount(o), 0)
-                .toLocaleString('en-IN', {
-                  maximumFractionDigits: 0,
-                })}
-            </div>
-            <div className="stat-card-label">Total Revenue</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-card-icon">
-            <Icon name="check-circle"/>
-          </div>
-          <div className="stat-card-content">
-            <div className="stat-card-value">
-              {orders.filter((o) =>
-                isPaidStatus(o.status, o.paymentStatus)
-              ).length.toLocaleString()}
-            </div>
-            <div className="stat-card-label">Paid Orders</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-card-icon">
-            <Icon name="clock"/>
-          </div>
-          <div className="stat-card-content">
-            <div className="stat-card-value">
-              {orders.filter((o) =>
-                isPendingStatus(o.status, o.paymentStatus)
-              ).length.toLocaleString()}
-            </div>
-            <div className="stat-card-label">Pending Orders</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="reports-grid-compact mb-24">
-        <button
-          className="report-type-card"
-          onClick={() => {
-            setSelectedReportType('Sales Report');
-            setShowGenerator(true);
-          }}
-        >
-          <Icon name="chart-bar"/>
-          <span>Sales Report</span>
-        </button>
-        <button
-          className="report-type-card"
-          onClick={() => {
-            setSelectedReportType('Payment Report');
-            setShowGenerator(true);
-          }}
-        >
-          <Icon name="money-bill-wave"/>
-          <span>Payment Report</span>
-        </button>
-        <button
-          className="report-type-card"
-          onClick={() => {
-            setSelectedReportType('Monthly Statement');
-            setShowGenerator(true);
-          }}
-        >
-          <Icon name="calendar-alt"/>
-          <span>Monthly Statement</span>
-        </button>
-        <button
-          className="report-type-card"
-          onClick={() => {
-            setSelectedReportType('Area-wise Report');
-            setGroupByArea(true);
-            setShowGenerator(true);
-          }}
-        >
-          <Icon name="map-marker-alt"/>
-          <span>Area-wise Report</span>
-        </button>
-        <button
-          className="report-type-card"
-          onClick={() => {
-            setSelectedReportType('Customer Report');
-            setShowGenerator(true);
-          }}
-        >
-          <Icon name="users"/>
-          <span>Customer Report</span>
-        </button>
-        <button
-          className="report-type-card"
-          onClick={() => {
-            setSelectedReportType('Growth Report');
-            setShowGenerator(true);
-          }}
-        >
-          <Icon name="chart-line"/>
-          <span>Growth Report</span>
-        </button>
       </div>
 
       {showGenerator && (
@@ -1666,10 +1830,12 @@ const ReportsTab = ({
             <div className="modal-header">
               <h2>Generate Report</h2>
               <button
+                type="button"
                 className="btn btn-ghost btn-icon modal-close"
                 onClick={() => setShowGenerator(false)}
+                aria-label="Close"
               >
-                <Icon name="times"/>
+                <Icon name="times" />
               </button>
             </div>
             <div className="modal-body">
@@ -1725,7 +1891,9 @@ const ReportsTab = ({
                         const today = new Date();
                         const thirtyDaysAgo = new Date(today);
                         thirtyDaysAgo.setDate(today.getDate() - 30);
-                        setReportDateFrom(thirtyDaysAgo.toISOString().split('T')[0]);
+                        setReportDateFrom(
+                          thirtyDaysAgo.toISOString().split('T')[0]
+                        );
                         setReportDateTo(today.toISOString().split('T')[0]);
                       }}
                     >
@@ -1736,7 +1904,11 @@ const ReportsTab = ({
                       className="btn btn-ghost btn-small"
                       onClick={() => {
                         const today = new Date();
-                        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                        const firstDay = new Date(
+                          today.getFullYear(),
+                          today.getMonth(),
+                          1
+                        );
                         setReportDateFrom(firstDay.toISOString().split('T')[0]);
                         setReportDateTo(today.toISOString().split('T')[0]);
                       }}
@@ -1865,150 +2037,56 @@ const ReportsTab = ({
                 className="btn btn-secondary"
                 onClick={handlePreviewReport}
               >
-                <Icon name="file-alt"/> Preview
+                <Icon name="file-alt" /> Preview
               </button>
               <button
                 className="btn btn-primary"
                 onClick={handleGenerateReport}
               >
-                <Icon name="download"/> Download
+                <Icon name="download" /> Download
               </button>
             </div>
           </div>
         </div>
       )}
 
-      <div className="reports-side-by-side-container">
-        <div className="dashboard-card reports-card-compact">
-          <div className="reports-card-header">
-            <h3 className="dashboard-section-title mb-0">
-              <Icon name="clock"/>
-              Automated Reports
-              <span className="badge badge-warning badge-small">Coming soon</span>
-            </h3>
-            <button
-              className="btn btn-primary btn-small"
-              disabled
-              title="Coming soon"
-            >
-              <Icon name="plus"/> Add
-            </button>
-          </div>
-          <div className="reports-table-compact">
-            <table className="orders-table">
-              <thead>
-                <tr>
-                  <th>Report</th>
-                  <th>Schedule</th>
-                  <th>Format</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {scheduledReports.map((report) => (
-                  <tr key={report.id}>
-                    <td>{report.name}</td>
-                    <td>{report.schedule}</td>
-                    <td>{report.format}</td>
-                    <td>
-                      <div className="flex-start gap-8">
-                        <button
-                          className="btn btn-ghost btn-icon action-icon-edit"
-                          title="Edit"
-                        >
-                          <Icon name="pencil"/>
-                        </button>
-                        <button
-                          className="btn btn-ghost btn-icon action-icon-delete"
-                          title="Delete"
-                        >
-                          <Icon name="trash"/>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="dashboard-card reports-card-compact">
-          <div className="reports-card-header">
-            <h3 className="dashboard-section-title mb-0">
-              <Icon name="history"/>
-              Recent Reports (Last 30 days)
-              <span className="badge badge-warning badge-small">Coming soon</span>
-            </h3>
-          </div>
-          <div className="reports-table-compact">
-            <table className="orders-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Report Type</th>
-                  <th>Period</th>
-                  <th>Download</th>
-                </tr>
-              </thead>
-              <tbody>
-                {reportHistory.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="text-center">
-                      <div className="empty-state">
-                        <Icon name="inbox" className="empty-state-icon"/>
-                        <p>No reports generated yet</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  reportHistory.map((report) => (
-                    <tr key={report.id}>
-                      <td>{report.date}</td>
-                      <td>{report.type}</td>
-                      <td>{report.period}</td>
-                      <td>
-                        <button
-                          className="btn btn-ghost btn-icon"
-                          title="Download"
-                        >
-                          <Icon name="download"/>
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
       {/* Preview Modal */}
       {showPreview && previewData && (
         <div className="modal-overlay" onClick={() => setShowPreview(false)}>
           <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <nav className="modal-breadcrumb" aria-label="Breadcrumb">
+              Reports{' '}
+              <span className="modal-breadcrumb-sep" aria-hidden="true">
+                ›
+              </span>{' '}
+              Preview: {previewData.type}
+            </nav>
             <div className="modal-header">
               <h2>
-                <Icon name="eye"/> Preview: {previewData.type}
+                <Icon name="eye" /> Preview: {previewData.type}
               </h2>
               <button
+                type="button"
                 className="btn btn-ghost btn-icon modal-close"
                 onClick={() => setShowPreview(false)}
+                aria-label="Close preview"
               >
-                <Icon name="times"/>
+                <Icon name="times" />
               </button>
             </div>
             <div className="modal-body">
               <div className="preview-stats mb-16">
                 <div className="preview-stat-item">
                   <span className="preview-stat-label">Total Records:</span>
-                  <span className="preview-stat-value">{previewData.count}</span>
+                  <span className="preview-stat-value">
+                    {previewData.count}
+                  </span>
                 </div>
                 <div className="preview-stat-item">
                   <span className="preview-stat-label">Total Revenue:</span>
                   <span className="preview-stat-value">
-                    ₹{previewData.totalRevenue.toLocaleString('en-IN', {
+                    ₹
+                    {previewData.totalRevenue.toLocaleString('en-IN', {
                       maximumFractionDigits: 2,
                     })}
                   </span>
@@ -2021,7 +2099,10 @@ const ReportsTab = ({
                   </span>
                 </div>
               </div>
-              <div className="orders-table-container" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+              <div
+                className="orders-table-container"
+                style={{ maxHeight: '400px', overflowY: 'auto' }}
+              >
                 <table className="orders-table">
                   <thead>
                     <tr>
@@ -2071,7 +2152,7 @@ const ReportsTab = ({
                   handleGenerateReport();
                 }}
               >
-                <Icon name="download"/> Download Full Report
+                <Icon name="download" /> Download Full Report
               </button>
             </div>
           </div>

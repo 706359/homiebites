@@ -1,19 +1,21 @@
 /**
- * Admin dashboard font size: three presets only (enterprise-style).
- * Small 17px | Normal 18px | Large 19px.
+ * Admin dashboard font size: four presets (enterprise-style).
+ * Extra Small 16px | Small 17px | Normal 18px | Large 19px.
  * Uses --admin-base-font-size + .admin-active on html so rem-based
  * --admin-fs-* scale correctly across the entire dashboard.
  */
+export const ADMIN_FONT_SIZE_EXTRA_SMALL = 16;
 export const ADMIN_FONT_SIZE_SMALL = 17;
 export const ADMIN_FONT_SIZE_NORMAL = 18;
 export const ADMIN_FONT_SIZE_LARGE = 19;
 
-export const ADMIN_FONT_SIZE_MIN = ADMIN_FONT_SIZE_SMALL;
+export const ADMIN_FONT_SIZE_MIN = ADMIN_FONT_SIZE_EXTRA_SMALL;
 export const ADMIN_FONT_SIZE_MAX = ADMIN_FONT_SIZE_LARGE;
 export const ADMIN_FONT_SIZE_DEFAULT = ADMIN_FONT_SIZE_NORMAL;
 
 /** Preset options for Settings UI: value (px) and label */
 export const ADMIN_FONT_SIZE_OPTIONS = [
+  { value: ADMIN_FONT_SIZE_EXTRA_SMALL, label: 'Extra Small', px: 16 },
   { value: ADMIN_FONT_SIZE_SMALL, label: 'Small', px: 17 },
   { value: ADMIN_FONT_SIZE_NORMAL, label: 'Normal', px: 18 },
   { value: ADMIN_FONT_SIZE_LARGE, label: 'Large', px: 19 },
@@ -21,6 +23,7 @@ export const ADMIN_FONT_SIZE_OPTIONS = [
 
 /** Legacy keys (e.g. from old settings) map to preset px */
 const LEGACY_MAP = {
+  'extra-small': ADMIN_FONT_SIZE_EXTRA_SMALL,
   small: ADMIN_FONT_SIZE_SMALL,
   normal: ADMIN_FONT_SIZE_NORMAL,
   large: ADMIN_FONT_SIZE_LARGE,
@@ -29,14 +32,19 @@ const LEGACY_MAP = {
 };
 
 /**
- * Snap to nearest preset (17, 18, or 19).
+ * Snap to nearest preset (16, 17, 18, or 19).
  * @param {number} v
  * @returns {number}
  */
 export function roundToStep(v) {
   const n = Number(v);
   if (Number.isNaN(n)) return ADMIN_FONT_SIZE_DEFAULT;
-  const opts = [ADMIN_FONT_SIZE_SMALL, ADMIN_FONT_SIZE_NORMAL, ADMIN_FONT_SIZE_LARGE];
+  const opts = [
+    ADMIN_FONT_SIZE_EXTRA_SMALL,
+    ADMIN_FONT_SIZE_SMALL,
+    ADMIN_FONT_SIZE_NORMAL,
+    ADMIN_FONT_SIZE_LARGE,
+  ];
   let best = ADMIN_FONT_SIZE_DEFAULT;
   let bestDist = Infinity;
   for (const px of opts) {
@@ -51,7 +59,7 @@ export function roundToStep(v) {
 
 /**
  * @param {string|number} v - From settings, localStorage, or event
- * @returns {number|null} 17, 18, or 19, or null
+ * @returns {number|null} 16, 17, 18, or 19, or null
  */
 export function parseFontSize(v) {
   if (v == null) return null;
@@ -67,7 +75,7 @@ export function parseFontSize(v) {
 /**
  * Apply font size to admin: sets --admin-base-font-size on :root and
  * adds .admin-active to html. index.css uses that for font-size.
- * @param {number|string} value - 17, 18, or 19 (or legacy key); snap to preset
+ * @param {number|string} value - 16, 17, 18, or 19 (or legacy key); snap to preset
  */
 export function applyAdminFontSize(value) {
   if (typeof document === 'undefined') return;
@@ -90,7 +98,7 @@ export function clearAdminFontSize() {
 }
 
 /**
- * Format for display: "17", "18", "19".
+ * Format for display: "16", "17", "18", "19".
  */
 export function formatFontSizeDisplay(v) {
   const n = Number(v);

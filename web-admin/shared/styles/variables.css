@@ -106,7 +106,49 @@
   --red: #e74c3c;
   --red-dark: #c0392b;
 
-  /* Single source for all UI font; change in Settings → Appearance to apply platform-wide. Exception: .cursorrules allows --font-* for this. */
+  /* Website (public) font: fixed stack, not controlled by admin. Compatible with most browsers. */
+  --font-website:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+
+  /* ========== Enterprise layout & spacing (public site) ========== */
+  --content-max: 1200px;
+  --content-wide: 1400px;
+  --content-narrow: 720px;
+  --content-tight: 560px;
+  --section-padding-y: clamp(3rem, 6vw, 5rem);
+  --section-padding-x: clamp(1.25rem, 4vw, 2rem);
+  --section-gap: clamp(2rem, 4vw, 3rem);
+  /* Spacing scale (use for margins, gaps, padding) */
+  --space-4: 0.25rem;
+  --space-8: 0.5rem;
+  --space-12: 0.75rem;
+  --space-16: 1rem;
+  --space-20: 1.25rem;
+  --space-24: 1.5rem;
+  --space-32: 2rem;
+  --space-40: 2.5rem;
+  --space-48: 3rem;
+  --space-64: 4rem;
+  --space-80: 5rem;
+  /* Typography (public) – single source for hierarchy and spacing */
+  --text-body: 1rem;
+  --text-lead: 1.125rem;
+  --text-small: 0.875rem;
+  --text-caption: 0.8125rem;
+  --text-overline: 0.8125rem; /* section labels e.g. "ABOUT US" */
+  --heading-1: clamp(2rem, 5vw, 3rem);
+  --heading-2: clamp(1.75rem, 4vw, 2.5rem);
+  --heading-3: clamp(1.25rem, 3vw, 1.5rem);
+  --heading-4: clamp(1.1rem, 2vw, 1.25rem);
+  --line-tight: 1.25;
+  --line-normal: 1.5;
+  --line-relaxed: 1.65;
+  --letter-tight: -0.02em;
+  --letter-wide: 0.12em; /* overline / label */
+  --letter-wide-strong: 0.2em;
+
+  /* Admin dashboard font: set by Settings → Appearance; applied only on /admin routes. */
   --font-primary: 'Baloo 2', sans-serif;
   --font-display: var(--font-primary);
   --font-mono:

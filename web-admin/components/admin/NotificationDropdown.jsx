@@ -247,34 +247,59 @@ const NotificationDropdown = ({
     });
   }
 
+  // Escape to close (enterprise a11y)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="notification-dropdown" ref={dropdownRef}>
+    <div
+      className="notification-dropdown"
+      ref={dropdownRef}
+      role="dialog"
+      aria-label="Notifications"
+      aria-modal="false"
+    >
       <div className="notification-dropdown-header">
-        <h3 className="notification-dropdown-title">Notifications</h3>
+        <h3 id="notification-dropdown-title" className="notification-dropdown-title">
+          Notifications
+        </h3>
         <button
+          type="button"
           className="notification-dropdown-close"
           onClick={onClose}
           aria-label="Close notifications"
+          title="Close"
         >
-          <Icon name="times" />
+          <Icon name="times" aria-hidden="true" />
         </button>
       </div>
 
-      <div className="notification-dropdown-content">
+      <div className="notification-dropdown-content" aria-labelledby="notification-dropdown-title">
         {notifications.length === 0 ? (
-          <div className="notification-dropdown-empty">
-            <Icon name="bell-slash" />
+          <div className="notification-dropdown-empty" role="status">
+            <Icon name="bell-slash" aria-hidden="true" />
             <p>No new notifications</p>
             <span>All caught up!</span>
           </div>
         ) : (
-          <div className="notification-dropdown-list">
+          <ul className="notification-dropdown-list" role="list" aria-label="Notification list">
             {notifications.map((notification) => (
-              <div
+              <li
                 key={notification.id}
                 className={`notification-item notification-item-${notification.type}`}
+                role="button"
+                tabIndex={0}
                 onClick={() => {
                   if (notification.type === 'overdue' && onViewPendingAmounts) {
                     onViewPendingAmounts();
@@ -282,6 +307,17 @@ const NotificationDropdown = ({
                     onViewOrder(notification.order);
                   }
                   onClose();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (notification.type === 'overdue' && onViewPendingAmounts) {
+                      onViewPendingAmounts();
+                    } else if (onViewOrder && notification.orderId) {
+                      onViewOrder(notification.order);
+                    }
+                    onClose();
+                  }
                 }}
               >
                 <div className="notification-item-icon">
@@ -304,13 +340,13 @@ const NotificationDropdown = ({
                   </p>
                 </div>
                 {notification.type === 'overdue' && (
-                  <div className="notification-item-badge">
+                  <div className="notification-item-badge" aria-hidden="true">
                     <Icon name="exclamation" />
                   </div>
                 )}
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
 
@@ -318,6 +354,7 @@ const NotificationDropdown = ({
         <div className="notification-dropdown-footer">
           {notifications.some((n) => n.type === 'overdue') && (
             <button
+              type="button"
               className="notification-dropdown-action"
               onClick={() => {
                 if (onViewPendingAmounts) {
@@ -325,6 +362,7 @@ const NotificationDropdown = ({
                 }
                 onClose();
               }}
+              aria-label="View all pending amounts"
             >
               <Icon name="exclamation-triangle" />
               View All Pending Amounts

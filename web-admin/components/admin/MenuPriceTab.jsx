@@ -1272,366 +1272,387 @@ const MenuPriceTab = ({
 
   return (
     <div className="admin-content menu-price-tab">
-      <div className="dashboard-header menu-price-header">
-        <div className="dashboard-card dashboard-card-spaced">
-          <div className="filter-container menu-price-filters">
-            <div className="search-input-wrapper search-input-wrapper-flex">
-              <input
-                type="text"
-                className="input-field search-input-with-icon"
-                placeholder="Search menu items..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className="filter-field-group-standard min-width-140">
-              <select
-                className="input-field filter-input-standard"
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-              >
-                <option value="">Category</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="filter-field-group-standard min-width-160">
-              <select
-                className="input-field filter-input-standard"
-                value={`${sortBy}-${sortOrder}`}
-                onChange={(e) => {
-                  const [by, order] = e.target.value.split('-');
-                  setSortBy(by);
-                  setSortOrder(order);
-                }}
-              >
-                <option value="name-asc">Sort By Name</option>
-                <option value="name-desc">Name (Z-A)</option>
-                <option value="price-asc">Price (Low to High)</option>
-                <option value="price-desc">Price (High to Low)</option>
-                <option value="category-asc">Category (A-Z)</option>
-                <option value="category-desc">Category (Z-A)</option>
-              </select>
-            </div>
-            {(searchQuery || filterCategory) && (
-              <button
-                className="btn btn-secondary btn-small"
-                onClick={() => {
-                  setSearchQuery('');
-                  setFilterCategory('');
-                }}
-                title="Clear all filters"
-              >
-                <Icon name="xmark" />
-                Clear Filters
-              </button>
-            )}
-            <div className="action-buttons-group menu-price-actions">
-              <button
-                className="btn btn-primary btn-small"
-                onClick={() => {
-                  setFormData({
-                    name: '',
-                    description: '',
-                    price: 0,
-                    isAvailable: true,
-                    imageUrl: '',
-                    category: '',
-                  });
-                  setShowAddModal(true);
-                }}
-              >
-                <Icon name="plus" /> Add Menu Item
-              </button>
-              <button
-                className="btn btn-secondary btn-small"
-                onClick={async () => {
-                  try {
-                    showNotification(
-                      'Syncing menu items to gallery...',
-                      'info'
-                    );
-                    await syncMenuItemsToGallery(menuItems, showNotification);
-                  } catch (error) {
-                    console.error('[Manual Sync] Error:', error);
-                    showNotification(
-                      'Gallery sync failed: ' +
-                        (error.message || 'Unknown error'),
-                      'error'
-                    );
-                  }
-                }}
-                title="Sync all menu items with images to website gallery"
-              >
-                <Icon name="sync-alt" /> Sync to Gallery
-              </button>
+      <div className="kitchen-tab">
+        <div className="kitchen-tab-actions">
+          <div
+            className="kitchen-tab-actions-left"
+            style={{ flex: 1, minWidth: 0, flexWrap: 'wrap', gap: '12px' }}
+          >
+            <div className="filter-container menu-price-filters">
+              <div className="search-input-wrapper search-input-wrapper-flex">
+                <input
+                  type="text"
+                  className="input-field search-input-with-icon"
+                  placeholder="Search menu items..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="filter-field-group-standard min-width-140">
+                <select
+                  className="input-field filter-input-standard"
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                >
+                  <option value="">Category</option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="filter-field-group-standard min-width-160">
+                <select
+                  className="input-field filter-input-standard"
+                  value={`${sortBy}-${sortOrder}`}
+                  onChange={(e) => {
+                    const [by, order] = e.target.value.split('-');
+                    setSortBy(by);
+                    setSortOrder(order);
+                  }}
+                >
+                  <option value="name-asc">Sort By Name</option>
+                  <option value="name-desc">Name (Z-A)</option>
+                  <option value="price-asc">Price (Low to High)</option>
+                  <option value="price-desc">Price (High to Low)</option>
+                  <option value="category-asc">Category (A-Z)</option>
+                  <option value="category-desc">Category (Z-A)</option>
+                </select>
+              </div>
+              {(searchQuery || filterCategory) && (
+                <button
+                  className="btn btn-secondary btn-small"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setFilterCategory('');
+                  }}
+                  title="Clear all filters"
+                >
+                  <Icon name="xmark" />
+                  Clear Filters
+                </button>
+              )}
+              <div className="action-buttons-group menu-price-actions">
+                <button
+                  className="btn btn-primary btn-small"
+                  onClick={() => {
+                    setFormData({
+                      name: '',
+                      description: '',
+                      price: 0,
+                      isAvailable: true,
+                      imageUrl: '',
+                      category: '',
+                    });
+                    setShowAddModal(true);
+                  }}
+                >
+                  <Icon name="plus" /> Add Menu Item
+                </button>
+                <button
+                  className="btn btn-secondary btn-small"
+                  onClick={async () => {
+                    try {
+                      showNotification(
+                        'Syncing menu items to gallery...',
+                        'info'
+                      );
+                      await syncMenuItemsToGallery(menuItems, showNotification);
+                    } catch (error) {
+                      console.error('[Manual Sync] Error:', error);
+                      showNotification(
+                        'Gallery sync failed: ' +
+                          (error.message || 'Unknown error'),
+                        'error'
+                      );
+                    }
+                  }}
+                  title="Sync all menu items with images to website gallery"
+                >
+                  <Icon name="sync-alt" /> Sync to Gallery
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {filteredMenuItems.length === 0 ? (
-        <div className="empty-state-container">
-          <Icon name="utensils" className="empty-state-icon" />
-          <h3 className="mb-md">No Menu Items</h3>
-          <p className="mb-xl empty-state-text">
-            {searchQuery || filterCategory
-              ? 'No items match your filters'
-              : 'Get started by adding your first menu item'}
-          </p>
-          {!searchQuery && !filterCategory && (
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                setFormData({
-                  name: '',
-                  description: '',
-                  price: 0,
-                  isAvailable: true,
-                  imageUrl: '',
-                  category: '',
-                });
-                setShowAddModal(true);
-              }}
-            >
-              <Icon name="plus" /> Add Menu Item
-            </button>
-          )}
-        </div>
-      ) : (
-        <div className="dashboard-grid-layout menu-items-grid">
-          {filteredMenuItems.map((item, index) => {
-            const getImageUrl = () => {
-              const publicImages = [
-                'Amritsarichhole.png',
-                'Curd.jpg',
-                'DeliciousAaluParatha.jpg',
-                'DesiThali.jpeg',
-                'food.jpeg',
-                'FullTiffin.jpg',
-                'hero.jpeg',
-                'kadhipakora.jpg',
-                'kalachana.jpg',
-                'lobhiya.jpg',
-                'lokikofte.jpg',
-                'MoondDalKhichdi.jpg',
-                'rajma.jpg',
-                'RotiSabji.png',
-                'veg-thali.png',
-                'VegThali.png',
-              ];
+        <div className="kitchen-tab-card">
+          {filteredMenuItems.length === 0 ? (
+            <div className="kitchen-tab-empty">
+              <Icon
+                name="utensils"
+                className="kitchen-tab-empty-icon"
+                aria-hidden
+              />
+              <h3 className="kitchen-tab-empty-title">No Menu Items</h3>
+              <p className="kitchen-tab-empty-desc">
+                {searchQuery || filterCategory
+                  ? 'No items match your filters'
+                  : 'Get started by adding your first menu item'}
+              </p>
+              {!searchQuery && !filterCategory && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setFormData({
+                      name: '',
+                      description: '',
+                      price: 0,
+                      isAvailable: true,
+                      imageUrl: '',
+                      category: '',
+                    });
+                    setShowAddModal(true);
+                  }}
+                >
+                  <Icon name="plus" /> Add Menu Item
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="kitchen-tab-body-inner">
+              <div className="dashboard-grid-layout menu-items-grid">
+                {filteredMenuItems.map((item, index) => {
+                  const getImageUrl = () => {
+                    const publicImages = [
+                      'Amritsarichhole.png',
+                      'Curd.jpg',
+                      'DeliciousAaluParatha.jpg',
+                      'DesiThali.jpeg',
+                      'food.jpeg',
+                      'FullTiffin.jpg',
+                      'hero.jpeg',
+                      'kadhipakora.jpg',
+                      'kalachana.jpg',
+                      'lobhiya.jpg',
+                      'lokikofte.jpg',
+                      'MoondDalKhichdi.jpg',
+                      'rajma.jpg',
+                      'RotiSabji.png',
+                      'veg-thali.png',
+                      'VegThali.png',
+                    ];
 
-              const normalizeName = (name) => {
-                return name
-                  .toLowerCase()
-                  .replace(/\s+/g, '')
-                  .replace(/[^a-z0-9]/g, '')
-                  .trim();
-              };
+                    const normalizeName = (name) => {
+                      return name
+                        .toLowerCase()
+                        .replace(/\s+/g, '')
+                        .replace(/[^a-z0-9]/g, '')
+                        .trim();
+                    };
 
-              const findImageByName = (itemName) => {
-                if (!itemName) return '/food.jpeg';
-                const normalizedName = normalizeName(itemName);
+                    const findImageByName = (itemName) => {
+                      if (!itemName) return '/food.jpeg';
+                      const normalizedName = normalizeName(itemName);
 
-                const commonMatches = {
-                  chhole: 'Amritsarichhole.png',
-                  chole: 'Amritsarichhole.png',
-                  chana: 'kalachana.jpg',
-                  dal: 'MoondDalKhichdi.jpg',
-                  khichdi: 'MoondDalKhichdi.jpg',
-                  paratha: 'DeliciousAaluParatha.jpg',
-                  aloo: 'DeliciousAaluParatha.jpg',
-                  thali: 'DesiThali.jpeg',
-                  rajma: 'rajma.jpg',
-                  roti: 'RotiSabji.png',
-                  sabji: 'RotiSabji.png',
-                  pakora: 'kadhipakora.jpg',
-                  kadhi: 'kadhipakora.jpg',
-                  lobhiya: 'lobhiya.jpg',
-                  kofta: 'lokikofte.jpg',
-                  koofte: 'lokikofte.jpg',
-                  curd: 'Curd.jpg',
-                  dahi: 'Curd.jpg',
-                  tiffin: 'FullTiffin.jpg',
-                  full: 'FullTiffin.jpg',
-                };
+                      const commonMatches = {
+                        chhole: 'Amritsarichhole.png',
+                        chole: 'Amritsarichhole.png',
+                        chana: 'kalachana.jpg',
+                        dal: 'MoondDalKhichdi.jpg',
+                        khichdi: 'MoondDalKhichdi.jpg',
+                        paratha: 'DeliciousAaluParatha.jpg',
+                        aloo: 'DeliciousAaluParatha.jpg',
+                        thali: 'DesiThali.jpeg',
+                        rajma: 'rajma.jpg',
+                        roti: 'RotiSabji.png',
+                        sabji: 'RotiSabji.png',
+                        pakora: 'kadhipakora.jpg',
+                        kadhi: 'kadhipakora.jpg',
+                        lobhiya: 'lobhiya.jpg',
+                        kofta: 'lokikofte.jpg',
+                        koofte: 'lokikofte.jpg',
+                        curd: 'Curd.jpg',
+                        dahi: 'Curd.jpg',
+                        tiffin: 'FullTiffin.jpg',
+                        full: 'FullTiffin.jpg',
+                      };
 
-                for (const [key, imageFile] of Object.entries(commonMatches)) {
-                  if (normalizedName.includes(key)) {
-                    return '/' + imageFile;
-                  }
-                }
+                      for (const [key, imageFile] of Object.entries(
+                        commonMatches
+                      )) {
+                        if (normalizedName.includes(key)) {
+                          return '/' + imageFile;
+                        }
+                      }
 
-                for (const image of publicImages) {
-                  const imageName = normalizeName(
-                    image.replace(/\.(jpg|jpeg|png)$/i, '')
-                  );
-                  if (
-                    imageName.includes(normalizedName) ||
-                    normalizedName.includes(imageName)
-                  ) {
-                    return '/' + image;
-                  }
-                }
-
-                return '/food.jpeg';
-              };
-
-              if (item.imageUrl && item.imageUrl.trim() !== '') {
-                const imageUrl = item.imageUrl.trim();
-                if (imageUrl.startsWith('/')) {
-                  return imageUrl;
-                } else if (
-                  imageUrl.startsWith('http://') ||
-                  imageUrl.startsWith('https://')
-                ) {
-                  return imageUrl;
-                } else {
-                  return '/' + imageUrl;
-                }
-              }
-
-              return findImageByName(item.name);
-            };
-
-            const categoryColors = {
-              Lunch: {
-                bg: 'var(--admin-accent-light, rgba(68, 144, 49, 0.1))',
-                color: 'var(--admin-accent, #449031)',
-                icon: 'utensils',
-              },
-              Dinner: {
-                bg: 'var(--admin-secondary-light, rgba(196, 92, 45, 0.1))',
-                color: 'var(--admin-secondary, #c45c2d)',
-                icon: 'moon',
-              },
-              Breakfast: {
-                bg: 'rgba(255, 193, 7, 0.1)',
-                color: '#ffc107',
-                icon: 'sun',
-              },
-            };
-
-            const categoryStyle = categoryColors[item.category] || {
-              bg: 'var(--admin-glass-border)',
-              color: 'var(--admin-text-secondary)',
-              icon: 'circle',
-            };
-
-            return (
-              <div
-                key={`${item.id}-${item.name}-${index}`}
-                className="menu-item-card-enhanced"
-              >
-                <div className="menu-item-card-header">
-                  <div className="menu-item-image-wrapper">
-                    <img
-                      src={getImageUrl()}
-                      alt={item.name || 'Menu item'}
-                      className="menu-item-image"
-                      onError={(e) => {
-                        const fallback = '/food.jpeg';
+                      for (const image of publicImages) {
+                        const imageName = normalizeName(
+                          image.replace(/\.(jpg|jpeg|png)$/i, '')
+                        );
                         if (
-                          e.target.src !== fallback &&
-                          !e.target.src.includes(fallback)
+                          imageName.includes(normalizedName) ||
+                          normalizedName.includes(imageName)
                         ) {
-                          e.target.src = fallback;
+                          return '/' + image;
                         }
-                      }}
-                      loading="lazy"
-                    />
-                    <div className="menu-item-availability-badge">
-                      <Icon
-                        name={
-                          item.isAvailable ? 'check-circle' : 'times-circle'
-                        }
-                      />
-                      <span>
-                        {item.isAvailable ? 'Available' : 'Unavailable'}
-                      </span>
-                    </div>
-                    <div className="menu-item-category-badge">
-                      <Icon name={categoryStyle.icon} />
-                      <span>{item.category || 'Uncategorized'}</span>
-                    </div>
-                  </div>
-                </div>
+                      }
 
-                <div className="menu-item-card-body">
-                  <div className="menu-item-title-section">
-                    <h3 className="menu-item-title">{item.name}</h3>
-                    {item.description && (
-                      <p className="menu-item-description">
-                        {item.description}
-                      </p>
-                    )}
-                  </div>
+                      return '/food.jpeg';
+                    };
 
-                  <div className="menu-item-footer">
-                    <div className="menu-item-price-section">
-                      <span className="menu-item-price-label">Price</span>
-                      <div className="menu-item-price">
-                        <span className="menu-item-price-symbol">₹</span>
-                        <span className="menu-item-price-amount">
-                          {formatCurrency(item.price || 0)}
-                        </span>
+                    if (item.imageUrl && item.imageUrl.trim() !== '') {
+                      const imageUrl = item.imageUrl.trim();
+                      if (imageUrl.startsWith('/')) {
+                        return imageUrl;
+                      } else if (
+                        imageUrl.startsWith('http://') ||
+                        imageUrl.startsWith('https://')
+                      ) {
+                        return imageUrl;
+                      } else {
+                        return '/' + imageUrl;
+                      }
+                    }
+
+                    return findImageByName(item.name);
+                  };
+
+                  const categoryColors = {
+                    Lunch: {
+                      bg: 'var(--admin-accent-light, rgba(68, 144, 49, 0.1))',
+                      color: 'var(--admin-accent, #449031)',
+                      icon: 'utensils',
+                    },
+                    Dinner: {
+                      bg: 'var(--admin-secondary-light, rgba(196, 92, 45, 0.1))',
+                      color: 'var(--admin-secondary, #c45c2d)',
+                      icon: 'moon',
+                    },
+                    Breakfast: {
+                      bg: 'rgba(255, 193, 7, 0.1)',
+                      color: '#ffc107',
+                      icon: 'sun',
+                    },
+                  };
+
+                  const categoryStyle = categoryColors[item.category] || {
+                    bg: 'var(--admin-glass-border)',
+                    color: 'var(--admin-text-secondary)',
+                    icon: 'circle',
+                  };
+
+                  return (
+                    <div
+                      key={`${item.id}-${item.name}-${index}`}
+                      className="menu-item-card-enhanced"
+                    >
+                      <div className="menu-item-card-header">
+                        <div className="menu-item-image-wrapper">
+                          <img
+                            src={getImageUrl()}
+                            alt={item.name || 'Menu item'}
+                            className="menu-item-image"
+                            onError={(e) => {
+                              const fallback = '/food.jpeg';
+                              if (
+                                e.target.src !== fallback &&
+                                !e.target.src.includes(fallback)
+                              ) {
+                                e.target.src = fallback;
+                              }
+                            }}
+                            loading="lazy"
+                          />
+                          <div className="menu-item-availability-badge">
+                            <Icon
+                              name={
+                                item.isAvailable
+                                  ? 'check-circle'
+                                  : 'times-circle'
+                              }
+                            />
+                            <span>
+                              {item.isAvailable ? 'Available' : 'Unavailable'}
+                            </span>
+                          </div>
+                          <div className="menu-item-category-badge">
+                            <Icon name={categoryStyle.icon} />
+                            <span>{item.category || 'Uncategorized'}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="menu-item-card-body">
+                        <div className="menu-item-title-section">
+                          <h3 className="menu-item-title">{item.name}</h3>
+                          {item.description && (
+                            <p className="menu-item-description">
+                              {item.description}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="menu-item-footer">
+                          <div className="menu-item-price-section">
+                            <span className="menu-item-price-label">Price</span>
+                            <div className="menu-item-price">
+                              <span className="menu-item-price-symbol">₹</span>
+                              <span className="menu-item-price-amount">
+                                {formatCurrency(item.price || 0)}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="menu-item-actions">
+                            <button
+                              className="menu-item-action-btn menu-item-action-view"
+                              onClick={() => openViewModal(item)}
+                              title="View Item Details"
+                            >
+                              <Icon name="eye" />
+                            </button>
+                            <button
+                              className={`menu-item-action-btn menu-item-action-toggle ${
+                                togglingItemId === item.id ? 'toggling' : ''
+                              }`}
+                              onClick={() => handleToggleAvailability(item)}
+                              disabled={togglingItemId === item.id}
+                              title={
+                                togglingItemId === item.id
+                                  ? 'Changing status...'
+                                  : item.isAvailable
+                                    ? 'Mark as Unavailable'
+                                    : 'Mark as Available'
+                              }
+                            >
+                              {togglingItemId === item.id ? (
+                                <Icon name="spinner" spin />
+                              ) : (
+                                <Icon
+                                  name={
+                                    item.isAvailable
+                                      ? 'toggle-on'
+                                      : 'toggle-off'
+                                  }
+                                />
+                              )}
+                            </button>
+                            <button
+                              className="menu-item-action-btn menu-item-action-edit"
+                              onClick={() => openEditModal(item)}
+                              title="Edit Item"
+                            >
+                              <Icon name="pencil" />
+                            </button>
+                            <button
+                              className="menu-item-action-btn menu-item-action-delete"
+                              onClick={() => openDeleteModal(item)}
+                              title="Delete Item"
+                            >
+                              <Icon name="trash" />
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="menu-item-actions">
-                      <button
-                        className="menu-item-action-btn menu-item-action-view"
-                        onClick={() => openViewModal(item)}
-                        title="View Item Details"
-                      >
-                        <Icon name="eye" />
-                      </button>
-                      <button
-                        className={`menu-item-action-btn menu-item-action-toggle ${
-                          togglingItemId === item.id ? 'toggling' : ''
-                        }`}
-                        onClick={() => handleToggleAvailability(item)}
-                        disabled={togglingItemId === item.id}
-                        title={
-                          togglingItemId === item.id
-                            ? 'Changing status...'
-                            : item.isAvailable
-                              ? 'Mark as Unavailable'
-                              : 'Mark as Available'
-                        }
-                      >
-                        {togglingItemId === item.id ? (
-                          <Icon name="spinner" spin />
-                        ) : (
-                          <Icon
-                            name={item.isAvailable ? 'toggle-on' : 'toggle-off'}
-                          />
-                        )}
-                      </button>
-                      <button
-                        className="menu-item-action-btn menu-item-action-edit"
-                        onClick={() => openEditModal(item)}
-                        title="Edit Item"
-                      >
-                        <Icon name="pencil" />
-                      </button>
-                      <button
-                        className="menu-item-action-btn menu-item-action-delete"
-                        onClick={() => openDeleteModal(item)}
-                        title="Delete Item"
-                      >
-                        <Icon name="trash" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {showAddModal && (
         <div className="modal-overlay">

@@ -1,6 +1,7 @@
 /* CSS load order (enterprise: tokens first, then libs, shared, globals). Admin styles load from app/admin/layout.jsx via adminStyles.js. */
-import '../shared/styles/variables.css';
+import '../shared/styles/layout.css';
 import '../shared/styles/shared.css';
+import '../shared/styles/variables.css';
 import '../styles/globals.css';
 import ClientLayout from './ClientLayout';
 
@@ -104,9 +105,13 @@ export default function RootLayout({ children }) {
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        {/* Font is loaded dynamically by FontSettingsLoader based on admin settings */}
+        {/* Website uses fixed --font-website; admin font from Settings only on /admin routes */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
       </head>
       <body>
         <ClientLayout>{children}</ClientLayout>

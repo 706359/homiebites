@@ -16,9 +16,14 @@ const ConfirmationModal = ({
   isLoading = false,
 }) => {
   const containerRef = useRef(null);
+  const previousFocusRef = useRef(/** @type {HTMLElement | null} */ (null));
 
   useEffect(() => {
     if (!show) return;
+
+    previousFocusRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
 
     const handleKey = (e) => {
       if (e.key === 'Escape' && !isLoading) {
@@ -68,6 +73,23 @@ const ConfirmationModal = ({
     }
   }, [show]);
 
+  // Return focus to trigger when closed (enterprise a11y)
+  useEffect(() => {
+    if (!show && previousFocusRef.current) {
+      const prev = previousFocusRef.current;
+      previousFocusRef.current = null;
+      requestAnimationFrame(() => {
+        if (prev && typeof prev.focus === 'function') prev.focus();
+      });
+    }
+  }, [show]);
+
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget && !isLoading) {
+      onCancel();
+    }
+  };
+
   if (!show) return null;
 
   const getTypeStyles = () => {
@@ -106,44 +128,65 @@ const ConfirmationModal = ({
   const styles = getTypeStyles();
 
   return (
-    <div className="modal-overlay">
+    <div
+      className="modal-overlay confirmation-modal-overlay"
+      onClick={handleOverlayClick}
+      role="presentation"
+    >
       <div
         ref={containerRef}
-        className="modal-container max-width-540"
+        className="modal-container max-width-540 confirmation-modal-container"
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirmation-modal-title"
         aria-describedby="confirmation-modal-message"
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="modal-header">
+        <div className="modal-header confirmation-modal-header">
           <div className="flex-center">
-            <div className="modal-icon-box">
+            <div className="modal-icon-box confirmation-modal-icon-box" aria-hidden="true">
               <Icon name={styles.icon} />
             </div>
-            <h2 id="confirmation-modal-title">{title}</h2>
+            <h2 id="confirmation-modal-title" className="confirmation-modal-title">
+              {title}
+            </h2>
           </div>
+          <button
+            type="button"
+            className="modal-close confirmation-modal-close"
+            onClick={onCancel}
+            disabled={isLoading}
+            aria-label="Close"
+            title="Close"
+          >
+            <Icon name="times" />
+          </button>
         </div>
-        <div className="modal-body">
+        <div className="modal-body confirmation-modal-body">
           <p id="confirmation-modal-message" className="text-no-margin">
             {message}
           </p>
         </div>
-        <div className="modal-footer">
+        <div className="modal-footer confirmation-modal-footer">
           <button
+            type="button"
             className="btn btn-ghost"
             onClick={onCancel}
             disabled={isLoading}
+            aria-label={cancelText}
           >
             {cancelText}
           </button>
           <button
+            type="button"
             className={`btn ${styles.confirmBtn}`}
             onClick={onConfirm}
             disabled={isLoading}
+            aria-label={confirmText}
           >
             {isLoading ? (
               <>
-                <Icon name="spinner" spin /> Processing...
+                <Icon name="spinner" spin aria-hidden="true" /> Processing...
               </>
             ) : (
               confirmText

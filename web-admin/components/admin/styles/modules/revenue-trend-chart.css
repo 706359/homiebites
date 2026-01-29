@@ -1,0 +1,266 @@
+/**
+ * Monthly Revenue Trend (Last 12M) – fresh design
+ * Used in Dashboard and Analytics. Scoped with .revenue-trend-12m and .revenue-trend-card:has(.revenue-trend-col).
+ */
+
+.revenue-trend-card {
+  overflow: hidden;
+}
+
+.revenue-trend-title {
+  margin: 0 0 24px 0;
+  font-size: var(--admin-fs-base, 0.875rem);
+  font-weight: 600;
+  color: var(--admin-text-primary, #111827);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.revenue-trend-title-icon {
+  color: var(--admin-accent, #449031);
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+
+.revenue-trend-body {
+  padding: 0 0 8px 0;
+}
+
+/* 12M bar chart only (Dashboard + Analytics); avoid overriding YoY chart */
+.revenue-trend-12m .revenue-trend-chart,
+.revenue-trend-card:has(.revenue-trend-col) .revenue-trend-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 240px;
+  padding: 16px 0 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.revenue-trend-12m .revenue-trend-chart::-webkit-scrollbar,
+.revenue-trend-card:has(.revenue-trend-col)
+  .revenue-trend-chart::-webkit-scrollbar {
+  height: 6px;
+}
+
+.revenue-trend-12m .revenue-trend-chart::-webkit-scrollbar-track,
+.revenue-trend-card:has(.revenue-trend-col)
+  .revenue-trend-chart::-webkit-scrollbar-track {
+  background: var(--admin-border, #e5e7eb);
+  border-radius: 3px;
+}
+
+.revenue-trend-12m .revenue-trend-chart::-webkit-scrollbar-thumb,
+.revenue-trend-card:has(.revenue-trend-col)
+  .revenue-trend-chart::-webkit-scrollbar-thumb {
+  background: var(--admin-accent, #449031);
+  border-radius: 3px;
+}
+
+.revenue-trend-col {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.revenue-trend-track {
+  width: 100%;
+  height: 200px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.revenue-trend-bar {
+  width: 100%;
+  min-width: 28px;
+  max-width: 56px;
+  height: var(--bar-height, 0);
+  min-height: 0;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 6px;
+  transition:
+    height 0.2s ease,
+    background 0.2s ease;
+  cursor: default;
+}
+
+/* Average (≥15k): low greens */
+.revenue-trend-bar--avg {
+  background: linear-gradient(180deg, #6bb85a 0%, #4a9c38 100%);
+}
+
+/* Highest (peak): orange */
+.revenue-trend-bar--peak {
+  background: var(--admin-warning, #f59e0b);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+}
+
+/* Below 15k (10k–15k): orange */
+.revenue-trend-bar--orange {
+  background: var(--admin-warning, #f59e0b);
+  opacity: 0.9;
+}
+
+/* Below 10k: red */
+.revenue-trend-bar--red {
+  background: var(--admin-danger, #dc2626);
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+}
+
+.revenue-trend-bar--empty {
+  background: var(--admin-border, #e5e7eb);
+  opacity: 0.4;
+}
+
+.revenue-trend-bar-value {
+  font-size: var(--admin-fs-xs, 0.6875rem);
+  font-weight: 600;
+  color: var(--admin-text-white, #fff);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.revenue-trend-bar--peak .revenue-trend-bar-value,
+.revenue-trend-bar--orange .revenue-trend-bar-value {
+  color: var(--admin-text-primary, #111827);
+  text-shadow: none;
+}
+
+.revenue-trend-bar--red .revenue-trend-bar-value {
+  color: var(--admin-text-white, #fff);
+}
+
+.revenue-trend-month {
+  font-size: var(--admin-fs-xs, 0.6875rem);
+  font-weight: 600;
+  color: var(--admin-text-secondary, #6b7280);
+  text-align: center;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.revenue-trend-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-top: 20px;
+  padding: 14px 18px;
+  background: var(--admin-bg-secondary, #f9fafb);
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 10px;
+  font-size: var(--admin-fs-sm-mid, 0.8125rem);
+  color: var(--admin-text-primary, #111827);
+  line-height: 1.5;
+}
+
+.revenue-trend-summary-value {
+  font-weight: 700;
+  color: var(--admin-accent, #449031);
+  font-variant-numeric: tabular-nums;
+}
+
+.revenue-trend-summary-month {
+  font-weight: 500;
+  color: var(--admin-text-secondary, #64748b);
+}
+
+.revenue-trend-empty {
+  width: 100%;
+  padding: 48px 24px;
+  text-align: center;
+  font-size: var(--admin-fs-base, 0.875rem);
+  color: var(--admin-text-secondary, #6b7280);
+}
+
+.revenue-trend-cta {
+  margin-top: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .revenue-trend-chart {
+    min-height: 220px;
+    gap: 6px;
+    justify-content: flex-start;
+  }
+
+  .revenue-trend-track {
+    height: 170px;
+    min-height: 170px;
+  }
+
+  .revenue-trend-col {
+    min-width: 32px;
+    max-width: 44px;
+    flex: 0 0 auto;
+  }
+
+  .revenue-trend-bar {
+    min-width: 24px;
+    max-width: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .revenue-trend-title {
+    margin-bottom: 18px;
+    font-size: var(--admin-fs-sm-mid, 0.8125rem);
+  }
+
+  .revenue-trend-chart {
+    min-height: 200px;
+    padding: 12px 0 0;
+    gap: 4px;
+  }
+
+  .revenue-trend-track {
+    height: 150px;
+    min-height: 150px;
+  }
+
+  .revenue-trend-col {
+    min-width: 28px;
+    max-width: 36px;
+  }
+
+  .revenue-trend-bar {
+    min-width: 20px;
+    max-width: 28px;
+  }
+
+  .revenue-trend-month,
+  .revenue-trend-bar-value {
+    font-size: var(--admin-fs-2xs, 0.625rem);
+  }
+
+  .revenue-trend-summary {
+    margin-top: 16px;
+    padding: 12px 14px;
+    font-size: var(--admin-fs-sm, 0.75rem);
+  }
+}

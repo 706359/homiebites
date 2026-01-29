@@ -44,6 +44,16 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
             bar.style.height = 'var(--bar-height)';
           }
         });
+      (root || document)
+        .querySelectorAll('.revenue-trend-bar[data-height]')
+        .forEach((bar) => {
+          const heightPercent = parseFloat(bar.getAttribute('data-height'));
+          const track = bar.closest('.revenue-trend-track');
+          const containerHeight = track ? track.offsetHeight || 200 : 200;
+          const height = (heightPercent / 100) * containerHeight;
+          bar.style.setProperty('--bar-height', `${height}px`);
+          bar.style.height = 'var(--bar-height)';
+        });
     };
     setChartBarHeights();
     const observer = new MutationObserver(setChartBarHeights);
@@ -369,6 +379,85 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   }
   const maxDailyOrders = Math.max(...dailyOrdersData.map((d) => d.orders), 1);
 
+  const thisMonthRevenue = dailyOrdersData.reduce((s, d) => s + d.revenue, 0);
+  const thisMonthOrdersCount = dailyOrdersData.reduce(
+    (s, d) => s + d.orders,
+    0
+  );
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+  lastMonthEnd.setHours(23, 59, 59, 999);
+  const lastMonthOrders = orders.filter((o) => {
+    try {
+      const orderDate = parseOrderDate(o.date || o.order_date || null);
+      if (!orderDate) return false;
+      return orderDate >= lastMonthStart && orderDate <= lastMonthEnd;
+    } catch (e) {
+      return false;
+    }
+  });
+  const lastMonthRevenue = getTotalRevenue(lastMonthOrders);
+  const monthOverMonthGrowth =
+    lastMonthRevenue > 0
+      ? ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
+      : thisMonthRevenue > 0
+        ? 100
+        : 0;
+
+  const monthlyRevenueLast12 = (() => {
+    let mostRecentDate = new Date();
+    const validOrders = orders.filter((o) => {
+      const orderDate = parseOrderDate(o.date || o.order_date || null);
+      return orderDate !== null;
+    });
+    if (validOrders.length > 0) {
+      const dates = validOrders
+        .map((o) => parseOrderDate(o.date || o.order_date || null))
+        .filter(Boolean);
+      if (dates.length > 0) {
+        mostRecentDate = new Date(Math.max(...dates.map((d) => d.getTime())));
+      }
+    }
+    const trend = [];
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(mostRecentDate);
+      date.setMonth(date.getMonth() - i);
+      date.setDate(1);
+      date.setHours(0, 0, 0, 0);
+      const nextMonth = new Date(date);
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      const monthOrders = orders.filter((o) => {
+        try {
+          const orderDate = parseOrderDate(o.date || o.order_date || null);
+          if (!orderDate) return false;
+          return orderDate >= date && orderDate < nextMonth;
+        } catch (e) {
+          return false;
+        }
+      });
+      const monthName = date.toLocaleDateString('en-US', {
+        month: 'short',
+        year: 'numeric',
+      });
+      trend.push({
+        month: monthName,
+        revenue: getTotalRevenue(monthOrders),
+        orders: monthOrders.length,
+      });
+    }
+    return trend;
+  })();
+  const maxMonthlyRev12 =
+    monthlyRevenueLast12.length > 0
+      ? Math.max(...monthlyRevenueLast12.map((m) => m.revenue), 1)
+      : 1;
+  const peakMonth12 =
+    monthlyRevenueLast12.length > 0
+      ? monthlyRevenueLast12.reduce((max, m) =>
+          m.revenue > max.revenue ? m : max
+        )
+      : { month: '-', revenue: 0 };
+
   const paymentModeStats = {};
   allTimeOrders.forEach((o) => {
     const mode = o.paymentMode || 'Not Set';
@@ -486,180 +575,629 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     <div className="admin-content" ref={dashboardContainerRef}>
       <div className="dashboard-with-sidebar">
         <div className="dashboard-main-content">
-          <div
-            className="admin-stats"
-            key={`stats-${allTimeTotal}-${allTimeRevenue}-${allTimeUnpaidAmount}`}
+          <section
+            className="dashboard-section-block"
+            aria-labelledby="dashboard-at-a-glance"
           >
+            <h2
+              id="dashboard-at-a-glance"
+              className="dashboard-section-heading"
+            >
+              At a glance
+            </h2>
             <div
-              className="stat-card stat-card-primary stat-card-clickable"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (setActiveTab) {
-                  setActiveTab('analytics');
-                }
-              }}
-              title="Click to view detailed analytics"
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+              className="dashboard-quick-stats"
+              aria-label="Today, week, month, pending"
+            >
+              <div className="dashboard-quick-stat">
+                <span className="dashboard-quick-stat-label">Today</span>
+                <span className="dashboard-quick-stat-value">
+                  ₹{formatCurrency(todayRevenue)}
+                </span>
+                <span className="dashboard-quick-stat-meta">
+                  {todayOrdersCount} orders
+                </span>
+              </div>
+              <div className="dashboard-quick-stat">
+                <span className="dashboard-quick-stat-label">This week</span>
+                <span className="dashboard-quick-stat-value">
+                  ₹{formatCurrency(thisWeekRevenue)}
+                </span>
+                <span className="dashboard-quick-stat-meta">
+                  {thisWeekOrdersCount} orders
+                </span>
+              </div>
+              <div className="dashboard-quick-stat">
+                <span className="dashboard-quick-stat-label">This month</span>
+                <span className="dashboard-quick-stat-value">
+                  ₹{formatCurrency(thisMonthRevenue)}
+                </span>
+                <span
+                  className={`dashboard-quick-stat-meta ${
+                    monthOverMonthGrowth >= 0
+                      ? 'dashboard-quick-stat-meta--up'
+                      : 'dashboard-quick-stat-meta--down'
+                  }`}
+                >
+                  {thisMonthOrdersCount} orders
+                  {lastMonthRevenue >= 0 && (
+                    <>
+                      {' · '}
+                      {monthOverMonthGrowth >= 0 ? '+' : ''}
+                      {monthOverMonthGrowth.toFixed(0)}% vs last month
+                    </>
+                  )}
+                </span>
+              </div>
+              <div
+                className="dashboard-quick-stat dashboard-quick-stat--pending"
+                onClick={(e) => {
                   e.preventDefault();
+                  if (setActiveTab) setActiveTab('pendingAmounts');
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if ((e.key === 'Enter' || e.key === ' ') && setActiveTab) {
+                    e.preventDefault();
+                    setActiveTab('pendingAmounts');
+                  }
+                }}
+                title="View pending payments"
+              >
+                <span className="dashboard-quick-stat-label">Pending</span>
+                <span className="dashboard-quick-stat-value">
+                  ₹{formatCurrency(allTimeUnpaidAmount)}
+                </span>
+                <span className="dashboard-quick-stat-meta">
+                  {unpaidOrdersCount} orders
+                </span>
+              </div>
+            </div>
+          </section>
+
+          <section
+            className="dashboard-section-block"
+            aria-labelledby="dashboard-key-metrics"
+          >
+            <h2
+              id="dashboard-key-metrics"
+              className="dashboard-section-heading"
+            >
+              Key metrics
+            </h2>
+            <div
+              className="admin-stats"
+              key={`stats-${allTimeTotal}-${allTimeRevenue}-${allTimeUnpaidAmount}`}
+            >
+              <div
+                className="stat-card stat-card-primary stat-card-clickable"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   if (setActiveTab) {
                     setActiveTab('analytics');
                   }
-                }
-              }}
-            >
-              <Icon name="rupee-sign" />
-              <div>
-                <h3>₹{formatCurrency(allTimeRevenue)}</h3>
-                <p>Total Revenue</p>
-                <p
-                  className={`stat-card-subtitle ${
-                    isNewGrowth
-                      ? 'stat-card-subtitle-success'
-                      : yearOverYearGrowth >= 0
+                }}
+                title="Click to view detailed analytics"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (setActiveTab) {
+                      setActiveTab('analytics');
+                    }
+                  }
+                }}
+              >
+                <Icon name="rupee-sign" />
+                <div>
+                  <h3>₹{formatCurrency(allTimeRevenue)}</h3>
+                  <p>Total Revenue</p>
+                  <p
+                    className={`stat-card-subtitle ${
+                      isNewGrowth
                         ? 'stat-card-subtitle-success'
-                        : 'stat-card-subtitle-danger'
-                  }`}
-                >
-                  {isNewGrowth
-                    ? 'New ↑'
-                    : `${yearOverYearGrowth >= 0 ? '+' : ''}${yearOverYearGrowth.toFixed(1)}% ${
-                        yearOverYearGrowth >= 0 ? '↑' : '↓'
-                      } vs last year`}
-                </p>
+                        : yearOverYearGrowth >= 0
+                          ? 'stat-card-subtitle-success'
+                          : 'stat-card-subtitle-danger'
+                    }`}
+                  >
+                    {isNewGrowth
+                      ? 'New ↑'
+                      : `${yearOverYearGrowth >= 0 ? '+' : ''}${yearOverYearGrowth.toFixed(1)}% ${
+                          yearOverYearGrowth >= 0 ? '↑' : '↓'
+                        } vs last year`}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div
-              className="stat-card stat-card-clickable"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (setActiveTab) {
-                  setActiveTab('allOrdersData');
-                }
-              }}
-              title="Click to view all orders"
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+              <div
+                className="stat-card stat-card-clickable"
+                onClick={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   if (setActiveTab) {
                     setActiveTab('allOrdersData');
                   }
-                }
-              }}
-            >
-              <Icon name="shopping-cart" className="icon-color-accent" />
-              <div>
-                <h3>{allTimeTotal}</h3>
-                <p>Total Orders</p>
-                <p className="stat-card-subtitle">All time</p>
+                }}
+                title="Click to view all orders"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (setActiveTab) {
+                      setActiveTab('allOrdersData');
+                    }
+                  }
+                }}
+              >
+                <Icon name="shopping-cart" className="icon-color-accent" />
+                <div>
+                  <h3>{allTimeTotal}</h3>
+                  <p>Total Orders</p>
+                  <p className="stat-card-subtitle">All time</p>
+                </div>
               </div>
-            </div>
-            <div
-              className="stat-card stat-card-clickable"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (setActiveTab) {
-                  setActiveTab('pendingAmounts');
-                }
-              }}
-              title="Click to view pending payments"
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+              <div
+                className="stat-card stat-card-clickable"
+                onClick={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   if (setActiveTab) {
                     setActiveTab('pendingAmounts');
                   }
-                }
-              }}
-            >
-              <Icon name="exclamation-triangle" className="stat-card-icon-warning" />
-              <div>
-                <h3>₹{formatCurrency(allTimeUnpaidAmount)}</h3>
-                <p>Pending Payments</p>
-                <p className="stat-card-subtitle">
-                  {unpaidOrdersCount}{' '}
-                  {unpaidOrdersCount === 1 ? 'order' : 'orders'}
-                </p>
+                }}
+                title="Click to view pending payments"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (setActiveTab) {
+                      setActiveTab('pendingAmounts');
+                    }
+                  }
+                }}
+              >
+                <Icon
+                  name="exclamation-triangle"
+                  className="stat-card-icon-warning"
+                />
+                <div>
+                  <h3>₹{formatCurrency(allTimeUnpaidAmount)}</h3>
+                  <p>Pending Payments</p>
+                  <p className="stat-card-subtitle">
+                    {unpaidOrdersCount}{' '}
+                    {unpaidOrdersCount === 1 ? 'order' : 'orders'}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div
-              className="stat-card stat-card-clickable"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (setActiveTab) {
-                  setActiveTab('customers');
-                }
-              }}
-              title="Click to view all customers"
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+              <div
+                className="stat-card stat-card-clickable"
+                onClick={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   if (setActiveTab) {
                     setActiveTab('customers');
                   }
-                }
-              }}
-            >
-              <Icon name="users" className="icon-color-accent" />
-              <div>
-                <h3>{allUniqueAddresses}</h3>
-                <p>Total Customers</p>
-                <p className="stat-card-subtitle">Unique addresses</p>
+                }}
+                title="Click to view all customers"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (setActiveTab) {
+                      setActiveTab('customers');
+                    }
+                  }
+                }}
+              >
+                <Icon name="users" className="icon-color-accent" />
+                <div>
+                  <h3>{allUniqueAddresses}</h3>
+                  <p>Total Customers</p>
+                  <p className="stat-card-subtitle">Unique addresses</p>
+                </div>
+              </div>
+              <div className="stat-card">
+                <Icon name="chart-line" className="stat-card-icon-success" />
+                <div>
+                  <h3>₹{formatCurrency(allTimeAvgOrderValue)}</h3>
+                  <p>Avg Order Value</p>
+                </div>
+              </div>
+              <div className="stat-card">
+                <Icon name="chart-line" className="stat-card-icon-success" />
+                <div>
+                  <h3>₹{formatCurrency(profitStats.profit)}</h3>
+                  <p>Profit After Expenses</p>
+                  <p className="stat-card-subtitle">
+                    {profitStats.profitMarginPercent.toFixed(1)}% margin
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="stat-card">
-              <Icon name="chart-line" className="stat-card-icon-success" />
-              <div>
-                <h3>₹{formatCurrency(allTimeAvgOrderValue)}</h3>
-                <p>Avg Order Value</p>
-              </div>
-            </div>
-            <div className="stat-card">
-              <Icon name="chart-line" className="stat-card-icon-success" />
-              <div>
-                <h3>₹{formatCurrency(profitStats.profit)}</h3>
-                <p>Profit After Expenses</p>
-                <p className="stat-card-subtitle">
-                  {profitStats.profitMarginPercent.toFixed(1)}% margin
-                </p>
-              </div>
-            </div>
-          </div>
+          </section>
 
-          <div className="dashboard-charts-container">
-            <div className="dashboard-chart-full-width">
-              <div className="dashboard-card widget revenue-trend-card">
-                <div className="revenue-trend-header">
-                  <h3 className="dashboard-section-title revenue-trend-title">
-                    <Icon name="chart-line" />
-                    Revenue Trend (Year-over-Year Comparison)
+          <section
+            className="dashboard-section-block"
+            aria-labelledby="dashboard-trends"
+          >
+            <h2 id="dashboard-trends" className="dashboard-section-heading">
+              Trends
+            </h2>
+            <div className="dashboard-charts-container">
+              <div className="dashboard-chart-full-width">
+                <div className="dashboard-card revenue-trend-card revenue-trend-12m">
+                  <h3 className="revenue-trend-title">
+                    <Icon
+                      name="chart-line"
+                      className="revenue-trend-title-icon"
+                    />
+                    Monthly Revenue (Last 12M)
                   </h3>
-                  {sortedYears.length > 1 && monthlyRevenueData.length > 0 && (
-                    <div className="revenue-trend-legend">
+                  <div className="revenue-trend-body">
+                    <div className="revenue-trend-chart">
+                      {monthlyRevenueLast12.length > 0 ? (
+                        monthlyRevenueLast12.map((month, idx) => {
+                          const barHeightPercent =
+                            maxMonthlyRev12 > 0
+                              ? (month.revenue / maxMonthlyRev12) * 100
+                              : 0;
+                          const isPeak =
+                            month.month === peakMonth12.month &&
+                            month.revenue === peakMonth12.revenue;
+                          const rev = month.revenue;
+                          const barColorClass =
+                            rev <= 0
+                              ? 'revenue-trend-bar--empty'
+                              : isPeak
+                                ? 'revenue-trend-bar--peak'
+                                : rev < 10000
+                                  ? 'revenue-trend-bar--red'
+                                  : rev < 15000
+                                    ? 'revenue-trend-bar--orange'
+                                    : 'revenue-trend-bar--avg';
+                          return (
+                            <div key={idx} className="revenue-trend-col">
+                              <div className="revenue-trend-track">
+                                <div
+                                  className={`revenue-trend-bar ${barColorClass}`}
+                                  data-height={barHeightPercent.toFixed(2)}
+                                  title={`${month.month}: ₹${formatCurrency(month.revenue)} (${month.orders} orders)${isPeak ? ' (Peak)' : ''}`}
+                                >
+                                  {rev > 0 && (
+                                    <span className="revenue-trend-bar-value">
+                                      ₹{formatCurrency(month.revenue)}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <span className="revenue-trend-month">
+                                {month.month}
+                              </span>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="revenue-trend-empty">
+                          No revenue data
+                        </div>
+                      )}
+                    </div>
+                    {monthlyRevenueLast12.length > 0 &&
+                      peakMonth12.revenue > 0 && (
+                        <div className="revenue-trend-summary">
+                          Peak:{' '}
+                          <span className="revenue-trend-summary-value">
+                            ₹{formatCurrency(peakMonth12.revenue)}
+                          </span>
+                          <span className="revenue-trend-summary-month">
+                            ({peakMonth12.month})
+                          </span>
+                        </div>
+                      )}
+                    {setActiveTab && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-small revenue-trend-cta"
+                        onClick={() => setActiveTab('analytics')}
+                      >
+                        See full analytics →
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="dashboard-charts-grid-two">
+                <div className="dashboard-chart-full-width">
+                  <div className="dashboard-card widget revenue-trend-card">
+                    <div className="revenue-trend-header">
+                      <h3 className="dashboard-section-title revenue-trend-title">
+                        <Icon name="chart-line" />
+                        Revenue (Year-over-Year)
+                      </h3>
+                      {sortedYears.length > 1 &&
+                        monthlyRevenueData.length > 0 && (
+                          <div className="revenue-trend-legend">
+                            {sortedYears.map((year) => {
+                              const isCurrentYear = year === now.getFullYear();
+                              const isLastYear = year === now.getFullYear() - 1;
+                              return (
+                                <div
+                                  key={year}
+                                  className="revenue-trend-legend-item"
+                                >
+                                  <span
+                                    className={`revenue-trend-legend-dot ${
+                                      isCurrentYear
+                                        ? 'revenue-trend-legend-current'
+                                        : isLastYear
+                                          ? 'revenue-trend-legend-last'
+                                          : 'revenue-trend-legend-other'
+                                    }`}
+                                  />
+                                  <span>{year}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                    </div>
+                    {monthlyRevenueData.length > 0 ? (
+                      <div className="revenue-trend-chart">
+                        <div className="revenue-trend-y-axis">
+                          {(() => {
+                            const maxRev = Math.max(
+                              ...monthlyRevenueData.flatMap((m) =>
+                                Object.values(m.years).map((y) => y.revenue)
+                              ),
+                              1
+                            );
+                            const steps = [0, 0.25, 0.5, 0.75, 1];
+                            return steps.map((pct, i) => (
+                              <div key={i} className="revenue-trend-y-tick">
+                                ₹{formatCurrency(Math.round(pct * maxRev))}
+                              </div>
+                            ));
+                          })()}
+                        </div>
+                        <div className="revenue-trend-bars-wrap">
+                          {monthlyRevenueData.map((monthData, idx) => {
+                            const maxRevenue = Math.max(
+                              ...monthlyRevenueData.flatMap((m) =>
+                                Object.values(m.years).map((y) => y.revenue)
+                              ),
+                              1
+                            );
+                            const yearEntries = sortedYears
+                              .map((year) => ({
+                                year,
+                                ...(monthData.years[year] || {
+                                  revenue: 0,
+                                  orders: 0,
+                                }),
+                              }))
+                              .sort((a, b) => a.year - b.year);
+
+                            return (
+                              <div
+                                key={idx}
+                                className="revenue-trend-month-row"
+                              >
+                                <div className="revenue-trend-month-label">
+                                  {monthData.monthName}
+                                </div>
+                                <div className="revenue-trend-month-bars">
+                                  {yearEntries.map(
+                                    ({ year, revenue, orders }) => {
+                                      const widthPct =
+                                        maxRevenue > 0
+                                          ? (revenue / maxRevenue) * 100
+                                          : 0;
+                                      const isCurrentYear =
+                                        year === now.getFullYear();
+                                      const isLastYear =
+                                        year === now.getFullYear() - 1;
+                                      return (
+                                        <div
+                                          key={year}
+                                          className="revenue-trend-bar-row"
+                                          title={`${monthData.monthName} ${year}: ₹${formatCurrency(revenue)} (${orders} orders)`}
+                                        >
+                                          <span className="revenue-trend-year-tag">
+                                            {String(year).slice(-2)}
+                                          </span>
+                                          <div className="revenue-trend-bar-track">
+                                            <div
+                                              className={`revenue-trend-bar-fill ${
+                                                isCurrentYear
+                                                  ? 'revenue-trend-bar-current'
+                                                  : isLastYear
+                                                    ? 'revenue-trend-bar-last'
+                                                    : 'revenue-trend-bar-other'
+                                              }`}
+                                              style={{ width: `${widthPct}%` }}
+                                            />
+                                          </div>
+                                          <span className="revenue-trend-value">
+                                            ₹{formatCurrency(revenue)}
+                                          </span>
+                                        </div>
+                                      );
+                                    }
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="revenue-trend-empty">
+                        <Icon
+                          name="chart-line"
+                          className="revenue-trend-empty-icon"
+                        />
+                        <p className="revenue-trend-empty-title">
+                          No revenue data available
+                        </p>
+                        <p className="revenue-trend-empty-desc">
+                          Start adding orders to see your revenue trends
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="dashboard-chart-full-width">
+                <div className="dashboard-card widget">
+                  <h3 className="dashboard-section-title">
+                    <Icon name="chart-bar" className="icon-opacity" />
+                    Payment Mode (Year-over-Year)
+                  </h3>
+                  <div className="chart-container">
+                    {monthlyPaymentModeData.length > 0 ? (
+                      (() => {
+                        // Find max amount across all months, years, and payment modes for scaling
+                        const maxAmount = Math.max(
+                          ...monthlyPaymentModeData.flatMap((m) =>
+                            Object.values(m.years).flatMap((y) => [
+                              y.cash || 0,
+                              y.online || 0,
+                            ])
+                          ),
+                          1
+                        );
+
+                        return monthlyPaymentModeData.map((monthData, idx) => {
+                          // Ensure all years from sortedYears are included, even if no data
+                          const yearEntries = sortedYears
+                            .map((year) => {
+                              const data = monthData.years[year] || {
+                                cash: 0,
+                                online: 0,
+                              };
+                              return [year.toString(), data];
+                            })
+                            .sort(([a], [b]) => parseInt(a) - parseInt(b));
+
+                          return (
+                            <div
+                              key={idx}
+                              className={`bar-chart-item ${
+                                yearEntries.length > 1
+                                  ? 'bar-chart-item-multi-year'
+                                  : 'bar-chart-item-single-year'
+                              }`}
+                            >
+                              <div className="chart-bars-container">
+                                {yearEntries.map(([year, data]) => {
+                                  const cashHeightPercent =
+                                    maxAmount > 0
+                                      ? ((data.cash || 0) / maxAmount) * 100
+                                      : 0;
+                                  const onlineHeightPercent =
+                                    maxAmount > 0
+                                      ? ((data.online || 0) / maxAmount) * 100
+                                      : 0;
+                                  const isCurrentYear =
+                                    parseInt(year) === now.getFullYear();
+                                  const isLastYear =
+                                    parseInt(year) === now.getFullYear() - 1;
+                                  const yearMod = isCurrentYear
+                                    ? 'current'
+                                    : isLastYear
+                                      ? 'last'
+                                      : 'other';
+
+                                  return (
+                                    <div
+                                      key={year}
+                                      className={`chart-year-entry ${
+                                        yearEntries.length > 1
+                                          ? 'chart-year-entry-multi'
+                                          : 'chart-year-entry-single'
+                                      }`}
+                                    >
+                                      <div className="chart-payment-mode-group">
+                                        <div
+                                          className={`chart-bar ${
+                                            (data.cash || 0) > 0
+                                              ? `chart-bar-${yearMod}-cash`
+                                              : 'chart-bar-empty'
+                                          }`}
+                                          data-height={cashHeightPercent.toFixed(
+                                            2
+                                          )}
+                                          title={`${
+                                            monthData.monthName
+                                          } ${year} - Cash: ₹${formatCurrency(data.cash || 0)}`}
+                                        ></div>
+                                        <div
+                                          className={`chart-bar ${
+                                            (data.online || 0) > 0
+                                              ? `chart-bar-${yearMod}-online`
+                                              : 'chart-bar-empty'
+                                          }`}
+                                          data-height={onlineHeightPercent.toFixed(
+                                            2
+                                          )}
+                                          title={`${
+                                            monthData.monthName
+                                          } ${year} - Online: ₹${formatCurrency(data.online || 0)}`}
+                                        ></div>
+                                      </div>
+                                      {yearEntries.length > 1 && (
+                                        <span className="chart-year-label">
+                                          {year.toString().slice(-2)}
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              <span className="chart-month-label">
+                                {monthData.monthName}
+                              </span>
+                            </div>
+                          );
+                        });
+                      })()
+                    ) : (
+                      <div className="dashboard-empty-state">
+                        <Icon
+                          name="chart-bar"
+                          className="dashboard-empty-state-icon"
+                        />
+                        <p className="empty-state-text">
+                          No payment mode data available
+                        </p>
+                        <p className="dashboard-empty-text">
+                          Payment data will appear here once orders are added
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  {sortedYears.length > 1 && (
+                    <div className="chart-legend-container">
                       {sortedYears.map((year) => {
                         const isCurrentYear = year === now.getFullYear();
                         const isLastYear = year === now.getFullYear() - 1;
                         return (
-                          <div key={year} className="revenue-trend-legend-item">
-                            <span
-                              className={`revenue-trend-legend-dot ${
+                          <div key={year} className="chart-legend-item">
+                            <div
+                              className={`chart-legend-color ${
                                 isCurrentYear
-                                  ? 'revenue-trend-legend-current'
+                                  ? 'chart-legend-color-current'
                                   : isLastYear
-                                    ? 'revenue-trend-legend-last'
-                                    : 'revenue-trend-legend-other'
+                                    ? 'chart-legend-color-last'
+                                    : 'chart-legend-color-other'
                               }`}
                             />
                             <span>{year}</span>
@@ -668,335 +1206,101 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                       })}
                     </div>
                   )}
-                </div>
-                {monthlyRevenueData.length > 0 ? (
-                  <div className="revenue-trend-chart">
-                    <div className="revenue-trend-y-axis">
-                      {(() => {
-                        const maxRev = Math.max(
-                          ...monthlyRevenueData.flatMap((m) =>
-                            Object.values(m.years).map((y) => y.revenue)
-                          ),
-                          1
-                        );
-                        const steps = [0, 0.25, 0.5, 0.75, 1];
-                        return steps.map((pct, i) => (
-                          <div key={i} className="revenue-trend-y-tick">
-                            ₹{formatCurrency(Math.round(pct * maxRev))}
-                          </div>
-                        ));
-                      })()}
+                  <div className="chart-legend-container dashboard-chart-legend">
+                    <div className="chart-legend-item">
+                      <div className="chart-legend-color chart-legend-color-cash"></div>
+                      <span>Cash</span>
                     </div>
-                    <div className="revenue-trend-bars-wrap">
-                      {monthlyRevenueData.map((monthData, idx) => {
-                        const maxRevenue = Math.max(
-                          ...monthlyRevenueData.flatMap((m) =>
-                            Object.values(m.years).map((y) => y.revenue)
-                          ),
-                          1
-                        );
-                        const yearEntries = sortedYears
-                          .map((year) => ({
-                            year,
-                            ...(monthData.years[year] || {
-                              revenue: 0,
-                              orders: 0,
-                            }),
-                          }))
-                          .sort((a, b) => a.year - b.year);
-
-                        return (
-                          <div key={idx} className="revenue-trend-month-row">
-                            <div className="revenue-trend-month-label">
-                              {monthData.monthName}
-                            </div>
-                            <div className="revenue-trend-month-bars">
-                              {yearEntries.map(({ year, revenue, orders }) => {
-                                const widthPct =
-                                  maxRevenue > 0
-                                    ? (revenue / maxRevenue) * 100
-                                    : 0;
-                                const isCurrentYear =
-                                  year === now.getFullYear();
-                                const isLastYear =
-                                  year === now.getFullYear() - 1;
-                                return (
-                                  <div
-                                    key={year}
-                                    className="revenue-trend-bar-row"
-                                    title={`${monthData.monthName} ${year}: ₹${formatCurrency(revenue)} (${orders} orders)`}
-                                  >
-                                    <span className="revenue-trend-year-tag">
-                                      {String(year).slice(-2)}
-                                    </span>
-                                    <div className="revenue-trend-bar-track">
-                                      <div
-                                        className={`revenue-trend-bar-fill ${
-                                          isCurrentYear
-                                            ? 'revenue-trend-bar-current'
-                                            : isLastYear
-                                              ? 'revenue-trend-bar-last'
-                                              : 'revenue-trend-bar-other'
-                                        }`}
-                                        style={{ width: `${widthPct}%` }}
-                                      />
-                                    </div>
-                                    <span className="revenue-trend-value">
-                                      ₹{formatCurrency(revenue)}
-                                    </span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })}
+                    <div className="chart-legend-item">
+                      <div className="chart-legend-color chart-legend-color-online"></div>
+                      <span>Online</span>
                     </div>
-                  </div>
-                ) : (
-                  <div className="revenue-trend-empty">
-                    <Icon name="chart-line" className="revenue-trend-empty-icon" />
-                    <p className="revenue-trend-empty-title">
-                      No revenue data available
-                    </p>
-                    <p className="revenue-trend-empty-desc">
-                      Start adding orders to see your revenue trends
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="dashboard-chart-full-width">
-              <div className="dashboard-card widget">
-                <h3 className="dashboard-section-title">
-                  <Icon name="chart-bar" className="icon-opacity" />
-                  Payment Mode Trend (Year-over-Year Comparison)
-                </h3>
-                <div className="chart-container">
-                  {monthlyPaymentModeData.length > 0 ? (
-                    (() => {
-                      // Find max amount across all months, years, and payment modes for scaling
-                      const maxAmount = Math.max(
-                        ...monthlyPaymentModeData.flatMap((m) =>
-                          Object.values(m.years).flatMap((y) => [
-                            y.cash || 0,
-                            y.online || 0,
-                          ])
-                        ),
-                        1
-                      );
-
-                      return monthlyPaymentModeData.map((monthData, idx) => {
-                        // Ensure all years from sortedYears are included, even if no data
-                        const yearEntries = sortedYears
-                          .map((year) => {
-                            const data = monthData.years[year] || {
-                              cash: 0,
-                              online: 0,
-                            };
-                            return [year.toString(), data];
-                          })
-                          .sort(([a], [b]) => parseInt(a) - parseInt(b));
-
-                        return (
-                          <div
-                            key={idx}
-                            className={`bar-chart-item ${
-                              yearEntries.length > 1
-                                ? 'bar-chart-item-multi-year'
-                                : 'bar-chart-item-single-year'
-                            }`}
-                          >
-                            <div className="chart-bars-container">
-                              {yearEntries.map(([year, data]) => {
-                                const cashHeightPercent =
-                                  maxAmount > 0
-                                    ? ((data.cash || 0) / maxAmount) * 100
-                                    : 0;
-                                const onlineHeightPercent =
-                                  maxAmount > 0
-                                    ? ((data.online || 0) / maxAmount) * 100
-                                    : 0;
-                                const isCurrentYear =
-                                  parseInt(year) === now.getFullYear();
-                                const isLastYear =
-                                  parseInt(year) === now.getFullYear() - 1;
-                                const yearMod = isCurrentYear
-                                  ? 'current'
-                                  : isLastYear
-                                    ? 'last'
-                                    : 'other';
-
-                                return (
-                                  <div
-                                    key={year}
-                                    className={`chart-year-entry ${
-                                      yearEntries.length > 1
-                                        ? 'chart-year-entry-multi'
-                                        : 'chart-year-entry-single'
-                                    }`}
-                                  >
-                                    <div className="chart-payment-mode-group">
-                                      <div
-                                        className={`chart-bar ${
-                                          (data.cash || 0) > 0
-                                            ? `chart-bar-${yearMod}-cash`
-                                            : 'chart-bar-empty'
-                                        }`}
-                                        data-height={cashHeightPercent.toFixed(
-                                          2
-                                        )}
-                                        title={`${
-                                          monthData.monthName
-                                        } ${year} - Cash: ₹${formatCurrency(data.cash || 0)}`}
-                                      ></div>
-                                      <div
-                                        className={`chart-bar ${
-                                          (data.online || 0) > 0
-                                            ? `chart-bar-${yearMod}-online`
-                                            : 'chart-bar-empty'
-                                        }`}
-                                        data-height={onlineHeightPercent.toFixed(
-                                          2
-                                        )}
-                                        title={`${
-                                          monthData.monthName
-                                        } ${year} - Online: ₹${formatCurrency(data.online || 0)}`}
-                                      ></div>
-                                    </div>
-                                    {yearEntries.length > 1 && (
-                                      <span className="chart-year-label">
-                                        {year.toString().slice(-2)}
-                                      </span>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                            <span className="chart-month-label">
-                              {monthData.monthName}
-                            </span>
-                          </div>
-                        );
-                      });
-                    })()
-                  ) : (
-                    <div className="dashboard-empty-state">
-                      <Icon name="chart-bar" className="dashboard-empty-state-icon" />
-                      <p className="empty-state-text">
-                        No payment mode data available
-                      </p>
-                      <p className="dashboard-empty-text">
-                        Payment data will appear here once orders are added
-                      </p>
-                    </div>
-                  )}
-                </div>
-                {sortedYears.length > 1 && (
-                  <div className="chart-legend-container">
-                    {sortedYears.map((year) => {
-                      const isCurrentYear = year === now.getFullYear();
-                      const isLastYear = year === now.getFullYear() - 1;
-                      return (
-                        <div key={year} className="chart-legend-item">
-                          <div
-                            className={`chart-legend-color ${
-                              isCurrentYear
-                                ? 'chart-legend-color-current'
-                                : isLastYear
-                                  ? 'chart-legend-color-last'
-                                  : 'chart-legend-color-other'
-                            }`}
-                          />
-                          <span>{year}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                <div className="chart-legend-container dashboard-chart-legend">
-                  <div className="chart-legend-item">
-                    <div className="chart-legend-color chart-legend-color-cash"></div>
-                    <span>Cash</span>
-                  </div>
-                  <div className="chart-legend-item">
-                    <div className="chart-legend-color chart-legend-color-online"></div>
-                    <span>Online</span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
           {recentOrders.length > 0 && (
-            <div className="dashboard-section">
-              <div className="recent-orders-header">
-                <h3 className="dashboard-section-title recent-orders-title">
-                  <Icon name="clock-rotate-left" className="icon-opacity" />
-                  Recent Orders (Last 10)
-                </h3>
-                <button
-                  className="btn btn-ghost btn-small"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (setActiveTab) {
-                      setActiveTab('allOrdersData');
-                    }
-                  }}
-                >
-                  View All Orders →
-                </button>
-              </div>
-              <div className="dashboard-card widget">
-                <div className="recent-orders-table-container">
-                  <table className="recent-orders-table">
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Address</th>
-                        <th>Quantity</th>
-                        <th>Amount</th>
-                        <th>Mode</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {recentOrders.map((order, idx) => {
-                        const orderDate = parseOrderDate(
-                          order.date || order.order_date || null
-                        );
-                        const dateStr = formatDate(orderDate);
-                        const status = (order.status || '').toLowerCase();
-                        const isPaid = status === 'paid';
-                        return (
-                          <tr key={idx}>
-                            <td>{dateStr}</td>
-                            <td>
-                              {order.deliveryAddress ||
-                                order.customerAddress ||
-                                order.address ||
-                                'N/A'}
-                            </td>
-                            <td>{order.quantity || 1}</td>
-                            <td>₹{formatCurrency(getOrderAmount(order))}</td>
-                            <td>{order.mode || 'N/A'}</td>
-                            <td>
-                              <span
-                                className={`badge ${isPaid ? 'badge-success' : 'badge-warning'}`}
-                              >
-                                {order.status || 'No Status'}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+            <section
+              className="dashboard-section-block"
+              aria-labelledby="dashboard-recent-orders"
+            >
+              <h2
+                id="dashboard-recent-orders"
+                className="dashboard-section-heading"
+              >
+                Recent activity
+              </h2>
+              <div className="dashboard-section">
+                <div className="recent-orders-header">
+                  <h3 className="dashboard-section-title recent-orders-title">
+                    <Icon name="clock-rotate-left" className="icon-opacity" />
+                    Recent Orders (Last 10)
+                  </h3>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-small"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (setActiveTab) {
+                        setActiveTab('allOrdersData');
+                      }
+                    }}
+                  >
+                    View All Orders →
+                  </button>
+                </div>
+                <div className="dashboard-card widget">
+                  <div className="recent-orders-table-container">
+                    <table className="recent-orders-table">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Address</th>
+                          <th>Quantity</th>
+                          <th>Amount</th>
+                          <th>Mode</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {recentOrders.map((order, idx) => {
+                          const orderDate = parseOrderDate(
+                            order.date || order.order_date || null
+                          );
+                          const dateStr = formatDate(orderDate);
+                          const status = (order.status || '').toLowerCase();
+                          const isPaid = status === 'paid';
+                          return (
+                            <tr key={idx}>
+                              <td>{dateStr}</td>
+                              <td>
+                                {order.deliveryAddress ||
+                                  order.customerAddress ||
+                                  order.address ||
+                                  'N/A'}
+                              </td>
+                              <td>{order.quantity || 1}</td>
+                              <td>₹{formatCurrency(getOrderAmount(order))}</td>
+                              <td>{order.mode || 'N/A'}</td>
+                              <td>
+                                <span
+                                  className={`badge ${isPaid ? 'badge-success' : 'badge-warning'}`}
+                                >
+                                  {order.status || 'No Status'}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
-            </div>
+            </section>
           )}
         </div>
       </div>

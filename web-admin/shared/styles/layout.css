@@ -1,0 +1,187 @@
+/* ========================================================================
+   ENTERPRISE LAYOUT – Public site
+   Use: .site-container (max-width + padding), .section, .section-inner
+   ======================================================================== */
+
+/* Main content wrapper: max-width + horizontal padding */
+.site-container {
+  width: 100%;
+  max-width: var(--content-wide, 1400px);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--section-padding-x, clamp(1.25rem, 4vw, 2rem));
+  padding-right: var(--section-padding-x, clamp(1.25rem, 4vw, 2rem));
+  box-sizing: border-box;
+}
+
+.site-container--narrow {
+  max-width: var(--content-max, 1200px);
+}
+
+.site-container--tight {
+  max-width: var(--content-narrow, 720px);
+}
+
+/* Section: vertical rhythm (padding top/bottom) */
+.section {
+  padding-top: var(--section-padding-y, clamp(3rem, 6vw, 5rem));
+  padding-bottom: var(--section-padding-y, clamp(3rem, 6vw, 5rem));
+  box-sizing: border-box;
+}
+
+.section--sm {
+  padding-top: var(--space-32, 2rem);
+  padding-bottom: var(--space-32, 2rem);
+}
+
+.section--lg {
+  padding-top: var(--space-64, 4rem);
+  padding-bottom: var(--space-64, 4rem);
+}
+
+/* Inner content width (e.g. text column) */
+.section-inner {
+  max-width: var(--content-max, 1200px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.section-inner--narrow {
+  max-width: var(--content-narrow, 720px);
+}
+
+.section-inner--tight {
+  max-width: var(--content-tight, 560px);
+}
+
+/* Spacing utilities (gap between elements) */
+.gap-16 {
+  gap: var(--space-16);
+}
+.gap-24 {
+  gap: var(--space-24);
+}
+.gap-32 {
+  gap: var(--space-32);
+}
+.gap-48 {
+  gap: var(--space-48);
+}
+
+.mb-16 {
+  margin-bottom: var(--space-16);
+}
+.mb-24 {
+  margin-bottom: var(--space-24);
+}
+.mb-32 {
+  margin-bottom: var(--space-32);
+}
+.mb-48 {
+  margin-bottom: var(--space-48);
+}
+
+.mt-16 {
+  margin-top: var(--space-16);
+}
+.mt-24 {
+  margin-top: var(--space-24);
+}
+.mt-32 {
+  margin-top: var(--space-32);
+}
+
+/* Page layout (for inner pages: privacy, terms, etc.) */
+.page-layout {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-main {
+  flex: 1;
+  padding-top: var(--space-80, 5rem);
+  padding-bottom: var(--space-64, 4rem);
+}
+
+.page-content {
+  width: 100%;
+  max-width: var(--content-narrow, 720px);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--section-padding-x);
+  padding-right: var(--section-padding-x);
+  box-sizing: border-box;
+}
+
+.page-content h1 {
+  font-size: var(--heading-1);
+  line-height: var(--line-tight);
+  margin-bottom: var(--space-24);
+}
+
+.page-content__updated {
+  font-size: 0.9rem;
+  color: var(--gray);
+  margin-bottom: var(--space-32);
+  font-style: italic;
+}
+
+.page-content > section {
+  margin-bottom: var(--space-40);
+}
+
+.page-content > section:last-child {
+  margin-bottom: 0;
+}
+
+.page-content h2 {
+  font-size: var(--heading-2);
+  line-height: var(--line-tight);
+  margin-top: var(--space-40);
+  margin-bottom: var(--space-16);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.page-content h3 {
+  font-size: var(--heading-3);
+  margin-top: var(--space-32);
+  margin-bottom: var(--space-12);
+}
+
+.page-content p {
+  font-size: var(--text-body);
+  line-height: var(--line-relaxed);
+  margin-bottom: var(--space-16);
+}
+
+.page-content p:last-child {
+  margin-bottom: 0;
+}
+
+.page-content ul,
+.page-content ol {
+  margin-bottom: var(--space-16);
+  padding-left: 1.5rem;
+}
+
+.page-content li {
+  margin-bottom: var(--space-8);
+  line-height: var(--line-relaxed);
+}
+
+.page-content a {
+  color: var(--primary-green);
+  text-decoration: none;
+}
+
+.page-content a:hover {
+  text-decoration: underline;
+}
+
+.page-content a:focus-visible {
+  outline: 2px solid var(--primary-green);
+  outline-offset: 2px;
+}

@@ -10,11 +10,11 @@
 
 /* Header Section */
 .today-order-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   border-radius: 16px;
   padding: 32px 40px;
   margin-bottom: 24px;
-  box-shadow: 
+  box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
   color: white;
@@ -53,7 +53,7 @@
   font-size: var(--admin-fs-md);
   margin: 0;
   opacity: 0.9;
-  font-weight: 400;
+  font-weight: 500;
   color: rgba(255, 255, 255, 0.95);
 }
 
@@ -185,7 +185,7 @@
 .today-order-table-section {
   background: white;
   border-radius: 16px;
-  box-shadow: 
+  box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.1),
     0 1px 2px rgba(0, 0, 0, 0.06);
   border: 1px solid #e5e7eb;
@@ -208,22 +208,22 @@
 }
 
 .today-order-table thead {
-  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  background: #f9fafb;
   border-bottom: 2px solid #e5e7eb;
 }
 
 .today-order-table th {
   padding: 16px 20px;
   text-align: left;
-  font-size: var(--admin-fs-sm-mid);
-  font-weight: 600;
+  font-size: var(--admin-fs-base);
+  font-weight: 500;
   color: #374151;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
   position: sticky;
   top: 0;
-  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  background: #f9fafb;
   z-index: 10;
 }
 
@@ -252,6 +252,17 @@
   vertical-align: middle;
 }
 
+/* Equal font-size and font-weight 500 in table columns */
+.today-order-table th *,
+.today-order-table td * {
+  font-size: var(--admin-fs-base);
+  font-weight: 500;
+}
+.today-order-table th,
+.today-order-table td {
+  font-weight: 500;
+}
+
 /* Order ID Cell */
 .order-id-cell {
   min-width: 200px;
@@ -261,17 +272,17 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
   padding: 8px 14px;
   border-radius: 8px;
-  font-weight: 600;
-  font-size: var(--admin-fs-sm-mid);
+  font-weight: 500;
+  font-size: var(--admin-fs-base);
   box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
 }
 
 .order-id-badge i {
-  font-size: var(--admin-fs-xs);
+  font-size: var(--admin-fs-base);
   opacity: 0.9;
 }
 
@@ -290,7 +301,6 @@
 
 .address-content i {
   color: #667eea;
-  font-size: var(--admin-fs-base);
 }
 
 /* Date Cell */
@@ -307,7 +317,6 @@
 
 .date-content i {
   color: #9ca3af;
-  font-size: var(--admin-fs-sm-mid);
 }
 
 /* Mode Cell */
@@ -321,7 +330,7 @@
   color: #374151;
   padding: 6px 12px;
   border-radius: 6px;
-  font-size: var(--admin-fs-sm-mid);
+  font-size: var(--admin-fs-base);
   font-weight: 500;
 }
 
@@ -339,7 +348,7 @@
   color: #1e40af;
   padding: 6px 12px;
   border-radius: 6px;
-  font-weight: 600;
+  font-weight: 500;
   font-size: var(--admin-fs-base);
   min-width: 40px;
 }
@@ -350,8 +359,8 @@
 }
 
 .amount-value {
-  font-weight: 700;
-  font-size: var(--admin-fs-base-mid);
+  font-weight: 500;
+  font-size: var(--admin-fs-base);
   color: #059669;
 }
 
@@ -367,7 +376,7 @@
   padding: 8px 14px;
   border-radius: 8px;
   font-size: var(--admin-fs-sm-mid);
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -414,7 +423,7 @@
   border: none;
   border-radius: 8px;
   font-size: var(--admin-fs-sm-mid);
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -435,21 +444,21 @@
 }
 
 .btn-accept {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #059669;
   color: white;
 }
 
 .btn-accept:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: #047857;
 }
 
 .btn-cancel {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: #d97706;
   color: white;
 }
 
 .btn-cancel:hover {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  background: #b45309;
 }
 
 .btn-delete {
@@ -479,7 +488,7 @@
   .today-order-table th,
   .today-order-table td {
     padding: 16px;
-    font-size: var(--admin-fs-sm-mid);
+    font-size: var(--admin-fs-base);
   }
 }
 
@@ -551,12 +560,12 @@
   .today-order-table th,
   .today-order-table td {
     padding: 12px;
-    font-size: var(--admin-fs-sm);
+    font-size: var(--admin-fs-base);
   }
 
   .order-id-badge {
     padding: 6px 10px;
-    font-size: var(--admin-fs-xs);
+    font-size: var(--admin-fs-base);
   }
 
   .btn-action {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import Icon from '../ui/Icon.jsx';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance.js';
 import api from '../../lib/api-admin.js';
+import Icon from '../ui/Icon.jsx';
 import ConfirmationModal from './ConfirmationModal.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
 
@@ -19,7 +19,7 @@ const OffersTab = ({
   const [selectedOffer, setSelectedOffer] = useState(null);
 
   useAutoKeyboardAvoidance({
-    containerSelector: '.modal-container, .offers-tab',
+    containerSelector: '.modal-container, .admin-content',
     inputSelector: 'input, textarea, select',
   });
 
@@ -87,9 +87,10 @@ const OffersTab = ({
       description: offer.description || '',
       discount: offer.discount || '',
       badge: offer.badge || '',
-      terms: Array.isArray(offer.terms) && offer.terms.length > 0
-        ? offer.terms
-        : [''],
+      terms:
+        Array.isArray(offer.terms) && offer.terms.length > 0
+          ? offer.terms
+          : [''],
       startDate: offer.startDate
         ? new Date(offer.startDate).toISOString().split('T')[0]
         : '',
@@ -221,157 +222,185 @@ const OffersTab = ({
   });
 
   if (loading || loadingOffers) {
-    return <PremiumLoader message="Loading offers..." />;
+    return (
+      <div className="admin-content">
+        <PremiumLoader message="Loading offers..." />
+      </div>
+    );
   }
 
   return (
-    <div className="offers-tab">
-      <div className="tab-header">
-        <div className="tab-header-content">
-          <h2 className="tab-title">Special Offers</h2>
-          <p className="tab-subtitle">
-            Manage special offers and promotions displayed on the website
-          </p>
+    <div className="admin-content">
+      <div className="kitchen-tab">
+        <div className="kitchen-tab-stats">
+          <div className="stat-card">
+            <Icon name="tag" />
+            <div>
+              <h3>{offers.length}</h3>
+              <p>{offers.length === 1 ? 'Offer' : 'Offers'} total</p>
+            </div>
+          </div>
+          <div className="stat-card stat-card-success">
+            <Icon name="check-circle" />
+            <div>
+              <h3>{activeOffers.length}</h3>
+              <p>Active</p>
+            </div>
+          </div>
+          <div className="stat-card stat-card-warning">
+            <Icon name="clock" />
+            <div>
+              <h3>{expiredOffers.length}</h3>
+              <p>Expired</p>
+            </div>
+          </div>
         </div>
-        <button className="btn btn-primary" onClick={handleAddOffer}>
-          <Icon name="plus"/> Add New Offer
-        </button>
-      </div>
 
-      <div className="offers-stats">
-        <div className="stat-card">
-          <div className="stat-value">{offers.length}</div>
-          <div className="stat-label">Total Offers</div>
+        <div className="kitchen-tab-actions">
+          <div className="kitchen-tab-actions-left">
+            <span className="table-info-text">
+              {offers.length} {offers.length === 1 ? 'offer' : 'offers'}
+            </span>
+          </div>
+          <div className="kitchen-tab-actions-right">
+            <button className="btn btn-primary" onClick={handleAddOffer}>
+              <Icon name="plus" /> Add New Offer
+            </button>
+          </div>
         </div>
-        <div className="stat-card stat-card-success">
-          <div className="stat-value">{activeOffers.length}</div>
-          <div className="stat-label">Active Offers</div>
-        </div>
-        <div className="stat-card stat-card-warning">
-          <div className="stat-value">{expiredOffers.length}</div>
-          <div className="stat-label">Expired Offers</div>
-        </div>
-      </div>
 
-      {offers.length === 0 ? (
-        <div className="empty-state">
-          <Icon name="tag" className="empty-state-icon"/>
-          <h3 className="empty-state-title">No offers yet</h3>
-          <p className="empty-state-message">
-            Create your first special offer to attract more customers
-          </p>
-          <button className="btn btn-primary" onClick={handleAddOffer}>
-            <Icon name="plus"/> Add Your First Offer
-          </button>
-        </div>
-      ) : (
-        <div className="offers-list">
-          {offers.map((offer, index) => {
-            const isExpired =
-              offer.endDate && new Date(offer.endDate) < new Date();
-            const isInactive = !offer.isActive;
+        <div className="kitchen-tab-card">
+          {offers.length === 0 ? (
+            <div className="kitchen-tab-empty">
+              <Icon name="tag" className="kitchen-tab-empty-icon" aria-hidden />
+              <h3 className="kitchen-tab-empty-title">No offers yet</h3>
+              <p className="kitchen-tab-empty-desc">
+                Create your first special offer to attract more customers
+              </p>
+              <button className="btn btn-primary" onClick={handleAddOffer}>
+                <Icon name="plus" /> Add Your First Offer
+              </button>
+            </div>
+          ) : (
+            <div className="offers-list-wrapper">
+              <div className="offers-list">
+                {offers.map((offer, index) => {
+                  const isExpired =
+                    offer.endDate && new Date(offer.endDate) < new Date();
+                  const isInactive = !offer.isActive;
 
-            return (
-              <div
-                key={offer._id || offer.id || index}
-                className={`offer-card ${isExpired ? 'offer-expired' : ''} ${
-                  isInactive ? 'offer-inactive' : ''
-                }`}
-              >
-                <div className="offer-card-header">
-                  <div className="offer-card-title-section">
-                    <h3 className="offer-card-title">{offer.title}</h3>
-                    {offer.badge && (
-                      <span className="offer-badge">{offer.badge}</span>
-                    )}
-                    {isExpired && (
-                      <span className="offer-status-badge offer-status-expired">
-                        Expired
-                      </span>
-                    )}
-                    {isInactive && (
-                      <span className="offer-status-badge offer-status-inactive">
-                        Inactive
-                      </span>
-                    )}
-                    {!isExpired && offer.isActive && (
-                      <span className="offer-status-badge offer-status-active">
-                        Active
-                      </span>
-                    )}
-                  </div>
-                  <div className="offer-card-actions">
-                    <button
-                      className="btn-icon"
-                      onClick={() => handleEditOffer(offer)}
-                      title="Edit offer"
+                  return (
+                    <div
+                      key={offer._id || offer.id || index}
+                      className={`offer-card ${isExpired ? 'offer-expired' : ''} ${
+                        isInactive ? 'offer-inactive' : ''
+                      }`}
                     >
-                      <Icon name="edit"/>
-                    </button>
-                    <button
-                      className="btn-icon btn-icon-danger"
-                      onClick={() => {
-                        setSelectedOffer(offer);
-                        setShowDeleteModal(true);
-                      }}
-                      title="Delete offer"
-                    >
-                      <Icon name="trash"/>
-                    </button>
-                  </div>
-                </div>
+                      <div className="offer-card-header">
+                        <div className="offer-card-title-section">
+                          <h3 className="offer-card-title">{offer.title}</h3>
+                          {offer.badge && (
+                            <span className="offer-badge">{offer.badge}</span>
+                          )}
+                          {isExpired && (
+                            <span className="offer-status-badge offer-status-expired">
+                              Expired
+                            </span>
+                          )}
+                          {isInactive && (
+                            <span className="offer-status-badge offer-status-inactive">
+                              Inactive
+                            </span>
+                          )}
+                          {!isExpired && offer.isActive && (
+                            <span className="offer-status-badge offer-status-active">
+                              Active
+                            </span>
+                          )}
+                        </div>
+                        <div className="offer-card-actions">
+                          <button
+                            className="btn-icon"
+                            onClick={() => handleEditOffer(offer)}
+                            title="Edit offer"
+                          >
+                            <Icon name="pencil" />
+                          </button>
+                          <button
+                            className="btn-icon btn-icon-danger"
+                            onClick={() => {
+                              setSelectedOffer(offer);
+                              setShowDeleteModal(true);
+                            }}
+                            title="Delete offer"
+                          >
+                            <Icon name="trash" />
+                          </button>
+                        </div>
+                      </div>
 
-                <div className="offer-card-body">
-                  {offer.description && (
-                    <p className="offer-description">{offer.description}</p>
-                  )}
+                      <div className="offer-card-body">
+                        {offer.description && (
+                          <p className="offer-description">
+                            {offer.description}
+                          </p>
+                        )}
 
-                  <div className="offer-details">
-                    <div className="offer-detail-item">
-                      <span className="offer-detail-label">Discount:</span>
-                      <span className="offer-detail-value">
-                        {offer.type === 'Percentage'
-                          ? `${offer.value}%`
-                          : `₹${offer.value}`}
-                        {offer.discount && ` - ${offer.discount}`}
-                      </span>
+                        <div className="offer-details">
+                          <div className="offer-detail-item">
+                            <span className="offer-detail-label">
+                              Discount:
+                            </span>
+                            <span className="offer-detail-value">
+                              {offer.type === 'Percentage'
+                                ? `${offer.value}%`
+                                : `₹${offer.value}`}
+                              {offer.discount && ` - ${offer.discount}`}
+                            </span>
+                          </div>
+
+                          {offer.startDate && (
+                            <div className="offer-detail-item">
+                              <span className="offer-detail-label">
+                                Start Date:
+                              </span>
+                              <span className="offer-detail-value">
+                                {new Date(offer.startDate).toLocaleDateString()}
+                              </span>
+                            </div>
+                          )}
+
+                          {offer.endDate && (
+                            <div className="offer-detail-item">
+                              <span className="offer-detail-label">
+                                End Date:
+                              </span>
+                              <span className="offer-detail-value">
+                                {new Date(offer.endDate).toLocaleDateString()}
+                              </span>
+                            </div>
+                          )}
+
+                          {offer.terms && offer.terms.length > 0 && (
+                            <div className="offer-detail-item">
+                              <span className="offer-detail-label">Terms:</span>
+                              <ul className="offer-terms-list">
+                                {offer.terms.map((term, idx) => (
+                                  <li key={idx}>{term}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-
-                    {offer.startDate && (
-                      <div className="offer-detail-item">
-                        <span className="offer-detail-label">Start Date:</span>
-                        <span className="offer-detail-value">
-                          {new Date(offer.startDate).toLocaleDateString()}
-                        </span>
-                      </div>
-                    )}
-
-                    {offer.endDate && (
-                      <div className="offer-detail-item">
-                        <span className="offer-detail-label">End Date:</span>
-                        <span className="offer-detail-value">
-                          {new Date(offer.endDate).toLocaleDateString()}
-                        </span>
-                      </div>
-                    )}
-
-                    {offer.terms && offer.terms.length > 0 && (
-                      <div className="offer-detail-item">
-                        <span className="offer-detail-label">Terms:</span>
-                        <ul className="offer-terms-list">
-                          {offer.terms.map((term, idx) => (
-                            <li key={idx}>{term}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Add Offer Modal */}
       {showAddModal && (
@@ -386,7 +415,7 @@ const OffersTab = ({
                 className="modal-close"
                 onClick={() => setShowAddModal(false)}
               >
-                <Icon name="times"/>
+                <Icon name="times" />
               </button>
             </div>
             <div className="modal-body">
@@ -509,7 +538,7 @@ const OffersTab = ({
                         className="btn-icon btn-icon-danger"
                         onClick={() => handleRemoveTerm(index)}
                       >
-                        <Icon name="times"/>
+                        <Icon name="times" />
                       </button>
                     )}
                   </div>
@@ -519,7 +548,7 @@ const OffersTab = ({
                   className="btn btn-ghost btn-small"
                   onClick={handleAddTerm}
                 >
-                  <Icon name="plus"/> Add Term
+                  <Icon name="plus" /> Add Term
                 </button>
               </div>
 
@@ -574,7 +603,7 @@ const OffersTab = ({
                 className="btn btn-primary"
                 onClick={() => handleSaveOffer(false)}
               >
-                <Icon name="save"/> Add Offer
+                <Icon name="save" /> Add Offer
               </button>
             </div>
           </div>
@@ -594,7 +623,7 @@ const OffersTab = ({
                 className="modal-close"
                 onClick={() => setShowEditModal(false)}
               >
-                <Icon name="times"/>
+                <Icon name="times" />
               </button>
             </div>
             <div className="modal-body">
@@ -717,7 +746,7 @@ const OffersTab = ({
                         className="btn-icon btn-icon-danger"
                         onClick={() => handleRemoveTerm(index)}
                       >
-                        <Icon name="times"/>
+                        <Icon name="times" />
                       </button>
                     )}
                   </div>
@@ -727,7 +756,7 @@ const OffersTab = ({
                   className="btn btn-ghost btn-small"
                   onClick={handleAddTerm}
                 >
-                  <Icon name="plus"/> Add Term
+                  <Icon name="plus" /> Add Term
                 </button>
               </div>
 
@@ -782,7 +811,7 @@ const OffersTab = ({
                 className="btn btn-primary"
                 onClick={() => handleSaveOffer(true)}
               >
-                <Icon name="save"/> Save Changes
+                <Icon name="save" /> Save Changes
               </button>
             </div>
           </div>

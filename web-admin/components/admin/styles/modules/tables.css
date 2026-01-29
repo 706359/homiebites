@@ -5,12 +5,12 @@
 .action-bar {
   display: flex;
   align-items: center;
-  padding: 20px 24px;
-  gap: 16px;
+  padding: var(--admin-space-lg, 20px) var(--admin-space-xl, 24px);
+  gap: var(--admin-space-md, 16px);
   width: 100%;
   min-height: 64px;
   flex-wrap: wrap;
-  margin-bottom: 24px;
+  margin-bottom: var(--admin-space-lg, 20px);
   background: var(--admin-bg, #ffffff);
   border: 1px solid var(--admin-border, #e5e7eb);
   border-radius: 12px;
@@ -20,7 +20,12 @@
 }
 
 .action-bar-spaced {
-  margin-top: 24px;
+  margin-top: var(--admin-space-lg, 20px);
+}
+
+/* Inside kitchen-tab, gap handles spacing – avoid double margin */
+.kitchen-tab .action-bar {
+  margin-bottom: 0;
 }
 
 .select-all-container {
@@ -69,14 +74,14 @@
 .action-bar .search-container {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--admin-space-sm, 12px);
   flex: 1;
   min-width: 0;
   position: relative;
   background: var(--admin-bg-secondary, #f9fafb);
   border: 1px solid var(--admin-border, #e5e7eb);
   border-radius: 10px;
-  padding: 10px 12px;
+  padding: var(--admin-space-sm, 10px) var(--admin-space-sm, 12px);
   min-height: 44px;
   transition: all 0.2s ease;
   box-sizing: border-box;
@@ -164,7 +169,7 @@
 .bulk-actions-inline {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--admin-space-xs, 8px);
   flex-shrink: 0;
   margin-left: 0;
 }
@@ -178,11 +183,13 @@
   white-space: nowrap;
 }
 
-.action-buttons-group {
+.action-buttons-group,
+.action-buttons-cell {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--admin-space-xs, 8px);
   flex-shrink: 0;
+  justify-content: center;
 }
 
 .table-info-text {
@@ -200,14 +207,14 @@
   display: flex;
   align-items: center;
   justify-content: space-evenly;
-  padding: 16px 20px;
+  padding: var(--admin-space-md, 16px) var(--admin-space-lg, 20px);
   background: var(--admin-bg, #ffffff);
   border: 1px solid var(--admin-border, #e5e7eb);
   border-radius: 12px;
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.08),
     0 1px 2px rgba(0, 0, 0, 0.06);
-  margin: 24px auto 0;
+  margin: var(--admin-space-lg, 20px) auto 0;
   flex-wrap: nowrap;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -436,12 +443,33 @@
   border-bottom: 1px solid var(--admin-border, #e5e7eb);
 }
 
+/* Single font-size for all table columns (th + td and their content) */
+.orders-table th,
+.orders-table td {
+  font-size: var(--admin-fs-base);
+}
+.orders-table th *,
+.orders-table td * {
+  font-size: var(--admin-fs-base);
+}
+
+/* All table content: font-weight 500 only (no conflict, no !important) */
+.orders-table th,
+.orders-table td,
+.orders-table th *,
+.orders-table td * {
+  font-weight: 500;
+}
+.orders-table .font-semibold,
+.orders-table .font-bold,
+.orders-table .badge-small {
+  font-weight: 500;
+}
+
 .orders-table th {
   height: 52px;
   padding: 0 20px;
   text-align: left;
-  font-size: var(--admin-fs-base);
-  font-weight: 700;
   line-height: 1.4;
   color: var(--admin-text-primary, #1e293b);
   text-transform: uppercase;
@@ -474,7 +502,6 @@
 .orders-table td {
   height: 56px;
   padding: 0 20px;
-  font-size: var(--admin-fs-base);
   color: var(--admin-text-primary, #1e293b);
   border-bottom: 1px solid var(--admin-border, #e5e7eb);
   vertical-align: middle;
@@ -484,13 +511,17 @@
   box-sizing: border-box;
   line-height: 1.5;
   /* Smooth content updates without visual flicker */
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
   /* Optimize for content updates */
   contain: layout style;
 }
 
 .orders-table tbody tr {
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
   border-bottom: 1px solid var(--admin-border, #e2e8f0);
   display: table-row;
   width: 100%;
@@ -555,7 +586,6 @@
 }
 
 .order-row-number {
-  font-weight: 600;
   color: var(--admin-text-secondary, #6b7280);
   font-size: var(--admin-fs-base);
 }
@@ -583,7 +613,6 @@
 .order-row-price {
   font-size: var(--admin-fs-base);
   color: var(--admin-text-primary, #1e293b);
-  font-weight: 600;
 }
 
 /* All other order-row-* used in orders-table (total, mode, payment) – 14px (body-sm) */
@@ -609,6 +638,7 @@
 
 /* Badges, buttons, selects, and text inside table cells – 14px (body-sm) */
 .orders-table .badge,
+.orders-table .badge-small,
 .orders-table td select,
 .orders-table .status-dropdown-enhanced,
 .orders-table .status-dropdown,
@@ -616,6 +646,19 @@
 .orders-table .text-xs,
 .orders-table .text-sm {
   font-size: var(--admin-fs-base);
+}
+
+/* Customer tab (and any table inside table-container-card): equal font all columns */
+.table-container-card .orders-table th,
+.table-container-card .orders-table td,
+.table-container-card .orders-table th *,
+.table-container-card .orders-table td * {
+  font-size: var(--admin-fs-base);
+  font-weight: 500;
+}
+/* Override badge-small so table columns stay equal */
+.orders-table .badge-small {
+  font-size: var(--admin-fs-base) !important;
 }
 
 /* Status dropdown: ensure "Unpaid" / "Paid" are never truncated */
@@ -715,7 +758,7 @@
   .orders-table {
     min-width: 700px;
   }
-  
+
   .orders-table th,
   .orders-table td {
     padding: 10px 12px;
@@ -830,9 +873,9 @@
   }
 
   /* Export button specific fix */
-  .action-bar .btn[title*="Export"],
+  .action-bar .btn[title*='Export'],
   .action-bar .btn:has(.lucide-icon),
-  .action-buttons-group .btn[title*="Export"],
+  .action-buttons-group .btn[title*='Export'],
   .action-buttons-group .btn:has(.lucide-icon) {
     min-width: 0 !important;
     max-width: calc(50% - 4px) !important;
@@ -854,3 +897,20 @@
 }
 
 /* Note: Additional table styles will be extracted from admin-components.css */
+
+/* Compact view (Settings → Appearance) – enterprise density toggle */
+.admin-dashboard.admin-compact-tables .orders-table th,
+.admin-dashboard.admin-compact-tables .orders-table td {
+  padding: 6px 14px !important;
+}
+.admin-dashboard.admin-compact-tables .orders-table thead th {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+.admin-dashboard.admin-compact-tables .kitchen-tab-card,
+.admin-dashboard.admin-compact-tables .table-container-card {
+  padding: 12px 16px;
+}
+.admin-dashboard.admin-compact-tables .stat-card {
+  padding: 12px 16px;
+}

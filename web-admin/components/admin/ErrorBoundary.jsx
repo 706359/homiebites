@@ -6,7 +6,12 @@ import Icon from '../ui/Icon.jsx';
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      copySuccess: false,
+    };
   }
 
   static getDerivedStateFromError(error) {
@@ -34,9 +39,28 @@ class ErrorBoundary extends Component {
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null });
+    this.setState({ hasError: false, error: null, errorInfo: null, copySuccess: false });
     if (this.props.onReset) {
       this.props.onReset();
+    }
+  };
+
+  getErrorDetailsText = () => {
+    const { error, errorInfo } = this.state;
+    if (!error) return '';
+    const message = error.toString();
+    const stack = errorInfo?.componentStack ? String(errorInfo.componentStack).trim() : '';
+    return stack ? `${message}\n\n${stack}` : message;
+  };
+
+  handleCopyError = () => {
+    const text = this.getErrorDetailsText();
+    if (!text) return;
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.setState({ copySuccess: true });
+        setTimeout(() => this.setState({ copySuccess: false }), 2000);
+      }).catch(() => {});
     }
   };
 
@@ -58,10 +82,15 @@ class ErrorBoundary extends Component {
                 'An unexpected error occurred. Please try refreshing the page or contact support if the problem persists.'}
             </p>
             <div className="error-boundary-actions">
-              <button className="btn btn-primary" onClick={this.handleReset}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={this.handleReset}
+              >
                 <Icon name="rotate-right"/> Try Again
               </button>
               <button
+                type="button"
                 className="btn btn-ghost"
                 onClick={() => {
                   window.location.reload();
@@ -69,6 +98,18 @@ class ErrorBoundary extends Component {
               >
                 <Icon name="refresh"/> Refresh Page
               </button>
+              {this.state.error && (
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={this.handleCopyError}
+                  aria-label="Copy error details"
+                  title="Copy error details to clipboard"
+                >
+                  <Icon name={this.state.copySuccess ? 'check' : 'copy'}/>
+                  {this.state.copySuccess ? ' Copied!' : ' Copy error'}
+                </button>
+              )}
             </div>
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <details className="error-boundary-details">

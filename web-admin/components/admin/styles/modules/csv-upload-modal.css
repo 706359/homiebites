@@ -83,24 +83,27 @@
 
 .csv-upload-progress-container {
   text-align: center;
-  padding: 48px;
+  padding: var(--admin-space-4xl, 48px);
   position: relative;
 }
 
 .csv-upload-progress-title {
-  margin-bottom: 20px;
+  margin-bottom: var(--admin-space-lg, 20px);
   text-align: center;
+  font-size: var(--admin-fs-h2);
+  font-weight: 600;
+  color: var(--admin-text-primary, #111827);
 }
 
 .csv-upload-progress-info {
-  margin-bottom: 24px;
+  margin-bottom: var(--admin-space-xl, 24px);
 }
 
 .csv-upload-progress-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: var(--admin-space-xs, 8px);
 }
 
 .csv-upload-progress-label {
@@ -115,34 +118,31 @@
   font-weight: 600;
 }
 
-.csv-upload-progress-bar-container {
-  height: 8px;
-  border-radius: 4px;
-  overflow: hidden;
-  background: var(--admin-bg-tertiary);
+/* Progress bar uses .admin-progress-bar from loader.css; fill width set inline */
+.csv-upload-progress-bar-container.admin-progress-bar {
+  height: var(--admin-space-sm, 12px);
 }
 
 .csv-upload-progress-bar-fill {
   height: 100%;
-  background: var(--admin-accent);
-  transition: width 0.3s ease;
-  border-radius: 4px;
+  background: var(--admin-accent, #449031);
+  transition: width 0.25s ease-out;
 }
 
 .csv-upload-progress-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 24px;
+  gap: var(--admin-space-sm, 12px);
+  margin-top: var(--admin-space-xl, 24px);
   justify-content: center;
 }
 
 .csv-upload-progress-card {
-  padding: 16px 20px;
+  padding: var(--admin-space-md, 16px) var(--admin-space-lg, 20px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(68, 144, 49, 0.1);
-  border: 1px solid var(--admin-accent);
+  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  border: 1px solid var(--admin-accent, #449031);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -151,7 +151,7 @@
 .csv-upload-progress-card-content {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--admin-space-md, 16px);
   flex: 1;
 }
 
@@ -180,7 +180,7 @@
 
 .csv-upload-progress-actions-mini {
   display: flex;
-  gap: 8px;
+  gap: var(--admin-space-xs, 8px);
 }
 
 .csv-upload-maximize-btn {

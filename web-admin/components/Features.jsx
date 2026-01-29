@@ -1,5 +1,6 @@
 import { useLanguage } from '../contexts/LanguageContext';
 import './Features.css';
+import Icon from './ui/Icon.jsx';
 
 const Features = () => {
   const { t } = useLanguage();

@@ -56,7 +56,7 @@
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  font-size: var(--admin-fs-sm, 0.875rem);
+  font-size: var(--admin-fs-base);
   font-weight: 500;
   border-radius: 8px;
   transition: all 0.2s ease;
@@ -69,7 +69,7 @@
 }
 
 .filter-container button.btn-secondary i {
-  font-size: var(--admin-fs-xs, 0.75rem);
+  font-size: var(--admin-fs-sm);
 }
 
 /* Menu Items Grid - Responsive layout */
@@ -433,7 +433,7 @@
 }
 
 .menu-view-label {
-  font-size: var(--admin-fs-xs, 0.75rem);
+  font-size: var(--admin-fs-sm);
   font-weight: 700;
   color: var(--admin-text-secondary, #6b7280);
   text-transform: uppercase;
@@ -442,7 +442,7 @@
 }
 
 .menu-view-value {
-  font-size: var(--admin-fs-base, 1rem);
+  font-size: var(--admin-fs-md);
   color: var(--admin-text-primary, #1e293b);
   font-weight: 500;
   word-break: break-word;
@@ -456,7 +456,7 @@
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-weight: 600;
-  font-size: var(--admin-fs-sm, 0.875rem);
+  font-size: var(--admin-fs-base);
   width: fit-content;
 }
 
@@ -471,16 +471,16 @@
 }
 
 .menu-view-status i {
-  font-size: var(--admin-fs-sm, 0.875rem);
+  font-size: var(--admin-fs-base);
   flex-shrink: 0;
 }
 
 .menu-view-status span {
-  font-size: var(--admin-fs-sm, 0.875rem);
+  font-size: var(--admin-fs-base);
 }
 
 .menu-view-url {
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-primary, 'Baloo 2', sans-serif);
   font-size: var(--admin-fs-sm);
   color: var(--admin-text-secondary, #6b7280);
   background: var(--admin-bg-secondary, #f9fafb);
@@ -488,6 +488,7 @@
   border-radius: 6px;
   border: 1px solid var(--admin-border, #e5e7eb);
   word-break: break-all;
+  letter-spacing: 0.01em;
 }
 
 @media (max-width: 768px) {
@@ -517,24 +518,24 @@
   }
 
   .menu-view-label {
-    font-size: var(--admin-fs-2xs, 0.7rem);
+    font-size: var(--admin-fs-2xs);
     margin-bottom: 0.25rem;
   }
 
   .menu-view-value {
-    font-size: var(--admin-fs-sm, 0.875rem);
+    font-size: var(--admin-fs-base);
   }
 
   .menu-view-status {
     padding: 0.4rem 0.875rem;
-    font-size: var(--admin-fs-xs, 0.75rem);
+    font-size: var(--admin-fs-sm);
   }
 
   .menu-view-status i {
-    font-size: var(--admin-fs-xs, 0.75rem);
+    font-size: var(--admin-fs-sm);
   }
 
   .menu-view-status span {
-    font-size: var(--admin-fs-xs, 0.75rem);
+    font-size: var(--admin-fs-sm);
   }
 }

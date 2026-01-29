@@ -2,6 +2,21 @@
    ADMIN DASHBOARD STYLES INDEX
    ======================================================================== */
 
+/* ========== ENTERPRISE TYPOGRAPHY SYSTEM (Single source of truth) ==========
+   All admin font sizes scale from Settings → Appearance → Font size (16–19px).
+   Use ONLY these variables; never hardcode px/rem for text.
+   Hierarchy:
+     L1 (--admin-fs-h1)  → Page title (top nav)
+     L2 (--admin-fs-h2)  → Section title (e.g. "Monthly Revenue Trend")
+     L3 (--admin-fs-h3)  → Card / subsection title
+     --admin-fs-body    → Body text
+     --admin-fs-label   → Labels, table headers
+     --admin-fs-caption → Captions, hints
+   Numeric scale (--admin-fs-2xs … --admin-fs-display) for stats, badges, etc.
+   Usage: font-size: var(--admin-fs-h2); or var(--admin-fs-body); never px/raw rem.
+   Full doc: docs/ADMIN_TYPOGRAPHY.md
+   ======================================================================== */
+
 /* Admin CSS variables (inlined after removing modules/variables.css) */
 :root {
   --admin-bg: #ffffff;
@@ -41,7 +56,7 @@
   --admin-dark-bg: #252b3d;
   --admin-dark-bg-hover: #1f2937;
 
-  /* Admin type-scale (rem-based; scales with :root from Settings → Appearance) */
+  /* Admin type-scale (rem-based): ALL scale from Settings → Appearance → Font size (100% enterprise) */
   --admin-fs-2xs: 0.625rem; /* 10px @16 */
   --admin-fs-xs: 0.6875rem; /* 11px */
   --admin-fs-sm: 0.75rem; /* 12px */
@@ -55,9 +70,78 @@
   --admin-fs-2xl-mid: 1.75rem; /* 28px */
   --admin-fs-3xl: 2rem; /* 32px */
   --admin-fs-display: 3rem; /* 48px – big numbers, empty states */
+
+  /* Hierarchy: use these for all headings and text (scales with Settings) */
+  --admin-fs-h1: var(--admin-fs-xl);
+  --admin-fs-h2: var(--admin-fs-lg);
+  --admin-fs-h3: var(--admin-fs-md);
+  --admin-fs-body: var(--admin-fs-base);
+  --admin-fs-label: var(--admin-fs-sm);
+  --admin-fs-caption: var(--admin-fs-xs);
+
+  /* Admin spacing scale – single source for padding, margin, gap (best space management).
+     Use these everywhere for consistent layouts and easy tuning. */
+  --admin-space-3xs: 2px;
+  --admin-space-2xs: 4px;
+  --admin-space-2xs-mid: 6px;
+  --admin-space-xs: 8px;
+  --admin-space-sm: 12px;
+  --admin-space-md: 16px;
+  --admin-space-lg: 20px;
+  --admin-space-xl: 24px;
+  --admin-space-2xl: 32px;
+  --admin-space-3xl: 40px;
+  --admin-space-4xl: 48px;
+
+  /* Admin motion – single source for transitions/animations (enterprise, gentle).
+     Slightly longer durations so open/close feels smooth, not sudden; respect reduced motion below. */
+  --admin-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --admin-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --admin-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --admin-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --admin-ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --admin-duration-instant: 0.01s;
+  --admin-duration-fast: 0.2s;
+  --admin-duration-normal: 0.3s;
+  --admin-duration-medium: 0.35s;
+  --admin-duration-slow: 0.45s;
 }
 
-/* Admin root: font-size + prevent width overflow (sidebar overflow-x:visible, nowrap filter bars, etc.) */
+/* Enterprise motion: gentle keyframes for open/close/hide/unhide (modals, sidebar, dropdowns, toasts).
+   Use with var(--admin-duration-*) and var(--admin-ease) / var(--admin-ease-smooth) for smooth feel. */
+@keyframes adminFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes adminSlideUp {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes adminSlideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes adminSlideInRight {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Respect user preference for reduced motion – shorten all admin motion */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --admin-duration-instant: 0s;
+    --admin-duration-fast: 0.01s;
+    --admin-duration-normal: 0.01s;
+    --admin-duration-medium: 0.01s;
+    --admin-duration-slow: 0.01s;
+  }
+}
+
+/* Admin root: ALL font sizes scale from Settings → Appearance → Font size (100% enterprise approach).
+   --admin-base-font-size is set by Settings tab (16–19px); rem-based --admin-fs-* scale with it. */
 html.admin-active {
   font-size: var(--admin-base-font-size, 18px);
   overflow-x: hidden;
@@ -119,6 +203,52 @@ html.admin-active body {
 }
 
 /* ========== Admin dashboard layout (structural) ========== */
+
+/* Skip to main content – enterprise accessibility (WCAG 2.1) */
+.admin-skip-link {
+  position: absolute;
+  top: -100px;
+  left: 12px;
+  z-index: 10000;
+  padding: var(--admin-space-sm, 12px) var(--admin-space-lg, 20px);
+  background: var(--admin-accent, #449031);
+  color: var(--admin-text-white, #fff);
+  font-size: var(--admin-fs-base);
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: top var(--admin-duration-normal) var(--admin-ease);
+}
+.admin-skip-link:focus {
+  top: 12px;
+  outline: 2px solid var(--admin-text-white, #fff);
+  outline-offset: 2px;
+}
+
+/* Live region for tab switch announcement (screen readers only) */
+.admin-live-region {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Visible focus for keyboard users (enterprise a11y) */
+.admin-dashboard a:focus-visible,
+.admin-dashboard button:focus-visible,
+.admin-dashboard [role='button']:focus-visible,
+.admin-dashboard input:focus-visible,
+.admin-dashboard select:focus-visible,
+.admin-dashboard textarea:focus-visible {
+  outline: 2px solid var(--admin-accent, #449031);
+  outline-offset: 2px;
+}
 
 .admin-dashboard,
 .admin-dashboard *,
@@ -251,8 +381,8 @@ html.admin-active .login-page-wrapper .btn {
   min-height: 100dvh;
   background: var(--admin-bg-secondary, #f9fafb);
   transition:
-    margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-left var(--admin-duration-slow) var(--admin-ease),
+    width var(--admin-duration-slow) var(--admin-ease);
   overflow-x: hidden;
   position: relative;
   width: calc(100% - 260px);
@@ -273,13 +403,13 @@ html.admin-active .login-page-wrapper .btn {
 .admin-content {
   flex: 1;
   min-width: 0;
-  padding: 24px;
+  padding: var(--admin-space-xl, 24px);
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
   position: relative;
   background: var(--admin-bg-secondary, #f9fafb);
-  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width var(--admin-duration-slow) var(--admin-ease);
   -webkit-overflow-scrolling: touch;
 }
 
@@ -288,10 +418,15 @@ html.admin-active .login-page-wrapper .btn {
   min-width: 0;
 }
 
+/* Avoid extra top space: first child uses content padding only */
+.admin-content > *:first-child {
+  margin-top: 0;
+}
+
 /* Laptop view optimizations (1024px - 1440px) */
 @media (min-width: 1024px) and (max-width: 1440px) {
   .admin-content {
-    padding: 24px 20px;
+    padding: var(--admin-space-xl, 24px) var(--admin-space-lg, 20px);
     max-width: 100%;
   }
 
@@ -308,8 +443,8 @@ html.admin-active .login-page-wrapper .btn {
     margin-left: 0 !important;
     width: 100% !important;
     transition:
-      margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-      width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-left var(--admin-duration-slow) var(--admin-ease),
+      width var(--admin-duration-slow) var(--admin-ease);
   }
 
   /* Optimize modal sizes for laptop */
@@ -330,22 +465,22 @@ html.admin-active .login-page-wrapper .btn {
   /* Optimize dashboard cards */
   .dashboard-grid-layout {
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: var(--admin-space-lg, 20px);
   }
 
   /* Compact action bars */
   .action-bar {
-    padding: 16px 20px;
-    gap: 12px;
+    padding: var(--admin-space-md, 16px) var(--admin-space-lg, 20px);
+    gap: var(--admin-space-sm, 12px);
   }
 
   /* Optimize form spacing */
   .form-row {
-    gap: 16px;
+    gap: var(--admin-space-md, 16px);
   }
 
   .form-group {
-    margin-bottom: 16px;
+    margin-bottom: var(--admin-space-md, 16px);
   }
 
   /* Compact top nav */
@@ -370,19 +505,19 @@ html.admin-active .login-page-wrapper .btn {
 
   /* Ensure proper spacing */
   .admin-content {
-    padding: 24px 20px;
+    padding: var(--admin-space-xl, 24px) var(--admin-space-lg, 20px);
   }
 
   /* Optimize action bars */
   .action-bar {
-    padding: 16px 20px;
+    padding: var(--admin-space-md, 16px) var(--admin-space-lg, 20px);
     min-height: 60px;
   }
 
   /* Optimize cards spacing */
   .dashboard-card,
   .stat-card {
-    margin-bottom: 16px;
+    margin-bottom: 4px;
   }
 }
 
@@ -422,10 +557,10 @@ html.admin-active .login-page-wrapper .btn {
   }
 
   .admin-content {
-    padding: 20px;
-    padding-left: max(20px, env(safe-area-inset-left, 0));
-    padding-right: max(20px, env(safe-area-inset-right, 0));
-    padding-bottom: max(20px, env(safe-area-inset-bottom, 0));
+    padding: var(--admin-space-lg, 20px);
+    padding-left: max(var(--admin-space-lg, 20px), env(safe-area-inset-left, 0));
+    padding-right: max(var(--admin-space-lg, 20px), env(safe-area-inset-right, 0));
+    padding-bottom: max(var(--admin-space-lg, 20px), env(safe-area-inset-bottom, 0));
     overflow-x: hidden !important;
     max-width: 100% !important;
     width: 100% !important;
@@ -504,11 +639,11 @@ html.admin-active .login-page-wrapper .btn {
 
   /* Compact content padding for small screens */
   .admin-content {
-    padding: 12px !important;
-    padding-left: max(12px, env(safe-area-inset-left, 0)) !important;
-    padding-right: max(12px, env(safe-area-inset-right, 0)) !important;
-    padding-top: max(12px, env(safe-area-inset-top, 0)) !important;
-    padding-bottom: max(12px, env(safe-area-inset-bottom, 0)) !important;
+    padding: var(--admin-space-sm, 12px) !important;
+    padding-left: max(var(--admin-space-sm, 12px), env(safe-area-inset-left, 0)) !important;
+    padding-right: max(var(--admin-space-sm, 12px), env(safe-area-inset-right, 0)) !important;
+    padding-top: max(var(--admin-space-sm, 12px), env(safe-area-inset-top, 0)) !important;
+    padding-bottom: max(var(--admin-space-sm, 12px), env(safe-area-inset-bottom, 0)) !important;
     overflow-x: hidden !important;
     max-width: 100% !important;
     width: 100% !important;

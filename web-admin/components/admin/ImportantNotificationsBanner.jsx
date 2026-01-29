@@ -117,13 +117,17 @@ const ImportantNotificationsBanner = ({
   };
 
   return (
-    <div className="important-notifications-banner">
+    <section
+      className="important-notifications-banner"
+      role="region"
+      aria-label="Important notifications"
+    >
       {importantNotifications.map((notif) => {
         const styles = getNotificationStyles(notif.type);
         return (
           <div key={notif.id} className="important-notification-item">
             <div className="important-notification-content">
-              <div className="important-notification-icon">
+              <div className="important-notification-icon" aria-hidden="true">
                 <Icon name={notif.icon} />
               </div>
               <div className="important-notification-text">
@@ -138,26 +142,30 @@ const ImportantNotificationsBanner = ({
             <div className="important-notification-actions">
               {notif.action === 'viewPending' && onViewPendingAmounts && (
                 <button
+                  type="button"
                   className="btn btn-primary btn-small mr-md"
                   onClick={() => onViewPendingAmounts()}
+                  aria-label={`View details for ${notif.title}`}
                 >
                   View Details
                 </button>
               )}
               {onDismiss && (
                 <button
+                  type="button"
                   className="btn btn-ghost btn-small"
                   onClick={() => onDismiss(notif.id)}
                   title="Dismiss"
+                  aria-label={`Dismiss ${notif.title}`}
                 >
-                  <Icon name="times" />
+                  <Icon name="times" aria-hidden="true" />
                 </button>
               )}
             </div>
           </div>
         );
       })}
-    </div>
+    </section>
   );
 };
 

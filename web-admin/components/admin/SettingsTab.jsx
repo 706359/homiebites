@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
-import Icon from '../ui/Icon.jsx';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
+import Icon from '../ui/Icon.jsx';
 import PremiumLoader from './PremiumLoader.jsx';
 import {
-  parseFontSize,
-  applyAdminFontSize,
-  roundToStep,
-  ADMIN_FONT_SIZE_OPTIONS,
   ADMIN_FONT_SIZE_DEFAULT,
+  ADMIN_FONT_SIZE_OPTIONS,
+  applyAdminFontSize,
+  parseFontSize,
+  roundToStep,
 } from './utils/fontSize.js';
 
 // Google Fonts available for admin UI – names must match fonts.googleapis.com
@@ -111,23 +111,26 @@ const SettingsTab = ({
         fontFamily: 'Baloo 2',
         fontSize: ADMIN_FONT_SIZE_DEFAULT,
         autoHideSidebar: false,
+        compactTables: false,
       };
     }
-    // Properly handle autoHideSidebar: check if property exists and is explicitly set
-    // If undefined or null, it means it was never set, so default to false
-    // If it exists (even if true), use the actual value
-    const autoHideSidebar = settings.autoHideSidebar !== undefined && settings.autoHideSidebar !== null
-      ? Boolean(settings.autoHideSidebar)
-      : false;
-    
+    const autoHideSidebar =
+      settings.autoHideSidebar !== undefined &&
+      settings.autoHideSidebar !== null
+        ? Boolean(settings.autoHideSidebar)
+        : false;
+    const compactTables = settings.compactTables === true;
     return {
       fontFamily: settings.fontFamily || 'Baloo 2',
       fontSize: ADMIN_FONT_SIZE_DEFAULT,
       autoHideSidebar,
+      compactTables,
     };
   };
 
-  const [appearanceSettings, setAppearanceSettings] = useState(getInitialAppearanceSettings());
+  const [appearanceSettings, setAppearanceSettings] = useState(
+    getInitialAppearanceSettings()
+  );
 
   // Initialize kitchen settings - properly handle false values
   const getInitialKitchenSettings = () => {
@@ -139,7 +142,12 @@ const SettingsTab = ({
       };
     }
     // If kitchenEnabled is explicitly false, use false; otherwise default to true
-    const kitchenEnabled = settings.kitchenEnabled === false ? false : (settings.kitchenEnabled === true ? true : true);
+    const kitchenEnabled =
+      settings.kitchenEnabled === false
+        ? false
+        : settings.kitchenEnabled === true
+          ? true
+          : true;
     return {
       kitchenEnabled,
       kitchenClosedFrom: settings.kitchenClosedFrom || '',
@@ -147,23 +155,32 @@ const SettingsTab = ({
     };
   };
 
-  const [kitchenSettings, setKitchenSettings] = useState(getInitialKitchenSettings());
+  const [kitchenSettings, setKitchenSettings] = useState(
+    getInitialKitchenSettings()
+  );
 
   // Update kitchen settings when settings prop changes (on load/refresh)
   useEffect(() => {
     if (settings) {
       // Properly handle false values - if explicitly false, keep it false
-      const kitchenEnabled = settings.kitchenEnabled === false 
-        ? false 
-        : (settings.kitchenEnabled === true ? true : true);
-      
+      const kitchenEnabled =
+        settings.kitchenEnabled === false
+          ? false
+          : settings.kitchenEnabled === true
+            ? true
+            : true;
+
       setKitchenSettings({
         kitchenEnabled,
         kitchenClosedFrom: settings.kitchenClosedFrom || '',
         kitchenClosedTo: settings.kitchenClosedTo || '',
       });
     }
-  }, [settings?.kitchenEnabled, settings?.kitchenClosedFrom, settings?.kitchenClosedTo]);
+  }, [
+    settings?.kitchenEnabled,
+    settings?.kitchenClosedFrom,
+    settings?.kitchenClosedTo,
+  ]);
 
   // Update appearance settings when settings prop changes (on load/refresh)
   useEffect(() => {
@@ -173,97 +190,114 @@ const SettingsTab = ({
         typeof localStorage !== 'undefined'
           ? localStorage.getItem('homiebites_font_family')
           : null;
-      
+
       // Priority: localStorage > settings from API > default
       // localStorage is the source of truth for the current session
-      const fontSizeFromStorage = typeof localStorage !== 'undefined'
-        ? localStorage.getItem('homiebites_font_size')
-        : null;
+      const fontSizeFromStorage =
+        typeof localStorage !== 'undefined'
+          ? localStorage.getItem('homiebites_font_size')
+          : null;
       const fontSizeFromSettings = settings.fontSize;
-      
+
       // Always prioritize localStorage if it exists (user's current preference)
       // Only fall back to settings from API if localStorage is empty
       const fs =
-        parseFontSize(fontSizeFromStorage || fontSizeFromSettings) ?? ADMIN_FONT_SIZE_DEFAULT;
-      
+        parseFontSize(fontSizeFromStorage || fontSizeFromSettings) ??
+        ADMIN_FONT_SIZE_DEFAULT;
+
       // Properly handle autoHideSidebar: check if property exists and is explicitly set
       // If undefined or null, preserve current local state (don't reset to default)
       // If it exists (even if false), use the actual value from settings
-      const autoHideSidebarFromSettings = settings.autoHideSidebar !== undefined && settings.autoHideSidebar !== null
-        ? Boolean(settings.autoHideSidebar)
-        : null; // null means not set in settings yet
-      
+      const autoHideSidebarFromSettings =
+        settings.autoHideSidebar !== undefined &&
+        settings.autoHideSidebar !== null
+          ? Boolean(settings.autoHideSidebar)
+          : null; // null means not set in settings yet
+
       setAppearanceSettings((prev) => {
         // Only update if the value actually changed to prevent unnecessary re-renders
         const newFontSize = fs;
         const newFontFamily = fromSettings || fromStorage || 'Baloo 2';
-        
+
         // For autoHideSidebar: use value from settings if explicitly set, otherwise preserve local state
         // This prevents resetting to default when settings reloads before save completes
-        const newAutoHideSidebar = autoHideSidebarFromSettings !== null
-          ? autoHideSidebarFromSettings // Use value from settings if explicitly set
-          : (prev.autoHideSidebar !== undefined ? prev.autoHideSidebar : false); // Preserve local state or default to false
-        
-        if (prev.fontSize === newFontSize && 
-            prev.fontFamily === newFontFamily && 
-            prev.autoHideSidebar === newAutoHideSidebar) {
-          return prev; // No change needed
+        const newAutoHideSidebar =
+          autoHideSidebarFromSettings !== null
+            ? autoHideSidebarFromSettings
+            : prev.autoHideSidebar !== undefined
+              ? prev.autoHideSidebar
+              : false;
+        const newCompactTables = settings.compactTables === true;
+        if (
+          prev.fontSize === newFontSize &&
+          prev.fontFamily === newFontFamily &&
+          prev.autoHideSidebar === newAutoHideSidebar &&
+          prev.compactTables === newCompactTables
+        ) {
+          return prev;
         }
-        
         return {
           ...prev,
           fontFamily: newFontFamily,
           fontSize: newFontSize,
           autoHideSidebar: newAutoHideSidebar,
+          compactTables: newCompactTables,
         };
       });
-      
+
       // Apply font size immediately on load
       if (fs != null) {
         applyAdminFontSize(fs);
       }
     }
-  }, [settings?.fontFamily, settings?.fontSize, settings?.autoHideSidebar]);
+  }, [
+    settings?.fontFamily,
+    settings?.fontSize,
+    settings?.autoHideSidebar,
+    settings?.compactTables,
+  ]);
 
   const handleSaveAppearance = () => {
     const saveSettings = async () => {
       // Ensure font size is applied before saving
       const fontSize = appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT;
       const fontSizeString = String(fontSize);
-      
+
       // Save to localStorage immediately (this is the source of truth)
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('homiebites_font_size', fontSizeString);
-        localStorage.setItem('homiebites_font_family', appearanceSettings.fontFamily);
+        localStorage.setItem(
+          'homiebites_font_family',
+          appearanceSettings.fontFamily
+        );
       }
-      
+
       // Apply font size immediately
       applyAdminFontSize(fontSize);
-      
+
       // Dispatch event to notify other components
       window.dispatchEvent(
         new CustomEvent('adminFontSizeChanged', { detail: { fontSize } })
       );
-      
+
       // Save to database (as string to match schema)
       if (onUpdateSettings) {
         await onUpdateSettings({
           themeSettings: {
             fontFamily: appearanceSettings.fontFamily,
-            fontSize: fontSizeString, // Save as string
+            fontSize: fontSizeString,
             autoHideSidebar: appearanceSettings.autoHideSidebar,
+            compactTables: appearanceSettings.compactTables,
           },
         });
       }
-      
-      // Update local state to prevent reset on reload
-      // Include autoHideSidebar to preserve the saved value
       setAppearanceSettings((prev) => ({
         ...prev,
         fontSize: fontSize,
-        autoHideSidebar: appearanceSettings.autoHideSidebar, // Preserve the saved value
+        autoHideSidebar: appearanceSettings.autoHideSidebar,
+        compactTables: appearanceSettings.compactTables,
       }));
-      
+
       if (showNotification) {
         showNotification('Appearance settings saved successfully', 'success');
       }
@@ -337,7 +371,10 @@ const SettingsTab = ({
   const handleSaveKitchenSettings = () => {
     // Validate date range if kitchen is disabled
     if (!kitchenSettings.kitchenEnabled) {
-      if (kitchenSettings.kitchenClosedFrom && kitchenSettings.kitchenClosedTo) {
+      if (
+        kitchenSettings.kitchenClosedFrom &&
+        kitchenSettings.kitchenClosedTo
+      ) {
         const fromDate = new Date(kitchenSettings.kitchenClosedFrom);
         const toDate = new Date(kitchenSettings.kitchenClosedTo);
         if (toDate < fromDate) {
@@ -620,10 +657,13 @@ const SettingsTab = ({
         <div className="filter-bar-container-compact">
           {settingsTabs.map((tab) => (
             <button
+              type="button"
               key={tab.id}
               className={`btn btn-ghost ${activeTab === tab.id ? 'active' : ''}`}
               onClick={() => setActiveTab(tab.id)}
               title={tab.description}
+              aria-label={tab.label}
+              aria-current={activeTab === tab.id ? 'true' : undefined}
             >
               <Icon name={tab.icon} />
               <span>{tab.label}</span>
@@ -638,7 +678,7 @@ const SettingsTab = ({
             <div className="dashboard-card">
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper">
-                  <Icon name="building"/>
+                  <Icon name="building" />
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title">
@@ -653,7 +693,7 @@ const SettingsTab = ({
                 <div className="settings-form-grid">
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="store"/>
+                      <Icon name="store" />
                       <span>Business Name</span>
                     </label>
                     <input
@@ -671,7 +711,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="phone"/>
+                      <Icon name="phone" />
                       <span>Contact Number</span>
                     </label>
                     <input
@@ -689,7 +729,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="envelope"/>
+                      <Icon name="envelope" />
                       <span>Email Address</span>
                     </label>
                     <input
@@ -707,7 +747,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group settings-form-group-full">
                     <label className="settings-form-label">
-                      <Icon name="location-dot"/>
+                      <Icon name="location-dot" />
                       <span>Business Address</span>
                     </label>
                     <textarea
@@ -725,7 +765,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="whatsapp"/>
+                      <Icon name="whatsapp" />
                       <span>WhatsApp Number</span>
                     </label>
                     <input
@@ -741,12 +781,13 @@ const SettingsTab = ({
                       placeholder="919958983578"
                     />
                     <p className="settings-form-hint">
-                      Enter WhatsApp number without + or spaces (e.g., 919958983578)
+                      Enter WhatsApp number without + or spaces (e.g.,
+                      919958983578)
                     </p>
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="clock"/>
+                      <Icon name="clock" />
                       <span>Delivery Timings</span>
                     </label>
                     <input
@@ -764,7 +805,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="indian-rupee-sign"/>
+                      <Icon name="indian-rupee-sign" />
                       <span>Minimum Order Value</span>
                     </label>
                     <div className="settings-input-with-symbol">
@@ -786,7 +827,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="truck"/>
+                      <Icon name="truck" />
                       <span>Delivery Charge</span>
                     </label>
                     <div className="settings-input-with-symbol">
@@ -808,7 +849,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group settings-form-group-full">
                     <label className="settings-form-label">
-                      <Icon name="bullhorn"/>
+                      <Icon name="bullhorn" />
                       <span>Announcement</span>
                     </label>
                     <textarea
@@ -833,7 +874,7 @@ const SettingsTab = ({
                     className="btn btn-primary btn-large"
                     onClick={handleSaveBusinessInfo}
                   >
-                    <Icon name="save"/>
+                    <Icon name="save" />
                     <span>Save Business Information</span>
                   </button>
                 </div>
@@ -843,7 +884,7 @@ const SettingsTab = ({
             <div className="dashboard-card">
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper">
-                  <Icon name="indian-rupee-sign"/>
+                  <Icon name="indian-rupee-sign" />
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title">
@@ -858,7 +899,7 @@ const SettingsTab = ({
                 <div className="settings-form-grid">
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="tag"/>
+                      <Icon name="tag" />
                       <span>Default Unit Price</span>
                     </label>
                     <div className="settings-input-with-symbol">
@@ -880,7 +921,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="sun"/>
+                      <Icon name="sun" />
                       <span>Lunch Price</span>
                     </label>
                     <div className="settings-input-with-symbol">
@@ -902,7 +943,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="moon"/>
+                      <Icon name="moon" />
                       <span>Dinner Price</span>
                     </label>
                     <div className="settings-input-with-symbol">
@@ -924,7 +965,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="box"/>
+                      <Icon name="box" />
                       <span>Minimum Order Quantity</span>
                     </label>
                     <input
@@ -947,7 +988,7 @@ const SettingsTab = ({
                     className="btn btn-primary btn-large"
                     onClick={handleSavePricing}
                   >
-                    <Icon name="save"/>
+                    <Icon name="save" />
                     <span>Update Pricing</span>
                   </button>
                 </div>
@@ -958,7 +999,7 @@ const SettingsTab = ({
             <div className="dashboard-card" style={{ marginTop: '24px' }}>
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper">
-                  <Icon name="utensils"/>
+                  <Icon name="utensils" />
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title">Kitchen Status</h3>
@@ -971,7 +1012,7 @@ const SettingsTab = ({
                 <div className="settings-form-grid">
                   <div className="settings-form-group-full">
                     <label className="settings-form-label">
-                      <Icon name="toggle-on"/>
+                      <Icon name="toggle-on" />
                       <span>Kitchen Status</span>
                     </label>
                     <div className="settings-toggle-switch-wrapper">
@@ -984,15 +1025,21 @@ const SettingsTab = ({
                               ...kitchenSettings,
                               kitchenEnabled: e.target.checked,
                               // Clear dates when enabling kitchen
-                              kitchenClosedFrom: e.target.checked ? '' : kitchenSettings.kitchenClosedFrom,
-                              kitchenClosedTo: e.target.checked ? '' : kitchenSettings.kitchenClosedTo,
+                              kitchenClosedFrom: e.target.checked
+                                ? ''
+                                : kitchenSettings.kitchenClosedFrom,
+                              kitchenClosedTo: e.target.checked
+                                ? ''
+                                : kitchenSettings.kitchenClosedTo,
                             });
                           }}
                         />
                         <span className="settings-toggle-slider"></span>
                       </label>
                       <span className="settings-toggle-label">
-                        {kitchenSettings.kitchenEnabled ? 'Kitchen is Open' : 'Kitchen is Closed'}
+                        {kitchenSettings.kitchenEnabled
+                          ? 'Kitchen is Open'
+                          : 'Kitchen is Closed'}
                       </span>
                     </div>
                     <p className="settings-helper-text">
@@ -1004,10 +1051,12 @@ const SettingsTab = ({
 
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="calendar-alt"/>
+                      <Icon name="calendar-alt" />
                       <span>Closed From Date</span>
                       {!kitchenSettings.kitchenEnabled && (
-                        <span style={{ color: '#ef4444', marginLeft: '8px' }}>*</span>
+                        <span style={{ color: '#ef4444', marginLeft: '8px' }}>
+                          *
+                        </span>
                       )}
                     </label>
                     <input
@@ -1021,9 +1070,16 @@ const SettingsTab = ({
                         })
                       }
                       min={new Date().toISOString().split('T')[0]}
-                      disabled={kitchenSettings.kitchenEnabled && !kitchenSettings.kitchenClosedFrom}
+                      disabled={
+                        kitchenSettings.kitchenEnabled &&
+                        !kitchenSettings.kitchenClosedFrom
+                      }
                       style={{
-                        opacity: kitchenSettings.kitchenEnabled && !kitchenSettings.kitchenClosedFrom ? 0.6 : 1,
+                        opacity:
+                          kitchenSettings.kitchenEnabled &&
+                          !kitchenSettings.kitchenClosedFrom
+                            ? 0.6
+                            : 1,
                       }}
                     />
                     <p className="settings-helper-text">
@@ -1035,10 +1091,12 @@ const SettingsTab = ({
 
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="calendar-check"/>
+                      <Icon name="calendar-check" />
                       <span>Closed To Date</span>
                       {!kitchenSettings.kitchenEnabled && (
-                        <span style={{ color: '#ef4444', marginLeft: '8px' }}>*</span>
+                        <span style={{ color: '#ef4444', marginLeft: '8px' }}>
+                          *
+                        </span>
                       )}
                     </label>
                     <input
@@ -1055,9 +1113,16 @@ const SettingsTab = ({
                         kitchenSettings.kitchenClosedFrom ||
                         new Date().toISOString().split('T')[0]
                       }
-                      disabled={kitchenSettings.kitchenEnabled && !kitchenSettings.kitchenClosedFrom}
+                      disabled={
+                        kitchenSettings.kitchenEnabled &&
+                        !kitchenSettings.kitchenClosedFrom
+                      }
                       style={{
-                        opacity: kitchenSettings.kitchenEnabled && !kitchenSettings.kitchenClosedFrom ? 0.6 : 1,
+                        opacity:
+                          kitchenSettings.kitchenEnabled &&
+                          !kitchenSettings.kitchenClosedFrom
+                            ? 0.6
+                            : 1,
                       }}
                     />
                     <p className="settings-helper-text">
@@ -1072,7 +1137,7 @@ const SettingsTab = ({
                     className="btn btn-primary btn-large"
                     onClick={handleSaveKitchenSettings}
                   >
-                    <Icon name="save"/>
+                    <Icon name="save" />
                     <span>Update Kitchen Status</span>
                   </button>
                 </div>
@@ -1085,7 +1150,7 @@ const SettingsTab = ({
           <div className="dashboard-card">
             <div className="dashboard-section-header">
               <div className="dashboard-section-icon-wrapper">
-                <Icon name="shopping-cart"/>
+                <Icon name="shopping-cart" />
               </div>
               <div className="dashboard-section-title-wrapper">
                 <h3 className="dashboard-section-title">Order Configuration</h3>
@@ -1098,7 +1163,7 @@ const SettingsTab = ({
               <div className="settings-form-grid">
                 <div className="settings-form-group">
                   <label className="settings-form-label">
-                    <Icon name="hashtag"/>
+                    <Icon name="hashtag" />
                     <span>Order ID Prefix</span>
                   </label>
                   <input
@@ -1123,7 +1188,7 @@ const SettingsTab = ({
                   <div className="settings-toggle-item">
                     <div className="settings-toggle-content">
                       <div className="settings-toggle-label-wrapper">
-                        <Icon name="magic"/>
+                        <Icon name="magic" />
                         <div>
                           <span className="settings-toggle-label">
                             Auto-generate Order ID
@@ -1152,7 +1217,7 @@ const SettingsTab = ({
                   <div className="settings-toggle-item">
                     <div className="settings-toggle-content">
                       <div className="settings-toggle-label-wrapper">
-                        <Icon name="copy"/>
+                        <Icon name="copy" />
                         <div>
                           <span className="settings-toggle-label">
                             Allow Duplicate Address
@@ -1181,7 +1246,7 @@ const SettingsTab = ({
                   <div className="settings-toggle-item">
                     <div className="settings-toggle-content">
                       <div className="settings-toggle-label-wrapper">
-                        <Icon name="shield-halved"/>
+                        <Icon name="shield-halved" />
                         <div>
                           <span className="settings-toggle-label">
                             Require Payment Confirmation
@@ -1210,21 +1275,25 @@ const SettingsTab = ({
 
                 <div className="settings-form-group settings-form-group-full">
                   <label className="settings-form-label">
-                    <Icon name="list-check"/>
+                    <Icon name="list-check" />
                     <span>Order Status Options</span>
                   </label>
                   <div className="settings-status-list">
                     {orderSettings.statusOptions.map((status, idx) => (
                       <div key={idx} className="settings-status-item">
-                        <Icon name="circle" className="indicator-circle-small"/>
+                        <Icon
+                          name="circle"
+                          className="indicator-circle-small"
+                        />
                         <span>{status}</span>
                         {orderSettings.statusOptions.length > 1 && (
                           <button
                             className="btn btn-ghost btn-icon-only btn-small"
                             onClick={() => {
-                              const updated = orderSettings.statusOptions.filter(
-                                (_, i) => i !== idx
-                              );
+                              const updated =
+                                orderSettings.statusOptions.filter(
+                                  (_, i) => i !== idx
+                                );
                               setOrderSettings({
                                 ...orderSettings,
                                 statusOptions: updated,
@@ -1232,7 +1301,7 @@ const SettingsTab = ({
                             }}
                             title="Remove status"
                           >
-                            <Icon name="times"/>
+                            <Icon name="times" />
                           </button>
                         )}
                       </div>
@@ -1290,7 +1359,7 @@ const SettingsTab = ({
                             }
                           }}
                         >
-                          <Icon name="check"/>
+                          <Icon name="check" />
                         </button>
                         <button
                           className="btn btn-ghost btn-small"
@@ -1299,7 +1368,7 @@ const SettingsTab = ({
                             setShowStatusInput(false);
                           }}
                         >
-                          <Icon name="times"/>
+                          <Icon name="times" />
                         </button>
                       </div>
                     ) : (
@@ -1307,7 +1376,7 @@ const SettingsTab = ({
                         className="btn btn-ghost btn-small settings-add-status-btn"
                         onClick={() => setShowStatusInput(true)}
                       >
-                        <Icon name="plus"/>
+                        <Icon name="plus" />
                         <span>Add Status</span>
                       </button>
                     )}
@@ -1319,7 +1388,7 @@ const SettingsTab = ({
                   className="btn btn-primary btn-large"
                   onClick={handleSaveOrderSettings}
                 >
-                  <Icon name="save"/>
+                  <Icon name="save" />
                   <span>Save Order Settings</span>
                 </button>
               </div>
@@ -1331,7 +1400,7 @@ const SettingsTab = ({
           <div className="dashboard-card">
             <div className="settings-section-header">
               <div className="settings-section-icon-wrapper">
-                <Icon name="bell"/>
+                <Icon name="bell" />
               </div>
               <div className="settings-section-title-wrapper">
                 <h3 className="settings-section-title">
@@ -1346,7 +1415,7 @@ const SettingsTab = ({
               <div className="settings-notification-categories">
                 <div className="settings-notification-category">
                   <div className="settings-notification-category-header">
-                    <Icon name="envelope"/>
+                    <Icon name="envelope" />
                     <h4 className="settings-notification-category-title">
                       Email Notifications
                     </h4>
@@ -1355,7 +1424,7 @@ const SettingsTab = ({
                     <div className="settings-toggle-item">
                       <div className="settings-toggle-content">
                         <div className="settings-toggle-label-wrapper">
-                          <Icon name="calendar-day"/>
+                          <Icon name="calendar-day" />
                           <div>
                             <span className="settings-toggle-label">
                               Daily Summary
@@ -1384,7 +1453,7 @@ const SettingsTab = ({
                     <div className="settings-toggle-item">
                       <div className="settings-toggle-content">
                         <div className="settings-toggle-label-wrapper">
-                          <Icon name="bell"/>
+                          <Icon name="bell" />
                           <div>
                             <span className="settings-toggle-label">
                               New Order Alert
@@ -1413,7 +1482,7 @@ const SettingsTab = ({
                     <div className="settings-toggle-item">
                       <div className="settings-toggle-content">
                         <div className="settings-toggle-label-wrapper">
-                          <Icon name="money-bill-wave"/>
+                          <Icon name="money-bill-wave" />
                           <div>
                             <span className="settings-toggle-label">
                               Payment Received
@@ -1442,7 +1511,7 @@ const SettingsTab = ({
                     <div className="settings-toggle-item">
                       <div className="settings-toggle-content">
                         <div className="settings-toggle-label-wrapper">
-                          <Icon name="exclamation-triangle"/>
+                          <Icon name="exclamation-triangle" />
                           <div>
                             <span className="settings-toggle-label">
                               Low Order Day Warning
@@ -1472,7 +1541,7 @@ const SettingsTab = ({
 
                 <div className="settings-notification-category">
                   <div className="settings-notification-category-header">
-                    <Icon name="message"/>
+                    <Icon name="message" />
                     <h4 className="settings-notification-category-title">
                       SMS Notifications
                     </h4>
@@ -1481,7 +1550,7 @@ const SettingsTab = ({
                     <div className="settings-toggle-item">
                       <div className="settings-toggle-content">
                         <div className="settings-toggle-label-wrapper">
-                          <Icon name="clock"/>
+                          <Icon name="clock" />
                           <div>
                             <span className="settings-toggle-label">
                               Payment Reminders
@@ -1510,7 +1579,7 @@ const SettingsTab = ({
                     <div className="settings-toggle-item">
                       <div className="settings-toggle-content">
                         <div className="settings-toggle-label-wrapper">
-                          <Icon name="check-circle"/>
+                          <Icon name="check-circle" />
                           <div>
                             <span className="settings-toggle-label">
                               Order Confirmations
@@ -1543,7 +1612,7 @@ const SettingsTab = ({
                   className="btn btn-primary btn-large"
                   onClick={handleSaveNotificationPrefs}
                 >
-                  <Icon name="save"/>
+                  <Icon name="save" />
                   <span>Save Notification Preferences</span>
                 </button>
               </div>
@@ -1556,7 +1625,7 @@ const SettingsTab = ({
             <div className="dashboard-card">
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper">
-                  <Icon name="database"/>
+                  <Icon name="database" />
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title">Backup & Restore</h3>
@@ -1568,7 +1637,7 @@ const SettingsTab = ({
               <div className="settings-section-body">
                 <div className="settings-backup-info">
                   <div className="settings-backup-info-item">
-                    <Icon name="clock"/>
+                    <Icon name="clock" />
                     <div>
                       <span className="settings-backup-info-label">
                         Last Backup
@@ -1581,9 +1650,13 @@ const SettingsTab = ({
                 </div>
 
                 <div className="settings-backup-info">
-                  <p className="settings-form-hint" style={{ marginTop: '12px' }}>
-                    <Icon name="info-circle"/>
-                    Backup, restore, and export functions are now available in the <strong>Reports</strong> tab.
+                  <p
+                    className="settings-form-hint"
+                    style={{ marginTop: '12px' }}
+                  >
+                    <Icon name="info-circle" />
+                    Backup, restore, and export functions are now available in
+                    the <strong>Reports</strong> tab.
                   </p>
                 </div>
 
@@ -1591,7 +1664,7 @@ const SettingsTab = ({
                   <div className="settings-toggle-item">
                     <div className="settings-toggle-content">
                       <div className="settings-toggle-label-wrapper">
-                        <Icon name="clock-rotate-left"/>
+                        <Icon name="clock-rotate-left" />
                         <div>
                           <span className="settings-toggle-label">
                             Enable Auto Backup
@@ -1621,7 +1694,7 @@ const SettingsTab = ({
                 {dataSettings.autoBackup && (
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="clock"/>
+                      <Icon name="clock" />
                       <span>Auto Backup Time</span>
                     </label>
                     <input
@@ -1647,7 +1720,7 @@ const SettingsTab = ({
                       className="btn btn-primary btn-large"
                       onClick={handleSaveDataSettings}
                     >
-                      <Icon name="save"/>
+                      <Icon name="save" />
                       <span>Save Backup Settings</span>
                     </button>
                   </div>
@@ -1658,7 +1731,7 @@ const SettingsTab = ({
             <div className="dashboard-card settings-danger-zone">
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper danger-zone-icon-wrapper">
-                  <Icon name="triangle-exclamation"/>
+                  <Icon name="triangle-exclamation" />
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title danger-zone-title">
@@ -1672,13 +1745,15 @@ const SettingsTab = ({
               <div className="settings-section-body">
                 <div className="settings-danger-action">
                   <div className="settings-danger-action-info">
-                    <Icon name="utensils"/>
+                    <Icon name="utensils" />
                     <div>
                       <span className="settings-danger-action-label">
                         Clear All Menu Items
                       </span>
                       <span className="settings-danger-action-description">
-                        Permanently delete all menu items and remove the default menu record from the database. This action cannot be undone.
+                        Permanently delete all menu items and remove the default
+                        menu record from the database. This action cannot be
+                        undone.
                       </span>
                     </div>
                   </div>
@@ -1701,13 +1776,16 @@ const SettingsTab = ({
                       }
                     }}
                   >
-                    <Icon name="trash"/>
+                    <Icon name="trash" />
                     <span>Clear All Menu Items</span>
                   </button>
                 </div>
-                <div className="settings-danger-action" style={{ marginTop: '20px' }}>
+                <div
+                  className="settings-danger-action"
+                  style={{ marginTop: '20px' }}
+                >
                   <div className="settings-danger-action-info">
-                    <Icon name="trash"/>
+                    <Icon name="trash" />
                     <div>
                       <span className="settings-danger-action-label">
                         Clear All Data
@@ -1737,7 +1815,7 @@ const SettingsTab = ({
                       }
                     }}
                   >
-                    <Icon name="trash"/>
+                    <Icon name="trash" />
                     <span>Clear All Data</span>
                   </button>
                 </div>
@@ -1751,7 +1829,7 @@ const SettingsTab = ({
             <div className="dashboard-card">
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper">
-                  <Icon name="user"/>
+                  <Icon name="user" />
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title">
@@ -1766,7 +1844,7 @@ const SettingsTab = ({
                 <div className="settings-form-grid">
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="user"/>
+                      <Icon name="user" />
                       <span>Full Name</span>
                     </label>
                     <input
@@ -1781,7 +1859,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="envelope"/>
+                      <Icon name="envelope" />
                       <span>Email Address</span>
                     </label>
                     <input
@@ -1799,7 +1877,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="phone"/>
+                      <Icon name="phone" />
                       <span>Phone Number</span>
                     </label>
                     <input
@@ -1821,7 +1899,7 @@ const SettingsTab = ({
                     className="btn btn-primary btn-large"
                     onClick={handleSaveUserProfile}
                   >
-                    <Icon name="save"/>
+                    <Icon name="save" />
                     <span>Update Profile</span>
                   </button>
                 </div>
@@ -1831,7 +1909,7 @@ const SettingsTab = ({
             <div className="dashboard-card">
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper">
-                  <Icon name="lock"/>
+                  <Icon name="lock" />
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title">Change Password</h3>
@@ -1844,7 +1922,7 @@ const SettingsTab = ({
                 <div className="settings-form-grid">
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="key"/>
+                      <Icon name="key" />
                       <span>Current Password</span>
                     </label>
                     <input
@@ -1862,7 +1940,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="lock"/>
+                      <Icon name="lock" />
                       <span>New Password</span>
                     </label>
                     <input
@@ -1880,7 +1958,7 @@ const SettingsTab = ({
                   </div>
                   <div className="settings-form-group">
                     <label className="settings-form-label">
-                      <Icon name="lock"/>
+                      <Icon name="lock" />
                       <span>Confirm New Password</span>
                     </label>
                     <input
@@ -1902,7 +1980,7 @@ const SettingsTab = ({
                     className="btn btn-primary btn-large"
                     onClick={handleSaveUserProfile}
                   >
-                    <Icon name="save"/>
+                    <Icon name="save" />
                     <span>Update Password</span>
                   </button>
                 </div>
@@ -1916,7 +1994,7 @@ const SettingsTab = ({
             <div className="dashboard-card">
               <div className="settings-section-header">
                 <div className="settings-section-icon-wrapper">
-                  <Icon name="font"/>
+                  <Icon name="font" />
                 </div>
                 <div className="settings-section-title-wrapper">
                   <h3 className="settings-section-title">Font style</h3>
@@ -1930,7 +2008,7 @@ const SettingsTab = ({
                 <div className="settings-form-grid">
                   <div className="settings-form-group settings-form-group-full">
                     <label className="settings-form-label">
-                      <Icon name="palette"/>
+                      <Icon name="palette" />
                       <span>My font style</span>
                     </label>
                     <select
@@ -1956,8 +2034,11 @@ const SettingsTab = ({
                     </p>
                   </div>
                   <div className="settings-form-group settings-form-group-full">
-                    <label className="settings-form-label" id="admin-font-size-label">
-                      <Icon name="text-height"/>
+                    <label
+                      className="settings-form-label"
+                      id="admin-font-size-label"
+                    >
+                      <Icon name="text-height" />
                       <span>Font size (admin dashboard only)</span>
                     </label>
                     <div
@@ -1968,7 +2049,8 @@ const SettingsTab = ({
                     >
                       {ADMIN_FONT_SIZE_OPTIONS.map((opt) => {
                         const active =
-                          (appearanceSettings.fontSize ?? ADMIN_FONT_SIZE_DEFAULT) === opt.value;
+                          (appearanceSettings.fontSize ??
+                            ADMIN_FONT_SIZE_DEFAULT) === opt.value;
                         return (
                           <button
                             key={opt.value}
@@ -1984,23 +2066,25 @@ const SettingsTab = ({
                       })}
                     </div>
                     <p className="settings-form-hint">
-                      Small 17px · Normal 18px · Large 19px. Applies immediately; save to persist.
+                      Small 17px · Normal 18px · Large 19px. Applies
+                      immediately; save to persist.
                     </p>
                   </div>
-                  
+
                   {/* Auto-hide Sidebar Toggle */}
                   <div className="settings-form-group settings-form-group-full">
                     <div className="settings-toggle-group">
                       <div className="settings-toggle-item">
                         <div className="settings-toggle-content">
                           <div className="settings-toggle-label-wrapper">
-                            <Icon name="eye-slash"/>
+                            <Icon name="eye-slash" />
                             <div>
                               <span className="settings-toggle-label">
                                 Auto-hide Sidebar
                               </span>
                               <span className="settings-toggle-description">
-                                Automatically hide sidebar after inactivity. Hover over left edge to show.
+                                Automatically hide sidebar after inactivity.
+                                Hover over left edge to show.
                               </span>
                             </div>
                           </div>
@@ -2021,7 +2105,47 @@ const SettingsTab = ({
                       </div>
                     </div>
                     <p className="settings-form-hint">
-                      When enabled, sidebar will hide after 3 seconds of inactivity. Move cursor to the left edge to reveal it.
+                      When enabled, sidebar will hide after 3 seconds of
+                      inactivity. Move cursor to the left edge to reveal it.
+                    </p>
+                  </div>
+                  <div className="settings-form-group settings-form-group-full">
+                    <div className="settings-toggle-group">
+                      <div className="settings-toggle-item">
+                        <div className="settings-toggle-content">
+                          <div className="settings-toggle-label-wrapper">
+                            <Icon name="th" />
+                            <div>
+                              <span className="settings-toggle-label">
+                                Compact view (tables)
+                              </span>
+                              <span className="settings-toggle-description">
+                                Tighter padding and rows in tables across the
+                                dashboard.
+                              </span>
+                            </div>
+                          </div>
+                          <label className="settings-toggle-switch">
+                            <input
+                              type="checkbox"
+                              checked={
+                                appearanceSettings.compactTables === true
+                              }
+                              onChange={(e) =>
+                                setAppearanceSettings({
+                                  ...appearanceSettings,
+                                  compactTables: e.target.checked,
+                                })
+                              }
+                            />
+                            <span className="settings-toggle-slider"></span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="settings-form-hint">
+                      Reduces vertical spacing in order tables, reports, and
+                      list views. Save to apply.
                     </p>
                   </div>
                 </div>
@@ -2030,7 +2154,7 @@ const SettingsTab = ({
                     className="btn btn-primary btn-large"
                     onClick={handleSaveAppearance}
                   >
-                    <Icon name="save"/>
+                    <Icon name="save" />
                     <span>Save font style</span>
                   </button>
                 </div>

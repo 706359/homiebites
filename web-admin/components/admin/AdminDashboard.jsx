@@ -459,6 +459,13 @@ const AdminDashboard = () => {
     }
   }, [activeTab]);
 
+  // Refresh orders when opening Pending Amounts so unpaid list is up to date
+  useEffect(() => {
+    if (activeTab === 'pendingAmounts' && loadOrders) {
+      loadOrders({}, true);
+    }
+  }, [activeTab, loadOrders]);
+
   useEffect(() => {
     if (!isMounted || typeof window === 'undefined') return;
 
@@ -888,7 +895,7 @@ const AdminDashboard = () => {
 
             if (loadOrders) {
               setTimeout(() => {
-                loadOrders();
+                loadOrders({}, true);
               }, 300);
             }
           },
@@ -1633,6 +1640,12 @@ const AdminDashboard = () => {
 
   const tabInfo = getTabInfo();
 
+  useEffect(() => {
+    if (typeof document !== 'undefined' && tabInfo?.title) {
+      document.title = `${tabInfo.title} – HomieBites Admin`;
+    }
+  }, [activeTab, tabInfo?.title]);
+
   const renderActiveTab = () => {
     const safeOrders = Array.isArray(orders) ? orders : [];
 
@@ -1771,6 +1784,11 @@ const AdminDashboard = () => {
           <PendingAmountsTab
             {...commonProps}
             onUpdateOrderStatus={handleUpdateOrderStatus}
+            onEditOrder={(order) => {
+              setEditingOrder(order);
+              setShowOrderModal(true);
+            }}
+            onDeleteOrder={handleDeleteOrder}
             onSendReminder={handleSendReminder}
             showOverdueFilter={showOverdueFilter}
             onOverdueFilterApplied={() => setShowOverdueFilter(false)}
@@ -1883,9 +1901,16 @@ const AdminDashboard = () => {
     })();
   };
 
+  const compactTables = Boolean(settings?.compactTables);
+
   return (
     <ErrorBoundary>
-      <div className="admin-dashboard">
+      <div
+        className={`admin-dashboard ${compactTables ? 'admin-compact-tables' : ''}`}
+      >
+        <a href="#admin-main-content" className="admin-skip-link">
+          Skip to main content
+        </a>
         <div
           className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`}
           onClick={() => setSidebarOpen(false)}
@@ -1904,9 +1929,18 @@ const AdminDashboard = () => {
           onAutoHideChange={setSidebarAutoHidden}
         />
 
-        <div
+        <main
+          id="admin-main-content"
           className={`admin-main ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${sidebarAutoHidden ? 'sidebar-auto-hidden' : ''}`}
+          role="main"
         >
+          <div
+            className="admin-live-region"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {tabInfo?.title ? `Viewing ${tabInfo.title}` : ''}
+          </div>
           <TopNav
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
@@ -1959,7 +1993,7 @@ const AdminDashboard = () => {
               {renderActiveTab()}
             </Suspense>
           </ErrorBoundary>
-        </div>
+        </main>
 
         {showOrderModal && (
           <Suspense

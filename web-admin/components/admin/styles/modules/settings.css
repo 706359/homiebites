@@ -33,7 +33,7 @@
 }
 
 .settings-section-title {
-  font-size: var(--admin-fs-xl);
+  font-size: var(--admin-fs-h3) !important;
   font-weight: 700;
   color: var(--admin-text-primary, #1e293b);
   margin: 0 0 4px 0;
@@ -444,7 +444,7 @@ textarea.settings-input-field {
   }
 
   .settings-section-title {
-    font-size: var(--admin-fs-base-mid, 0.9375rem) !important;
+    font-size: var(--admin-fs-h3) !important;
   }
 
   .settings-section-subtitle {

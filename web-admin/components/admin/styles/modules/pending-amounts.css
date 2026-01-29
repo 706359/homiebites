@@ -2,6 +2,189 @@
    PENDING AMOUNTS MODULE
    ======================================================================== */
 
+.pending-amounts-tab .kitchen-tab-stats {
+  margin-bottom: 20px;
+}
+
+.pending-filter-bar-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pending-filter-bar {
+  flex: 1;
+  min-width: 0;
+}
+
+.pending-table-empty-clear-btn {
+  margin-top: 12px;
+}
+
+.pending-amounts-header {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
+}
+
+.pending-amounts-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 6px 0;
+  font-size: var(--admin-fs-2xl);
+  font-weight: 700;
+  color: var(--admin-text-primary, #1e293b);
+}
+
+.pending-amounts-title-icon {
+  flex-shrink: 0;
+  color: var(--admin-accent, #449031);
+}
+
+.pending-amounts-subtitle {
+  margin: 0;
+  font-size: var(--admin-fs-body);
+  color: var(--admin-text-secondary, #6b7280);
+  line-height: 1.5;
+  max-width: 560px;
+}
+
+.pending-amounts-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.pending-amounts-stats .stat-card {
+  min-height: 88px;
+}
+
+.pending-stat-primary h3 {
+  color: var(--admin-warning-dark, #b45309);
+}
+
+.pending-stat-overdue h3 {
+  color: var(--admin-danger, #dc2626);
+}
+
+.pending-amounts-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.pending-list-section {
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+.pending-list-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px 0;
+  font-size: var(--admin-fs-lg);
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+}
+
+.pending-list-title-icon {
+  flex-shrink: 0;
+  color: var(--admin-accent, #449031);
+}
+
+.pending-list-card {
+  margin-top: 0;
+}
+
+.pending-summary-section {
+  margin-top: 28px;
+  margin-bottom: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--admin-border, #e5e7eb);
+}
+
+.pending-summary-section-title {
+  margin: 0 0 12px 0;
+  font-size: var(--admin-fs-base);
+  font-weight: 600;
+  color: var(--admin-text-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pending-payments-count-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--admin-fs-sm);
+  color: var(--admin-text-secondary, #6b7280);
+  padding: 8px 12px;
+  background: var(--admin-bg-secondary, #f9fafb);
+  border-radius: 8px;
+  margin-top: 12px;
+  font-weight: 500;
+}
+
+.pending-payments-summary {
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+}
+
+.pending-payments-range {
+  color: var(--admin-text-secondary, #6b7280);
+}
+
+.pending-status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: var(--admin-fs-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pending-status-overdue {
+  background: rgba(220, 38, 38, 0.15);
+  color: var(--admin-danger-dark, #b91c1c);
+}
+
+.pending-status-urgent {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--admin-warning-dark, #92400e);
+}
+
+.pending-status-warning {
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--admin-warning-dark, #92400e);
+}
+
+.pending-status-normal {
+  background: rgba(68, 144, 49, 0.12);
+  color: var(--admin-accent, #449031);
+}
+
+.pending-chart-desc {
+  margin: 4px 0 0 0;
+  font-size: var(--admin-fs-sm);
+  color: var(--admin-text-secondary, #6b7280);
+  font-weight: 400;
+}
+
+.pending-amounts-charts .dashboard-section-title {
+  margin-bottom: 4px;
+}
+
+.pending-table-empty-success {
+  color: var(--admin-success, #22c55e) !important;
+  opacity: 0.9;
+}
+
 .pending-warning-text {
   color: var(--admin-warning, #f59e0b);
 }
@@ -107,9 +290,14 @@
   color: var(--admin-danger-dark, #b91c1c);
 }
 
-.pending-payment-days-normal {
+.pending-payment-days-warning {
   background: rgba(245, 158, 11, 0.15);
   color: var(--admin-warning-dark, #92400e);
+}
+
+.pending-payment-days-normal {
+  background: rgba(68, 144, 49, 0.12);
+  color: var(--admin-accent, #449031);
 }
 
 .pending-payment-order-id {
@@ -230,9 +418,28 @@
 
 .pending-payment-mode-bar-fill {
   height: 100%;
+  width: var(--bar-width, 0%);
   background: var(--admin-accent, #449031);
   border-radius: 4px;
   transition: width 0.3s ease;
+}
+
+.pending-filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  row-gap: 12px;
+}
+
+.pending-amounts-table thead th {
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+  white-space: nowrap;
+}
+
+.pending-amounts-table tbody td {
+  vertical-align: middle;
 }
 
 /* Mobile responsive */

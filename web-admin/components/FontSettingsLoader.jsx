@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 
 // Use relative URL for Next.js API routes (same server)
 const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || '';
 
-/** Apply font via global --font-primary only; load Google Font if needed. Full platform uses this variable. */
+/** Apply font via --font-primary on document. Used only on admin routes; website uses fixed --font-website. */
 function applyFontFamily(fontFamilyName) {
   if (!fontFamilyName || typeof document === 'undefined') return;
   const value = `'${fontFamilyName}', sans-serif`;
@@ -27,7 +28,19 @@ function applyFontFamily(fontFamilyName) {
   }
 }
 
+/** True if current route is admin (dashboard, login, etc.). Font family from settings applies only here. */
+function isAdminRoute(pathname) {
+  return (
+    pathname != null &&
+    (pathname === '/admin' || pathname.startsWith('/admin/'))
+  );
+}
+
 export default function FontSettingsLoader() {
+  const pathname = usePathname();
+  const pathnameRef = useRef(pathname);
+  pathnameRef.current = pathname;
+
   useEffect(() => {
     const applyFontSettings = async () => {
       try {
@@ -41,23 +54,22 @@ export default function FontSettingsLoader() {
           const settings = data.data;
           const root = document.documentElement;
 
-          // Apply font family (full platform: website, admin, login)
-          // Font family is applied globally via --font-primary CSS variable
-          if (settings.fontFamily) {
-            applyFontFamily(settings.fontFamily);
-          } else {
-            // If no font family in settings, use default but still apply it
-            applyFontFamily('Baloo 2');
+          // Font family: only on admin routes (--font-primary). Website uses fixed --font-website.
+          if (isAdminRoute(pathname)) {
+            if (settings.fontFamily) {
+              applyFontFamily(settings.fontFamily);
+            } else {
+              applyFontFamily('Baloo 2');
+            }
           }
 
           // Font size is NOT applied here - it only applies to admin dashboard
           // Admin font size is handled by AdminDashboard and applyAdminFontSize()
           // which uses --admin-base-font-size and .admin-active class
 
-          // Apply primary color
+          // Apply primary color (website + admin)
           if (settings.primaryColor) {
             root.style.setProperty('--primary-green', settings.primaryColor);
-            // You can add more color variables if needed
           }
 
           // Apply theme: dark, light, or auto (prefers-color-scheme). Default to auto when unset.
@@ -86,9 +98,8 @@ export default function FontSettingsLoader() {
             else applyLight();
           }
         } else {
-          // No settings: apply default font and theme
-          applyFontFamily('Baloo 2');
-          
+          if (isAdminRoute(pathname)) applyFontFamily('Baloo 2');
+
           // Default to auto (prefers-color-scheme)
           const prefersDark = window.matchMedia(
             '(prefers-color-scheme: dark)'
@@ -107,21 +118,25 @@ export default function FontSettingsLoader() {
         }
       } catch (error) {
         console.error('Error loading font settings:', error);
-        // Fallback to default font - apply it via the function to load Google Font
-        applyFontFamily('Baloo 2');
+        if (isAdminRoute(pathname)) applyFontFamily('Baloo 2');
       }
     };
 
     applyFontSettings();
 
-    // When admin saves font in another tab, storage fires here so this tab (e.g. customer site) updates
+    // When admin saves font in another tab, only apply on this tab if we're on an admin route
     const onStorage = (e) => {
-      if (e.key === 'homiebites_font_family' && e.newValue)
+      if (
+        e.key === 'homiebites_font_family' &&
+        e.newValue &&
+        isAdminRoute(pathnameRef.current)
+      ) {
         applyFontFamily(e.newValue);
+      }
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
-  }, []);
+  }, [pathname]);
 
-  return null; // This component doesn't render anything
+  return null;
 }

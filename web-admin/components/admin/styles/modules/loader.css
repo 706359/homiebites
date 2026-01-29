@@ -1,0 +1,88 @@
+/* ========================================================================
+   ADMIN LOADER & PROGRESS BAR (Enterprise)
+   ======================================================================== */
+
+/* Loader container – uses spacing scale */
+.admin-dashboard .premium-loader-container.admin-loader,
+.admin-dashboard .premium-loader-container {
+  min-height: 50vh;
+  padding: var(--admin-space-xl, 24px);
+  gap: var(--admin-space-md, 16px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-dashboard .premium-loader-text.admin-loader-message,
+.admin-dashboard .premium-loader-text {
+  color: var(--admin-text-secondary, #6b7280);
+  font-size: var(--admin-fs-base);
+  font-weight: 500;
+  text-align: center;
+  margin: 0;
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+/* Enterprise progress bar (used under loader or in modals) */
+.admin-loader-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--admin-space-xs, 8px);
+  width: 100%;
+  max-width: 280px;
+  margin-top: var(--admin-space-sm, 12px);
+}
+
+.admin-loader-progress-track {
+  width: 100%;
+  height: var(--admin-space-sm, 12px);
+  background: var(--admin-bg-secondary, #f3f4f6);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.admin-loader-progress-fill {
+  height: 100%;
+  min-width: 0;
+  background: var(--admin-accent, #449031);
+  border-radius: 999px;
+  transition: width 0.25s ease-out;
+}
+
+.admin-loader-progress-label {
+  font-size: var(--admin-fs-label);
+  font-weight: 600;
+  color: var(--admin-text-secondary, #6b7280);
+}
+
+/* Reusable admin progress bar (for CSV upload, etc.) */
+.admin-progress-bar {
+  width: 100%;
+  height: var(--admin-space-sm, 12px);
+  background: var(--admin-bg-secondary, #f3f4f6);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.admin-progress-bar-fill {
+  height: 100%;
+  min-width: 0;
+  background: var(--admin-accent, #449031);
+  border-radius: 999px;
+  transition: width 0.25s ease-out;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .admin-loader-progress-fill,
+  .admin-progress-bar-fill {
+    transition: none;
+  }
+}

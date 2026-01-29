@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Icon from '../ui/Icon.jsx';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
+import Icon from '../ui/Icon.jsx';
+import {
+  handleFocusTrapKeydown,
+  useModalFocus,
+} from './hooks/useModalFocus.js';
 import { parseOrderDate } from './utils/dateUtils.js';
 import {
   calculateTotalAmount,
@@ -44,7 +48,9 @@ const OrderModal = ({
   const persistedDateRef = useRef(null);
   const lastOrderIdRef = useRef(null);
   const initialOrderRef = useRef(null);
+  const containerRef = useRef(null);
 
+  useModalFocus(show, containerRef);
   useAutoKeyboardAvoidance({
     containerSelector: '.modal-container',
     inputSelector: 'input, textarea, select',
@@ -345,13 +351,16 @@ const OrderModal = ({
       // Compare current state with initial state
       const initial = initialOrderRef.current;
       const hasChanges = !!(
-        (newOrder.deliveryAddress && newOrder.deliveryAddress.trim() !== '' && newOrder.deliveryAddress.trim() !== (initial.deliveryAddress || '').trim()) ||
-        (newOrder.quantity !== initial.quantity) ||
-        (newOrder.unitPrice !== initial.unitPrice) ||
-        (newOrder.mode !== initial.mode) ||
-        (newOrder.status !== initial.status) ||
-        (newOrder.paymentMode !== initial.paymentMode) ||
-        (newOrder.date !== initial.date)
+        (newOrder.deliveryAddress &&
+          newOrder.deliveryAddress.trim() !== '' &&
+          newOrder.deliveryAddress.trim() !==
+            (initial.deliveryAddress || '').trim()) ||
+        newOrder.quantity !== initial.quantity ||
+        newOrder.unitPrice !== initial.unitPrice ||
+        newOrder.mode !== initial.mode ||
+        newOrder.status !== initial.status ||
+        newOrder.paymentMode !== initial.paymentMode ||
+        newOrder.date !== initial.date
       );
       setHasUnsavedChanges(hasChanges);
     }
@@ -360,7 +369,7 @@ const OrderModal = ({
   const handleClose = () => {
     // Check if there are unsaved changes
     const hasChanges = hasUnsavedChanges && !editingOrder;
-    
+
     if (hasChanges && showConfirmation) {
       // Show custom confirmation modal
       showConfirmation({
@@ -382,7 +391,7 @@ const OrderModal = ({
       });
       return; // Important: return here to prevent closing
     }
-    
+
     // Close without confirmation if no unsaved changes
     setHasUnsavedChanges(false);
     setFormErrors({});
@@ -644,7 +653,7 @@ const OrderModal = ({
         // Use stored totalAmount/total if present, otherwise calculate from quantity * unitPrice
         // This allows manual overrides (e.g., when totalAmount should be different from calculated value)
         let finalTotalAmount = null;
-        
+
         // Check totalAmount first
         if (
           normalizedOrder.totalAmount !== undefined &&
@@ -655,15 +664,19 @@ const OrderModal = ({
             finalTotalAmount = parsed;
           }
         }
-        
+
         // Fallback to total field if totalAmount is not available
-        if (finalTotalAmount === null && normalizedOrder.total !== undefined && normalizedOrder.total !== null) {
+        if (
+          finalTotalAmount === null &&
+          normalizedOrder.total !== undefined &&
+          normalizedOrder.total !== null
+        ) {
           const parsed = parseFloat(String(normalizedOrder.total));
           if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) {
             finalTotalAmount = parsed;
           }
         }
-        
+
         // Only calculate if totalAmount/total is not present
         if (finalTotalAmount === null) {
           finalTotalAmount = calculateTotalAmount(
@@ -671,7 +684,7 @@ const OrderModal = ({
             normalizedOrder.unitPrice || 0
           );
         }
-        
+
         cleanOrderData.totalAmount = finalTotalAmount;
 
         await onSave(editingOrder.orderId || editingOrder._id, cleanOrderData);
@@ -731,7 +744,9 @@ const OrderModal = ({
       }
       if (e.key === 'Escape') {
         handleClose();
+        return;
       }
+      handleFocusTrapKeydown(e, containerRef.current);
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -1120,21 +1135,32 @@ const OrderModal = ({
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={containerRef}
+        className="modal-container"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="order-modal-title"
+      >
         <div className="modal-header">
-          <h2>{editingOrder ? 'Edit Order' : 'Add New Order'}</h2>
+          <h2 id="order-modal-title">
+            {editingOrder ? 'Edit Order' : 'Add New Order'}
+          </h2>
           <button
+            type="button"
             className="btn btn-ghost btn-icon modal-close"
             onClick={onClose}
+            aria-label="Close"
           >
-            <Icon name="times"/>
+            <Icon name="times" />
           </button>
         </div>
         <div className="modal-body">
           <div className="form-row">
             <div className="form-group">
               <label>
-                <Icon name="hashtag" className="mr-2"/>
+                <Icon name="hashtag" className="mr-2" />
                 Order ID
               </label>
               {editingOrder ? (
@@ -1327,7 +1353,7 @@ const OrderModal = ({
                   className="order-modal-calendar-btn"
                   title="Choose date from calendar"
                 >
-                  <Icon name="calendar-days"/>
+                  <Icon name="calendar-days" />
                 </button>
               </div>
               <span className="helper-text">Format: DD/MM/YYYY</span>
@@ -1340,7 +1366,7 @@ const OrderModal = ({
           <div className="form-row">
             <div className="form-group form-group-relative">
               <label className="required">
-                <Icon name="home" className="mr-2"/>
+                <Icon name="home" className="mr-2" />
                 Delivery Address
               </label>
               <input
@@ -1481,7 +1507,9 @@ const OrderModal = ({
                       role="status"
                       aria-live="polite"
                     >
-                      <Icon name="lightbulb" className="mr-2"
+                      <Icon
+                        name="lightbulb"
+                        className="mr-2"
                         aria-hidden="true"
                       />
                       <span>
@@ -1535,7 +1563,10 @@ const OrderModal = ({
                           }`}
                         >
                           <div className="address-suggestion-content">
-                            <Icon name="map-marker-alt" className="address-suggestion-icon"/>
+                            <Icon
+                              name="map-marker-alt"
+                              className="address-suggestion-icon"
+                            />
                             <div className="address-suggestion-content-wrapper">
                               <div className="address-suggestion-title">
                                 {addr}
@@ -1543,7 +1574,7 @@ const OrderModal = ({
                               <div className="address-suggestion-info">
                                 {info.count > 0 && (
                                   <span>
-                                    <Icon name="shopping-cart"/>
+                                    <Icon name="shopping-cart" />
                                     {info.count} order
                                     {info.count !== 1 ? 's' : ''}
                                   </span>
@@ -1557,7 +1588,10 @@ const OrderModal = ({
                                 Rs Last: ₹{info.lastPrice}
                               </span>
                             )}
-                            <Icon name="chevron-right" className="address-suggestion-chevron"/>
+                            <Icon
+                              name="chevron-right"
+                              className="address-suggestion-chevron"
+                            />
                           </div>
                         </button>
                       );
@@ -1580,7 +1614,7 @@ const OrderModal = ({
             </div>
             <div className="form-group">
               <label className="required">
-                <Icon name="utensils" className="mr-2"/>
+                <Icon name="utensils" className="mr-2" />
                 Mode
               </label>
               <select
@@ -1610,7 +1644,7 @@ const OrderModal = ({
           <div className="form-row">
             <div className="form-group">
               <label className="required">
-                <Icon name="hashtag" className="mr-2"/>
+                <Icon name="hashtag" className="mr-2" />
                 Quantity
               </label>
               <input
@@ -1634,7 +1668,7 @@ const OrderModal = ({
             </div>
             <div className="form-group">
               <label className="required">
-                <Icon name="check-circle" className="mr-2"/>
+                <Icon name="check-circle" className="mr-2" />
                 Status
               </label>
               <select
@@ -1664,7 +1698,7 @@ const OrderModal = ({
           <div className="form-row">
             <div className="form-group">
               <label className="required">
-                <Icon name="rupee-sign" className="mr-2"/>
+                <Icon name="rupee-sign" className="mr-2" />
                 Unit Price (₹)
               </label>
               <input
@@ -1691,7 +1725,7 @@ const OrderModal = ({
             </div>
             <div className="form-group">
               <label>
-                <Icon name="credit-card" className="mr-2"/>
+                <Icon name="credit-card" className="mr-2" />
                 Payment Mode
               </label>
               <select
@@ -1730,9 +1764,9 @@ const OrderModal = ({
                 min="0"
                 step="1"
                 value={
-                  (editingOrder.totalAmount !== undefined &&
+                  editingOrder.totalAmount !== undefined &&
                   editingOrder.totalAmount !== null &&
-                  editingOrder.totalAmount !== '')
+                  editingOrder.totalAmount !== ''
                     ? Number(editingOrder.totalAmount)
                     : calculateTotalAmount(
                         editingOrder.quantity || 1,
@@ -1758,15 +1792,23 @@ const OrderModal = ({
               {formatCurrency(
                 (() => {
                   const order = newOrder;
-                  if (order.totalAmount !== undefined && order.totalAmount !== null) {
+                  if (
+                    order.totalAmount !== undefined &&
+                    order.totalAmount !== null
+                  ) {
                     const parsed = parseFloat(String(order.totalAmount));
-                    if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) return parsed;
+                    if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0)
+                      return parsed;
                   }
                   if (order.total !== undefined && order.total !== null) {
                     const parsed = parseFloat(String(order.total));
-                    if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0) return parsed;
+                    if (!isNaN(parsed) && isFinite(parsed) && parsed >= 0)
+                      return parsed;
                   }
-                  return calculateTotalAmount(order.quantity || 1, order.unitPrice || 0);
+                  return calculateTotalAmount(
+                    order.quantity || 1,
+                    order.unitPrice || 0
+                  );
                 })()
               )}
             </span>
@@ -1786,12 +1828,12 @@ const OrderModal = ({
               </>
             ) : saveSuccess ? (
               <>
-                <Icon name="check"/> Order{' '}
-                {editingOrder ? 'Updated' : 'Added'}!
+                <Icon name="check" /> Order {editingOrder ? 'Updated' : 'Added'}
+                !
               </>
             ) : (
               <>
-                <Icon name="save"/>{' '}
+                <Icon name="save" />{' '}
                 {editingOrder ? 'Update Order' : 'Save Order'}
               </>
             )}

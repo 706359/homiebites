@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import './FAQ.css';
+import Icon from './ui/Icon.jsx';
 
 const FAQ = () => {
   const { t } = useLanguage();

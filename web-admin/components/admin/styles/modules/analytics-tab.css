@@ -31,11 +31,18 @@
   z-index: 10;
 }
 
+/* Equal font-size and font-weight 500 for all table content */
+.analytics-delivery-table thead th,
+.analytics-delivery-table tbody td,
+.analytics-delivery-table thead th *,
+.analytics-delivery-table tbody td * {
+  font-size: var(--admin-fs-base);
+  font-weight: 500;
+}
+
 .analytics-delivery-table thead th {
   padding: 14px 16px;
   text-align: left;
-  font-size: var(--admin-fs-base);
-  font-weight: 700;
   color: var(--admin-text-primary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -94,7 +101,7 @@
   margin-left: 6px;
   font-size: var(--admin-fs-sm);
   color: var(--admin-text-white);
-  font-weight: 700;
+  font-weight: 500;
   vertical-align: middle;
   line-height: 1;
   width: 20px;
@@ -112,7 +119,6 @@
 
 .analytics-delivery-table tbody td {
   padding: 12px 16px;
-  font-size: var(--admin-fs-base);
   color: var(--admin-text-primary, #1e293b);
   border-bottom: 1px solid var(--admin-border, #e2e8f0);
   vertical-align: middle;
@@ -135,7 +141,7 @@
 
 .analytics-delivery-table tbody td.analytics-td-address {
   min-width: 100px;
-  font-weight: 600;
+  font-weight: 500;
   font-size: var(--admin-fs-base);
   color: var(--admin-text-primary, #1e293b);
   white-space: normal;
@@ -156,7 +162,7 @@
   min-width: 72px;
   white-space: nowrap;
   font-size: var(--admin-fs-base);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--admin-text-primary, #1e293b);
   font-variant-numeric: tabular-nums;
   text-align: right;
@@ -166,7 +172,7 @@
   min-width: 72px;
   white-space: nowrap;
   font-size: var(--admin-fs-base);
-  font-weight: 400;
+  font-weight: 500;
   color: var(--admin-text-light);
   text-align: right;
   font-style: italic;
@@ -176,7 +182,7 @@
   min-width: 88px;
   white-space: nowrap;
   font-size: var(--admin-fs-base);
-  font-weight: 700;
+  font-weight: 500;
   color: var(--admin-accent, #449031);
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -204,7 +210,7 @@
 
 .analytics-trend-icon {
   font-size: var(--admin-fs-base);
-  font-weight: 700;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -581,12 +587,12 @@
 
   .section-header-with-select .dashboard-section-title {
     width: 100% !important;
-    font-size: var(--admin-fs-base-mid, 0.9375rem) !important;
+    font-size: var(--admin-fs-h3) !important;
     gap: 8px;
   }
 
   .section-header-with-select .dashboard-section-title i {
-    font-size: var(--admin-fs-base, 1rem) !important;
+    font-size: var(--admin-fs-h3) !important;
   }
 
   .top-areas-range-select {
@@ -700,6 +706,7 @@
   flex: 1 0 auto;
   min-width: 0;
   white-space: nowrap;
+  font-size: var(--admin-fs-h2);
 }
 
 .section-header-with-select .top-areas-range-select {

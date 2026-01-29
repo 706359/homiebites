@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect, Suspense, lazy } from 'react';
+import { Suspense, lazy, useState } from 'react';
+import Footer from '../components/Footer';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
-import Footer from '../components/Footer';
 import OrderModal from '../components/OrderModal';
-import { useSmoothScroll } from '../hooks/useSmoothScroll';
-import { useRevealAnimation } from '../hooks/useRevealAnimation';
-import { useLanguage } from '../contexts/LanguageContext';
 import PremiumLoader from '../components/PremiumLoader';
 import StructuredData from '../components/StructuredData';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useRevealAnimation } from '../hooks/useRevealAnimation';
+import { useSmoothScroll } from '../hooks/useSmoothScroll';
 
 // Lazy load heavy components for better performance
 const HowItWorks = lazy(() => import('../components/HowItWorks'));
@@ -18,6 +18,7 @@ const SpecialOffer = lazy(() => import('../components/SpecialOffer'));
 const Gallery = lazy(() => import('../components/Gallery'));
 const Testimonials = lazy(() => import('../components/Testimonials'));
 const FAQ = lazy(() => import('../components/FAQ'));
+const BlogSection = lazy(() => import('../components/BlogSection'));
 const About = lazy(() => import('../components/About'));
 const Contact = lazy(() => import('../components/Contact'));
 
@@ -39,12 +40,16 @@ export default function HomePage() {
       <main id="main-content" tabIndex="-1">
         <Hero onOrderClick={handleOrderClick} />
         <Suspense
-          fallback={<PremiumLoader message="Loading how it works..." size="small" />}
+          fallback={
+            <PremiumLoader message="Loading how it works..." size="small" />
+          }
         >
           <HowItWorks onOrderClick={handleOrderClick} />
         </Suspense>
         <Suspense
-          fallback={<PremiumLoader message="Loading features..." size="small" />}
+          fallback={
+            <PremiumLoader message="Loading features..." size="small" />
+          }
         >
           <Features />
         </Suspense>
@@ -71,6 +76,11 @@ export default function HomePage() {
           <FAQ />
         </Suspense>
         <Suspense
+          fallback={<PremiumLoader message="Loading blog..." size="small" />}
+        >
+          <BlogSection />
+        </Suspense>
+        <Suspense
           fallback={<PremiumLoader message="Loading about..." size="small" />}
         >
           <About />
@@ -82,7 +92,10 @@ export default function HomePage() {
         </Suspense>
       </main>
       <Footer onOrderClick={handleOrderClick} />
-      <OrderModal isOpen={isOrderModalOpen} onClose={() => setIsOrderModalOpen(false)} />
+      <OrderModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+      />
     </>
   );
 }

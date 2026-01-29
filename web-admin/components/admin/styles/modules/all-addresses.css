@@ -1,0 +1,290 @@
+/* ========================================================================
+   ALL ADDRESSES / CUSTOMERS TAB – CARD DESIGN
+   Spacing scale: 6, 8, 12, 16, 20px for consistent space management
+   ======================================================================== */
+
+.customer-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  min-width: 0;
+  align-items: stretch;
+}
+
+@media (max-width: 1200px) {
+  .customer-cards-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .customer-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .customer-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+.customer-card-enhanced {
+  display: flex;
+  flex-direction: column;
+  background: var(--admin-bg, #ffffff);
+  border: 1px solid var(--admin-border, #e2e8f0);
+  border-radius: 12px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+  padding: 16px;
+  min-width: 0;
+  min-height: 0;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.customer-card-enhanced:hover {
+  border-color: var(--admin-accent, #449031);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.customer-card-enhanced:focus-visible {
+  outline: 2px solid var(--admin-accent, #449031);
+  outline-offset: 2px;
+}
+
+/* Card inside layout: Content (title, badges, stats, meta) → Actions at bottom */
+
+.customer-card-enhanced-content {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.customer-card-enhanced-title {
+  font-size: var(--admin-fs-base);
+  font-weight: 700;
+  color: var(--admin-text-primary, #1e293b);
+  margin: 0 0 8px 0;
+  line-height: 1.35;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.customer-card-enhanced-badges {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.customer-card-enhanced-segment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: var(--admin-fs-xs);
+  font-weight: 600;
+  background: rgba(68, 144, 49, 0.12);
+  border: 1px solid rgba(68, 144, 49, 0.25);
+  color: var(--admin-accent, #449031);
+  line-height: 1.2;
+}
+
+.customer-card-enhanced-segment-icon {
+  font-size: 1em;
+  line-height: 1;
+}
+
+.customer-card-enhanced-segment-label {
+  white-space: nowrap;
+}
+
+.customer-card-enhanced-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-size: var(--admin-fs-xs);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.customer-card-enhanced-status-badge.active {
+  background: var(--admin-success-light, rgba(22, 163, 74, 0.1));
+  color: var(--admin-success, #16a34a);
+}
+
+.customer-card-enhanced-status-badge.inactive {
+  background: var(--admin-warning-light, rgba(245, 158, 11, 0.15));
+  color: var(--admin-warning-dark, #92400e);
+}
+
+.customer-card-enhanced-status-badge .lucide-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.customer-card-enhanced-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--admin-border, #e5e7eb);
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
+}
+
+.customer-card-enhanced-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  text-align: center;
+}
+
+.customer-card-enhanced-stat-item.highlight .customer-card-enhanced-stat-value {
+  font-weight: 700;
+  color: var(--admin-accent, #449031);
+}
+
+.customer-card-enhanced-stat-label {
+  font-size: var(--admin-fs-xs);
+  color: var(--admin-text-secondary, #6b7280);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.customer-card-enhanced-stat-value {
+  font-size: var(--admin-fs-sm);
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customer-card-enhanced-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.customer-card-enhanced-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--admin-fs-xs);
+  color: var(--admin-text-secondary, #6b7280);
+  line-height: 1.3;
+}
+
+.customer-card-enhanced-meta-item .lucide-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: var(--admin-text-light, #9ca3af);
+}
+
+.customer-card-enhanced-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding-top: 12px;
+  margin-top: auto;
+  border-top: 1px solid var(--admin-border, #e5e7eb);
+  flex-shrink: 0;
+}
+
+.customer-card-enhanced-actions .btn {
+  flex-shrink: 0;
+}
+
+.customer-card-enhanced-actions .btn-icon {
+  padding: 6px;
+}
+
+.customer-card-enhanced-actions .btn-small {
+  padding: 6px 10px;
+  font-size: var(--admin-fs-xs);
+}
+
+/* Segment-specific accent on card (optional top border) */
+.customer-card-enhanced[data-segment='Super VIP'] {
+  border-top: 3px solid var(--admin-warning, #f59e0b);
+}
+
+.customer-card-enhanced[data-segment='VIP'] {
+  border-top: 3px solid var(--admin-accent, #449031);
+}
+
+.customer-card-enhanced[data-segment='Regular'] {
+  border-top: 3px solid var(--admin-info, #007aff);
+}
+
+@media (max-width: 480px) {
+  .customer-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .customer-card-enhanced {
+    padding: 14px;
+  }
+
+  .customer-card-enhanced-badges {
+    margin-bottom: 10px;
+  }
+
+  .customer-card-enhanced-title {
+    font-size: var(--admin-fs-base);
+    margin-bottom: 8px;
+    -webkit-line-clamp: 2;
+  }
+
+  .customer-card-enhanced-stats {
+    gap: 6px;
+    padding: 8px 0;
+    margin-bottom: 8px;
+  }
+
+  .customer-card-enhanced-meta {
+    margin-bottom: 8px;
+  }
+
+  .customer-card-enhanced-actions {
+    padding-top: 10px;
+    gap: 6px;
+  }
+
+  .customer-card-enhanced-actions .btn-small {
+    flex: 1;
+    min-width: 0;
+  }
+}

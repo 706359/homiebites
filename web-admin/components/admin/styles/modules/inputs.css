@@ -161,7 +161,7 @@
 
 .global-search-input::placeholder {
   color: var(--admin-text-secondary, #64748b);
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .global-search-close {
@@ -264,13 +264,13 @@
 }
 
 /* Global fix: Prevent excessive padding that cuts off placeholders */
-.admin-dashboard input[type="text"],
-.admin-dashboard input[type="email"],
-.admin-dashboard input[type="number"],
-.admin-dashboard input[type="date"],
-.admin-dashboard input[type="tel"],
-.admin-dashboard input[type="password"],
-.admin-dashboard input[type="search"],
+.admin-dashboard input[type='text'],
+.admin-dashboard input[type='email'],
+.admin-dashboard input[type='number'],
+.admin-dashboard input[type='date'],
+.admin-dashboard input[type='tel'],
+.admin-dashboard input[type='password'],
+.admin-dashboard input[type='search'],
 .admin-dashboard select:not(.premium-select),
 .admin-dashboard textarea {
   padding-top: 10px !important;
@@ -288,11 +288,11 @@
 }
 
 /* Make placeholder option text smaller in all admin select dropdowns */
-.input-field option[value=""],
-.filter-select option[value=""],
-.premium-select option[value=""],
-select option[value=""] {
-  font-size: 0.85rem !important;
+.input-field option[value=''],
+.filter-select option[value=''],
+.premium-select option[value=''],
+select option[value=''] {
+  font-size: var(--admin-fs-sm-mid) !important;
   color: rgba(0, 0, 0, 0.5) !important;
 }
 
@@ -302,7 +302,7 @@ select option[value=""] {
 .premium-select.placeholder-selected,
 select.placeholder-selected {
   color: rgba(0, 0, 0, 0.5) !important;
-  font-size: 0.85rem !important;
+  font-size: var(--admin-fs-sm-mid) !important;
 }
 
 /* Date input wrapper styles */
