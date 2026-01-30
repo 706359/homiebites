@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useNotification } from '../../../components/admin/contexts/NotificationContext.jsx';
+import { LoadingButton } from '../../../components/loaders/LoaderComponents';
 import { useAutoKeyboardAvoidance } from '../../../hooks/useKeyboardAvoidance';
 import './change-password.css';
 
@@ -238,13 +239,14 @@ export default function ChangePasswordForm({ isTemporary }) {
             </div>
           </div>
 
-          <button
+          <LoadingButton
             type="submit"
-            disabled={loading}
             className="btn btn-primary btn-full"
+            loading={loading}
+            loadingText="Changing Password..."
           >
-            {loading ? 'Changing Password...' : 'Change Password'}
-          </button>
+            Change Password
+          </LoadingButton>
 
           {!isTemporary && (
             <button

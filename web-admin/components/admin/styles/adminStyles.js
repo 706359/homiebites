@@ -10,6 +10,7 @@ import './modules/all-addresses.css';
 import './modules/analytics-tab.css';
 import './modules/badges.css';
 import './modules/cards.css';
+import './modules/charts-premium.css';
 import './modules/csv-upload-modal.css';
 import './modules/dashboard.css';
 import './modules/empty-states.css';

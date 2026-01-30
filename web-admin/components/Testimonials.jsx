@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { InlineLoader } from './loaders/LoaderComponents';
 import ReviewForm from './ReviewForm';
 import './Testimonials.css';
 import Icon from './ui/Icon.jsx';
@@ -121,9 +122,7 @@ const Testimonials = () => {
               <Icon name="pen" /> {t('reviews.writeReview') || 'Write a Review'}
             </button>
           </div>
-          <p className="testimonials-loading">
-            {t('common.loading') || 'Loading...'}
-          </p>
+          <InlineLoader message={t('common.loading') || 'Loading...'} />
         </div>
       </section>
     );

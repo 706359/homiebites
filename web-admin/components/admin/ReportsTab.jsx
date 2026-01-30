@@ -2,8 +2,8 @@ import ExcelJS from 'exceljs';
 import { useEffect, useState } from 'react';
 import api from '../../lib/api-admin.js';
 import { convertMenuItemsToCategories } from '../../lib/menuData.js';
+import { InlineLoader } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
-import PremiumLoader from './PremiumLoader.jsx';
 import {
   formatDate,
   formatDateMonthDay,
@@ -1380,7 +1380,7 @@ const ReportsTab = ({
   if (loading) {
     return (
       <div className="admin-content">
-        <PremiumLoader message="Loading reports..." size="large" />
+        <InlineLoader message="Loading reports..." />
       </div>
     );
   }

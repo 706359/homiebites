@@ -141,7 +141,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  background: var(--admin-accent-light);
   border: 1px solid var(--admin-accent, #449031);
   border-radius: 12px;
   cursor: pointer;

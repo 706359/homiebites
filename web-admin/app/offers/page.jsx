@@ -1,13 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import Icon from '../../components/ui/Icon.jsx';
-import { useEffect, useState } from 'react';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
+import { InlineLoader } from '../../components/loaders/LoaderComponents';
 import OrderModal from '../../components/OrderModal';
+import Icon from '../../components/ui/Icon.jsx';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getOffersData } from '../../lib/offersData';
+import { useEffect, useState } from 'react';
 import '../../pages/OffersPage.css';
 import '../../styles/globals.css';
 
@@ -95,9 +96,7 @@ export default function OffersPage() {
         <Header onOrderClick={openOrderModal} />
         <div className="offers-page">
           <div className="offers-container">
-            <div className="offers-loading-state">
-              <p>{t('common.loading') || 'Loading...'}</p>
-            </div>
+            <InlineLoader message={t('common.loading') || 'Loading...'} />
           </div>
         </div>
         <Footer onOrderClick={openOrderModal} />

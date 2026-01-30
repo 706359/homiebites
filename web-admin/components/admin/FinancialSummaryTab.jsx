@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
+import { InlineLoader } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
-import PremiumLoader from './PremiumLoader.jsx';
 import {
   getFilteredOrdersByDate,
   getProfitStats,
@@ -153,7 +153,7 @@ const FinancialSummaryTab = ({
   if (loading) {
     return (
       <div className="admin-content">
-        <PremiumLoader message="Loading financial data..." size="large" />
+        <InlineLoader message="Loading financial data..." />
       </div>
     );
   }
@@ -260,173 +260,174 @@ const FinancialSummaryTab = ({
         {/* Profit & Expenses */}
         <div className="kitchen-tab-card">
           <div className="kitchen-tab-body-inner">
-        <div className="dashboard-section-header">
-          <h2 className="dashboard-section-title">
-            <Icon name="chart-line" />
-            Profit & Expenses Analysis
-          </h2>
+            <div className="dashboard-section-header">
+              <h2 className="dashboard-section-title">
+                <Icon name="chart-line" />
+                Profit & Expenses Analysis
+              </h2>
+            </div>
+            <div className="profit-breakdown-grid">
+              <div className="profit-card">
+                <div className="profit-card-header">
+                  <Icon name="money-bill-wave" />
+                  <span>Revenue</span>
+                </div>
+                <div className="profit-card-value">
+                  ₹{formatCurrency(financialData.profitStats.revenue)}
+                </div>
+              </div>
+              <div className="profit-card">
+                <div className="profit-card-header">
+                  <Icon name="arrow-down" />
+                  <span>Expenses ({expensePercentage}%)</span>
+                </div>
+                <div className="profit-card-value profit-card-expense">
+                  ₹{formatCurrency(financialData.profitStats.expenses)}
+                </div>
+              </div>
+              <div className="profit-card profit-card-highlight">
+                <div className="profit-card-header">
+                  <Icon name="arrow-up" />
+                  <span>Profit</span>
+                </div>
+                <div className="profit-card-value profit-card-profit">
+                  ₹{formatCurrency(financialData.profitStats.profit)}
+                </div>
+                <div className="profit-card-margin">
+                  {financialData.profitStats.profitMarginPercent.toFixed(1)}%
+                  margin
+                </div>
+              </div>
+              <div className="profit-card">
+                <div className="profit-card-header">
+                  <Icon name="bullseye" />
+                  <span>Target Profit ({targetProfitMargin}%)</span>
+                </div>
+                <div className="profit-card-value">
+                  ₹{formatCurrency(financialData.profitStats.targetProfit)}
+                </div>
+                <div className="profit-card-diff">
+                  {financialData.profitStats.profit >=
+                  financialData.profitStats.targetProfit
+                    ? '✓ Target Achieved'
+                    : `₹${formatCurrency(
+                        financialData.profitStats.targetProfit -
+                          financialData.profitStats.profit
+                      )} to reach target`}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="profit-breakdown-grid">
-          <div className="profit-card">
-            <div className="profit-card-header">
-              <Icon name="money-bill-wave" />
-              <span>Revenue</span>
-            </div>
-            <div className="profit-card-value">
-              ₹{formatCurrency(financialData.profitStats.revenue)}
-            </div>
-          </div>
-          <div className="profit-card">
-            <div className="profit-card-header">
-              <Icon name="arrow-down" />
-              <span>Expenses ({expensePercentage}%)</span>
-            </div>
-            <div className="profit-card-value profit-card-expense">
-              ₹{formatCurrency(financialData.profitStats.expenses)}
-            </div>
-          </div>
-          <div className="profit-card profit-card-highlight">
-            <div className="profit-card-header">
-              <Icon name="arrow-up" />
-              <span>Profit</span>
-            </div>
-            <div className="profit-card-value profit-card-profit">
-              ₹{formatCurrency(financialData.profitStats.profit)}
-            </div>
-            <div className="profit-card-margin">
-              {financialData.profitStats.profitMarginPercent.toFixed(1)}% margin
-            </div>
-          </div>
-          <div className="profit-card">
-            <div className="profit-card-header">
-              <Icon name="bullseye" />
-              <span>Target Profit ({targetProfitMargin}%)</span>
-            </div>
-            <div className="profit-card-value">
-              ₹{formatCurrency(financialData.profitStats.targetProfit)}
-            </div>
-            <div className="profit-card-diff">
-              {financialData.profitStats.profit >=
-              financialData.profitStats.targetProfit
-                ? '✓ Target Achieved'
-                : `₹${formatCurrency(
-                    financialData.profitStats.targetProfit -
-                      financialData.profitStats.profit
-                  )} to reach target`}
-            </div>
-          </div>
-        </div>
-          </div>
-      </div>
 
         {/* Payment Method Breakdown */}
-      <div className="dashboard-card">
-        <div className="dashboard-section-header">
-          <h2 className="dashboard-section-title">
-            <Icon name="credit-card" />
-            Payment Method Breakdown
-          </h2>
-        </div>
-        <div className="payment-methods-table-container">
-          <table className="orders-table">
-            <thead>
-              <tr>
-                <th>Payment Method</th>
-                <th>Total Orders</th>
-                <th>Total Revenue</th>
-                <th>Paid Orders</th>
-                <th>Paid Revenue</th>
-                <th>Pending Orders</th>
-                <th>Pending Revenue</th>
-                <th>% of Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {financialData.paymentMethods
-                .sort((a, b) => b.revenue - a.revenue)
-                .map((method, idx) => {
-                  const percentage =
-                    financialData.totalRevenue > 0
-                      ? (
-                          (method.revenue / financialData.totalRevenue) *
-                          100
-                        ).toFixed(1)
-                      : '0.0';
-                  return (
-                    <tr key={idx}>
-                      <td>
-                        <strong>{method.method}</strong>
-                      </td>
-                      <td>{method.count}</td>
-                      <td>₹{formatCurrency(method.revenue)}</td>
-                      <td>{method.paidCount}</td>
-                      <td>₹{formatCurrency(method.paidRevenue)}</td>
-                      <td>{method.pendingCount}</td>
-                      <td>₹{formatCurrency(method.pendingRevenue)}</td>
-                      <td>
-                        <div className="percentage-bar-container">
-                          <div
-                            className="percentage-bar"
-                            style={{ width: `${percentage}%` }}
-                          ></div>
-                          <span>{percentage}%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Daily Breakdown */}
-      <div className="dashboard-card">
-        <div className="dashboard-section-header">
-          <h2 className="dashboard-section-title">
-            <Icon name="calendar-day" />
-            Daily Breakdown (Last 30 Days)
-          </h2>
-        </div>
-        <div className="daily-breakdown-table-container">
-          <table className="orders-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Orders</th>
-                <th>Total Revenue</th>
-                <th>Paid Revenue</th>
-                <th>Pending Revenue</th>
-                <th>Avg Order Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              {financialData.dailyData.length === 0 ? (
+        <div className="dashboard-card">
+          <div className="dashboard-section-header">
+            <h2 className="dashboard-section-title">
+              <Icon name="credit-card" />
+              Payment Method Breakdown
+            </h2>
+          </div>
+          <div className="payment-methods-table-container">
+            <table className="orders-table">
+              <thead>
                 <tr>
-                  <td colSpan="6" className="empty-state-cell">
-                    No data available for the selected period
-                  </td>
+                  <th>Payment Method</th>
+                  <th>Total Orders</th>
+                  <th>Total Revenue</th>
+                  <th>Paid Orders</th>
+                  <th>Paid Revenue</th>
+                  <th>Pending Orders</th>
+                  <th>Pending Revenue</th>
+                  <th>% of Total</th>
                 </tr>
-              ) : (
-                financialData.dailyData.map((day, idx) => {
-                  const avgValue =
-                    day.orders > 0 ? Math.round(day.revenue / day.orders) : 0;
-                  return (
-                    <tr key={idx}>
-                      <td>{formatDateMonthDay(new Date(day.date))}</td>
-                      <td>{day.orders}</td>
-                      <td>₹{formatCurrency(day.revenue)}</td>
-                      <td>₹{formatCurrency(day.paidRevenue)}</td>
-                      <td>₹{formatCurrency(day.pendingRevenue)}</td>
-                      <td>₹{formatCurrency(avgValue)}</td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {financialData.paymentMethods
+                  .sort((a, b) => b.revenue - a.revenue)
+                  .map((method, idx) => {
+                    const percentage =
+                      financialData.totalRevenue > 0
+                        ? (
+                            (method.revenue / financialData.totalRevenue) *
+                            100
+                          ).toFixed(1)
+                        : '0.0';
+                    return (
+                      <tr key={idx}>
+                        <td>
+                          <strong>{method.method}</strong>
+                        </td>
+                        <td>{method.count}</td>
+                        <td>₹{formatCurrency(method.revenue)}</td>
+                        <td>{method.paidCount}</td>
+                        <td>₹{formatCurrency(method.paidRevenue)}</td>
+                        <td>{method.pendingCount}</td>
+                        <td>₹{formatCurrency(method.pendingRevenue)}</td>
+                        <td>
+                          <div className="percentage-bar-container">
+                            <div
+                              className="percentage-bar"
+                              style={{ width: `${percentage}%` }}
+                            ></div>
+                            <span>{percentage}%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+
+        {/* Daily Breakdown */}
+        <div className="dashboard-card">
+          <div className="dashboard-section-header">
+            <h2 className="dashboard-section-title">
+              <Icon name="calendar-day" />
+              Daily Breakdown (Last 30 Days)
+            </h2>
+          </div>
+          <div className="daily-breakdown-table-container">
+            <table className="orders-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Orders</th>
+                  <th>Total Revenue</th>
+                  <th>Paid Revenue</th>
+                  <th>Pending Revenue</th>
+                  <th>Avg Order Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {financialData.dailyData.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="empty-state-cell">
+                      No data available for the selected period
+                    </td>
+                  </tr>
+                ) : (
+                  financialData.dailyData.map((day, idx) => {
+                    const avgValue =
+                      day.orders > 0 ? Math.round(day.revenue / day.orders) : 0;
+                    return (
+                      <tr key={idx}>
+                        <td>{formatDateMonthDay(new Date(day.date))}</td>
+                        <td>{day.orders}</td>
+                        <td>₹{formatCurrency(day.revenue)}</td>
+                        <td>₹{formatCurrency(day.paidRevenue)}</td>
+                        <td>₹{formatCurrency(day.pendingRevenue)}</td>
+                        <td>₹{formatCurrency(avgValue)}</td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );

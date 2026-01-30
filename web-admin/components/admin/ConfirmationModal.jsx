@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 
+import { LoadingButton } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -21,9 +22,10 @@ const ConfirmationModal = ({
   useEffect(() => {
     if (!show) return;
 
-    previousFocusRef.current = document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null;
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
 
     const handleKey = (e) => {
       if (e.key === 'Escape' && !isLoading) {
@@ -144,10 +146,16 @@ const ConfirmationModal = ({
       >
         <div className="modal-header confirmation-modal-header">
           <div className="flex-center">
-            <div className="modal-icon-box confirmation-modal-icon-box" aria-hidden="true">
+            <div
+              className="modal-icon-box confirmation-modal-icon-box"
+              aria-hidden="true"
+            >
               <Icon name={styles.icon} />
             </div>
-            <h2 id="confirmation-modal-title" className="confirmation-modal-title">
+            <h2
+              id="confirmation-modal-title"
+              className="confirmation-modal-title"
+            >
               {title}
             </h2>
           </div>
@@ -177,21 +185,17 @@ const ConfirmationModal = ({
           >
             {cancelText}
           </button>
-          <button
+          <LoadingButton
             type="button"
             className={`btn ${styles.confirmBtn}`}
             onClick={onConfirm}
             disabled={isLoading}
+            loading={isLoading}
+            loadingText="Processing..."
             aria-label={confirmText}
           >
-            {isLoading ? (
-              <>
-                <Icon name="spinner" spin aria-hidden="true" /> Processing...
-              </>
-            ) : (
-              confirmText
-            )}
-          </button>
+            {confirmText}
+          </LoadingButton>
         </div>
       </div>
     </div>

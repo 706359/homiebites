@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Icon from '../ui/Icon.jsx';
 import { adminFeatures } from './utils/adminConfig.js';
+
+const GAP = 10;
+const TOOLTIP_Z_INDEX = 9999;
 
 // Helper function to check kitchen status
 const getKitchenStatus = (settings) => {
@@ -67,9 +71,24 @@ const Sidebar = ({
 }) => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [logoImgError, setLogoImgError] = useState(false);
+  const [portalTooltip, setPortalTooltip] = useState(null);
   const profileDropdownRef = useRef(null);
   const autoHideTimeoutRef = useRef(null);
   const hoverAreaRef = useRef(null);
+
+  const showTooltip = useCallback((e, label) => {
+    if (!sidebarCollapsed || !label) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    setPortalTooltip({
+      label,
+      left: rect.right + GAP,
+      top: rect.top + rect.height / 2,
+    });
+  }, [sidebarCollapsed]);
+
+  const hideTooltip = useCallback(() => {
+    setPortalTooltip(null);
+  }, []);
 
   // Properly handle autoHideSidebar: check if property exists and is explicitly set
   // Use useMemo to ensure it updates when settings change
@@ -328,7 +347,7 @@ const Sidebar = ({
               .filter(([key, feature]) => feature && feature.enabled)
               .map(([key, feature, tabKey]) => {
                 const isActive = activeTab === tabKey;
-                return (
+                const item = (
                   <button
                     key={key}
                     type="button"
@@ -337,13 +356,26 @@ const Sidebar = ({
                       setActiveTab(tabKey);
                       setSidebarOpen(false);
                     }}
-                    title={sidebarCollapsed ? feature.name : ''}
+                    title={sidebarCollapsed ? '' : undefined}
                     aria-current={isActive ? 'page' : undefined}
                     aria-label={sidebarCollapsed ? feature.name : undefined}
                   >
                     <Icon name={feature.icon} />
                     {!sidebarCollapsed && <span>{feature.name}</span>}
                   </button>
+                );
+                return sidebarCollapsed ? (
+                  <div
+                    key={key}
+                    className="sidebar-item-tooltip-wrapper"
+                    role="presentation"
+                    onMouseEnter={(e) => showTooltip(e, feature.name)}
+                    onMouseLeave={hideTooltip}
+                  >
+                    {item}
+                  </div>
+                ) : (
+                  item
                 );
               })}
           </nav>
@@ -368,10 +400,42 @@ const Sidebar = ({
           </button>
 
           <div className="sidebar-profile-section" ref={profileDropdownRef}>
+            {sidebarCollapsed ? (
+              <div
+                className="sidebar-item-tooltip-wrapper"
+                role="presentation"
+                onMouseEnter={(e) => showTooltip(e, 'Profile')}
+                onMouseLeave={hideTooltip}
+              >
+                <button
+                  className={`sidebar-profile-btn ${showProfileDropdown ? 'is-open' : ''}`}
+                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                  title=""
+                  aria-label="Profile"
+                  aria-expanded={showProfileDropdown}
+                  aria-haspopup="menu"
+                >
+                  <div className="sidebar-profile-avatar">
+                    {currentUser?.name ? (
+                      <span className="sidebar-profile-initials">
+                        {currentUser.name
+                          .split(' ')
+                          .map((n) => n[0])
+                          .join('')
+                          .toUpperCase()
+                          .slice(0, 2)}
+                      </span>
+                    ) : (
+                      <Icon name="user" />
+                    )}
+                  </div>
+                </button>
+              </div>
+            ) : (
             <button
               className={`sidebar-profile-btn ${showProfileDropdown ? 'is-open' : ''}`}
               onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-              title={sidebarCollapsed ? 'Profile' : ''}
+              title=""
               aria-label="Profile"
               aria-expanded={showProfileDropdown}
               aria-haspopup="menu"
@@ -390,8 +454,7 @@ const Sidebar = ({
                   <Icon name="user" />
                 )}
               </div>
-              {!sidebarCollapsed && (
-                <>
+              <>
                   <div className="sidebar-profile-info">
                     <span className="sidebar-profile-name">
                       {currentUser?.name || 'Admin'}
@@ -403,8 +466,8 @@ const Sidebar = ({
                     aria-hidden
                   />
                 </>
-              )}
             </button>
+            )}
 
             {showProfileDropdown && (
               <div className="sidebar-profile-dropdown" role="menu">
@@ -466,20 +529,43 @@ const Sidebar = ({
           </div>
 
           {onLogout && sidebarCollapsed && (
-            <button
-              className="sidebar-item logout-btn"
-              onClick={() => {
-                onLogout();
-                setSidebarOpen(false);
-              }}
-              title="Logout"
-              aria-label="Logout"
+            <div
+              className="sidebar-item-tooltip-wrapper"
+              role="presentation"
+              onMouseEnter={(e) => showTooltip(e, 'Logout')}
+              onMouseLeave={hideTooltip}
             >
-              <Icon name="sign-out-alt" />
-            </button>
+              <button
+                className="sidebar-item logout-btn"
+                onClick={() => {
+                  onLogout();
+                  setSidebarOpen(false);
+                }}
+                title=""
+                aria-label="Logout"
+              >
+                <Icon name="sign-out-alt" />
+              </button>
+            </div>
           )}
         </div>
       </div>
+
+      {portalTooltip &&
+        createPortal(
+          <div
+            className="sidebar-portal-tooltip"
+            role="tooltip"
+            style={{
+              left: portalTooltip.left,
+              top: portalTooltip.top,
+              zIndex: TOOLTIP_Z_INDEX,
+            }}
+          >
+            {portalTooltip.label}
+          </div>,
+          document.body
+        )}
     </>
   );
 };

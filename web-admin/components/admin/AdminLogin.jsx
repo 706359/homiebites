@@ -4,6 +4,7 @@ import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
 import Icon from '../ui/Icon.jsx';
 import api from '../../lib/api-admin.js';
 import { getSessionExpiresAt } from '../../lib/auth-admin.js';
+import { LoadingButton } from '../loaders/LoaderComponents';
 import { useNotification } from './contexts/NotificationContext.jsx';
 import InstallPrompt from './InstallPrompt.jsx';
 import { parseFontSize, applyAdminFontSize } from './utils/fontSize.js';
@@ -266,23 +267,17 @@ const AdminLogin = ({ onLoginSuccess }) => {
                 />
               </div>
 
-              <button
+              <LoadingButton
                 type="submit"
                 className="btn btn-primary btn-full login-submit-btn"
-                disabled={loading}
+                loading={loading}
+                loadingText="Logging in..."
               >
-                {loading ? (
-                  <>
-                    <Icon name="spinner" spin />
-                    <span>Logging in...</span>
-                  </>
-                ) : (
-                  <>
-                    <Icon name="arrow-right-to-bracket" />
-                    <span>Log In</span>
-                  </>
-                )}
-              </button>
+                <>
+                  <Icon name="arrow-right-to-bracket" />
+                  <span>Log In</span>
+                </>
+              </LoadingButton>
 
               <div className="admin-login-forgot-link-wrapper">
                 <button

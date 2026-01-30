@@ -34,6 +34,14 @@
   --admin-accent: #449031;
   --admin-accent-light: rgba(68, 144, 49, 0.1);
   --admin-accent-hover: #3a7a29;
+  /* Theme-derived opacities (no hardcoded hex in modules) */
+  --admin-accent-05: color-mix(in srgb, var(--admin-accent) 5%, transparent);
+  --admin-accent-10: color-mix(in srgb, var(--admin-accent) 10%, transparent);
+  --admin-accent-20: color-mix(in srgb, var(--admin-accent) 20%, transparent);
+  --admin-accent-25: color-mix(in srgb, var(--admin-accent) 25%, transparent);
+  --admin-accent-30: color-mix(in srgb, var(--admin-accent) 30%, transparent);
+  --admin-warning-30: color-mix(in srgb, var(--admin-warning) 30%, transparent);
+  --admin-danger-25: color-mix(in srgb, var(--admin-danger) 25%, transparent);
   --admin-success: #16a34a;
   --admin-success-hover: #15803d;
   --admin-success-light: rgba(22, 163, 74, 0.1);
@@ -53,6 +61,11 @@
   --admin-danger-dark: #b91c1c;
   --admin-secondary: #c45c2d;
   --admin-secondary-light: rgba(196, 92, 45, 0.1);
+  --admin-secondary-25: color-mix(
+    in srgb,
+    var(--admin-secondary) 25%,
+    transparent
+  );
   --admin-dark-bg: #252b3d;
   --admin-dark-bg-hover: #1f2937;
 
@@ -110,23 +123,45 @@
 /* Enterprise motion: gentle keyframes for open/close/hide/unhide (modals, sidebar, dropdowns, toasts).
    Use with var(--admin-duration-*) and var(--admin-ease) / var(--admin-ease-smooth) for smooth feel. */
 @keyframes adminFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes adminSlideUp {
-  from { opacity: 0; transform: translateY(10px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes adminSlideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes adminSlideInRight {
-  from { opacity: 0; transform: translateX(12px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Respect user preference for reduced motion – shorten all admin motion */
@@ -257,21 +292,6 @@ html.admin-active body {
   box-sizing: border-box;
 }
 
-/* Exclude .premium-loader-container and its descendants so globals.css loader styles (padding, margin) are not overridden */
-.admin-dashboard
-  :where(*:not(.premium-loader-container):not(.premium-loader-container *)),
-.admin-dashboard
-  :where(
-    *:not(.premium-loader-container):not(.premium-loader-container *)::before
-  ),
-.admin-dashboard
-  :where(
-    *:not(.premium-loader-container):not(.premium-loader-container *)::after
-  ) {
-  margin: 0;
-  padding: 0;
-}
-
 .admin-dashboard {
   overflow-x: hidden;
   max-width: 100vw;
@@ -300,8 +320,7 @@ html.admin-active body {
   list-style: none;
 }
 
-/* Exclude .premium-loader-logo so globals.css loader styles (height: 100%, object-fit, animation) apply */
-.admin-dashboard img:not(.premium-loader-logo) {
+.admin-dashboard img {
   max-width: 100%;
   height: auto;
   display: block;
@@ -387,6 +406,7 @@ html.admin-active .login-page-wrapper .btn {
   position: relative;
   width: calc(100% - 260px);
   will-change: margin-left, width;
+  z-index: 1;
 }
 
 .admin-main.sidebar-collapsed {
@@ -558,9 +578,18 @@ html.admin-active .login-page-wrapper .btn {
 
   .admin-content {
     padding: var(--admin-space-lg, 20px);
-    padding-left: max(var(--admin-space-lg, 20px), env(safe-area-inset-left, 0));
-    padding-right: max(var(--admin-space-lg, 20px), env(safe-area-inset-right, 0));
-    padding-bottom: max(var(--admin-space-lg, 20px), env(safe-area-inset-bottom, 0));
+    padding-left: max(
+      var(--admin-space-lg, 20px),
+      env(safe-area-inset-left, 0)
+    );
+    padding-right: max(
+      var(--admin-space-lg, 20px),
+      env(safe-area-inset-right, 0)
+    );
+    padding-bottom: max(
+      var(--admin-space-lg, 20px),
+      env(safe-area-inset-bottom, 0)
+    );
     overflow-x: hidden !important;
     max-width: 100% !important;
     width: 100% !important;
@@ -640,10 +669,22 @@ html.admin-active .login-page-wrapper .btn {
   /* Compact content padding for small screens */
   .admin-content {
     padding: var(--admin-space-sm, 12px) !important;
-    padding-left: max(var(--admin-space-sm, 12px), env(safe-area-inset-left, 0)) !important;
-    padding-right: max(var(--admin-space-sm, 12px), env(safe-area-inset-right, 0)) !important;
-    padding-top: max(var(--admin-space-sm, 12px), env(safe-area-inset-top, 0)) !important;
-    padding-bottom: max(var(--admin-space-sm, 12px), env(safe-area-inset-bottom, 0)) !important;
+    padding-left: max(
+      var(--admin-space-sm, 12px),
+      env(safe-area-inset-left, 0)
+    ) !important;
+    padding-right: max(
+      var(--admin-space-sm, 12px),
+      env(safe-area-inset-right, 0)
+    ) !important;
+    padding-top: max(
+      var(--admin-space-sm, 12px),
+      env(safe-area-inset-top, 0)
+    ) !important;
+    padding-bottom: max(
+      var(--admin-space-sm, 12px),
+      env(safe-area-inset-bottom, 0)
+    ) !important;
     overflow-x: hidden !important;
     max-width: 100% !important;
     width: 100% !important;
@@ -735,12 +776,6 @@ html.admin-active .login-page-wrapper .btn {
     display: none !important;
   }
 
-  /* Chart decorative elements */
-  .chart-container::before,
-  .chart-container::after {
-    display: none !important;
-  }
-
   /* Progress bar labels (keep bars) */
   .analytics-progress-bar-container-alt .progress-bar-label-container {
     display: none !important;
@@ -803,12 +838,6 @@ html.admin-active .login-page-wrapper .btn {
   .stat-card .stat-card-subtitle {
     font-size: var(--admin-fs-xs) !important;
     line-height: 1.3 !important;
-  }
-
-  /* Hide chart legends if they exist */
-  .chart-legend,
-  .chart-legend-item {
-    display: none !important;
   }
 
   /* Compact notification content */

@@ -1,9 +1,12 @@
-import PremiumLoader from '../components/PremiumLoader';
+import { FullPageLoader } from '../components/loaders/LoaderComponents';
 
 export default function Loading() {
   return (
-    <div className="loading-page-container">
-      <PremiumLoader message="Loading..." size="large" showText={true} />
-    </div>
+    <FullPageLoader
+      show={true}
+      logoSrc="/logo.png"
+      title="Loading"
+      subtitle="Please wait..."
+    />
   );
 }

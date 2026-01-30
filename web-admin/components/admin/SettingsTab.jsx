@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
+import { InlineLoader } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
-import PremiumLoader from './PremiumLoader.jsx';
 import {
   ADMIN_FONT_SIZE_DEFAULT,
   ADMIN_FONT_SIZE_OPTIONS,
@@ -607,7 +607,7 @@ const SettingsTab = ({
   if (loading) {
     return (
       <div className="admin-content">
-        <PremiumLoader message="Loading settings..." size="large" />
+        <InlineLoader message="Loading settings..." />
       </div>
     );
   }

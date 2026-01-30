@@ -95,7 +95,8 @@
     0 2px 8px rgba(0, 0, 0, 0.08);
   margin-bottom: var(--admin-space-md, 16px);
   z-index: 10;
-  animation: adminSlideDown var(--admin-duration-medium) var(--admin-ease-smooth);
+  animation: adminSlideDown var(--admin-duration-medium)
+    var(--admin-ease-smooth);
 }
 
 .filter-toggle-btn {
@@ -116,10 +117,10 @@
 }
 
 .filter-toggle-btn:hover {
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  background: var(--admin-accent-light);
   border-color: var(--admin-accent, #449031);
   color: var(--admin-accent, #449031);
-  box-shadow: 0 2px 4px rgba(68, 144, 49, 0.1);
+  box-shadow: 0 2px 4px var(--admin-accent-10);
   transform: translateY(-1px);
 }
 
@@ -176,7 +177,7 @@
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  background: var(--admin-accent-light);
   color: var(--admin-accent, #449031);
   border-radius: 12px;
   font-size: var(--admin-fs-xs);
@@ -188,7 +189,7 @@
   align-items: center;
   gap: 6px;
   padding: 4px 8px;
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  background: var(--admin-accent-light);
   color: var(--admin-accent, #449031);
   border-radius: 12px;
   font-size: var(--admin-fs-sm);
@@ -269,7 +270,7 @@
 .filter-input:focus {
   outline: none;
   border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
+  box-shadow: 0 0 0 3px var(--admin-accent-10);
 }
 
 .filter-input-group {

@@ -257,7 +257,7 @@
 }
 .action-icon-delete:hover {
   color: var(--admin-danger-hover, #991b1b);
-  background: var(--admin-danger-light, rgba(220, 38, 38, 0.12));
+  background: var(--admin-danger-light);
 }
 
 .action-icon-approve {
@@ -283,7 +283,7 @@
 }
 .action-icon-featured:hover {
   color: var(--admin-warning-hover, #d97706);
-  background: var(--admin-warning-light, rgba(245, 158, 11, 0.15));
+  background: var(--admin-warning-light);
 }
 
 .action-icon-ghost {
@@ -323,7 +323,7 @@ table .btn-icon.action-icon-delete {
 .action-buttons-group .btn-icon.action-icon-delete:hover,
 table .btn-icon.action-icon-delete:hover {
   color: var(--admin-danger-hover, #991b1b) !important;
-  background: var(--admin-danger-light, rgba(220, 38, 38, 0.12)) !important;
+  background: var(--admin-danger-light) !important;
 }
 
 /* ---- Skeleton loaders ---- */
@@ -465,7 +465,7 @@ table .btn-icon.action-icon-delete:hover {
 
 /* ---- Offline / connection error banner ---- */
 .offline-banner {
-  background: var(--admin-warning-light, rgba(245, 158, 11, 0.15));
+  background: var(--admin-warning-light);
   border-bottom: 1px solid var(--admin-warning, #f59e0b);
   padding: 10px 16px;
   display: flex;

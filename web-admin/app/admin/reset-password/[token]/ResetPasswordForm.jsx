@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../../../../components/admin/contexts/NotificationContext.jsx';
+import { LoadingButton } from '../../../../components/loaders/LoaderComponents';
 import { useAutoKeyboardAvoidance } from '../../../../hooks/useKeyboardAvoidance';
 import './reset-password.css';
 
@@ -209,13 +210,14 @@ export default function ResetPasswordForm({ token }) {
             </div>
           </div>
 
-          <button
+          <LoadingButton
             type="submit"
-            disabled={loading}
             className="btn btn-primary btn-full"
+            loading={loading}
+            loadingText="Resetting..."
           >
-            {loading ? 'Resetting...' : 'Reset Password'}
-          </button>
+            Reset Password
+          </LoadingButton>
 
           <button
             type="button"

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
+import { InlineLoader } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
-import PremiumLoader from './PremiumLoader.jsx';
 import { formatDate, parseOrderDate } from './utils/dateUtils.js';
 import {
   formatCurrency,
@@ -125,7 +125,7 @@ const TodayOrderTab = ({
   if (loading) {
     return (
       <div className="admin-content">
-        <PremiumLoader message="Loading today's orders..." size="large" />
+        <InlineLoader message="Loading today's orders..." />
       </div>
     );
   }

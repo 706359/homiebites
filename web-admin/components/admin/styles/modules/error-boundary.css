@@ -39,7 +39,7 @@
   height: 72px;
   margin-bottom: var(--admin-space-xl, 24px);
   border-radius: 50%;
-  background: var(--admin-warning-light, rgba(245, 158, 11, 0.15));
+  background: var(--admin-warning-light);
   color: var(--admin-warning, #f59e0b);
 }
 

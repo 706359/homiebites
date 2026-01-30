@@ -21,7 +21,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  background: var(--admin-accent-light);
   border-radius: 12px;
   color: var(--admin-accent, #449031);
   font-size: var(--admin-fs-xl);
@@ -106,7 +106,7 @@ textarea.settings-input-field {
 .settings-input-field:focus {
   outline: none;
   border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
+  box-shadow: 0 0 0 3px var(--admin-accent-10);
 }
 
 .settings-input-with-symbol {
@@ -151,12 +151,12 @@ textarea.settings-input-field {
 .settings-font-size-preset-btn:hover {
   border-color: var(--admin-accent, #449031);
   color: var(--admin-accent, #449031);
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.08));
+  background: var(--admin-accent-10);
 }
 
 .settings-font-size-preset-btn--active {
   border-color: var(--admin-accent, #449031);
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.12));
+  background: var(--admin-accent-light);
   color: var(--admin-accent, #449031);
   font-weight: 600;
 }
@@ -287,7 +287,7 @@ textarea.settings-input-field {
 }
 
 .settings-status-item .btn-icon-only:hover {
-  color: var(--admin-danger, #ef4444);
+  color: var(--admin-danger);
   background: rgba(239, 68, 68, 0.1);
 }
 

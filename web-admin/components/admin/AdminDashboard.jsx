@@ -6,11 +6,11 @@ import api from '../../lib/api-admin.js';
 import { logout } from '../../lib/auth-admin.js';
 import { setupGlobalErrorHandlers } from '../../lib/globalErrorHandler.js';
 import monitoringService from '../../lib/monitoring.js';
+import { FullPageLoader, InlineLoader } from '../loaders/LoaderComponents';
 import { useNotification } from './contexts/NotificationContext.jsx';
 import ErrorBoundary from './ErrorBoundary.jsx';
 import { useFastDataSync } from './hooks/useFastDataSync.js';
 import { useSessionManager } from './hooks/useSessionManager.js';
-import PremiumLoader from './PremiumLoader.jsx';
 import SessionTimeoutModal from './SessionTimeoutModal.jsx';
 import Sidebar from './Sidebar.jsx';
 import TopNav from './TopNav.jsx';
@@ -102,7 +102,25 @@ const AdminDashboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const stored = localStorage.getItem('homiebites_sidebar_collapsed');
+      return stored === 'true';
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        'homiebites_sidebar_collapsed',
+        String(sidebarCollapsed)
+      );
+    } catch {
+      /* ignore */
+    }
+  }, [sidebarCollapsed]);
   const [sidebarAutoHidden, setSidebarAutoHidden] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [showCSVUploadModal, setShowCSVUploadModal] = useState(false);
@@ -1988,7 +2006,14 @@ const AdminDashboard = () => {
 
           <ErrorBoundary>
             <Suspense
-              fallback={<PremiumLoader message="Loading..." size="medium" />}
+              fallback={
+                <FullPageLoader
+                  show={true}
+                  logoSrc="/logo.png"
+                  title="Loading Dashboard"
+                  subtitle="Initializing kitchen command center..."
+                />
+              }
             >
               {renderActiveTab()}
             </Suspense>
@@ -1996,11 +2021,7 @@ const AdminDashboard = () => {
         </main>
 
         {showOrderModal && (
-          <Suspense
-            fallback={
-              <PremiumLoader message="Loading order form..." size="small" />
-            }
-          >
+          <Suspense fallback={<InlineLoader message="Loading order form..." />}>
             <OrderModal
               show={showOrderModal}
               editingOrder={editingOrder}
@@ -2037,11 +2058,7 @@ const AdminDashboard = () => {
         )}
 
         {showCSVUploadModal && (
-          <Suspense
-            fallback={
-              <PremiumLoader message="Loading CSV upload..." size="small" />
-            }
-          >
+          <Suspense fallback={<InlineLoader message="Loading CSV upload..." />}>
             <CSVUploadModal
               show={showCSVUploadModal}
               onClose={() => setShowCSVUploadModal(false)}

@@ -88,9 +88,9 @@
 }
 
 .offer-status-active {
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.15));
+  background: color-mix(in srgb, var(--admin-accent) 15%, transparent);
   color: var(--admin-accent, #449031);
-  border: 1px solid rgba(68, 144, 49, 0.3);
+  border: 1px solid var(--admin-accent-30);
 }
 
 .offer-status-expired {
@@ -101,7 +101,7 @@
 
 .offer-status-inactive {
   background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  color: var(--admin-danger);
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
@@ -137,7 +137,7 @@
 }
 
 .kitchen-tab-card .btn-icon.btn-icon-danger:hover {
-  background: var(--admin-danger-light, rgba(220, 38, 38, 0.12));
+  background: var(--admin-danger-light);
   border-color: var(--admin-danger, #dc2626);
   color: var(--admin-danger-hover, #991b1b);
 }
@@ -223,7 +223,7 @@
 }
 
 .required {
-  color: #ef4444;
+  color: var(--admin-danger);
 }
 
 /* Responsive */

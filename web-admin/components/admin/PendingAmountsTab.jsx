@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import { InlineLoader } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
-import PremiumLoader from './PremiumLoader.jsx';
+import { getFilteredOrdersByDate } from './utils/calculations.js';
 import { formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
 import {
   extractOrderIdSequence,
@@ -11,7 +12,6 @@ import {
   isPaidStatus,
   isPendingStatus,
 } from './utils/orderUtils.js';
-import { getFilteredOrdersByDate } from './utils/calculations.js';
 
 const PendingAmountsTab = ({
   orders = [],
@@ -491,7 +491,7 @@ const PendingAmountsTab = ({
   if (loading) {
     return (
       <div className="admin-content">
-        <PremiumLoader message="Loading payment data..." size="large" />
+        <InlineLoader message="Loading payment data..." />
       </div>
     );
   }
@@ -664,7 +664,11 @@ const PendingAmountsTab = ({
           </h3>
           <div className="kitchen-tab-card pending-list-card">
             <div className="orders-table-container">
-              <table className="orders-table pending-amounts-table" role="table" aria-label="Unpaid orders">
+              <table
+                className="orders-table pending-amounts-table"
+                role="table"
+                aria-label="Unpaid orders"
+              >
                 <thead>
                   <tr>
                     <th scope="col">Date</th>
@@ -703,7 +707,8 @@ const PendingAmountsTab = ({
                           filterDaysPending !== 'all' ? (
                             <>
                               <p className="pending-table-empty-subtext">
-                                Try adjusting filters or clear to see all pending
+                                Try adjusting filters or clear to see all
+                                pending
                               </p>
                               <button
                                 type="button"
@@ -715,7 +720,8 @@ const PendingAmountsTab = ({
                                 }}
                                 aria-label="Clear filters"
                               >
-                                <Icon name="filter-circle-xmark" /> Clear filters
+                                <Icon name="filter-circle-xmark" /> Clear
+                                filters
                               </button>
                             </>
                           ) : (

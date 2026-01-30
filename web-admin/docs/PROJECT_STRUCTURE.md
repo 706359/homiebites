@@ -73,11 +73,11 @@ web-admin/
 
 | File                   | Role                                                                                                                     |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `app/layout.jsx`       | Root: metadata, SEO, OG, manifest, fonts (Baloo 2), Lucide icons via `components/ui/Icon.jsx`, `ClientLayout`             |
+| `app/layout.jsx`       | Root: metadata, SEO, OG, manifest, fonts (Baloo 2), Lucide icons via `components/ui/Icon.jsx`, `ClientLayout`            |
 | `app/ClientLayout.jsx` | `LanguageProvider` → `NotificationProvider`, `FontSettingsLoader`, `LanguageHandler`, `ScrollToTop`, `HashScrollHandler` |
 | `app/admin/layout.jsx` | Admin-only: swap manifest to `admin-manifest.json`, register `admin-sw.js` (scope `/admin/`)                             |
 | `app/error.jsx`        | Global error UI (Header, Footer, try-again, go-home, dev error details)                                                  |
-| `app/loading.jsx`      | Global loading: `PremiumLoader`                                                                                          |
+| `app/loading.jsx`      | Global loading: `FullPageLoader` (universal loader)                                                                      |
 | `app/not-found.jsx`    | 404: Header, Footer, go-home, view-menu                                                                                  |
 
 ### 4.2 Public Pages
@@ -180,56 +180,56 @@ All under `app/api/`; handlers use `route.js` and export `GET`, `POST`, `PUT`, `
 
 ### 6.1 Public / Marketing
 
-| Component             | CSS                     | Role                                     |
-| --------------------- | ----------------------- | ---------------------------------------- |
-| `Header`              | Header.css              | Nav, logo, order CTA                     |
-| `Hero`                | Hero.css                | Hero section, order CTA                  |
-| `Features`            | Features.css            | Feature blocks                           |
-| `SpecialOffer`        | SpecialOffer.css        | Promo/offer block                        |
-| `Gallery`             | Gallery.css             | Image gallery (uses `/api/gallery`)      |
-| `Testimonials`        | Testimonials.css        | Testimonials                             |
-| `FAQ`                 | FAQ.css                 | FAQ accordion                            |
-| `About`               | About.css               | About section                            |
-| `Contact`             | Contact.css             | Contact                                  |
-| `Footer`              | Footer.css              | Footer, links                            |
-| `Chatbot`             | —                       | Chatbot (styles in `styles/chatbot.css`) |
-| `OrderModal`          | OrderModal.css          | Order modal (public)                     |
-| `ReviewForm`          | ReviewForm.css          | Review form                              |
-| `ErrorBoundary`       | —                       | Error boundary                           |
-| `FontSettingsLoader`  | —                       | Loads user font-size prefs from API      |
-| `LanguageSwitcher`    | —                       | Language toggle                          |
-| `NotificationWrapper` | NotificationWrapper.css | Toast/notification wrapper               |
-| `PremiumLoader`       | —                       | Loading spinner                          |
+| Component             | CSS                                        | Role                                               |
+| --------------------- | ------------------------------------------ | -------------------------------------------------- |
+| `Header`              | Header.css                                 | Nav, logo, order CTA                               |
+| `Hero`                | Hero.css                                   | Hero section, order CTA                            |
+| `Features`            | Features.css                               | Feature blocks                                     |
+| `SpecialOffer`        | SpecialOffer.css                           | Promo/offer block                                  |
+| `Gallery`             | Gallery.css                                | Image gallery (uses `/api/gallery`)                |
+| `Testimonials`        | Testimonials.css                           | Testimonials                                       |
+| `FAQ`                 | FAQ.css                                    | FAQ accordion                                      |
+| `About`               | About.css                                  | About section                                      |
+| `Contact`             | Contact.css                                | Contact                                            |
+| `Footer`              | Footer.css                                 | Footer, links                                      |
+| `Chatbot`             | —                                          | Chatbot (styles in `styles/chatbot.css`)           |
+| `OrderModal`          | OrderModal.css                             | Order modal (public)                               |
+| `ReviewForm`          | ReviewForm.css                             | Review form                                        |
+| `ErrorBoundary`       | —                                          | Error boundary                                     |
+| `FontSettingsLoader`  | —                                          | Loads user font-size prefs from API                |
+| `LanguageSwitcher`    | —                                          | Language toggle                                    |
+| `NotificationWrapper` | NotificationWrapper.css                    | Toast/notification wrapper                         |
+| Loader system         | loaders/LoaderComponents, LoaderStyles.css | FullPageLoader, InlineLoader, SkeletonLoader, etc. |
 
 ### 6.2 Admin — `components/admin/`
 
-| Component                      | CSS                     | Role                                                                                                                                                      |
-| ------------------------------ | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `AdminDashboard`               | —                       | Main container: tabs, Sidebar, TopNav, OrderModal, CSVUploadModal, ConfirmationModal, `useFastDataSync`                                                   |
-| `AdminLogin`                   | AdminLogin.css          | Admin login form                                                                                                                                          |
-| `AdminForgotPassword`          | AdminForgotPassword.css | Forgot password form                                                                                                                                      |
-| `Sidebar`                      | in styles               | Nav: dashboard, allOrdersData, currentMonthOrders, analytics, customers, reports, pendingAmounts, menuPrice, notifications, settings (from `adminConfig`) |
-| `TopNav`                       | —                       | Top bar, order/CSV actions, etc.                                                                                                                          |
-| `DashboardTab`                 | —                       | Dashboard summary/stats                                                                                                                                   |
-| `AllOrdersDataTab`             | —                       | All-orders table, filters, Excel                                                                                                                          |
-| `CurrentMonthOrdersTab`        | —                       | Current month orders                                                                                                                                      |
-| `AllAddressesTab`              | —                       | Addresses (Customers)                                                                                                                                     |
-| `AnalyticsTab`                 | AnalyticsTab.css        | Analytics/charts                                                                                                                                          |
-| `ReportsTab`                   | —                       | Reports                                                                                                                                                   |
-| `PendingAmountsTab`            | —                       | Pending amounts                                                                                                                                           |
-| `MenuPriceTab`                 | —                       | Menu and pricing                                                                                                                                          |
-| `NotificationsTab`             | —                       | Notifications                                                                                                                                             |
-| `SettingsTab`                  | —                       | Settings                                                                                                                                                  |
-| `OrderModal`                   | —                       | Create/edit order (admin)                                                                                                                                 |
-| `CSVUploadModal`               | csv-upload-modal.css    | Excel upload                                                                                                                                              |
-| `ConfirmationModal`            | —                       | Confirm/cancel dialogs                                                                                                                                    |
-| `EmptyState`                   | —                       | Empty state UI                                                                                                                                            |
-| `SkeletonLoader`               | —                       | Loading skeletons                                                                                                                                         |
-| `ErrorBoundary`                | —                       | Admin error boundary                                                                                                                                      |
-| `ImportantNotificationsBanner` | —                       | Banner for important notifications                                                                                                                        |
-| `InstallPrompt`                | —                       | PWA install prompt                                                                                                                                        |
-| `NotificationWrapper`          | —                       | Admin notifications                                                                                                                                       |
-| `PremiumLoader`                | —                       | Admin loading                                                                                                                                             |
+| Component                      | CSS                      | Role                                                                                                                                                      |
+| ------------------------------ | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AdminDashboard`               | —                        | Main container: tabs, Sidebar, TopNav, OrderModal, CSVUploadModal, ConfirmationModal, `useFastDataSync`                                                   |
+| `AdminLogin`                   | AdminLogin.css           | Admin login form                                                                                                                                          |
+| `AdminForgotPassword`          | AdminForgotPassword.css  | Forgot password form                                                                                                                                      |
+| `Sidebar`                      | in styles                | Nav: dashboard, allOrdersData, currentMonthOrders, analytics, customers, reports, pendingAmounts, menuPrice, notifications, settings (from `adminConfig`) |
+| `TopNav`                       | —                        | Top bar, order/CSV actions, etc.                                                                                                                          |
+| `DashboardTab`                 | —                        | Dashboard summary/stats                                                                                                                                   |
+| `AllOrdersDataTab`             | —                        | All-orders table, filters, Excel                                                                                                                          |
+| `CurrentMonthOrdersTab`        | —                        | Current month orders                                                                                                                                      |
+| `AllAddressesTab`              | —                        | Addresses (Customers)                                                                                                                                     |
+| `AnalyticsTab`                 | AnalyticsTab.css         | Analytics/charts                                                                                                                                          |
+| `ReportsTab`                   | —                        | Reports                                                                                                                                                   |
+| `PendingAmountsTab`            | —                        | Pending amounts                                                                                                                                           |
+| `MenuPriceTab`                 | —                        | Menu and pricing                                                                                                                                          |
+| `NotificationsTab`             | —                        | Notifications                                                                                                                                             |
+| `SettingsTab`                  | —                        | Settings                                                                                                                                                  |
+| `OrderModal`                   | —                        | Create/edit order (admin)                                                                                                                                 |
+| `CSVUploadModal`               | csv-upload-modal.css     | Excel upload                                                                                                                                              |
+| `ConfirmationModal`            | —                        | Confirm/cancel dialogs                                                                                                                                    |
+| `EmptyState`                   | —                        | Empty state UI                                                                                                                                            |
+| `SkeletonLoader` (admin)       | —                        | Table/card/stat skeletons (used via loaders/LoaderComponents)                                                                                             |
+| `ErrorBoundary`                | —                        | Admin error boundary                                                                                                                                      |
+| `ImportantNotificationsBanner` | —                        | Banner for important notifications                                                                                                                        |
+| `InstallPrompt`                | —                        | PWA install prompt                                                                                                                                        |
+| `NotificationWrapper`          | —                        | Admin notifications                                                                                                                                       |
+| Loaders (universal)            | loaders/LoaderComponents | FullPageLoader, InlineLoader, LoadingButton, SkeletonLoader; admin primitives: EnterpriseLoader, CompactSpinner                                           |
 
 **Admin config:** `components/admin/utils/adminConfig.js` — `adminFeatures` (dashboard, excelViewer, orders, analytics, customers, reports, pendingAmounts, notifications, settings, menuPrice) with `name`, `icon`, `enabled`.
 

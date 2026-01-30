@@ -150,22 +150,22 @@
 }
 
 .pending-status-overdue {
-  background: rgba(220, 38, 38, 0.15);
+  background: color-mix(in srgb, var(--admin-danger) 15%, transparent);
   color: var(--admin-danger-dark, #b91c1c);
 }
 
 .pending-status-urgent {
-  background: rgba(245, 158, 11, 0.2);
+  background: color-mix(in srgb, var(--admin-warning) 20%, transparent);
   color: var(--admin-warning-dark, #92400e);
 }
 
 .pending-status-warning {
-  background: rgba(245, 158, 11, 0.12);
+  background: color-mix(in srgb, var(--admin-warning) 12%, transparent);
   color: var(--admin-warning-dark, #92400e);
 }
 
 .pending-status-normal {
-  background: rgba(68, 144, 49, 0.12);
+  background: var(--admin-accent-light);
   color: var(--admin-accent, #449031);
 }
 
@@ -238,7 +238,7 @@
 }
 
 .pending-payment-row-urgent {
-  background: rgba(220, 38, 38, 0.05);
+  background: color-mix(in srgb, var(--admin-danger) 5%, transparent);
 }
 
 .pending-payment-row-normal {
@@ -286,17 +286,17 @@
 }
 
 .pending-payment-days-urgent {
-  background: rgba(220, 38, 38, 0.15);
+  background: color-mix(in srgb, var(--admin-danger) 15%, transparent);
   color: var(--admin-danger-dark, #b91c1c);
 }
 
 .pending-payment-days-warning {
-  background: rgba(245, 158, 11, 0.15);
+  background: var(--admin-warning-light);
   color: var(--admin-warning-dark, #92400e);
 }
 
 .pending-payment-days-normal {
-  background: rgba(68, 144, 49, 0.12);
+  background: var(--admin-accent-light);
   color: var(--admin-accent, #449031);
 }
 

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
+import { InlineLoader } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
 import EmptyState from './EmptyState.jsx';
+import { usePreserveScroll } from './hooks/usePreserveScroll.js';
 import OrderModal from './OrderModal.jsx';
-import PremiumLoader from './PremiumLoader.jsx';
 import { getFilteredOrdersByDate } from './utils/calculations.js';
 import { formatDate, parseOrderDate } from './utils/dateUtils.js';
 import {
@@ -13,7 +14,6 @@ import {
   isPendingStatus,
   sortOrdersByOrderId,
 } from './utils/orderUtils.js';
-import { usePreserveScroll } from './hooks/usePreserveScroll.js';
 
 const CurrentMonthOrdersTab = ({
   orders = [],
@@ -378,7 +378,7 @@ const CurrentMonthOrdersTab = ({
   if (loading) {
     return (
       <div className="admin-content">
-        <PremiumLoader message="Loading orders..." size="large" />
+        <InlineLoader message="Loading orders..." />
       </div>
     );
   }
@@ -388,21 +388,21 @@ const CurrentMonthOrdersTab = ({
       <div className="kitchen-tab">
         <div className="kitchen-tab-stats">
           <div className="stat-card">
-            <Icon name="coins"/>
+            <Icon name="coins" />
             <div>
               <h3>₹{formatCurrency(currentMonthStats.revenue)}</h3>
               <p>This Month Revenue</p>
             </div>
           </div>
           <div className="stat-card">
-            <Icon name="shopping-cart"/>
+            <Icon name="shopping-cart" />
             <div>
               <h3>{currentMonthStats.total}</h3>
               <p>Total Orders</p>
             </div>
           </div>
           <div className="stat-card">
-            <Icon name="exclamation-triangle" className="icon-color-warning"/>
+            <Icon name="exclamation-triangle" className="icon-color-warning" />
             <div>
               <h3>₹{formatCurrency(currentMonthStats.pendingAmount)}</h3>
               <p>Pending Payments</p>
@@ -412,7 +412,7 @@ const CurrentMonthOrdersTab = ({
             </div>
           </div>
           <div className="stat-card">
-            <Icon name="chart-line" className="icon-color-success"/>
+            <Icon name="chart-line" className="icon-color-success" />
             <div>
               <h3>
                 {currentMonthStats.growth === Infinity
@@ -451,7 +451,7 @@ const CurrentMonthOrdersTab = ({
                 if (onPageChange) onPageChange(1);
               }}
             >
-              <Icon name="calendar-day" className="mr-6"/>
+              <Icon name="calendar-day" className="mr-6" />
               Today ({quickFilterCounts.today})
             </button>
             <button
@@ -461,7 +461,7 @@ const CurrentMonthOrdersTab = ({
                 if (onPageChange) onPageChange(1);
               }}
             >
-              <Icon name="calendar" className="mr-6"/>
+              <Icon name="calendar" className="mr-6" />
               Yesterday ({quickFilterCounts.yesterday})
             </button>
             <button
@@ -471,7 +471,7 @@ const CurrentMonthOrdersTab = ({
                 if (onPageChange) onPageChange(1);
               }}
             >
-              <Icon name="calendar-week" className="mr-6"/>
+              <Icon name="calendar-week" className="mr-6" />
               This Week ({quickFilterCounts.thisWeek})
             </button>
           </div>
@@ -483,7 +483,7 @@ const CurrentMonthOrdersTab = ({
                 if (onPageChange) onPageChange(1);
               }}
             >
-              <Icon name="exclamation-triangle" className="mr-6"/>
+              <Icon name="exclamation-triangle" className="mr-6" />
               Pending ({quickFilterCounts.pending})
             </button>
             <button
@@ -493,11 +493,14 @@ const CurrentMonthOrdersTab = ({
                 if (onPageChange) onPageChange(1);
               }}
             >
-              <Icon name="check-circle" className="mr-6"/>
+              <Icon name="check-circle" className="mr-6" />
               Paid ({quickFilterCounts.paid})
             </button>
           </div>
-          <div className="kitchen-tab-actions-right" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div
+            className="kitchen-tab-actions-right"
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+          >
             <input
               type="text"
               className="input-field search-input-with-icon"
@@ -512,234 +515,237 @@ const CurrentMonthOrdersTab = ({
               onClick={handleExport}
               title="Export to CSV"
             >
-              <Icon name="download" className="mr-6"/>
+              <Icon name="download" className="mr-6" />
               Export
             </button>
           </div>
         </div>
 
         <div className="kitchen-tab-card">
-        <div className="kitchen-tab-body-inner" style={{ paddingBottom: 0 }}>
-        <div className="flex justify-between items-center mb-16">
-          <div className="text-secondary text-base">
-            Showing {startIndex + 1}-
-            {Math.min(startIndex + recordsPerPage, filteredOrders.length)} of{' '}
-            {filteredOrders.length} orders
+          <div className="kitchen-tab-body-inner" style={{ paddingBottom: 0 }}>
+            <div className="flex justify-between items-center mb-16">
+              <div className="text-secondary text-base">
+                Showing {startIndex + 1}-
+                {Math.min(startIndex + recordsPerPage, filteredOrders.length)}{' '}
+                of {filteredOrders.length} orders
+              </div>
+            </div>
+
+            {filteredOrders.length === 0 ? (
+              <EmptyState
+                icon="inbox"
+                title="No orders found"
+                message="Try adjusting your filters or add a new order"
+                addOrderLabel="Add New Order"
+                onAddOrder={() => setShowAddOrderModal(true)}
+              />
+            ) : (
+              <>
+                <div className="orders-table-container">
+                  <table className="orders-table">
+                    <thead>
+                      <tr>
+                        <th>S.No</th>
+                        <th>Date</th>
+                        <th>Address</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                        <th>Mode</th>
+                        <th>Status</th>
+                        <th>Payment</th>
+                        <th>OrderID</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedOrders.map((order, idx) => {
+                        const orderDate = parseOrderDate(
+                          order.date || order.order_date || null
+                        );
+                        const dateStr = formatDate(orderDate);
+                        const isPaid = isPaidStatus(
+                          order.status,
+                          order.paymentStatus
+                        );
+
+                        // Use stable key to prevent remounting and flickering
+                        const orderKey =
+                          order._id || order.orderId || `order-${idx}`;
+
+                        return (
+                          <tr
+                            key={orderKey}
+                            onDoubleClick={() => {
+                              setEditingOrder(order);
+                              setShowAddOrderModal(true);
+                            }}
+                            className="cursor-pointer"
+                          >
+                            <td>{startIndex + idx + 1}</td>
+                            <td>{dateStr}</td>
+                            <td>
+                              {order.deliveryAddress ||
+                                order.customerAddress ||
+                                order.address ||
+                                'N/A'}
+                            </td>
+                            <td>{order.quantity || 1}</td>
+                            <td>₹{formatCurrency(order.unitPrice || 0)}</td>
+                            <td>₹{formatCurrency(getOrderAmount(order))}</td>
+                            <td>{order.mode || 'N/A'}</td>
+                            <td>
+                              <select
+                                className={`status-dropdown ${
+                                  isPaid ? 'status-paid' : 'status-unpaid'
+                                }`}
+                                value={isPaid ? 'Paid' : 'Unpaid'}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  if (onUpdateOrderStatus) {
+                                    onUpdateOrderStatus(
+                                      order._id || order.orderId,
+                                      e.target.value
+                                    );
+                                  }
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <option value="Paid">Paid</option>
+                                <option value="Unpaid">Unpaid</option>
+                              </select>
+                            </td>
+                            <td>{order.paymentMode || 'N/A'}</td>
+                            <td className="monospace-text">
+                              {order.orderId || 'N/A'}
+                            </td>
+                            <td>
+                              <div className="flex gap-8">
+                                <button
+                                  className="btn btn-ghost btn-icon action-icon-edit"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingOrder(order);
+                                    setShowAddOrderModal(true);
+                                  }}
+                                  title="Edit"
+                                >
+                                  <Icon name="pencil" />
+                                </button>
+                                <button
+                                  className="btn btn-ghost btn-icon action-icon-delete"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (onDeleteOrder)
+                                      onDeleteOrder(order._id || order.orderId);
+                                  }}
+                                  title="Delete"
+                                >
+                                  <Icon name="trash" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="pagination-controls">
+                  <div>
+                    <button
+                      className="btn btn-ghost btn-small"
+                      onClick={() =>
+                        onPageChange && onPageChange(currentPage - 1)
+                      }
+                      disabled={currentPage === 1}
+                    >
+                      <Icon name="chevron-left" /> Previous
+                    </button>
+                    <span className="pagination-info">
+                      Page {currentPage} of {totalPages || 1}
+                    </span>
+                    <button
+                      className="btn btn-ghost btn-small"
+                      onClick={() =>
+                        onPageChange && onPageChange(currentPage + 1)
+                      }
+                      disabled={currentPage >= totalPages}
+                    >
+                      Next <Icon name="chevron-right" />
+                    </button>
+                  </div>
+                  <div className="pagination-container">
+                    <span>Show:</span>
+                    <select
+                      className="pagination-select"
+                      value={recordsPerPage}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (onRecordsPerPageChange)
+                          onRecordsPerPageChange(value);
+                        if (onPageChange) onPageChange(1);
+                      }}
+                    >
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <span>per page</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        {filteredOrders.length === 0 ? (
-          <EmptyState
-            icon="inbox"
-            title="No orders found"
-            message="Try adjusting your filters or add a new order"
-            addOrderLabel="Add New Order"
-            onAddOrder={() => setShowAddOrderModal(true)}
-          />
-        ) : (
-          <>
-            <div className="orders-table-container">
-              <table className="orders-table">
-                <thead>
-                  <tr>
-                    <th>S.No</th>
-                    <th>Date</th>
-                    <th>Address</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Total</th>
-                    <th>Mode</th>
-                    <th>Status</th>
-                    <th>Payment</th>
-                    <th>OrderID</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedOrders.map((order, idx) => {
-                    const orderDate = parseOrderDate(
-                      order.date || order.order_date || null
-                    );
-                    const dateStr = formatDate(orderDate);
-                    const isPaid = isPaidStatus(
-                      order.status,
-                      order.paymentStatus
-                    );
-
-                    // Use stable key to prevent remounting and flickering
-                    const orderKey = order._id || order.orderId || `order-${idx}`;
-                    
-                    return (
-                      <tr
-                        key={orderKey}
-                        onDoubleClick={() => {
-                          setEditingOrder(order);
-                          setShowAddOrderModal(true);
-                        }}
-                        className="cursor-pointer"
-                      >
-                        <td>{startIndex + idx + 1}</td>
-                        <td>{dateStr}</td>
-                        <td>
-                          {order.deliveryAddress ||
-                            order.customerAddress ||
-                            order.address ||
-                            'N/A'}
-                        </td>
-                        <td>{order.quantity || 1}</td>
-                        <td>₹{formatCurrency(order.unitPrice || 0)}</td>
-                        <td>
-                          ₹
-                          {formatCurrency(getOrderAmount(order))}
-                        </td>
-                        <td>{order.mode || 'N/A'}</td>
-                        <td>
-                          <select
-                            className={`status-dropdown ${
-                              isPaid ? 'status-paid' : 'status-unpaid'
-                            }`}
-                            value={isPaid ? 'Paid' : 'Unpaid'}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              if (onUpdateOrderStatus) {
-                                onUpdateOrderStatus(
-                                  order._id || order.orderId,
-                                  e.target.value
-                                );
-                              }
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <option value="Paid">Paid</option>
-                            <option value="Unpaid">Unpaid</option>
-                          </select>
-                        </td>
-                        <td>{order.paymentMode || 'N/A'}</td>
-                        <td className="monospace-text">
-                          {order.orderId || 'N/A'}
-                        </td>
-                        <td>
-                          <div className="flex gap-8">
-                            <button
-                              className="btn btn-ghost btn-icon action-icon-edit"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingOrder(order);
-                                setShowAddOrderModal(true);
-                              }}
-                              title="Edit"
-                            >
-                              <Icon name="pencil"/>
-                            </button>
-                            <button
-                              className="btn btn-ghost btn-icon action-icon-delete"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (onDeleteOrder)
-                                  onDeleteOrder(order._id || order.orderId);
-                              }}
-                              title="Delete"
-                            >
-                              <Icon name="trash"/>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="pagination-controls">
-              <div>
-                <button
-                  className="btn btn-ghost btn-small"
-                  onClick={() => onPageChange && onPageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  <Icon name="chevron-left"/> Previous
-                </button>
-                <span className="pagination-info">
-                  Page {currentPage} of {totalPages || 1}
-                </span>
-                <button
-                  className="btn btn-ghost btn-small"
-                  onClick={() => onPageChange && onPageChange(currentPage + 1)}
-                  disabled={currentPage >= totalPages}
-                >
-                  Next <Icon name="chevron-right"/>
-                </button>
-              </div>
-              <div className="pagination-container">
-                <span>Show:</span>
-                <select
-                  className="pagination-select"
-                  value={recordsPerPage}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    if (onRecordsPerPageChange) onRecordsPerPageChange(value);
-                    if (onPageChange) onPageChange(1);
-                  }}
-                >
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                </select>
-                <span>per page</span>
-              </div>
-            </div>
-          </>
-        )}
-        </div>
-      </div>
-
-      {showAddOrderModal && (
-        <OrderModal
-          show={showAddOrderModal}
-          editingOrder={editingOrder}
-          newOrder={newOrder}
-          orders={orders}
-          addressSuggestions={recentAddresses}
-          showAddressSuggestions={showAddressSuggestions}
-          onClose={() => {
-            setShowAddOrderModal(false);
-            setEditingOrder(null);
-            setNewOrder({
-              date: new Date().toISOString().split('T')[0],
-              deliveryAddress: '',
-              quantity: 1,
-              unitPrice: settings?.defaultUnitPrice || 100,
-              total: settings?.defaultUnitPrice || 100,
-              mode: 'Lunch',
-              status: 'Pending',
-              paymentMode: 'Online',
-            });
-          }}
-          onSave={
-            editingOrder
-              ? async (orderId, cleanOrderData) => {
-                  if (onUpdateOrder) {
-                    try {
-                      await onUpdateOrder(orderId, cleanOrderData, true);
-                      setShowAddOrderModal(false);
-                      setEditingOrder(null);
-                      if (loadOrders) loadOrders();
-                    } catch (error) {
-                      console.error('Error updating order:', error);
+        {showAddOrderModal && (
+          <OrderModal
+            show={showAddOrderModal}
+            editingOrder={editingOrder}
+            newOrder={newOrder}
+            orders={orders}
+            addressSuggestions={recentAddresses}
+            showAddressSuggestions={showAddressSuggestions}
+            onClose={() => {
+              setShowAddOrderModal(false);
+              setEditingOrder(null);
+              setNewOrder({
+                date: new Date().toISOString().split('T')[0],
+                deliveryAddress: '',
+                quantity: 1,
+                unitPrice: settings?.defaultUnitPrice || 100,
+                total: settings?.defaultUnitPrice || 100,
+                mode: 'Lunch',
+                status: 'Pending',
+                paymentMode: 'Online',
+              });
+            }}
+            onSave={
+              editingOrder
+                ? async (orderId, cleanOrderData) => {
+                    if (onUpdateOrder) {
+                      try {
+                        await onUpdateOrder(orderId, cleanOrderData, true);
+                        setShowAddOrderModal(false);
+                        setEditingOrder(null);
+                        if (loadOrders) loadOrders();
+                      } catch (error) {
+                        console.error('Error updating order:', error);
+                      }
                     }
                   }
-                }
-              : handleSaveOrder
-          }
-          onNewOrderChange={handleNewOrderChange}
-          onEditingOrderChange={(field, value) => {
-            setEditingOrder({ ...editingOrder, [field]: value });
-          }}
-          setAddressSuggestions={setAddressSuggestions}
-          setShowAddressSuggestions={setShowAddressSuggestions}
-        />
-      )}
+                : handleSaveOrder
+            }
+            onNewOrderChange={handleNewOrderChange}
+            onEditingOrderChange={(field, value) => {
+              setEditingOrder({ ...editingOrder, [field]: value });
+            }}
+            setAddressSuggestions={setAddressSuggestions}
+            setShowAddressSuggestions={setShowAddressSuggestions}
+          />
+        )}
       </div>
     </div>
   );

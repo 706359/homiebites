@@ -10,14 +10,14 @@
 
 /* Header Section */
 .today-order-header {
-  background: #667eea;
+  background: var(--admin-accent);
   border-radius: 16px;
   padding: 32px 40px;
   margin-bottom: 24px;
   box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  color: white;
+  color: var(--admin-text-white);
 }
 
 .today-order-header-content {
@@ -40,7 +40,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  color: white;
+  color: var(--admin-text-white);
   line-height: 1.2;
 }
 
@@ -104,7 +104,7 @@
   font-weight: 700;
   line-height: 1;
   margin-bottom: 4px;
-  color: white;
+  color: var(--admin-text-white);
 }
 
 .stat-label {
@@ -113,7 +113,7 @@
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--admin-text-white);
 }
 
 /* Search Section */
@@ -126,7 +126,7 @@
   display: flex;
   align-items: center;
   background: white;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--admin-border);
   border-radius: 12px;
   padding: 12px 16px;
   transition: all 0.3s ease;
@@ -134,12 +134,12 @@
 }
 
 .search-wrapper:focus-within {
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 4px var(--admin-accent-10);
 }
 
 .search-icon {
-  color: #9ca3af;
+  color: var(--admin-text-light);
   font-size: var(--admin-fs-lg);
   margin-right: 12px;
   flex-shrink: 0;
@@ -150,19 +150,19 @@
   border: none;
   outline: none;
   font-size: var(--admin-fs-base-mid);
-  color: #1f2937;
+  color: var(--admin-text-primary);
   background: transparent;
   padding: 0;
 }
 
 .search-input::placeholder {
-  color: #9ca3af;
+  color: var(--admin-text-light);
 }
 
 .search-clear-btn {
   background: transparent;
   border: none;
-  color: #9ca3af;
+  color: var(--admin-text-light);
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -177,8 +177,8 @@
 }
 
 .search-clear-btn:hover {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: var(--admin-bg-secondary);
+  color: var(--admin-text-secondary);
 }
 
 /* Table Section */
@@ -188,7 +188,7 @@
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.1),
     0 1px 2px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--admin-border);
   overflow: hidden;
 }
 
@@ -208,8 +208,8 @@
 }
 
 .today-order-table thead {
-  background: #f3f4f6;
-  border-bottom: 1px solid var(--admin-border, #e5e7eb);
+  background: var(--admin-bg-secondary);
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .today-order-table th {
@@ -217,13 +217,13 @@
   text-align: left;
   font-size: var(--admin-fs-base);
   font-weight: 500;
-  color: #374151;
+  color: var(--admin-text-primary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
   position: sticky;
   top: 0;
-  background: #f9fafb;
+  background: var(--admin-bg-secondary);
   z-index: 10;
 }
 
@@ -233,12 +233,12 @@
 }
 
 .today-order-table tbody tr {
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--admin-border);
   transition: all 0.2s ease;
 }
 
 .today-order-table tbody tr:hover {
-  background: #f9fafb;
+  background: var(--admin-bg-secondary);
 }
 
 .today-order-table tbody tr:last-child {
@@ -248,7 +248,7 @@
 .today-order-table td {
   padding: 20px;
   font-size: var(--admin-fs-base);
-  color: #1f2937;
+  color: var(--admin-text-primary);
   vertical-align: middle;
 }
 
@@ -272,13 +272,13 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #667eea;
-  color: white;
+  background: var(--admin-accent);
+  color: var(--admin-text-white);
   padding: 8px 14px;
   border-radius: 8px;
   font-weight: 500;
   font-size: var(--admin-fs-base);
-  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 2px 4px var(--admin-accent-20);
 }
 
 .order-id-badge i {
@@ -295,12 +295,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #374151;
+  color: var(--admin-text-primary);
   font-weight: 500;
 }
 
 .address-content i {
-  color: #667eea;
+  color: var(--admin-accent);
 }
 
 /* Date Cell */
@@ -312,11 +312,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #6b7280;
+  color: var(--admin-text-secondary);
 }
 
 .date-content i {
-  color: #9ca3af;
+  color: var(--admin-text-light);
 }
 
 /* Mode Cell */
@@ -326,8 +326,8 @@
 
 .mode-badge {
   display: inline-block;
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--admin-bg-secondary);
+  color: var(--admin-text-primary);
   padding: 6px 12px;
   border-radius: 6px;
   font-size: var(--admin-fs-base);
@@ -344,8 +344,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #eff6ff;
-  color: #1e40af;
+  background: var(--admin-info-light);
+  color: var(--admin-info);
   padding: 6px 12px;
   border-radius: 6px;
   font-weight: 500;
@@ -361,7 +361,7 @@
 .amount-value {
   font-weight: 500;
   font-size: var(--admin-fs-base);
-  color: #059669;
+  color: var(--admin-success);
 }
 
 /* Status Cell */
@@ -386,20 +386,20 @@
 
 .status-badge.status-paid,
 .status-badge.status-Paid {
-  background: #d1fae5;
-  color: #065f46;
+  background: var(--admin-success-light);
+  color: var(--admin-success-hover);
 }
 
 .status-badge.status-pending,
 .status-badge.status-Pending {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--admin-warning-light);
+  color: var(--admin-warning-dark);
 }
 
 .status-badge.status-unpaid,
 .status-badge.status-Unpaid {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--admin-danger-light);
+  color: var(--admin-danger-hover);
 }
 
 /* Actions Cell */
@@ -444,31 +444,31 @@
 }
 
 .btn-accept {
-  background: #059669;
-  color: white;
+  background: var(--admin-success);
+  color: var(--admin-text-white);
 }
 
 .btn-accept:hover {
-  background: #047857;
+  background: var(--admin-success-hover);
 }
 
 .btn-cancel {
-  background: #d97706;
-  color: white;
+  background: var(--admin-warning);
+  color: var(--admin-text-white);
 }
 
 .btn-cancel:hover {
-  background: #b45309;
+  background: var(--admin-warning-hover);
 }
 
 .btn-delete {
-  background: #ef4444;
-  color: white;
+  background: var(--admin-danger, #dc2626);
+  color: var(--admin-text-white, #fff);
   padding: 10px 12px;
 }
 
 .btn-delete:hover {
-  background: #dc2626;
+  background: var(--admin-danger-hover, #991b1b);
 }
 
 .btn-delete span {

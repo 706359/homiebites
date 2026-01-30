@@ -90,7 +90,7 @@
 .action-bar .search-container:focus-within {
   background: var(--admin-bg, #ffffff);
   border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
+  box-shadow: 0 0 0 3px var(--admin-accent-10);
 }
 
 .action-bar .search-icon {
@@ -313,7 +313,7 @@
 .pagination-select:focus {
   outline: none;
   border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
+  box-shadow: 0 0 0 3px var(--admin-accent-10);
 }
 
 @media (max-width: 480px) {
@@ -472,6 +472,7 @@
   font-weight: 500;
 }
 
+/* Standard: 1% visibility column/row grid for all admin tables */
 .orders-table th {
   height: 52px;
   padding: 0 20px;
@@ -481,6 +482,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid var(--admin-border, #e5e7eb);
+  border-right: 1px solid var(--admin-table-grid-line-col, rgba(0, 0, 0, 0.05));
   background: #f3f4f6;
   white-space: nowrap;
   overflow: hidden;
@@ -489,6 +491,10 @@
   transition: all 0.2s ease;
   box-sizing: border-box;
   vertical-align: middle;
+}
+
+.orders-table th:last-child {
+  border-right: none;
 }
 
 /* Min-widths to prevent header/cell truncation (Mode, Status, Payment, OrderID) */
@@ -509,7 +515,8 @@
   height: 56px;
   padding: 0 20px;
   color: var(--admin-text-primary, #1e293b);
-  border-bottom: 1px solid var(--admin-border, #e5e7eb);
+  border-bottom: 1px solid var(--admin-table-grid-line, rgba(0, 0, 0, 0.08));
+  border-right: 1px solid var(--admin-table-grid-line-col, rgba(0, 0, 0, 0.05));
   vertical-align: middle;
   white-space: nowrap;
   overflow: hidden;
@@ -522,6 +529,10 @@
     color 0.15s ease;
   /* Optimize for content updates */
   contain: layout style;
+}
+
+.orders-table td:last-child {
+  border-right: none;
 }
 
 .orders-table tbody tr {
@@ -538,7 +549,7 @@
   transform: translateZ(0); /* Force GPU acceleration */
 }
 
-.orders-table tbody tr:last-child {
+.orders-table tbody tr:last-child td {
   border-bottom: none;
 }
 
@@ -560,7 +571,7 @@
 }
 
 .row-paid {
-  background-color: rgba(68, 144, 49, 0.05);
+  background-color: var(--admin-accent-05);
 }
 
 .row-unpaid {
@@ -575,11 +586,11 @@
 }
 
 .sortable-header:hover {
-  background-color: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  background-color: var(--admin-accent-light);
 }
 
 .sortable-header:active {
-  background-color: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  background-color: var(--admin-accent-light);
 }
 
 .table-checkbox-header {

@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance.js';
 import api from '../../lib/api-admin.js';
 import { convertMenuItemsToCategories } from '../../lib/menuData.js';
+import { InlineLoader, Spinner } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
 import ConfirmationModal from './ConfirmationModal.jsx';
-import PremiumLoader from './PremiumLoader.jsx';
 import { formatCurrency } from './utils/orderUtils.js';
 
 const MenuPriceTab = ({
@@ -1265,7 +1265,7 @@ const MenuPriceTab = ({
   if (loading || loadingMenu) {
     return (
       <div className="admin-content">
-        <PremiumLoader message="Loading menu..." size="large" />
+        <InlineLoader message="Loading menu..." />
       </div>
     );
   }
@@ -1617,7 +1617,7 @@ const MenuPriceTab = ({
                               }
                             >
                               {togglingItemId === item.id ? (
-                                <Icon name="spinner" spin />
+                                <Spinner type="circular" size="small" />
                               ) : (
                                 <Icon
                                   name={

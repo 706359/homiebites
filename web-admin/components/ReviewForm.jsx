@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAutoKeyboardAvoidance } from '../hooks/useKeyboardAvoidance';
+import { LoadingButton } from './loaders/LoaderComponents';
 import './ReviewForm.css';
 import Icon from './ui/Icon.jsx';
 
@@ -326,15 +327,14 @@ const ReviewForm = ({ onReviewSubmitted, onClose }) => {
               )}
           </div>
 
-          <button
+          <LoadingButton
             type="submit"
             className="btn btn-primary btn-full"
-            disabled={loading}
+            loading={loading}
+            loadingText={t('common.submitting') || 'Submitting...'}
           >
-            {loading
-              ? t('common.submitting') || 'Submitting...'
-              : t('reviews.submit') || 'Submit Review'}
-          </button>
+            {t('reviews.submit') || 'Submit Review'}
+          </LoadingButton>
         </form>
       </div>
     </div>

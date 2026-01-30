@@ -1,14 +1,15 @@
 /* ============================================
-   ANALYTICS DELIVERY TABLE
+   ANALYTICS DELIVERY TABLE (matches orders-table style)
    ============================================ */
 
 .analytics-delivery-table-wrapper {
   width: 100%;
   overflow-x: auto;
-  overflow-y: visible;
-  border-radius: 12px;
+  overflow-y: auto;
+  max-height: var(--admin-table-scroll-max-height, calc(100vh - 320px));
+  border-radius: 0;
   background: var(--admin-bg);
-  border: 1px solid var(--admin-border);
+  border: 1px solid var(--admin-border, #e5e7eb);
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
   font-size: var(--admin-fs-base);
@@ -20,18 +21,19 @@
   border-collapse: collapse;
   background: var(--admin-bg);
   color: var(--admin-text-primary);
-  table-layout: auto;
+  table-layout: fixed;
   font-size: var(--admin-fs-base);
 }
 
+/* Header – same as other admin tables (orders-table) */
 .analytics-delivery-table thead {
   background: #f3f4f6;
   position: sticky;
   top: 0;
   z-index: 10;
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
 }
 
-/* Equal font-size and font-weight 500 for all table content */
 .analytics-delivery-table thead th,
 .analytics-delivery-table tbody td,
 .analytics-delivery-table thead th *,
@@ -41,39 +43,55 @@
 }
 
 .analytics-delivery-table thead th {
-  padding: 14px 16px;
+  height: 52px;
+  padding: 0 16px;
   text-align: left;
-  color: var(--admin-text-primary);
+  color: var(--admin-text-primary, #1e293b);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--admin-border);
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
+  border-right: 1px solid var(--admin-table-grid-line-col, rgba(0, 0, 0, 0.05));
   white-space: nowrap;
   vertical-align: middle;
-  background: var(--admin-bg);
-  line-height: 1.3;
+  background: #f3f4f6;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+/* Fixed column widths for stable layout (sum = 100%) */
+.analytics-delivery-table thead th.analytics-th-sno {
+  width: 4%;
+  min-width: 48px;
+  text-align: center;
 }
 
 .analytics-delivery-table thead th.analytics-th-sticky {
-  min-width: 100px;
+  width: 16%;
+  min-width: 120px;
+  max-width: 220px;
 }
 
 .analytics-delivery-table thead th.analytics-th-year {
-  min-width: 72px;
+  width: 7%;
+  min-width: 68px;
   text-align: right;
 }
 
 .analytics-delivery-table thead th.analytics-th-grand-total {
-  min-width: 88px;
+  width: 9%;
+  min-width: 82px;
   text-align: right;
 }
 
 .analytics-delivery-table thead th.analytics-th-center {
-  min-width: 44px;
+  width: 4%;
+  min-width: 40px;
   text-align: center;
 }
 
 .analytics-delivery-table thead th.analytics-th-monthly {
-  min-width: 420px;
+  width: 46%;
+  min-width: 320px;
 }
 
 .analytics-delivery-table thead th.analytics-th-right {
@@ -114,17 +132,22 @@
 }
 
 /* ============================================
-     TABLE BODY
+     TABLE BODY (fixed column widths, aligned with thead)
      ============================================ */
 
 .analytics-delivery-table tbody td {
-  padding: 12px 16px;
+  height: 56px;
+  padding: 0 16px;
   color: var(--admin-text-primary, #1e293b);
-  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  border-bottom: 1px solid var(--admin-table-grid-line, rgba(0, 0, 0, 0.08));
+  border-right: 1px solid var(--admin-table-grid-line-col, rgba(0, 0, 0, 0.05));
   vertical-align: middle;
   white-space: nowrap;
-  line-height: 1.4;
+  line-height: 1.5;
   font-variant-numeric: tabular-nums;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .analytics-delivery-table tbody tr {
@@ -135,12 +158,29 @@
   border-bottom: none;
 }
 
+.analytics-delivery-table thead th:last-child,
+.analytics-delivery-table tbody td:last-child {
+  border-right: none;
+}
+
 .analytics-delivery-table tbody tr:nth-child(even) {
-  background: rgba(0, 0, 0, 0.012);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.analytics-delivery-table tbody td.analytics-td-sno {
+  width: 4%;
+  min-width: 48px;
+  text-align: center;
+  font-weight: 500;
+  font-size: var(--admin-fs-base);
+  color: var(--admin-text-secondary, #6b7280);
+  font-variant-numeric: tabular-nums;
 }
 
 .analytics-delivery-table tbody td.analytics-td-address {
-  min-width: 100px;
+  width: 16%;
+  min-width: 120px;
+  max-width: 220px;
   font-weight: 500;
   font-size: var(--admin-fs-base);
   color: var(--admin-text-primary, #1e293b);
@@ -148,6 +188,8 @@
   word-wrap: break-word;
   overflow-wrap: break-word;
   line-height: 1.4;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .analytics-delivery-table tbody td.analytics-td-right {
@@ -159,7 +201,8 @@
 }
 
 .analytics-delivery-table tbody td.analytics-td-year {
-  min-width: 72px;
+  width: 7%;
+  min-width: 68px;
   white-space: nowrap;
   font-size: var(--admin-fs-base);
   font-weight: 500;
@@ -169,17 +212,19 @@
 }
 
 .analytics-delivery-table tbody td.analytics-td-year-empty {
-  min-width: 72px;
+  width: 7%;
+  min-width: 68px;
   white-space: nowrap;
   font-size: var(--admin-fs-base);
   font-weight: 500;
-  color: var(--admin-text-light);
+  color: var(--admin-text-secondary, #6b7280);
   text-align: right;
   font-style: italic;
 }
 
 .analytics-delivery-table tbody td.analytics-td-grand-total {
-  min-width: 88px;
+  width: 9%;
+  min-width: 82px;
   white-space: nowrap;
   font-size: var(--admin-fs-base);
   font-weight: 500;
@@ -189,19 +234,23 @@
 }
 
 .analytics-delivery-table tbody td.analytics-td-trend {
-  min-width: 44px;
+  width: 4%;
+  min-width: 40px;
   white-space: nowrap;
   text-align: center;
 }
 
 .analytics-delivery-table tbody td.analytics-td-monthly {
-  min-width: 420px;
-  padding: 12px 12px 12px 16px;
+  width: 46%;
+  min-width: 320px;
+  padding: 8px 12px;
   white-space: normal;
   vertical-align: top;
   overflow: visible;
   font-variant-numeric: tabular-nums;
   font-size: var(--admin-fs-base);
+  height: auto;
+  min-height: 56px;
 }
 
 /* ============================================
@@ -229,7 +278,7 @@
 
 .analytics-trend-icon-down {
   color: var(--admin-danger);
-  background: rgba(220, 38, 38, 0.12);
+  background: var(--admin-danger-light);
 }
 
 .analytics-trend-icon-neutral {
@@ -284,7 +333,7 @@
 .analytics-monthly-value {
   font-size: var(--admin-fs-base);
   padding: 4px 5px;
-  border-radius: 4px;
+  border-radius: 0;
   text-align: center;
   min-width: 0;
   overflow: hidden;
@@ -306,16 +355,17 @@
   line-height: 1.3;
 }
 
+/* Strong contrast – readable on all backgrounds */
 .analytics-monthly-value-positive {
-  background: rgba(68, 144, 49, 0.15);
-  color: var(--admin-accent, #449031);
-  border-color: rgba(68, 144, 49, 0.3);
+  background: color-mix(in srgb, var(--admin-accent) 22%, transparent);
+  color: var(--admin-accent-dark, #2d5c1e);
+  border-color: color-mix(in srgb, var(--admin-accent) 45%, transparent);
 }
 
 .analytics-monthly-value-empty {
-  background: transparent;
-  color: var(--admin-text-light);
-  border-color: transparent;
+  background: color-mix(in srgb, var(--admin-border) 12%, transparent);
+  color: var(--admin-text-secondary, #6b7280);
+  border-color: color-mix(in srgb, var(--admin-border) 25%, transparent);
   cursor: default;
 }
 
@@ -327,15 +377,15 @@
 }
 
 .analytics-monthly-value-year3-positive {
-  background: rgba(22, 163, 74, 0.18);
-  color: var(--admin-success);
+  background: color-mix(in srgb, var(--admin-success) 28%, transparent);
+  color: var(--admin-success-dark, #15803d);
   border-color: var(--admin-success);
   font-weight: 700;
 }
 
 .analytics-monthly-value-year3-negative {
-  background: rgba(220, 38, 38, 0.18);
-  color: var(--admin-danger);
+  background: color-mix(in srgb, var(--admin-danger) 22%, transparent);
+  color: var(--admin-danger-dark, #b91c1c);
   border-color: var(--admin-danger);
   font-weight: 700;
 }
@@ -345,9 +395,8 @@
      ============================================ */
 
 .analytics-chart-container {
-  padding: 20px;
-  border-top: 1px solid var(--admin-border, #e2e8f0);
-  margin-top: 16px;
+  border-top: 1px solid var(--admin-border, #e5e7eb);
+  margin-top: 20px;
   background: var(--admin-bg, #ffffff);
   box-sizing: border-box;
   overflow-x: auto;
@@ -355,6 +404,7 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: var(--admin-accent, #449031) transparent;
+  border-radius: 0;
 }
 
 .analytics-chart-container::-webkit-scrollbar {
@@ -380,14 +430,17 @@
 
 .analytics-empty-state {
   text-align: center;
-  padding: 64px 24px;
+  padding: 72px 28px;
   color: var(--admin-text-muted);
+  background: color-mix(in srgb, var(--admin-border) 5%, transparent);
+  border-radius: 14px;
+  border: 1px dashed color-mix(in srgb, var(--admin-border) 45%, transparent);
 }
 
 .analytics-empty-icon {
   font-size: var(--admin-fs-display);
-  opacity: 0.25;
-  margin-bottom: 16px;
+  opacity: 0.28;
+  margin-bottom: 18px;
   color: var(--admin-text-light);
 }
 
@@ -395,13 +448,14 @@
   font-size: var(--admin-fs-lg);
   font-weight: 600;
   color: var(--admin-text-secondary);
-  margin: 0 0 8px 0;
+  margin: 0 0 10px 0;
 }
 
 .analytics-empty-message {
   font-size: var(--admin-fs-base);
   color: var(--admin-text-light);
   margin: 0;
+  line-height: 1.5;
 }
 
 /* ============================================
@@ -480,7 +534,7 @@
 /* Mobile (< 768px) */
 @media (max-width: 767px) {
   .analytics-delivery-table-wrapper {
-    border-radius: 8px;
+    border-radius: 0;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
@@ -524,7 +578,7 @@
 /* Small mobile (< 480px) */
 @media (max-width: 480px) {
   .analytics-delivery-table-wrapper {
-    border-radius: 8px !important;
+    border-radius: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
@@ -739,25 +793,229 @@
 .top-areas-range-select:focus {
   outline: none;
   border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 2px rgba(68, 144, 49, 0.2);
+  box-shadow: 0 0 0 2px var(--admin-accent-20);
 }
 
 .analytics-chart-section {
-  padding: 16px 0;
-  border-top: 1px solid var(--admin-border, #e2e8f0);
-  margin-top: 12px;
+  padding: 20px 0;
+  border-top: 1px solid color-mix(in srgb, var(--admin-border) 80%, transparent);
+  margin-top: 16px;
 }
 
 .analytics-empty-state-inline {
   text-align: center;
-  padding: 48px;
+  padding: 52px 24px;
   color: var(--admin-text-secondary, #94a3b8);
+  background: color-mix(in srgb, var(--admin-border) 6%, transparent);
+  border-radius: 12px;
+  border: 1px dashed color-mix(in srgb, var(--admin-border) 40%, transparent);
 }
 
-/* Top delivery areas – area item and progress bars */
+/* ============================================
+   Top 10 Delivery Areas – full width, card grid design
+   Shared with Revenue (Year-over-Year) on Dashboard – same card/header/body look
+   ============================================ */
+.analytics-top-areas-full {
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-left: 4px solid var(--admin-accent, #449031);
+  background: linear-gradient(
+    135deg,
+    var(--admin-bg, #fff) 0%,
+    color-mix(in srgb, var(--admin-accent) 3%, transparent) 100%
+  );
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* Dashboard Revenue YoY override is in dashboard.css (loads after, same look as Top 10) */
+
+.analytics-top-areas-full-header {
+  padding-bottom: 16px;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--admin-border) 60%, transparent);
+  margin-bottom: 0;
+}
+
+.analytics-top-areas-full-body {
+  padding: 24px 0 0;
+}
+
+/* Revenue YoY bars inside this card – same track/fill style as Top 10 */
+.analytics-top-areas-full .revenue-trend-bar-track {
+  height: 8px;
+  background: color-mix(in srgb, var(--admin-border) 20%, transparent);
+  border: none;
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+.analytics-top-areas-full .revenue-trend-bar-fill {
+  min-width: 4px;
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+.analytics-top-areas-full .revenue-trend-bar-fill.revenue-trend-bar-current {
+  background: linear-gradient(
+    90deg,
+    var(--admin-accent, #449031) 0%,
+    color-mix(in srgb, var(--admin-accent) 85%, black) 100%
+  );
+}
+
+.analytics-top-areas-full .revenue-trend-bar-fill.revenue-trend-bar-last {
+  background: linear-gradient(
+    90deg,
+    var(--admin-success, #16a34a) 0%,
+    color-mix(in srgb, var(--admin-success) 85%, black) 100%
+  );
+}
+
+.analytics-top-areas-full .revenue-trend-bar-fill.revenue-trend-bar-other {
+  background: var(--admin-text-secondary, #4b5563);
+}
+
+.analytics-top-areas-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+}
+
+.analytics-top-areas-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px;
+  background: var(--admin-bg, #fff);
+  border: 1px solid color-mix(in srgb, var(--admin-border) 50%, transparent);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.analytics-top-areas-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: color-mix(in srgb, var(--admin-accent) 25%, transparent);
+}
+
+.analytics-top-areas-card-rank {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--admin-fs-sm);
+  font-weight: 700;
+  color: var(--admin-text-white, #fff);
+  background: var(--admin-accent, #449031);
+  border-radius: 50%;
+  line-height: 1;
+  box-shadow: 0 2px 4px rgba(68, 144, 49, 0.3);
+}
+
+.analytics-top-areas-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.analytics-top-areas-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.analytics-top-areas-card-name {
+  font-size: var(--admin-fs-sm-mid);
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+  line-height: 1.35;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.analytics-top-areas-card-revenue {
+  font-size: var(--admin-fs-sm);
+  font-weight: 700;
+  color: var(--admin-accent-dark, #2d5c1e);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.analytics-top-areas-bar-wrap {
+  width: 100%;
+  height: 8px;
+  background: color-mix(in srgb, var(--admin-border) 20%, transparent);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.analytics-top-areas-bar-fill {
+  height: 100%;
+  min-width: 4px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--admin-accent, #449031) 0%,
+    color-mix(in srgb, var(--admin-accent) 85%, black) 100%
+  );
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.analytics-top-areas-card-meta {
+  margin: 0;
+  font-size: var(--admin-fs-xs);
+  color: var(--admin-text-secondary, #6b7280);
+  font-weight: 500;
+}
+
+@media (max-width: 1200px) {
+  .analytics-top-areas-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .analytics-top-areas-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .analytics-top-areas-card {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .analytics-top-areas-card-rank {
+    width: 28px;
+    height: 28px;
+    font-size: var(--admin-fs-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .analytics-top-areas-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Top delivery areas – premium area item and progress bars (legacy) */
 .area-item {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--admin-border, #e2e8f0);
+  padding: 14px 0;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--admin-border) 70%, transparent);
+  transition: background 0.2s ease;
 }
 
 .area-item:last-child {
@@ -769,7 +1027,7 @@
 }
 
 .area-item-odd {
-  background: rgba(0, 0, 0, 0.02);
+  background: color-mix(in srgb, var(--admin-border) 4%, transparent);
 }
 
 .area-header {
@@ -777,8 +1035,8 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .area-name {
@@ -787,16 +1045,28 @@
   color: var(--admin-text-primary, #1e293b);
   flex: 1;
   min-width: 0;
+  letter-spacing: -0.01em;
 }
 
 .area-revenue {
   font-size: var(--admin-fs-sm-mid);
-  font-weight: 500;
-  color: var(--admin-accent, #449031);
+  font-weight: 600;
+  color: var(--admin-accent-dark, #2d5c1e);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Progress bar base – used with analytics-progress-bar-container */
+/* All chart cards – amount/value text always readable (dark, same as other charts) */
+.chart-container-padding .font-bold.text-accent,
+.chart-container-padding .text-accent,
+.dashboard-grid-layout-charts .dashboard-card .font-bold.text-accent,
+.dashboard-grid-layout-charts .dashboard-card .text-accent,
+.revenue-trend-card .font-bold.text-accent,
+.revenue-trend-card .text-accent {
+  color: var(--admin-text-primary, #111827) !important;
+}
+
+/* Progress bar – solid fill for high contrast */
 .progress-bar-container {
   width: 100%;
   overflow: hidden;
@@ -807,38 +1077,43 @@
   width: var(--bar-width, 0%);
   min-width: 0;
   background: var(--admin-accent, #449031);
-  transition: width 0.3s ease;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .analytics-progress-bar-container {
   width: 100%;
-  height: 20px;
-  background: var(--admin-bg-secondary, rgba(0, 0, 0, 0.05));
-  border-radius: 10px;
+  height: 22px;
+  background: color-mix(in srgb, var(--admin-border) 16%, transparent);
+  border-radius: 11px;
   overflow: hidden;
   position: relative;
-  border: 1px solid var(--admin-border, rgba(0, 0, 0, 0.1));
+  border: 1px solid color-mix(in srgb, var(--admin-border) 30%, transparent);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .analytics-progress-bar-container .progress-bar-fill {
-  height: 20px;
-  min-height: 20px;
+  height: 22px;
+  min-height: 22px;
   border-radius: 10px;
 }
 
 .progress-bar-container-alt {
   width: 100%;
-  height: 24px;
-  background: var(--admin-bg-secondary, rgba(0, 0, 0, 0.05));
-  border-radius: 12px;
+  height: 26px;
+  background: color-mix(in srgb, var(--admin-border) 16%, transparent);
+  border-radius: 13px;
   overflow: hidden;
   position: relative;
-  border: 1px solid var(--admin-border, rgba(0, 0, 0, 0.1));
+  border: 1px solid color-mix(in srgb, var(--admin-border) 30%, transparent);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .progress-bar-container-alt .progress-bar-fill {
-  height: 24px;
-  min-height: 24px;
+  height: 26px;
+  min-height: 26px;
   border-radius: 12px;
   position: absolute;
   left: 0;
@@ -848,17 +1123,18 @@
 
 .analytics-progress-bar-container-alt {
   width: 100%;
-  height: 24px;
-  background: var(--admin-bg-secondary, rgba(0, 0, 0, 0.05));
-  border-radius: 12px;
+  height: 26px;
+  background: color-mix(in srgb, var(--admin-border) 16%, transparent);
+  border-radius: 13px;
   overflow: hidden;
   position: relative;
-  border: 1px solid var(--admin-border, rgba(0, 0, 0, 0.1));
+  border: 1px solid color-mix(in srgb, var(--admin-border) 30%, transparent);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .analytics-progress-bar-container-alt .progress-bar-fill {
-  height: 24px;
-  min-height: 24px;
+  height: 26px;
+  min-height: 26px;
   border-radius: 12px;
   position: absolute;
   left: 0;
@@ -876,16 +1152,20 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 0 8px;
+  padding: 0 10px;
   pointer-events: none;
 }
 
+/* Label always readable: dark text with subtle shadow on green bar */
 .analytics-progress-bar-container-alt .progress-bar-label {
   font-size: var(--admin-fs-sm);
-  font-weight: 600;
-  color: var(--admin-text-primary, #1e293b);
+  font-weight: 700;
+  color: var(--admin-text-primary, #111827);
   white-space: nowrap;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  text-shadow:
+    0 0 1px rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(255, 255, 255, 0.8);
+  font-variant-numeric: tabular-nums;
 }
 
 .analytics-th-sortable {
@@ -934,7 +1214,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  background: rgba(68, 144, 49, 0.03);
+  background: color-mix(in srgb, var(--admin-accent) 3%, transparent);
   border-radius: 8px;
   margin-top: 16px;
 }

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import api from '../lib/api';
 import './Pricing.css';
-import SkeletonLoader from './SkeletonLoader';
+import { SkeletonLoader } from './loaders/LoaderComponents';
 import Icon from './ui/Icon.jsx';
 
 const PRICING_DATA_KEY = 'homiebites_pricing_data';

@@ -9,6 +9,9 @@
   --admin-text-primary: #111827;
   --admin-text-secondary: #6b7280;
   --admin-border: #e5e7eb;
+  /* Table grid: row 8%, column 5% – standard subtle visibility */
+  --admin-table-grid-line: rgba(0, 0, 0, 0.08);
+  --admin-table-grid-line-col: rgba(0, 0, 0, 0.05);
   --admin-text-white: #ffffff;
   --admin-danger: #dc2626;
   --admin-success: #16a34a;

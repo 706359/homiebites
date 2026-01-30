@@ -1,8 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import Icon from '../ui/Icon.jsx';
 import { useState } from 'react';
+import { Spinner } from '../loaders/LoaderComponents';
+import Icon from '../ui/Icon.jsx';
 
 const AdminForgotPassword = () => {
   const router = useRouter();
@@ -112,7 +113,7 @@ const AdminForgotPassword = () => {
               >
                 {loading ? (
                   <>
-                    <Icon name="spinner" spin />
+                    <Spinner type="circular" size="small" />
                     <span>Sending...</span>
                   </>
                 ) : success ? (

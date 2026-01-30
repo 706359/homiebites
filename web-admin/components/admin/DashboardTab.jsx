@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { InlineLoader } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
-import PremiumLoader from './PremiumLoader.jsx';
 import { getProfitStats } from './utils/calculations.js';
 import { formatDate, parseOrderDate } from './utils/dateUtils.js';
 import {
@@ -31,19 +31,6 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
   useEffect(() => {
     const setChartBarHeights = () => {
       const root = dashboardContainerRef.current;
-      (root || document)
-        .querySelectorAll('.chart-bar[data-height]')
-        .forEach((bar) => {
-          const heightPercent = parseFloat(bar.getAttribute('data-height'));
-          const container = bar.closest('.chart-bars-container');
-          if (container) {
-            const raw = container.offsetHeight || 180;
-            const containerHeight = Math.min(raw, 220);
-            const height = (heightPercent / 100) * containerHeight;
-            bar.style.setProperty('--bar-height', `${height}px`);
-            bar.style.height = 'var(--bar-height)';
-          }
-        });
       (root || document)
         .querySelectorAll('.revenue-trend-bar[data-height]')
         .forEach((bar) => {
@@ -80,13 +67,11 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     return () => observer.disconnect();
   }, [loading, allTimeOrders.length]);
 
-  // Chart height: 120px on mobile, 180px on desktop
-  const chartHeight = isMobile ? 120 : 180;
   // Early return if loading to avoid unnecessary calculations
   if (loading) {
     return (
       <div className="admin-content" ref={dashboardContainerRef}>
-        <PremiumLoader message="Loading dashboard data..." size="large" />
+        <InlineLoader message="Loading dashboard data..." />
       </div>
     );
   }
@@ -248,98 +233,6 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
     });
 
     monthlyRevenueData.push(monthData);
-  }
-
-  // Calculate payment mode data for all 12 months with year-over-year comparison
-  const monthlyPaymentModeData = [];
-  for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
-    const monthData = {
-      monthIndex: monthIndex,
-      monthName: monthNames[monthIndex],
-      years: {},
-    };
-
-    // Calculate payment mode amounts for each year for this month
-    sortedYears.forEach((year) => {
-      const date = new Date(year, monthIndex, 1);
-      date.setHours(0, 0, 0, 0);
-      const nextMonth = new Date(year, monthIndex + 1, 1);
-
-      const monthOrders = orders.filter((o) => {
-        try {
-          const orderDate = parseOrderDate(o.date || o.order_date || null);
-          if (!orderDate) return false;
-          return orderDate >= date && orderDate < nextMonth;
-        } catch (e) {
-          return false;
-        }
-      });
-
-      // Calculate Cash and Online amounts for this month
-      const cashAmount = monthOrders
-        .filter((o) => {
-          const mode = (o.paymentMode || '').toLowerCase();
-          return mode === 'cash';
-        })
-        .reduce((sum, o) => {
-          let amount = null;
-          if (
-            o.totalAmount !== undefined &&
-            o.totalAmount !== null &&
-            o.totalAmount !== 0
-          ) {
-            amount = parseFloat(o.totalAmount);
-          } else if (
-            o.total !== undefined &&
-            o.total !== null &&
-            o.total !== 0
-          ) {
-            amount = parseFloat(o.total);
-          }
-          if (amount === null || isNaN(amount) || amount === 0) {
-            const qty = parseFloat(o.quantity || 1);
-            const price = parseFloat(o.unitPrice || 0);
-            amount = Math.round(qty * price);
-          }
-          return sum + (isNaN(amount) ? 0 : amount);
-        }, 0);
-
-      const onlineAmount = monthOrders
-        .filter((o) => {
-          const mode = (o.paymentMode || '').toLowerCase();
-          return mode === 'online';
-        })
-        .reduce((sum, o) => {
-          let amount = null;
-          if (
-            o.totalAmount !== undefined &&
-            o.totalAmount !== null &&
-            o.totalAmount !== 0
-          ) {
-            amount = parseFloat(o.totalAmount);
-          } else if (
-            o.total !== undefined &&
-            o.total !== null &&
-            o.total !== 0
-          ) {
-            amount = parseFloat(o.total);
-          }
-          if (amount === null || isNaN(amount) || amount === 0) {
-            const qty = parseFloat(o.quantity || 1);
-            const price = parseFloat(o.unitPrice || 0);
-            amount = Math.round(qty * price);
-          }
-          return sum + (isNaN(amount) ? 0 : amount);
-        }, 0);
-
-      // Always include year entry, even if no orders (for consistent chart display)
-      monthData.years[year] = {
-        cash: cashAmount,
-        online: onlineAmount,
-      };
-    });
-
-    monthlyPaymentModeData.push(monthData);
   }
 
   const ordersByMode = {
@@ -842,46 +735,67 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                   <div className="revenue-trend-body">
                     <div className="revenue-trend-chart">
                       {monthlyRevenueLast12.length > 0 ? (
-                        monthlyRevenueLast12.map((month, idx) => {
-                          const barHeightPercent =
-                            maxMonthlyRev12 > 0
-                              ? (month.revenue / maxMonthlyRev12) * 100
-                              : 0;
-                          const isPeak =
-                            month.month === peakMonth12.month &&
-                            month.revenue === peakMonth12.revenue;
-                          const rev = month.revenue;
-                          const barColorClass =
-                            rev <= 0
-                              ? 'revenue-trend-bar--empty'
-                              : isPeak
-                                ? 'revenue-trend-bar--peak'
-                                : rev < 10000
-                                  ? 'revenue-trend-bar--red'
-                                  : rev < 15000
-                                    ? 'revenue-trend-bar--orange'
-                                    : 'revenue-trend-bar--avg';
-                          return (
-                            <div key={idx} className="revenue-trend-col">
-                              <div className="revenue-trend-track">
-                                <div
-                                  className={`revenue-trend-bar ${barColorClass}`}
-                                  data-height={barHeightPercent.toFixed(2)}
-                                  title={`${month.month}: ₹${formatCurrency(month.revenue)} (${month.orders} orders)${isPeak ? ' (Peak)' : ''}`}
-                                >
-                                  {rev > 0 && (
-                                    <span className="revenue-trend-bar-value">
-                                      ₹{formatCurrency(month.revenue)}
-                                    </span>
-                                  )}
-                                </div>
+                        <>
+                          <div
+                            className="revenue-trend-y-axis-12m"
+                            aria-hidden="true"
+                          >
+                            {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
+                              <div
+                                key={pct}
+                                className="revenue-trend-y-tick-12m"
+                              >
+                                ₹
+                                {formatCurrency(
+                                  Math.round(pct * maxMonthlyRev12)
+                                )}
                               </div>
-                              <span className="revenue-trend-month">
-                                {month.month}
-                              </span>
-                            </div>
-                          );
-                        })
+                            ))}
+                          </div>
+                          <div className="revenue-trend-bars-row">
+                            {monthlyRevenueLast12.map((month, idx) => {
+                              const barHeightPercent =
+                                maxMonthlyRev12 > 0
+                                  ? (month.revenue / maxMonthlyRev12) * 100
+                                  : 0;
+                              const isPeak =
+                                month.month === peakMonth12.month &&
+                                month.revenue === peakMonth12.revenue;
+                              const rev = month.revenue;
+                              const barColorClass =
+                                rev <= 0
+                                  ? 'revenue-trend-bar--empty'
+                                  : isPeak
+                                    ? 'revenue-trend-bar--peak'
+                                    : rev < 10000
+                                      ? 'revenue-trend-bar--red'
+                                      : rev < 15000
+                                        ? 'revenue-trend-bar--orange'
+                                        : 'revenue-trend-bar--avg';
+                              return (
+                                <div key={idx} className="revenue-trend-col">
+                                  <div className="revenue-trend-track">
+                                    <div
+                                      className={`revenue-trend-bar ${barColorClass}`}
+                                      data-height={barHeightPercent.toFixed(2)}
+                                      title={`${month.month}: ₹${formatCurrency(month.revenue)} (${month.orders} orders)${isPeak ? ' (Peak)' : ''}`}
+                                    />
+                                  </div>
+                                  <div className="revenue-trend-bar-value-wrap">
+                                    {rev > 0 && (
+                                      <span className="revenue-trend-bar-value">
+                                        ₹{formatCurrency(month.revenue)}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="revenue-trend-month">
+                                    {month.month}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </>
                       ) : (
                         <div className="revenue-trend-empty">
                           No revenue data
@@ -913,308 +827,142 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                 </div>
               </div>
 
-              <div className="dashboard-charts-grid-two">
-                <div className="dashboard-chart-full-width">
-                  <div className="dashboard-card widget revenue-trend-card">
-                    <div className="revenue-trend-header">
-                      <h3 className="dashboard-section-title revenue-trend-title">
-                        <Icon name="chart-line" />
-                        Revenue (Year-over-Year)
-                      </h3>
-                      {sortedYears.length > 1 &&
-                        monthlyRevenueData.length > 0 && (
-                          <div className="revenue-trend-legend">
-                            {sortedYears.map((year) => {
-                              const isCurrentYear = year === now.getFullYear();
-                              const isLastYear = year === now.getFullYear() - 1;
-                              return (
-                                <div
-                                  key={year}
-                                  className="revenue-trend-legend-item"
-                                >
-                                  <span
-                                    className={`revenue-trend-legend-dot ${
-                                      isCurrentYear
-                                        ? 'revenue-trend-legend-current'
-                                        : isLastYear
-                                          ? 'revenue-trend-legend-last'
-                                          : 'revenue-trend-legend-other'
-                                    }`}
-                                  />
-                                  <span>{year}</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                    </div>
-                    {monthlyRevenueData.length > 0 ? (
-                      <div className="revenue-trend-chart">
-                        <div className="revenue-trend-y-axis">
-                          {(() => {
-                            const maxRev = Math.max(
-                              ...monthlyRevenueData.flatMap((m) =>
-                                Object.values(m.years).map((y) => y.revenue)
-                              ),
-                              1
-                            );
-                            const steps = [0, 0.25, 0.5, 0.75, 1];
-                            return steps.map((pct, i) => (
-                              <div key={i} className="revenue-trend-y-tick">
-                                ₹{formatCurrency(Math.round(pct * maxRev))}
-                              </div>
-                            ));
-                          })()}
-                        </div>
-                        <div className="revenue-trend-bars-wrap">
-                          {monthlyRevenueData.map((monthData, idx) => {
-                            const maxRevenue = Math.max(
-                              ...monthlyRevenueData.flatMap((m) =>
-                                Object.values(m.years).map((y) => y.revenue)
-                              ),
-                              1
-                            );
-                            const yearEntries = sortedYears
-                              .map((year) => ({
-                                year,
-                                ...(monthData.years[year] || {
-                                  revenue: 0,
-                                  orders: 0,
-                                }),
-                              }))
-                              .sort((a, b) => a.year - b.year);
-
+              {/* Revenue YoY: same card/header/bar style as Top 10 Delivery Areas (analytics-top-areas-full) */}
+              <div className="dashboard-chart-full-width">
+                <div className="dashboard-card widget revenue-trend-card analytics-top-areas-full">
+                  <div className="section-header-with-select analytics-top-areas-full-header">
+                    <h3 className="dashboard-section-title m-0">
+                      <Icon name="chart-line" className="icon-opacity" />
+                      Revenue (Year-over-Year)
+                    </h3>
+                    {sortedYears.length > 1 &&
+                      monthlyRevenueData.length > 0 && (
+                        <div className="revenue-trend-legend">
+                          {sortedYears.map((year) => {
+                            const isCurrentYear = year === now.getFullYear();
+                            const isLastYear = year === now.getFullYear() - 1;
                             return (
                               <div
-                                key={idx}
-                                className="revenue-trend-month-row"
+                                key={year}
+                                className="revenue-trend-legend-item"
                               >
-                                <div className="revenue-trend-month-label">
-                                  {monthData.monthName}
-                                </div>
-                                <div className="revenue-trend-month-bars">
-                                  {yearEntries.map(
-                                    ({ year, revenue, orders }) => {
-                                      const widthPct =
-                                        maxRevenue > 0
-                                          ? (revenue / maxRevenue) * 100
-                                          : 0;
-                                      const isCurrentYear =
-                                        year === now.getFullYear();
-                                      const isLastYear =
-                                        year === now.getFullYear() - 1;
-                                      return (
-                                        <div
-                                          key={year}
-                                          className="revenue-trend-bar-row"
-                                          title={`${monthData.monthName} ${year}: ₹${formatCurrency(revenue)} (${orders} orders)`}
-                                        >
-                                          <span className="revenue-trend-year-tag">
-                                            {String(year).slice(-2)}
-                                          </span>
-                                          <div className="revenue-trend-bar-track">
-                                            <div
-                                              className={`revenue-trend-bar-fill ${
-                                                isCurrentYear
-                                                  ? 'revenue-trend-bar-current'
-                                                  : isLastYear
-                                                    ? 'revenue-trend-bar-last'
-                                                    : 'revenue-trend-bar-other'
-                                              }`}
-                                              style={{ width: `${widthPct}%` }}
-                                            />
-                                          </div>
-                                          <span className="revenue-trend-value">
-                                            ₹{formatCurrency(revenue)}
-                                          </span>
-                                        </div>
-                                      );
-                                    }
-                                  )}
-                                </div>
+                                <span
+                                  className={`revenue-trend-legend-dot ${
+                                    isCurrentYear
+                                      ? 'revenue-trend-legend-current'
+                                      : isLastYear
+                                        ? 'revenue-trend-legend-last'
+                                        : 'revenue-trend-legend-other'
+                                  }`}
+                                />
+                                <span>{year}</span>
                               </div>
                             );
                           })}
                         </div>
-                      </div>
-                    ) : (
-                      <div className="revenue-trend-empty">
-                        <Icon
-                          name="chart-line"
-                          className="revenue-trend-empty-icon"
-                        />
-                        <p className="revenue-trend-empty-title">
-                          No revenue data available
-                        </p>
-                        <p className="revenue-trend-empty-desc">
-                          Start adding orders to see your revenue trends
-                        </p>
-                      </div>
-                    )}
+                      )}
                   </div>
-                </div>
-              </div>
-
-              <div className="dashboard-chart-full-width">
-                <div className="dashboard-card widget">
-                  <h3 className="dashboard-section-title">
-                    <Icon name="chart-bar" className="icon-opacity" />
-                    Payment Mode (Year-over-Year)
-                  </h3>
-                  <div className="chart-container">
-                    {monthlyPaymentModeData.length > 0 ? (
-                      (() => {
-                        // Find max amount across all months, years, and payment modes for scaling
-                        const maxAmount = Math.max(
-                          ...monthlyPaymentModeData.flatMap((m) =>
-                            Object.values(m.years).flatMap((y) => [
-                              y.cash || 0,
-                              y.online || 0,
-                            ])
-                          ),
-                          1
-                        );
-
-                        return monthlyPaymentModeData.map((monthData, idx) => {
-                          // Ensure all years from sortedYears are included, even if no data
+                  <div className="analytics-top-areas-full-body">
+                  {monthlyRevenueData.length > 0 ? (
+                    <div className="revenue-trend-chart">
+                      <div className="revenue-trend-y-axis">
+                        {(() => {
+                          const maxRev = Math.max(
+                            ...monthlyRevenueData.flatMap((m) =>
+                              Object.values(m.years).map((y) => y.revenue)
+                            ),
+                            1
+                          );
+                          const steps = [0, 0.25, 0.5, 0.75, 1];
+                          return steps.map((pct, i) => (
+                            <div key={i} className="revenue-trend-y-tick">
+                              ₹{formatCurrency(Math.round(pct * maxRev))}
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                      <div className="revenue-trend-bars-wrap">
+                        {monthlyRevenueData.map((monthData, idx) => {
+                          const maxRevenue = Math.max(
+                            ...monthlyRevenueData.flatMap((m) =>
+                              Object.values(m.years).map((y) => y.revenue)
+                            ),
+                            1
+                          );
                           const yearEntries = sortedYears
-                            .map((year) => {
-                              const data = monthData.years[year] || {
-                                cash: 0,
-                                online: 0,
-                              };
-                              return [year.toString(), data];
-                            })
-                            .sort(([a], [b]) => parseInt(a) - parseInt(b));
+                            .map((year) => ({
+                              year,
+                              ...(monthData.years[year] || {
+                                revenue: 0,
+                                orders: 0,
+                              }),
+                            }))
+                            .sort((a, b) => a.year - b.year);
 
                           return (
-                            <div
-                              key={idx}
-                              className={`bar-chart-item ${
-                                yearEntries.length > 1
-                                  ? 'bar-chart-item-multi-year'
-                                  : 'bar-chart-item-single-year'
-                              }`}
-                            >
-                              <div className="chart-bars-container">
-                                {yearEntries.map(([year, data]) => {
-                                  const cashHeightPercent =
-                                    maxAmount > 0
-                                      ? ((data.cash || 0) / maxAmount) * 100
-                                      : 0;
-                                  const onlineHeightPercent =
-                                    maxAmount > 0
-                                      ? ((data.online || 0) / maxAmount) * 100
-                                      : 0;
-                                  const isCurrentYear =
-                                    parseInt(year) === now.getFullYear();
-                                  const isLastYear =
-                                    parseInt(year) === now.getFullYear() - 1;
-                                  const yearMod = isCurrentYear
-                                    ? 'current'
-                                    : isLastYear
-                                      ? 'last'
-                                      : 'other';
-
-                                  return (
-                                    <div
-                                      key={year}
-                                      className={`chart-year-entry ${
-                                        yearEntries.length > 1
-                                          ? 'chart-year-entry-multi'
-                                          : 'chart-year-entry-single'
-                                      }`}
-                                    >
-                                      <div className="chart-payment-mode-group">
-                                        <div
-                                          className={`chart-bar ${
-                                            (data.cash || 0) > 0
-                                              ? `chart-bar-${yearMod}-cash`
-                                              : 'chart-bar-empty'
-                                          }`}
-                                          data-height={cashHeightPercent.toFixed(
-                                            2
-                                          )}
-                                          title={`${
-                                            monthData.monthName
-                                          } ${year} - Cash: ₹${formatCurrency(data.cash || 0)}`}
-                                        ></div>
-                                        <div
-                                          className={`chart-bar ${
-                                            (data.online || 0) > 0
-                                              ? `chart-bar-${yearMod}-online`
-                                              : 'chart-bar-empty'
-                                          }`}
-                                          data-height={onlineHeightPercent.toFixed(
-                                            2
-                                          )}
-                                          title={`${
-                                            monthData.monthName
-                                          } ${year} - Online: ₹${formatCurrency(data.online || 0)}`}
-                                        ></div>
-                                      </div>
-                                      {yearEntries.length > 1 && (
-                                        <span className="chart-year-label">
-                                          {year.toString().slice(-2)}
-                                        </span>
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                              <span className="chart-month-label">
+                            <div key={idx} className="revenue-trend-month-row">
+                              <div className="revenue-trend-month-label">
                                 {monthData.monthName}
-                              </span>
+                              </div>
+                              <div className="revenue-trend-month-bars">
+                                {yearEntries.map(
+                                  ({ year, revenue, orders }) => {
+                                    const widthPct =
+                                      maxRevenue > 0
+                                        ? (revenue / maxRevenue) * 100
+                                        : 0;
+                                    const isCurrentYear =
+                                      year === now.getFullYear();
+                                    const isLastYear =
+                                      year === now.getFullYear() - 1;
+                                    return (
+                                      <div
+                                        key={year}
+                                        className="revenue-trend-bar-row"
+                                        title={`${monthData.monthName} ${year}: ₹${formatCurrency(revenue)} (${orders} orders)`}
+                                      >
+                                        <span className="revenue-trend-year-tag">
+                                          {String(year).slice(-2)}
+                                        </span>
+                                        <div className="revenue-trend-bar-track">
+                                          <div
+                                            className={`revenue-trend-bar-fill ${
+                                              isCurrentYear
+                                                ? 'revenue-trend-bar-current'
+                                                : isLastYear
+                                                  ? 'revenue-trend-bar-last'
+                                                  : 'revenue-trend-bar-other'
+                                            }`}
+                                            style={{ width: `${widthPct}%` }}
+                                          />
+                                        </div>
+                                        <span className="revenue-trend-value">
+                                          ₹{formatCurrency(revenue)}
+                                        </span>
+                                      </div>
+                                    );
+                                  }
+                                )}
+                              </div>
                             </div>
                           );
-                        });
-                      })()
-                    ) : (
-                      <div className="dashboard-empty-state">
-                        <Icon
-                          name="chart-bar"
-                          className="dashboard-empty-state-icon"
-                        />
-                        <p className="empty-state-text">
-                          No payment mode data available
-                        </p>
-                        <p className="dashboard-empty-text">
-                          Payment data will appear here once orders are added
-                        </p>
+                        })}
                       </div>
-                    )}
-                  </div>
-                  {sortedYears.length > 1 && (
-                    <div className="chart-legend-container">
-                      {sortedYears.map((year) => {
-                        const isCurrentYear = year === now.getFullYear();
-                        const isLastYear = year === now.getFullYear() - 1;
-                        return (
-                          <div key={year} className="chart-legend-item">
-                            <div
-                              className={`chart-legend-color ${
-                                isCurrentYear
-                                  ? 'chart-legend-color-current'
-                                  : isLastYear
-                                    ? 'chart-legend-color-last'
-                                    : 'chart-legend-color-other'
-                              }`}
-                            />
-                            <span>{year}</span>
-                          </div>
-                        );
-                      })}
+                    </div>
+                  ) : (
+                    <div className="revenue-trend-empty">
+                      <Icon
+                        name="chart-line"
+                        className="revenue-trend-empty-icon"
+                      />
+                      <p className="revenue-trend-empty-title">
+                        No revenue data available
+                      </p>
+                      <p className="revenue-trend-empty-desc">
+                        Start adding orders to see your revenue trends
+                      </p>
                     </div>
                   )}
-                  <div className="chart-legend-container dashboard-chart-legend">
-                    <div className="chart-legend-item">
-                      <div className="chart-legend-color chart-legend-color-cash"></div>
-                      <span>Cash</span>
-                    </div>
-                    <div className="chart-legend-item">
-                      <div className="chart-legend-color chart-legend-color-online"></div>
-                      <span>Online</span>
-                    </div>
                   </div>
                 </div>
               </div>

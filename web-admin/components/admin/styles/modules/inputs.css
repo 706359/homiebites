@@ -62,7 +62,7 @@
 
 .premium-select-wrapper:focus-within {
   border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
+  box-shadow: 0 0 0 3px var(--admin-accent-10);
 }
 
 .premium-select-wrapper .select-icon {
@@ -130,8 +130,8 @@
   background: var(--admin-bg, #ffffff);
   border-color: var(--admin-accent, #449031);
   box-shadow:
-    0 0 0 3px rgba(68, 144, 49, 0.1),
-    0 2px 8px rgba(68, 144, 49, 0.1);
+    0 0 0 3px var(--admin-accent-10),
+    0 2px 8px var(--admin-accent-10);
 }
 
 .global-search-header {
@@ -208,8 +208,8 @@
   outline: none;
   border-color: var(--admin-accent, #449031);
   box-shadow:
-    0 0 0 3px rgba(68, 144, 49, 0.1),
-    0 2px 8px rgba(68, 144, 49, 0.15);
+    0 0 0 3px var(--admin-accent-10),
+    0 2px 8px color-mix(in srgb, var(--admin-accent) 15%, transparent);
 }
 
 /* Dropdown selects: center selected text (filter-select, premium-select only; text-align-last avoided for Safari) */
@@ -238,7 +238,7 @@
 .filter-select:focus {
   outline: none;
   border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px rgba(68, 144, 49, 0.1);
+  box-shadow: 0 0 0 3px var(--admin-accent-10);
 }
 
 .premium-select {
@@ -365,7 +365,7 @@ select.placeholder-selected {
 }
 
 .order-modal-calendar-btn:hover {
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  background: var(--admin-accent-light);
   border-color: var(--admin-accent, #449031);
   color: var(--admin-accent, #449031);
 }

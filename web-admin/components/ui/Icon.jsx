@@ -2,7 +2,9 @@
  * Lucide React icon wrapper. Maps Font Awesome–style names to Lucide icons.
  * Usage: <Icon name="chart-line" className="..." size={20} />
  * Names can be "fa-xxx" or "xxx" (fa-solid/fa-regular/fa-brands stripped).
+ * Icon name="spinner" renders universal Spinner from loaders/LoaderComponents (no Lucide loader).
  */
+import { Spinner } from '../loaders/LoaderComponents';
 import {
   ArrowDown,
   ArrowLeft,
@@ -59,7 +61,6 @@ import {
   LineChart,
   List,
   ListChecks,
-  Loader2,
   Lock,
   LogIn,
   LogOut,
@@ -150,7 +151,6 @@ const ICON_MAP = {
   'shield-check': ShieldCheck,
   envelope: Mail,
   lock: Lock,
-  spinner: Loader2,
   'arrow-right-to-bracket': LogIn,
   key: Key,
   cog: Settings,
@@ -296,10 +296,27 @@ export default function Icon({
       />
     );
   }
+  if (key === 'spinner') {
+    const spinnerSize =
+      typeof size === 'number'
+        ? size <= 16
+          ? 'small'
+          : size >= 28
+            ? 'large'
+            : 'medium'
+        : 'medium';
+    return (
+      <Spinner
+        type="circular"
+        size={spinnerSize}
+        className={className}
+        {...props}
+      />
+    );
+  }
   const Component = getIconComponent(name);
   if (!Component) return null;
-  const isLoader = name === 'spinner' || String(name).includes('spinner');
-  const spinClass = spin || isLoader ? 'lucide-icon-spin' : '';
+  const spinClass = spin ? 'lucide-icon-spin' : '';
   return (
     <Component
       size={size}

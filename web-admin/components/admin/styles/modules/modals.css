@@ -552,7 +552,7 @@
   }
 
   .admin-dashboard .modal-close:active {
-    background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+    background: var(--admin-accent-light);
     border-color: var(--admin-accent, #449031);
     color: var(--admin-accent, #449031);
     transform: scale(0.95);
@@ -832,14 +832,15 @@
   width: 64px;
   height: 64px;
   margin: 0 auto 16px;
-  background: #f59e0b;
+  background: var(--admin-warning, #f59e0b);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: var(--admin-text-white, #fff);
   font-size: var(--admin-fs-2xl-mid);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  box-shadow: 0 4px 12px
+    color-mix(in srgb, var(--admin-warning) 30%, transparent);
 }
 
 .session-timeout-title {

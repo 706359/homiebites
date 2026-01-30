@@ -46,9 +46,15 @@
 
 .admin-sidebar.collapsed {
   width: 80px;
+  overflow-x: visible;
+  z-index: 1500;
   box-shadow:
     2px 0 8px rgba(0, 0, 0, 0.05),
     1px 0 3px rgba(0, 0, 0, 0.04);
+}
+
+.admin-sidebar.collapsed .sidebar-scroll {
+  overflow-x: visible;
 }
 
 /* Auto-hide sidebar when enabled */
@@ -269,7 +275,7 @@
 .sidebar-item.active {
   color: var(--admin-accent, #449031);
   font-weight: 600;
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  background: var(--admin-accent-light);
   border: none;
   padding: 11px 14px;
   box-shadow: none;
@@ -317,7 +323,7 @@
 }
 
 .sidebar-item:focus-visible:not(.active) {
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.08));
+  background: var(--admin-accent-10);
   color: var(--admin-text-primary, #1e293b);
 }
 
@@ -350,7 +356,7 @@
 }
 
 .admin-sidebar.collapsed .sidebar-item.active {
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.14));
+  background: color-mix(in srgb, var(--admin-accent) 14%, transparent);
   border: none;
   color: var(--admin-accent, #449031);
   box-shadow: none;
@@ -368,6 +374,42 @@
   color: inherit;
   padding-left: 0;
   margin-right: 0;
+}
+
+/* Tooltip wrapper when sidebar is collapsed (trigger only; tooltip renders via portal) */
+.admin-sidebar.collapsed .sidebar-item-tooltip-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Portal-rendered tooltip (in document.body) – always on top, never clipped */
+.sidebar-portal-tooltip {
+  position: fixed;
+  transform: translateY(-50%);
+  background: var(--admin-text-secondary, #475569);
+  color: var(--admin-text-white, #ffffff);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: var(--admin-fs-sm, 13px);
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  font-family: var(--font-primary, 'Baloo 2', sans-serif);
+}
+
+.sidebar-portal-tooltip::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-right-color: var(--admin-text-secondary, #475569);
 }
 
 .sidebar-footer {
@@ -427,7 +469,7 @@
 .sidebar-collapse-btn:hover {
   background: var(--admin-accent-hover, #3a7a29);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(68, 144, 49, 0.3);
+  box-shadow: 0 4px 12px var(--admin-accent-30);
 }
 
 .sidebar-collapse-btn:active {
@@ -481,13 +523,13 @@
 
 .sidebar-profile-btn:hover {
   background: var(--admin-bg-tertiary, #f3f4f6);
-  border-color: rgba(68, 144, 49, 0.25);
+  border-color: var(--admin-accent-25);
   transform: translateY(-1px);
 }
 
 .sidebar-profile-btn.is-open {
   border-color: var(--admin-accent, #449031);
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.08));
+  background: var(--admin-accent-10);
   transform: translateY(0);
 }
 
@@ -588,11 +630,7 @@
   min-width: 36px;
   min-height: 36px;
   border-radius: 10px;
-  background: linear-gradient(
-    135deg,
-    var(--admin-accent, #449031) 0%,
-    var(--admin-accent-hover, #3a7a29) 100%
-  );
+  background: var(--admin-accent, #449031);
   color: var(--admin-text-white, #fff);
   display: flex;
   align-items: center;
@@ -600,7 +638,7 @@
   font-size: var(--admin-fs-base);
   font-weight: 600;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(68, 144, 49, 0.25);
+  box-shadow: 0 2px 8px var(--admin-accent-25);
 }
 
 .sidebar-profile-dropdown-avatar .sidebar-profile-initials {

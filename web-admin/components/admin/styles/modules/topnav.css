@@ -167,12 +167,12 @@
 
 .top-nav-search-btn:hover {
   color: var(--admin-accent, #449031);
-  border-color: var(--admin-accent-light, rgba(68, 144, 49, 0.2));
+  border-color: var(--admin-accent-20);
 }
 
 .top-nav-search-btn:hover::before {
   opacity: 1;
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.08));
+  background: var(--admin-accent-10);
 }
 
 .top-nav-search-btn:active {
@@ -223,12 +223,12 @@
 
 .top-nav-notification-btn:hover {
   color: var(--admin-accent, #449031);
-  border-color: var(--admin-accent-light, rgba(68, 144, 49, 0.2));
+  border-color: var(--admin-accent-20);
 }
 
 .top-nav-notification-btn:hover::before {
   opacity: 1;
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.08));
+  background: var(--admin-accent-10);
 }
 
 .top-nav-notification-btn:active {
@@ -455,7 +455,8 @@
   flex-direction: column;
   max-height: 600px;
   overflow: hidden;
-  animation: adminSlideDown var(--admin-duration-medium) var(--admin-ease-smooth);
+  animation: adminSlideDown var(--admin-duration-medium)
+    var(--admin-ease-smooth);
 }
 
 .notification-dropdown-header {
@@ -558,7 +559,7 @@
 }
 
 .notification-item-overdue {
-  border-left: 4px solid var(--admin-danger, #ef4444);
+  border-left: 4px solid var(--admin-danger);
   background: rgba(239, 68, 68, 0.02);
 }
 
@@ -586,11 +587,11 @@
 
 .notification-item-overdue .notification-item-icon {
   background: rgba(239, 68, 68, 0.1);
-  color: var(--admin-danger, #ef4444);
+  color: var(--admin-danger);
 }
 
 .notification-item-website .notification-item-icon {
-  background: rgba(68, 144, 49, 0.1);
+  background: var(--admin-accent-10);
   color: var(--admin-accent, #449031);
 }
 
@@ -650,7 +651,7 @@
   min-width: 24px;
   min-height: 24px;
   border-radius: 50%;
-  background: var(--admin-danger, #ef4444);
+  background: var(--admin-danger);
   color: var(--admin-text-white, #ffffff);
   font-size: var(--admin-fs-2xs);
   flex-shrink: 0;
@@ -682,7 +683,7 @@
 .notification-dropdown-action:hover {
   background: var(--admin-accent-hover, #3a7a2a);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(68, 144, 49, 0.3);
+  box-shadow: 0 4px 12px var(--admin-accent-30);
 }
 
 .notification-dropdown-action:active {

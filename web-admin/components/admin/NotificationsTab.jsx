@@ -1,6 +1,6 @@
 import { useState } from 'react';
+import { InlineLoader } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
-import PremiumLoader from './PremiumLoader.jsx';
 import { formatDateMonthDay, parseOrderDate } from './utils/dateUtils.js';
 import {
   getOrderAmount,
@@ -274,7 +274,7 @@ const NotificationsTab = ({
   if (loading) {
     return (
       <div className="admin-content">
-        <PremiumLoader message="Loading notifications..." size="large" />
+        <InlineLoader message="Loading notifications..." />
       </div>
     );
   }

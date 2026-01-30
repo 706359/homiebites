@@ -1,4 +1,6 @@
 /* CSS load order (enterprise: tokens first, then libs, shared, globals). Admin styles load from app/admin/layout.jsx via adminStyles.js. */
+import '../components/admin/styles/modules/loader.css';
+import '../components/loaders/LoaderStyles.css';
 import '../shared/styles/layout.css';
 import '../shared/styles/shared.css';
 import '../shared/styles/variables.css';

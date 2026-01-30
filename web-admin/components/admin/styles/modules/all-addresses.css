@@ -103,8 +103,8 @@
   border-radius: 6px;
   font-size: var(--admin-fs-xs);
   font-weight: 600;
-  background: rgba(68, 144, 49, 0.12);
-  border: 1px solid rgba(68, 144, 49, 0.25);
+  background: var(--admin-accent-light);
+  border: 1px solid var(--admin-accent-25);
   color: var(--admin-accent, #449031);
   line-height: 1.2;
 }
@@ -135,7 +135,7 @@
 }
 
 .customer-card-enhanced-status-badge.inactive {
-  background: var(--admin-warning-light, rgba(245, 158, 11, 0.15));
+  background: var(--admin-warning-light);
   color: var(--admin-warning-dark, #92400e);
 }
 

@@ -53,8 +53,10 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  animation: notificationSlideIn var(--admin-duration-slow) var(--admin-ease-smooth);
-  transition: transform var(--admin-duration-medium) var(--admin-ease-smooth),
+  animation: notificationSlideIn var(--admin-duration-slow)
+    var(--admin-ease-smooth);
+  transition:
+    transform var(--admin-duration-medium) var(--admin-ease-smooth),
     box-shadow var(--admin-duration-medium) var(--admin-ease-smooth);
   min-width: 340px;
   max-width: 100%;
@@ -72,7 +74,8 @@
 
 /* Slide out animation when notification is removed */
 .admin-notification.notification-exiting {
-  animation: notificationSlideOut var(--admin-duration-medium) var(--admin-ease-smooth) forwards;
+  animation: notificationSlideOut var(--admin-duration-medium)
+    var(--admin-ease-smooth) forwards;
 }
 
 .admin-notification::before {
@@ -90,7 +93,7 @@
 }
 
 .admin-notification-error::before {
-  background: var(--admin-danger, #ef4444);
+  background: var(--admin-danger);
 }
 
 .admin-notification-warning::before {
@@ -126,17 +129,17 @@
 }
 
 .admin-notification-error .admin-notification-icon {
-  background: var(--admin-danger-light, rgba(220, 38, 38, 0.12));
-  color: var(--admin-danger, #ef4444);
+  background: var(--admin-danger-light);
+  color: var(--admin-danger);
 }
 
 .admin-notification-warning .admin-notification-icon {
-  background: var(--admin-warning-light, rgba(245, 158, 11, 0.15));
+  background: var(--admin-warning-light);
   color: var(--admin-warning, #f59e0b);
 }
 
 .admin-notification-info .admin-notification-icon {
-  background: var(--admin-accent-light, rgba(68, 144, 49, 0.1));
+  background: var(--admin-accent-light);
   color: var(--admin-accent);
 }
 
@@ -214,7 +217,7 @@
 }
 
 .admin-notification-error .admin-notification-progress-bar {
-  background: var(--admin-danger, #ef4444);
+  background: var(--admin-danger);
 }
 
 .admin-notification-warning .admin-notification-progress-bar {

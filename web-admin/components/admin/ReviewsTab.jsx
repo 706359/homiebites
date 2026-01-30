@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import api from '../../lib/api-admin.js';
+import { InlineLoader } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
-import PremiumLoader from './PremiumLoader.jsx';
 import { formatDate, formatDateMonthDay } from './utils/dateUtils.js';
 
 const ReviewsTab = ({
@@ -290,7 +290,7 @@ const ReviewsTab = ({
   if (loading || loadingReviews) {
     return (
       <div className="admin-content">
-        <PremiumLoader message="Loading reviews..." size="large" />
+        <InlineLoader message="Loading reviews..." />
       </div>
     );
   }

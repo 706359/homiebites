@@ -4,12 +4,12 @@
 
 ### 1. Root layout (`app/layout.jsx`) — every page
 
-| Order | File                                            | Purpose                                                                                                              |
-| ----- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| 1     | `shared/styles/variables.css`                   | Tokens (`--font-primary`, `--admin-*`, colors). Loaded first so all downstream CSS can use them.                     |
-| 2     | (none)                                           | Icons: Lucide React via `components/ui/Icon.jsx` (no global icon CSS).                                                |
-| 3     | `shared/styles/shared.css`                      | Shared components, section styles. Uses `variables.css` (loaded in root; no `@import` in shared).                    |
-| 4     | `styles/globals.css`                            | Buttons, inputs, modals, premium-loader base, **and** `.admin-dashboard` loader overrides (to avoid FOUC on /admin). |
+| Order | File                          | Purpose                                                                                           |
+| ----- | ----------------------------- | ------------------------------------------------------------------------------------------------- |
+| 1     | `shared/styles/variables.css` | Tokens (`--font-primary`, `--admin-*`, colors). Loaded first so all downstream CSS can use them.  |
+| 2     | (none)                        | Icons: Lucide React via `components/ui/Icon.jsx` (no global icon CSS).                            |
+| 3     | `shared/styles/shared.css`    | Shared components, section styles. Uses `variables.css` (loaded in root; no `@import` in shared). |
+| 4     | `styles/globals.css`          | Buttons, inputs, modals, base styles. Loader styles live in `loader.css` (root + admin).          |
 
 ### 2. Admin layout (`app/admin/layout.jsx`) — /admin/\* only
 
@@ -30,12 +30,11 @@
   - `shared.css` does not `@import` it; root imports variables before shared.
 
 - **globals.css**
-  - Shared: buttons, inputs, modals, premium-loader base.
-  - Exception: `.admin-dashboard .premium-loader-*` overrides live here so they apply with the first CSS payload and prevent a loader size flash on /admin refresh.
+  - Shared: buttons, inputs, modals, base styles. Loader styles are in `components/admin/styles/modules/loader.css` (loaded from root layout and admin layout).
 
 - **admin (index + modules)**
   - Loaded only on /admin via `adminStyles.js` in `app/admin/layout.jsx`.
-  - `index.css`: vars, layout, `:where()` resets (with `.premium-loader-container` excluded), `img:not(.premium-loader-logo)`.
+  - `index.css`: vars, layout, `:where()` resets, `img` rules.
 
 - **No CSS `@import` for app styles**
   - All app CSS is pulled in via JS `import` so the bundler (including Turbopack) handles it reliably.
@@ -48,11 +47,11 @@
 
 ## Resets and overrides
 
-- **`.admin-dashboard :where(*):not(.premium-loader-container):not(.premium-loader-container *)`**
-  - `margin: 0; padding: 0` with zero specificity from `:where()` so component styles win. Loader is excluded so `globals.css` loader styles apply.
+- **`.admin-dashboard :where(*)`**
+  - `margin: 0; padding: 0` with zero specificity from `:where()` so component styles win.
 
-- **`.admin-dashboard img:not(.premium-loader-logo)`**
-  - `max-width: 100%; height: auto; display: block` for content images. Loader logo is excluded so `globals.css` and admin loader rules control it.
+- **`.admin-dashboard img`**
+  - `max-width: 100%; height: auto; display: block` for content images.
 
 ---
 

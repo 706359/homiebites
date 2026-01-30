@@ -77,7 +77,7 @@
 
 .form-group label.required::after {
   content: ' *';
-  color: var(--admin-danger, #ef4444);
+  color: var(--admin-danger);
   margin-left: 4px;
 }
 
@@ -118,7 +118,7 @@
 
   /* Single column for full-width fields */
   .admin-dashboard .form-row .form-group:has(textarea),
-  .admin-dashboard .form-row .form-group:has(input[type="date"]),
+  .admin-dashboard .form-row .form-group:has(input[type='date']),
   .admin-dashboard .form-row .form-group.full-width {
     grid-column: 1 / -1 !important;
   }
@@ -236,7 +236,7 @@
     height: 44px !important;
     vertical-align: middle !important;
   }
-  
+
   .form-group textarea {
     height: auto !important;
     min-height: 80px !important;

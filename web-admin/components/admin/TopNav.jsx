@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { OverlayLoader, Spinner } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
 import KeyboardShortcutsModal from './KeyboardShortcutsModal.jsx';
 import NotificationDropdown from './NotificationDropdown.jsx';
@@ -157,6 +158,7 @@ const TopNav = ({
 
   return (
     <>
+      <OverlayLoader show={refreshing} message="Refreshing data..." />
       <div className="admin-top-nav">
         <div className="top-nav-left">
           <button
@@ -189,7 +191,7 @@ const TopNav = ({
               aria-label="Refresh"
             >
               {refreshing ? (
-                <Icon name="spinner" spin />
+                <Spinner type="circular" size="small" />
               ) : (
                 <Icon name="rotate" />
               )}
@@ -317,12 +319,12 @@ const TopNav = ({
                   <h4>Recent Searches</h4>
                   <div className="global-search-list">
                     {recentSearches.map((search, idx) => (
-                    <button
-                      type="button"
-                      key={idx}
-                      className="global-search-item"
-                      onClick={() => handleSearch(search)}
-                    >
+                      <button
+                        type="button"
+                        key={idx}
+                        className="global-search-item"
+                        onClick={() => handleSearch(search)}
+                      >
                         <Icon name="clock-rotate-left" />
                         {search}
                       </button>

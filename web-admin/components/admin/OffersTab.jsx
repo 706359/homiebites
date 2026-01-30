@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance.js';
 import api from '../../lib/api-admin.js';
+import { InlineLoader } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
 import ConfirmationModal from './ConfirmationModal.jsx';
-import PremiumLoader from './PremiumLoader.jsx';
 
 const OffersTab = ({
   showNotification,
@@ -224,7 +224,7 @@ const OffersTab = ({
   if (loading || loadingOffers) {
     return (
       <div className="admin-content">
-        <PremiumLoader message="Loading offers..." />
+        <InlineLoader message="Loading offers..." />
       </div>
     );
   }

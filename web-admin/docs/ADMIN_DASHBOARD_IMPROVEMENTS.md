@@ -10,8 +10,8 @@ Based on comprehensive code review, here are actionable improvements organized b
 
 ### 1. **Search Debouncing** ⚡
 
-**Current:** Search queries trigger filters on every keystroke  
-**Impact:** Performance issues with large datasets  
+**Current:** Search queries trigger filters on every keystroke
+**Impact:** Performance issues with large datasets
 **Fix:** Debounce search input (300-500ms)
 
 ```javascript
@@ -34,8 +34,8 @@ const debouncedSearch = useMemo(
 
 ### 2. **Table Virtualization** 📊
 
-**Current:** All rows render at once  
-**Impact:** Slow rendering with 2900+ orders  
+**Current:** All rows render at once
+**Impact:** Slow rendering with 2900+ orders
 **Fix:** Use `react-window` or `react-virtualized` for virtual scrolling
 
 ```javascript
@@ -49,8 +49,8 @@ import { FixedSizeList } from 'react-window';
 
 ### 3. **Filter Persistence** 💾
 
-**Current:** Filters reset on page reload  
-**Impact:** User has to reapply filters  
+**Current:** Filters reset on page reload
+**Impact:** User has to reapply filters
 **Fix:** Save filters to localStorage
 
 ```javascript
@@ -73,20 +73,14 @@ useEffect(() => {
 
 ### 4. **Skeleton Loaders** ⏳
 
-**Current:** Generic loading spinner  
-**Impact:** Better perceived performance  
+**Current:** Generic loading spinner
+**Impact:** Better perceived performance
 **Fix:** Add skeleton loaders matching table/card layout
 
 ```javascript
-// Replace PremiumLoader with skeleton components
-<div className="skeleton-table">
-  {[...Array(10)].map((_, i) => (
-    <div key={i} className="skeleton-row">
-      <div className="skeleton-cell"></div>
-      {/* ... */}
-    </div>
-  ))}
-</div>
+// Use SkeletonLoader from loaders/LoaderComponents
+import { SkeletonLoader } from '../loaders/LoaderComponents';
+<SkeletonLoader type="table" rows={10} cols={9} />;
 ```
 
 **Files:** `components/admin/AllOrdersDataTab.jsx`, `components/admin/DashboardTab.jsx`
@@ -95,8 +89,8 @@ useEffect(() => {
 
 ### 5. **Error Recovery** 🔄
 
-**Current:** Error boundaries catch errors but recovery is limited  
-**Impact:** Better user experience on errors  
+**Current:** Error boundaries catch errors but recovery is limited
+**Impact:** Better user experience on errors
 **Fix:** Add retry buttons and error details
 
 ```javascript
@@ -119,7 +113,7 @@ useEffect(() => {
 
 ### 6. **Keyboard Shortcuts** ⌨️
 
-**Current:** Basic shortcuts (Ctrl+K for search, Ctrl+N for new order)  
+**Current:** Basic shortcuts (Ctrl+K for search, Ctrl+N for new order)
 **Enhancement:** Add more shortcuts
 
 ```javascript
@@ -137,7 +131,7 @@ useEffect(() => {
 
 ### 7. **Bulk Actions Enhancement** 🔢
 
-**Current:** Bulk mark as paid  
+**Current:** Bulk mark as paid
 **Enhancement:** More bulk actions (delete, export, change status, change address)
 
 ```javascript
@@ -156,7 +150,7 @@ useEffect(() => {
 
 ### 8. **Column Visibility Toggle** 👁️
 
-**Current:** All columns always visible  
+**Current:** All columns always visible
 **Enhancement:** Allow users to show/hide columns
 
 ```javascript
@@ -175,7 +169,7 @@ const [visibleColumns, setVisibleColumns] = useState({
 
 ### 9. **Export Options** 📥
 
-**Current:** Basic export  
+**Current:** Basic export
 **Enhancement:** Export formats (CSV, Excel, PDF), filtered data export, scheduled exports
 
 ```javascript
@@ -191,7 +185,7 @@ const [visibleColumns, setVisibleColumns] = useState({
 
 ### 10. **Mobile Swipe Gestures** 📱
 
-**Current:** Tap to open/close sidebar  
+**Current:** Tap to open/close sidebar
 **Enhancement:** Swipe gestures for better mobile UX
 
 ```javascript
@@ -212,7 +206,7 @@ const handlers = useSwipeable({
 
 ### 11. **Component Memoization** ⚡
 
-**Current:** Components re-render unnecessarily  
+**Current:** Components re-render unnecessarily
 **Enhancement:** Memoize expensive components
 
 ```javascript
@@ -233,7 +227,7 @@ const filteredOrders = useMemo(() => {
 
 ### 12. **Toast Notification Stacking** 🔔
 
-**Current:** Multiple notifications stack but could be improved  
+**Current:** Multiple notifications stack but could be improved
 **Enhancement:** Better grouping, auto-dismiss, action buttons
 
 ```javascript
@@ -250,7 +244,7 @@ const filteredOrders = useMemo(() => {
 
 ### 13. **Data Refresh Indicators** 🔄
 
-**Current:** Refresh button shows loading state  
+**Current:** Refresh button shows loading state
 **Enhancement:** Show last refresh time, auto-refresh option, sync status
 
 ```javascript
@@ -266,7 +260,7 @@ const filteredOrders = useMemo(() => {
 
 ### 14. **Table Column Resizing** 📏
 
-**Current:** Fixed column widths  
+**Current:** Fixed column widths
 **Enhancement:** Allow users to resize columns
 
 ```javascript
@@ -280,7 +274,7 @@ import { useTable, useResizeColumns } from 'react-table';
 
 ### 15. **Advanced Filtering UI** 🔍
 
-**Current:** Filter icon opens dropdown  
+**Current:** Filter icon opens dropdown
 **Enhancement:** Save filter presets, quick filter chips, filter combinations
 
 ```javascript
@@ -300,7 +294,7 @@ import { useTable, useResizeColumns } from 'react-table';
 
 ### 16. **Dark Mode Support** 🌙
 
-**Impact:** User preference, eye strain reduction  
+**Impact:** User preference, eye strain reduction
 **Effort:** Medium (CSS variables already removed, need to add back for theming)
 
 ---
@@ -316,21 +310,21 @@ import { useTable, useResizeColumns } from 'react-table';
 
 ### 18. **Offline Support Indicators** 📶
 
-**Current:** Service worker exists but no UI indicators  
+**Current:** Service worker exists but no UI indicators
 **Enhancement:** Show offline/online status, sync queue, conflict resolution
 
 ---
 
 ### 19. **Multi-Language Support** 🌍
 
-**Current:** English only  
+**Current:** English only
 **Enhancement:** Add i18n for admin dashboard
 
 ---
 
 ### 20. **Audit Log** 📝
 
-**Current:** No audit trail  
+**Current:** No audit trail
 **Enhancement:** Track who changed what and when
 
 ---
@@ -380,13 +374,13 @@ import { useTable, useResizeColumns } from 'react-table';
 
 ## 🔍 Current Strengths
 
-✅ **Well-structured codebase** - Clean component organization  
-✅ **Error boundaries** - Good error handling setup  
-✅ **Mobile responsive** - Already optimized for mobile  
-✅ **Loading states** - PremiumLoader components present  
-✅ **Optimistic updates** - Fast data sync implemented  
-✅ **Search functionality** - Global search with keyboard shortcut  
-✅ **Filter system** - Comprehensive filtering options  
+✅ **Well-structured codebase** - Clean component organization
+✅ **Error boundaries** - Good error handling setup
+✅ **Mobile responsive** - Already optimized for mobile
+✅ **Loading states** - Universal loaders (FullPageLoader, InlineLoader, SkeletonLoader) in use
+✅ **Optimistic updates** - Fast data sync implemented
+✅ **Search functionality** - Global search with keyboard shortcut
+✅ **Filter system** - Comprehensive filtering options
 ✅ **PWA support** - Admin-only PWA implemented
 
 ---

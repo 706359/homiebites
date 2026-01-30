@@ -1,7 +1,7 @@
 # HomieBites Admin Dashboard — Full Audit Report
 
-**Date:** January 2025  
-**Scope:** Admin dashboard: routes, layout, components, tabs, modals, APIs, styles, hooks, and UX.  
+**Date:** January 2025
+**Scope:** Admin dashboard: routes, layout, components, tabs, modals, APIs, styles, hooks, and UX.
 **Based on:** Codebase review (app/admin, components/admin, lib, app/api).
 
 ---
@@ -107,7 +107,7 @@ The HomieBites admin dashboard is a **Next.js 16 (App Router)** SPA for order ma
 
 ### 5.1 DashboardTab
 
-- **Loading:** `PremiumLoader` when `loading`.
+- **Loading:** `InlineLoader` (universal loader) when `loading`.
 - **Empty:** "No Orders Found" with reload and API/auth checklist.
 - **Stats (clickable):** Total Revenue (→ Analytics), Total Orders (→ All Orders), Pending Payments (→ Pending Amounts), Total Customers (→ Customers), Avg Order Value, Profit After Expenses, Profit Margin. Uses `getProfitStats(allTimeRevenue, 70, 30)` and `isPendingStatus` for unpaid.
 - **Charts:** Revenue Trend (year-over-year bars), Payment Mode Trend (Cash/Online, year-over-year); both use `data-height` and `MutationObserver` for bar sizing.
@@ -186,8 +186,8 @@ The HomieBites admin dashboard is a **Next.js 16 (App Router)** SPA for order ma
 
 ### 6.4 Other
 
-- **PremiumLoader:** Message, size (small/medium/large); used as `Suspense` fallback and in-tab loading.
-- **SkeletonLoader:** Table/content skeletons.
+- **Universal loaders:** `FullPageLoader`, `InlineLoader`, `OverlayLoader`, `LoadingButton`, `SkeletonLoader` from `components/loaders/LoaderComponents`; used as Suspense fallback and in-tab loading.
+- **SkeletonLoader:** Table/content skeletons (admin + public types).
 - **EmptyState:** Reusable empty UX.
 - **ErrorBoundary:** Class component; `componentDidCatch`; optional `window.errorTracker`; fallback UI with Try Again and Refresh; dev-only error details.
 
@@ -251,7 +251,7 @@ The HomieBites admin dashboard is a **Next.js 16 (App Router)** SPA for order ma
 
 ### 9.3 Layout
 
-- **`.admin-dashboard`:** `box-sizing`, margin/padding reset (excluding `.premium-loader-container`), `height: 100vh`, flex row, `overflow-x: hidden`, `--admin-fs-base`, `--font-primary`.
+- **`.admin-dashboard`:** `box-sizing`, margin/padding reset, `height: 100vh`, flex row, `overflow-x: hidden`, `--admin-fs-base`, `--font-primary`.
 - **`.admin-main`:** `margin-left: 260px` (80px when `.sidebar-collapsed`), `min-width: 0`, flex column, `--admin-bg-secondary`.
 - **`.admin-content`:** `padding: 24px` (16px at `max-width: 480px`), scroll, `min-height: 0`.
 
@@ -360,7 +360,7 @@ The HomieBites admin dashboard is a **Next.js 16 (App Router)** SPA for order ma
 
 ## 13. Positive Highlights
 
-- **Lazy loading:** Tabs and heavy modals are `lazy()` with `Suspense` and `PremiumLoader`, improving initial load.
+- **Lazy loading:** Tabs and heavy modals are `lazy()` with `Suspense` and `InlineLoader`/`FullPageLoader`, improving initial load.
 - **Optimistic updates:** `fastCreate`/`fastUpdate`/`fastDelete` with background sync and `dataSyncManager` improve perceived performance and cancellation on navigation.
 - **Modular CSS:** `adminStyles.js` + index + modules give clear separation; variables support theming and font scaling.
 - **Error handling:** `ErrorBoundary` at page and dashboard level; `api.request` handles 401/403 and retries; `errorTracker` hook.

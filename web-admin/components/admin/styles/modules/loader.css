@@ -1,30 +1,220 @@
 /* ========================================================================
-   ADMIN LOADER & PROGRESS BAR (Enterprise)
+   UNIVERSAL LOADER SYSTEM – HommieBites (admin + public)
+   ========================================================================
+   - EnterpriseLoader: logo in square frame, progress runs around (inline | fullpage | overlay).
+   - CompactSpinner: small spinner + optional label for buttons/small areas.
+   - Used by universal loaders (LoaderComponents) and public pages. CSS vars have fallbacks for public.
    ======================================================================== */
 
-/* Loader container – uses spacing scale */
-.admin-dashboard .premium-loader-container.admin-loader,
-.admin-dashboard .premium-loader-container {
-  min-height: 50vh;
-  padding: var(--admin-space-xl, 24px);
-  gap: var(--admin-space-md, 16px);
+.enterprise-loader {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: var(--admin-space-lg, 20px);
+  min-height: 50vh;
+  padding: var(--admin-space-xl, 24px);
   width: 100%;
   box-sizing: border-box;
 }
 
-.admin-dashboard .premium-loader-text.admin-loader-message,
-.admin-dashboard .premium-loader-text {
+/* Full page – initial load, major navigation */
+.enterprise-loader--fullpage {
+  position: fixed;
+  inset: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--admin-bg-secondary, #f9fafb);
+  z-index: 10000;
+  animation: enterprise-loader-fade-in var(--admin-duration-normal, 0.3s)
+    var(--admin-ease);
+}
+
+/* Overlay – refresh, background tasks (theme color, no gradient) */
+.enterprise-loader--overlay {
+  position: fixed;
+  inset: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--admin-text-primary, #111827);
+  opacity: 0.5;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9999;
+  animation: enterprise-loader-fade-in var(--admin-duration-fast, 0.2s)
+    var(--admin-ease);
+}
+
+@keyframes enterprise-loader-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.enterprise-loader__frame {
+  position: relative;
+  width: var(--loader-size, 120px);
+  height: var(--loader-size, 120px);
+  min-width: var(--loader-size, 120px);
+  min-height: var(--loader-size, 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Sticky square border */
+.enterprise-loader__frame::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border: 3px solid var(--admin-border, #e5e7eb);
+  border-radius: 0;
+  pointer-events: none;
+}
+
+/* Progress runs around the square – solid theme color, rotating segment (no gradient) */
+.enterprise-loader__frame::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 0;
+  pointer-events: none;
+  border: 3px solid transparent;
+  border-top-color: var(--admin-accent, #449031);
+  transform-origin: 50% 50%;
+  animation: enterprise-loader-run 1s linear infinite;
+}
+
+.enterprise-loader__logo-wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.enterprise-loader__logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.enterprise-loader__logo-fallback {
+  display: none;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  background: var(--admin-bg-secondary, #f3f4f6);
+  color: var(--admin-accent, #449031);
+  font-size: var(--admin-fs-2xl, 1.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.enterprise-loader__logo-fallback--visible {
+  display: flex !important;
+}
+
+@keyframes enterprise-loader-run {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enterprise-loader__frame::after {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+/* Optional progress bar below */
+.enterprise-loader__progress-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--admin-space-xs, 8px);
+  width: 100%;
+  max-width: 240px;
+}
+
+.enterprise-loader__progress-track {
+  width: 100%;
+  height: var(--admin-space-sm, 12px);
+  background: var(--admin-bg-secondary, #f3f4f6);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.enterprise-loader__progress-fill {
+  height: 100%;
+  min-width: 0;
+  background: var(--admin-accent, #449031);
+  border-radius: 999px;
+  transition: width var(--admin-duration-normal, 0.3s) var(--admin-ease-out);
+}
+
+.enterprise-loader__progress-label {
+  font-size: var(--admin-fs-label);
+  font-weight: 600;
   color: var(--admin-text-secondary, #6b7280);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enterprise-loader__progress-fill {
+    transition: none;
+  }
+}
+
+/* ========================================================================
+   COMPACT SPINNER (buttons, small areas)
+   ======================================================================== */
+
+.compact-spinner {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-space-sm, 12px);
+  padding: var(--admin-space-sm, 12px) var(--admin-space-md, 16px);
+  background: var(--admin-bg, #ffffff);
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 8px;
   font-size: var(--admin-fs-base);
   font-weight: 500;
-  text-align: center;
-  margin: 0;
-  max-width: 320px;
-  line-height: 1.5;
+  color: var(--admin-text-secondary, #6b7280);
+}
+
+.compact-spinner__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--admin-border, #e5e7eb);
+  border-top-color: var(--admin-accent, #449031);
+  border-radius: 50%;
+  animation: compact-spinner-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes compact-spinner-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .compact-spinner__spinner {
+    animation: none;
+    border-top-color: var(--admin-accent, #449031);
+    border-right-color: var(--admin-accent, #449031);
+  }
 }
 
 /* Enterprise progress bar (used under loader or in modals) */

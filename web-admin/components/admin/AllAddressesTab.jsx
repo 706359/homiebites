@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
+import { InlineLoader } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
-import PremiumLoader from './PremiumLoader.jsx';
 
 import {
   formatDate,
@@ -291,7 +291,7 @@ const AllAddressesTab = ({
   if (loading) {
     return (
       <div className="admin-content">
-        <PremiumLoader message="Loading customers..." size="large" />
+        <InlineLoader message="Loading customers..." />
       </div>
     );
   }
@@ -316,13 +316,13 @@ const AllAddressesTab = ({
     <div className="admin-content">
       <div className="kitchen-tab">
         <div className="kitchen-tab-stats admin-stats customer-stats-row">
-          <div className="stat-card stat-card-gradient-accent customer-stat-card">
+          <div className="stat-card stat-card-accent customer-stat-card">
             <div className="customer-stat-content">
               <h3 className="customer-stat-number">{segments.total}</h3>
               <p className="customer-stat-label">Total Customers</p>
             </div>
           </div>
-          <div className="stat-card stat-card-gradient-warning customer-stat-card">
+          <div className="stat-card stat-card-warning customer-stat-card">
             <Icon
               name="crown"
               className="customer-stat-icon customer-stat-icon-green"
@@ -332,7 +332,7 @@ const AllAddressesTab = ({
               <p className="customer-stat-label">Super VIP (≥₹15k)</p>
             </div>
           </div>
-          <div className="stat-card stat-card-gradient-warning customer-stat-card">
+          <div className="stat-card stat-card-warning customer-stat-card">
             <Icon
               name="star"
               className="customer-stat-icon customer-stat-icon-green"
@@ -342,7 +342,7 @@ const AllAddressesTab = ({
               <p className="customer-stat-label">VIP (₹8k-₹15k)</p>
             </div>
           </div>
-          <div className="stat-card stat-card-gradient-secondary customer-stat-card">
+          <div className="stat-card stat-card-secondary customer-stat-card">
             <Icon
               name="user"
               className="customer-stat-icon customer-stat-icon-light"
@@ -352,7 +352,7 @@ const AllAddressesTab = ({
               <p className="customer-stat-label">Regular Customers</p>
             </div>
           </div>
-          <div className="stat-card stat-card-gradient-success customer-stat-card">
+          <div className="stat-card stat-card-success customer-stat-card">
             <div className="customer-stat-content">
               <h3 className="customer-stat-number">
                 ₹{formatCurrency(segments.totalRevenue)}

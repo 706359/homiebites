@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import api from '../lib/api';
 import './Gallery.css';
-import SkeletonLoader from './SkeletonLoader';
+import { SkeletonLoader } from './loaders/LoaderComponents';
 import Icon from './ui/Icon.jsx';
 
 const Gallery = () => {

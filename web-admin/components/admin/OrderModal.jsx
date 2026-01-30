@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAutoKeyboardAvoidance } from '../../hooks/useKeyboardAvoidance';
+import { Spinner } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
 import {
   handleFocusTrapKeydown,
@@ -1824,7 +1825,7 @@ const OrderModal = ({
           >
             {isSaving ? (
               <>
-                <Icon name="spinner" spin /> Saving...
+                <Spinner type="circular" size="small" /> Saving...
               </>
             ) : saveSuccess ? (
               <>

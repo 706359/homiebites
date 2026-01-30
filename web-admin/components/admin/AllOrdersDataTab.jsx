@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import { SkeletonLoader } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
 import { usePreserveScroll } from './hooks/usePreserveScroll.js';
-import SkeletonLoader from './SkeletonLoader.jsx';
 import { formatDate, parseOrderDate } from './utils/dateUtils.js';
 import {
   extractOrderIdSequence,

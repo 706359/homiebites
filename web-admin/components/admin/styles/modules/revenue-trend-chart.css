@@ -1,5 +1,5 @@
 /**
- * Monthly Revenue Trend (Last 12M) – fresh design
+ * Monthly Revenue Trend (Last 12M) – Premium / Enterprise
  * Used in Dashboard and Analytics. Scoped with .revenue-trend-12m and .revenue-trend-card:has(.revenue-trend-col).
  */
 
@@ -9,74 +9,121 @@
 
 .revenue-trend-title {
   margin: 0 0 24px 0;
-  font-size: var(--admin-fs-base, 0.875rem);
+  font-size: var(--admin-fs-lg, 1.0625rem);
   font-weight: 600;
   color: var(--admin-text-primary, #111827);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  letter-spacing: -0.01em;
 }
 
 .revenue-trend-title-icon {
   color: var(--admin-accent, #449031);
-  opacity: 0.9;
+  opacity: 0.95;
   flex-shrink: 0;
 }
 
 .revenue-trend-body {
-  padding: 0 0 8px 0;
+  padding: 0 0 12px 0;
 }
 
-/* 12M bar chart only (Dashboard + Analytics); avoid overriding YoY chart */
+/* 12M bar chart – premium layout with y-axis */
 .revenue-trend-12m .revenue-trend-chart,
 .revenue-trend-card:has(.revenue-trend-col) .revenue-trend-chart {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: 240px;
-  padding: 16px 0 0;
-  overflow-x: auto;
-  overflow-y: visible;
-  -webkit-overflow-scrolling: touch;
+  align-items: stretch;
+  gap: 0;
+  min-height: 260px;
+  padding: 20px 4px 0;
+  overflow: visible;
   width: 100%;
   box-sizing: border-box;
 }
 
-.revenue-trend-12m .revenue-trend-chart::-webkit-scrollbar,
-.revenue-trend-card:has(.revenue-trend-col)
-  .revenue-trend-chart::-webkit-scrollbar {
-  height: 6px;
+.revenue-trend-y-axis-12m {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0 12px 32px 0;
+  flex-shrink: 0;
+  border-right: 1px solid
+    color-mix(in srgb, var(--admin-border) 45%, transparent);
+  margin-right: 12px;
 }
 
-.revenue-trend-12m .revenue-trend-chart::-webkit-scrollbar-track,
-.revenue-trend-card:has(.revenue-trend-col)
-  .revenue-trend-chart::-webkit-scrollbar-track {
-  background: var(--admin-border, #e5e7eb);
-  border-radius: 3px;
+.revenue-trend-y-tick-12m {
+  font-size: var(--admin-fs-xs, 0.75rem);
+  font-weight: 600;
+  color: var(--admin-text-primary, #374151);
+  font-variant-numeric: tabular-nums;
 }
 
-.revenue-trend-12m .revenue-trend-chart::-webkit-scrollbar-thumb,
+.revenue-trend-bars-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.revenue-trend-12m
+  .revenue-trend-chart
+  .revenue-trend-bars-row::-webkit-scrollbar,
 .revenue-trend-card:has(.revenue-trend-col)
-  .revenue-trend-chart::-webkit-scrollbar-thumb {
+  .revenue-trend-chart
+  .revenue-trend-bars-row::-webkit-scrollbar {
+  height: 8px;
+}
+
+.revenue-trend-12m
+  .revenue-trend-chart
+  .revenue-trend-bars-row::-webkit-scrollbar-track,
+.revenue-trend-card:has(.revenue-trend-col)
+  .revenue-trend-chart
+  .revenue-trend-bars-row::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--admin-border) 15%, transparent);
+  border-radius: 4px;
+}
+
+.revenue-trend-12m
+  .revenue-trend-chart
+  .revenue-trend-bars-row::-webkit-scrollbar-thumb,
+.revenue-trend-card:has(.revenue-trend-col)
+  .revenue-trend-chart
+  .revenue-trend-bars-row::-webkit-scrollbar-thumb {
   background: var(--admin-accent, #449031);
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .revenue-trend-col {
   flex: 1 1 0;
   min-width: 0;
-  max-width: 80px;
+  max-width: 72px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+}
+
+/* Value below bar – always readable on light background */
+.revenue-trend-bar-value-wrap {
+  min-height: 2.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .revenue-trend-track {
   width: 100%;
-  height: 200px;
-  min-height: 200px;
+  height: 220px;
+  min-height: 220px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -86,102 +133,127 @@
 
 .revenue-trend-bar {
   width: 100%;
-  min-width: 28px;
+  min-width: 32px;
   max-width: 56px;
   height: var(--bar-height, 0);
   min-height: 0;
-  border-radius: 8px 8px 0 0;
+  border-radius: 10px 10px 0 0;
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: center;
-  padding-top: 6px;
+  padding-bottom: 0;
   transition:
-    height 0.2s ease,
-    background 0.2s ease;
+    height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   cursor: default;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
-/* Average (≥15k): low greens */
+.revenue-trend-bar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* Average (≥15k): solid enterprise green – high contrast */
 .revenue-trend-bar--avg {
-  background: linear-gradient(180deg, #6bb85a 0%, #4a9c38 100%);
+  background: var(--admin-accent, #449031);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
-/* Highest (peak): orange */
+/* Peak: distinct amber/orange – always readable */
 .revenue-trend-bar--peak {
-  background: var(--admin-warning, #f59e0b);
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+  background: var(--admin-warning, #d97706);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 2px 8px rgba(217, 119, 6, 0.35),
+    0 0 0 2px rgba(217, 119, 6, 0.25);
 }
 
-/* Below 15k (10k–15k): orange */
+.revenue-trend-bar--peak:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 4px 14px rgba(217, 119, 6, 0.4),
+    0 0 0 2px rgba(217, 119, 6, 0.3);
+}
+
+/* Below 15k (10k–15k): amber */
 .revenue-trend-bar--orange {
   background: var(--admin-warning, #f59e0b);
-  opacity: 0.9;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
-/* Below 10k: red */
+/* Below 10k: clear red */
 .revenue-trend-bar--red {
   background: var(--admin-danger, #dc2626);
-  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 2px 6px rgba(220, 38, 38, 0.25);
 }
 
 .revenue-trend-bar--empty {
-  background: var(--admin-border, #e5e7eb);
-  opacity: 0.4;
+  background: color-mix(in srgb, var(--admin-border) 35%, transparent);
+  opacity: 0.6;
+  box-shadow: none;
 }
 
+/* Value label BELOW bar – always dark text for readability (enterprise standard) */
 .revenue-trend-bar-value {
-  font-size: var(--admin-fs-xs, 0.6875rem);
-  font-weight: 600;
-  color: var(--admin-text-white, #fff);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  font-size: var(--admin-fs-xs, 0.75rem);
+  font-weight: 700;
+  color: var(--admin-text-primary, #111827);
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-}
-
-.revenue-trend-bar--peak .revenue-trend-bar-value,
-.revenue-trend-bar--orange .revenue-trend-bar-value {
-  color: var(--admin-text-primary, #111827);
+  font-variant-numeric: tabular-nums;
   text-shadow: none;
-}
-
-.revenue-trend-bar--red .revenue-trend-bar-value {
-  color: var(--admin-text-white, #fff);
 }
 
 .revenue-trend-month {
   font-size: var(--admin-fs-xs, 0.6875rem);
   font-weight: 600;
-  color: var(--admin-text-secondary, #6b7280);
+  color: var(--admin-text-primary, #374151);
   text-align: center;
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  font-variant-numeric: tabular-nums;
 }
 
+/* Premium summary box */
 .revenue-trend-summary {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px 10px;
-  margin-top: 20px;
-  padding: 14px 18px;
-  background: var(--admin-bg-secondary, #f9fafb);
-  border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 10px;
+  gap: 8px 12px;
+  margin-top: 24px;
+  padding: 16px 20px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--admin-accent) 6%, transparent) 0%,
+    color-mix(in srgb, var(--admin-border) 8%, transparent) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--admin-border) 40%, transparent);
+  border-radius: 12px;
   font-size: var(--admin-fs-sm-mid, 0.8125rem);
   color: var(--admin-text-primary, #111827);
   line-height: 1.5;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .revenue-trend-summary-value {
   font-weight: 700;
   color: var(--admin-accent, #449031);
   font-variant-numeric: tabular-nums;
+  font-size: var(--admin-fs-md, 0.9375rem);
 }
 
 .revenue-trend-summary-month {
@@ -191,10 +263,13 @@
 
 .revenue-trend-empty {
   width: 100%;
-  padding: 48px 24px;
+  padding: 56px 28px;
   text-align: center;
   font-size: var(--admin-fs-base, 0.875rem);
   color: var(--admin-text-secondary, #6b7280);
+  background: color-mix(in srgb, var(--admin-border) 5%, transparent);
+  border-radius: 12px;
+  border: 1px dashed color-mix(in srgb, var(--admin-border) 50%, transparent);
 }
 
 .revenue-trend-cta {
@@ -203,54 +278,80 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .revenue-trend-chart {
-    min-height: 220px;
-    gap: 6px;
-    justify-content: flex-start;
+  .revenue-trend-12m .revenue-trend-chart,
+  .revenue-trend-card:has(.revenue-trend-col) .revenue-trend-chart {
+    min-height: 240px;
+    padding: 16px 4px 0;
+  }
+
+  .revenue-trend-y-axis-12m {
+    padding: 0 8px 28px 0;
+    margin-right: 8px;
+  }
+
+  .revenue-trend-y-tick-12m {
+    font-size: var(--admin-fs-2xs, 0.625rem);
+  }
+
+  .revenue-trend-bars-row {
+    gap: 8px;
   }
 
   .revenue-trend-track {
-    height: 170px;
-    min-height: 170px;
+    height: 180px;
+    min-height: 180px;
   }
 
   .revenue-trend-col {
     min-width: 32px;
-    max-width: 44px;
+    max-width: 48px;
     flex: 0 0 auto;
   }
 
   .revenue-trend-bar {
-    min-width: 24px;
-    max-width: 36px;
+    min-width: 26px;
+    max-width: 40px;
   }
 }
 
 @media (max-width: 480px) {
   .revenue-trend-title {
-    margin-bottom: 18px;
-    font-size: var(--admin-fs-sm-mid, 0.8125rem);
+    margin-bottom: 20px;
+    font-size: var(--admin-fs-base, 0.875rem);
   }
 
-  .revenue-trend-chart {
-    min-height: 200px;
-    padding: 12px 0 0;
-    gap: 4px;
+  .revenue-trend-12m .revenue-trend-chart,
+  .revenue-trend-card:has(.revenue-trend-col) .revenue-trend-chart {
+    min-height: 220px;
+    padding: 14px 2px 0;
+  }
+
+  .revenue-trend-y-axis-12m {
+    padding: 0 6px 24px 0;
+    margin-right: 6px;
+  }
+
+  .revenue-trend-y-tick-12m {
+    font-size: 0.6rem;
+  }
+
+  .revenue-trend-bars-row {
+    gap: 6px;
   }
 
   .revenue-trend-track {
-    height: 150px;
-    min-height: 150px;
+    height: 160px;
+    min-height: 160px;
   }
 
   .revenue-trend-col {
     min-width: 28px;
-    max-width: 36px;
+    max-width: 38px;
   }
 
   .revenue-trend-bar {
-    min-width: 20px;
-    max-width: 28px;
+    min-width: 22px;
+    max-width: 32px;
   }
 
   .revenue-trend-month,
@@ -258,9 +359,23 @@
     font-size: var(--admin-fs-2xs, 0.625rem);
   }
 
+  .revenue-trend-bar-value-wrap {
+    min-height: 1.8em;
+  }
+
   .revenue-trend-summary {
-    margin-top: 16px;
-    padding: 12px 14px;
+    margin-top: 18px;
+    padding: 14px 16px;
     font-size: var(--admin-fs-sm, 0.75rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .revenue-trend-bar {
+    transition: height 0.15s ease;
+  }
+
+  .revenue-trend-bar:hover {
+    transform: none;
   }
 }

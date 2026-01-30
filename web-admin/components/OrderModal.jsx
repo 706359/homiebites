@@ -5,6 +5,7 @@ import { useAutoKeyboardAvoidance } from '../hooks/useKeyboardAvoidance';
 import api from '../lib/api';
 import { getWhatsAppLink } from '../lib/businessConstants';
 import { getFirstError, hasValidationErrors } from '../lib/formValidation';
+import { InlineLoader } from './loaders/LoaderComponents';
 import './OrderModal.css';
 import Icon from './ui/Icon.jsx';
 
@@ -1449,9 +1450,9 @@ Please confirm. Thank you! 🙏`;
                 )}
             </div>
             {loading ? (
-              <div className="order-items-loading">
-                {t('common.loading') || 'Loading items...'}
-              </div>
+              <InlineLoader
+                message={t('common.loading') || 'Loading items...'}
+              />
             ) : galleryItems.length === 0 ? (
               <div className="order-items-empty">
                 {t('order.noItems') || 'No items available at the moment.'}

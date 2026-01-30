@@ -4,8 +4,8 @@ import { Suspense, lazy, useState } from 'react';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
+import { InlineLoader } from '../components/loaders/LoaderComponents';
 import OrderModal from '../components/OrderModal';
-import PremiumLoader from '../components/PremiumLoader';
 import StructuredData from '../components/StructuredData';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRevealAnimation } from '../hooks/useRevealAnimation';
@@ -39,55 +39,31 @@ export default function HomePage() {
       <Header onOrderClick={handleOrderClick} />
       <main id="main-content" tabIndex="-1">
         <Hero onOrderClick={handleOrderClick} />
-        <Suspense
-          fallback={
-            <PremiumLoader message="Loading how it works..." size="small" />
-          }
-        >
+        <Suspense fallback={<InlineLoader message="Loading how it works..." />}>
           <HowItWorks onOrderClick={handleOrderClick} />
         </Suspense>
-        <Suspense
-          fallback={
-            <PremiumLoader message="Loading features..." size="small" />
-          }
-        >
+        <Suspense fallback={<InlineLoader message="Loading features..." />}>
           <Features />
         </Suspense>
-        <Suspense
-          fallback={<PremiumLoader message="Loading offers..." size="small" />}
-        >
+        <Suspense fallback={<InlineLoader message="Loading offers..." />}>
           <SpecialOffer onOrderClick={handleOrderClick} />
         </Suspense>
-        <Suspense
-          fallback={<PremiumLoader message="Loading gallery..." size="small" />}
-        >
+        <Suspense fallback={<InlineLoader message="Loading gallery..." />}>
           <Gallery />
         </Suspense>
-        <Suspense
-          fallback={
-            <PremiumLoader message="Loading testimonials..." size="small" />
-          }
-        >
+        <Suspense fallback={<InlineLoader message="Loading testimonials..." />}>
           <Testimonials />
         </Suspense>
-        <Suspense
-          fallback={<PremiumLoader message="Loading FAQ..." size="small" />}
-        >
+        <Suspense fallback={<InlineLoader message="Loading FAQ..." />}>
           <FAQ />
         </Suspense>
-        <Suspense
-          fallback={<PremiumLoader message="Loading blog..." size="small" />}
-        >
+        <Suspense fallback={<InlineLoader message="Loading blog..." />}>
           <BlogSection />
         </Suspense>
-        <Suspense
-          fallback={<PremiumLoader message="Loading about..." size="small" />}
-        >
+        <Suspense fallback={<InlineLoader message="Loading about..." />}>
           <About />
         </Suspense>
-        <Suspense
-          fallback={<PremiumLoader message="Loading contact..." size="small" />}
-        >
+        <Suspense fallback={<InlineLoader message="Loading contact..." />}>
           <Contact />
         </Suspense>
       </main>
