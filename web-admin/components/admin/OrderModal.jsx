@@ -1586,7 +1586,7 @@ const OrderModal = ({
                           <div className="address-suggestion-right">
                             {info.lastPrice && (
                               <span className="address-suggestion-last-price">
-                                Rs Last: ₹{info.lastPrice}
+                                Rs Last: ₹ {info.lastPrice}
                               </span>
                             )}
                             <Icon
@@ -1789,7 +1789,7 @@ const OrderModal = ({
             </div>
           ) : (
             <span className="order-form-total-value">
-              ₹
+              <span className="order-form-total-symbol">₹</span>
               {formatCurrency(
                 (() => {
                   const order = newOrder;

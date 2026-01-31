@@ -9,7 +9,10 @@
   gap: 6px !important;
   height: 40px !important;
   min-height: 40px !important;
-  padding: 0 16px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 18px !important;
+  padding-right: 18px !important;
   font-size: 16px !important;
   font-weight: 500 !important;
   font-family: var(--font-website) !important;
@@ -379,6 +382,72 @@
 .btn-ghost:hover:not(:disabled) i {
   opacity: 1;
   color: #449031;
+}
+
+/* Section-link: single source of truth. Do NOT add btn-ghost to these buttons. */
+button.btn.btn-section-link,
+a.btn.btn-section-link {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: #6b7280 !important;
+  font-weight: 500 !important;
+  padding: 8px 12px !important;
+  min-height: auto !important;
+}
+button.btn.btn-section-link i,
+button.btn.btn-section-link [class*='lucide'],
+button.btn.btn-section-link svg,
+button.btn.btn-section-link .section-link-arrow,
+a.btn.btn-section-link i,
+a.btn.btn-section-link [class*='lucide'],
+a.btn.btn-section-link svg,
+a.btn.btn-section-link .section-link-arrow {
+  color: inherit !important;
+  fill: currentColor !important;
+  opacity: 0.9;
+}
+button.btn.btn-section-link:hover:not(:disabled),
+a.btn.btn-section-link:hover:not(:disabled) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #c45c2d !important;
+  transform: none !important;
+}
+button.btn.btn-section-link:hover:not(:disabled) i,
+button.btn.btn-section-link:hover:not(:disabled) [class*='lucide'],
+button.btn.btn-section-link:hover:not(:disabled) svg,
+button.btn.btn-section-link:hover:not(:disabled) .section-link-arrow,
+a.btn.btn-section-link:hover:not(:disabled) i,
+a.btn.btn-section-link:hover:not(:disabled) [class*='lucide'],
+a.btn.btn-section-link:hover:not(:disabled) svg,
+a.btn.btn-section-link:hover:not(:disabled) .section-link-arrow {
+  color: #c45c2d !important;
+  fill: #c45c2d !important;
+  opacity: 1 !important;
+}
+button.btn.btn-section-link:active:not(:disabled),
+a.btn.btn-section-link:active:not(:disabled) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #b04f25 !important;
+  transform: none !important;
+}
+button.btn.btn-section-link:active:not(:disabled) i,
+button.btn.btn-section-link:active:not(:disabled) [class*='lucide'],
+button.btn.btn-section-link:active:not(:disabled) svg,
+button.btn.btn-section-link:active:not(:disabled) .section-link-arrow,
+a.btn.btn-section-link:active:not(:disabled) i,
+a.btn.btn-section-link:active:not(:disabled) [class*='lucide'],
+a.btn.btn-section-link:active:not(:disabled) svg,
+a.btn.btn-section-link:active:not(:disabled) .section-link-arrow {
+  color: #b04f25 !important;
+  fill: #b04f25 !important;
+  opacity: 1 !important;
 }
 
 .btn-small i {
@@ -1850,13 +1919,28 @@ button.whatsapp-order-link:active {
 .skeleton-image {
   width: 100%;
   aspect-ratio: 4/3;
-  background: rgba(229, 231, 235, 0.4);
+  background: linear-gradient(
+    90deg,
+    rgba(229, 231, 235, 0.4) 25%,
+    rgba(243, 244, 246, 0.8) 50%,
+    rgba(229, 231, 235, 0.4) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 4px;
 }
 
 .skeleton-text {
   height: 16px;
   margin: 0.75rem 1rem;
-  background: rgba(229, 231, 235, 0.4);
+  background: linear-gradient(
+    90deg,
+    rgba(229, 231, 235, 0.4) 25%,
+    rgba(243, 244, 246, 0.8) 50%,
+    rgba(229, 231, 235, 0.4) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
   border-radius: 4px;
 }
 
@@ -1867,7 +1951,14 @@ button.whatsapp-order-link:active {
 .skeleton-line {
   height: 20px;
   margin-bottom: 0.75rem;
-  background: rgba(229, 231, 235, 0.4);
+  background: linear-gradient(
+    90deg,
+    rgba(229, 231, 235, 0.4) 25%,
+    rgba(243, 244, 246, 0.8) 50%,
+    rgba(229, 231, 235, 0.4) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
   border-radius: 4px;
 }
 
@@ -1886,6 +1977,15 @@ button.whatsapp-order-link:active {
   }
   100% {
     background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-image,
+  .skeleton-text,
+  .skeleton-line {
+    animation: none;
+    background: rgba(229, 231, 235, 0.4);
   }
 }
 

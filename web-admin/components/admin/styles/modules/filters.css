@@ -144,10 +144,8 @@
 }
 
 .filter-container {
-  margin-top: 16px;
   padding: 16px;
   background: var(--admin-bg);
-  border: 1px solid var(--admin-border, #e5e7eb);
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -269,8 +267,8 @@
 
 .filter-input:focus {
   outline: none;
-  border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px var(--admin-accent-10);
+  border: 1px solid var(--admin-accent, #449031);
+  box-shadow: none;
 }
 
 .filter-input-group {
@@ -526,12 +524,12 @@
 }
 
 .customer-tab-inactive-alert-text {
-  font-size: var(--admin-fs-sm);
-  font-weight: 500;
+  font-size: var(--admin-fs-md);
+  font-weight: 400;
   color: var(--admin-warning, #d97706);
   line-height: 1.4;
   white-space: nowrap;
-  overflow: hidden;
+  /* overflow: hidden; */
   text-overflow: ellipsis;
   max-width: 240px;
 }

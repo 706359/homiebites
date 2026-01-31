@@ -274,15 +274,22 @@ html.admin-active body {
   border: 0;
 }
 
-/* Visible focus for keyboard users (enterprise a11y) */
+/* Visible focus for keyboard users (enterprise a11y) – outline only for interactive non-inputs */
 .admin-dashboard a:focus-visible,
 .admin-dashboard button:focus-visible,
-.admin-dashboard [role='button']:focus-visible,
-.admin-dashboard input:focus-visible,
-.admin-dashboard select:focus-visible,
-.admin-dashboard textarea:focus-visible {
+.admin-dashboard [role='button']:focus-visible {
   outline: 2px solid var(--admin-accent, #449031);
   outline-offset: 2px;
+}
+
+/* Inputs/select/textarea: no outline – single border only (defined in inputs.css / filters etc.) */
+.admin-dashboard input:focus,
+.admin-dashboard input:focus-visible,
+.admin-dashboard select:focus,
+.admin-dashboard select:focus-visible,
+.admin-dashboard textarea:focus,
+.admin-dashboard textarea:focus-visible {
+  outline: none;
 }
 
 .admin-dashboard,
@@ -632,7 +639,10 @@ html.admin-active .login-page-wrapper .btn {
   .admin-dashboard .btn {
     min-height: 44px !important;
     min-width: 44px !important;
-    padding: 10px 14px !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    padding-left: 18px !important;
+    padding-right: 18px !important;
     font-size: var(--admin-fs-base) !important;
   }
 

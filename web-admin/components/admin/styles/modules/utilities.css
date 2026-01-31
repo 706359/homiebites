@@ -237,66 +237,86 @@
 /* Legacy action icon styles (for backwards compatibility) */
 .action-icon-edit {
   color: var(--admin-success, #16a34a);
-  background: transparent;
+  background: transparent !important;
   border: none;
   padding: 8px;
   border-radius: 6px;
   transition: all 0.2s ease;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 .action-icon-edit:hover {
   color: var(--admin-success-hover, #15803d);
-  background: var(--admin-success-light, rgba(22, 163, 74, 0.1));
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 .action-icon-delete {
   color: var(--admin-danger, #dc2626);
-  background: transparent;
+  background: transparent !important;
   border: none;
   padding: 8px;
   border-radius: 6px;
   transition: all 0.2s ease;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 .action-icon-delete:hover {
   color: var(--admin-danger-hover, #991b1b);
-  background: var(--admin-danger-light);
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 
 .action-icon-approve {
   color: var(--admin-success, #16a34a);
-  background: transparent;
+  background: transparent !important;
   border: none;
   padding: 8px;
   border-radius: 6px;
   transition: all 0.2s ease;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 .action-icon-approve:hover {
   color: var(--admin-success-hover, #15803d);
-  background: var(--admin-success-light, rgba(22, 163, 74, 0.1));
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 
 .action-icon-featured {
   color: var(--admin-warning, #f59e0b);
-  background: transparent;
+  background: transparent !important;
   border: none;
   padding: 8px;
   border-radius: 6px;
   transition: all 0.2s ease;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 .action-icon-featured:hover {
   color: var(--admin-warning-hover, #d97706);
-  background: var(--admin-warning-light);
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 
 .action-icon-ghost {
   color: var(--admin-text-secondary, #64748b);
-  background: transparent;
+  background: transparent !important;
   border: none;
   padding: 8px;
   border-radius: 6px;
   transition: all 0.2s ease;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 .action-icon-ghost:hover {
   color: var(--admin-text-primary, #1e293b);
-  background: var(--admin-bg-tertiary, #f3f4f6);
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 
 /* Apply action icon colors to all btn-icon in tables */
@@ -310,7 +330,7 @@ table .btn-icon.action-icon-edit {
 .action-buttons-group .btn-icon.action-icon-edit:hover,
 table .btn-icon.action-icon-edit:hover {
   color: var(--admin-success-hover, #15803d) !important;
-  background: var(--admin-success-light, rgba(22, 163, 74, 0.1)) !important;
+  background: transparent !important;
 }
 
 .action-buttons-cell .btn-icon.action-icon-delete,
@@ -323,7 +343,36 @@ table .btn-icon.action-icon-delete {
 .action-buttons-group .btn-icon.action-icon-delete:hover,
 table .btn-icon.action-icon-delete:hover {
   color: var(--admin-danger-hover, #991b1b) !important;
-  background: var(--admin-danger-light) !important;
+  background: transparent !important;
+}
+
+/* Ghost + icon action buttons: always transparent background (override .btn-ghost) */
+.admin-dashboard .btn-ghost.btn-icon.action-icon-edit,
+.admin-dashboard .btn-ghost.btn-icon.action-icon-delete,
+.admin-dashboard .btn-ghost.btn-icon.action-icon-approve,
+.admin-dashboard .btn-ghost.btn-icon.action-icon-featured,
+.admin-dashboard .btn-ghost.btn-icon.action-icon-ghost {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.admin-dashboard .btn-ghost.btn-icon.action-icon-edit:hover,
+.admin-dashboard .btn-ghost.btn-icon.action-icon-delete:hover,
+.admin-dashboard .btn-ghost.btn-icon.action-icon-approve:hover,
+.admin-dashboard .btn-ghost.btn-icon.action-icon-featured:hover,
+.admin-dashboard .btn-ghost.btn-icon.action-icon-ghost:hover,
+.admin-dashboard .btn-ghost.btn-icon.action-icon-edit:active,
+.admin-dashboard .btn-ghost.btn-icon.action-icon-delete:active,
+.admin-dashboard .btn-ghost.btn-icon.action-icon-approve:active,
+.admin-dashboard .btn-ghost.btn-icon.action-icon-featured:active,
+.admin-dashboard .btn-ghost.btn-icon.action-icon-ghost:active {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 /* ---- Skeleton loaders ---- */
@@ -539,4 +588,36 @@ table .btn-icon.action-icon-delete:hover {
     gap: 8px;
     text-align: center;
   }
+}
+
+/* Button inline padding – loaded last so it wins over any shorthand padding override */
+.admin-dashboard .btn {
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+}
+
+/* “Coming soon” badge in Reports – loaded last so padding always wins */
+.admin-dashboard .reports-card-header .dashboard-section-title .badge-small {
+  padding: 10px 20px !important;
+  min-height: 28px !important;
+  box-sizing: border-box !important;
+}
+
+/* Section link: layout only. Default/hover/active colors are in globals.css (single source of truth). Do NOT add btn-ghost. */
+.admin-dashboard .btn.btn-section-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  font-size: var(--admin-fs-sm, 0.875rem) !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0.02em;
+  transition: color 0.2s ease;
+}
+.admin-dashboard .btn.btn-section-link .section-link-arrow {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  vertical-align: middle;
 }

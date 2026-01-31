@@ -1004,7 +1004,7 @@ const PendingAmountsTab = ({
                           </span>
                         </div>
                         <div className="pending-payment-mode-details">
-                          ₹{formatCurrency(mode.amount)} ({mode.count} orders)
+                          ₹ {formatCurrency(mode.amount)} ({mode.count} orders)
                         </div>
                         <div className="pending-payment-mode-bar-container">
                           <div

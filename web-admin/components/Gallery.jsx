@@ -753,7 +753,7 @@ const Gallery = () => {
                                   </div>
                                   {item.price && (
                                     <div className="gallery-item-price">
-                                      ₹{item.price}
+                                      ₹ {item.price}
                                     </div>
                                   )}
                                 </div>
@@ -822,7 +822,7 @@ const Gallery = () => {
                                 </div>
                                 {item.price && (
                                   <div className="gallery-item-price">
-                                    ₹{item.price}
+                                    ₹ {item.price}
                                   </div>
                                 )}
                               </div>
@@ -890,7 +890,7 @@ const Gallery = () => {
                   <div className="gallery-modal-name">{selectedImage.name}</div>
                   {selectedImage.price && (
                     <div className="gallery-modal-price">
-                      ₹{selectedImage.price}
+                      ₹ {selectedImage.price}
                     </div>
                   )}
                 </div>

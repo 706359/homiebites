@@ -260,9 +260,9 @@
 }
 
 .pending-payment-amount {
-  display: flex;
+  display: inline-flex;
   align-items: baseline;
-  gap: 2px;
+  gap: 8px;
 }
 
 .pending-payment-amount-symbol {
@@ -430,20 +430,6 @@
   align-items: center;
   gap: 12px;
   row-gap: 12px;
-}
-
-.pending-amounts-table thead,
-.pending-amounts-table thead th {
-  background: #f3f4f6;
-}
-.pending-amounts-table thead th {
-  font-weight: 600;
-  color: var(--admin-text-primary, #1e293b);
-  white-space: nowrap;
-}
-
-.pending-amounts-table tbody td {
-  vertical-align: middle;
 }
 
 /* Mobile responsive */

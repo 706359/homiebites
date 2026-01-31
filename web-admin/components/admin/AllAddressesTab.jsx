@@ -355,7 +355,7 @@ const AllAddressesTab = ({
           <div className="stat-card stat-card-success customer-stat-card">
             <div className="customer-stat-content">
               <h3 className="customer-stat-number">
-                ₹{formatCurrency(segments.totalRevenue)}
+                ₹ {formatCurrency(segments.totalRevenue)}
               </h3>
               <p className="customer-stat-label">Total Revenue</p>
             </div>
@@ -567,12 +567,12 @@ const AllAddressesTab = ({
                             </td>
                             <td>
                               <span className="font-bold text-accent text-sm">
-                                ₹{formatCurrency(customer.totalSpent)}
+                                ₹ {formatCurrency(customer.totalSpent)}
                               </span>
                             </td>
                             <td>
                               <span className="font-semibold">
-                                ₹{formatCurrency(customer.avgOrderValue)}
+                                ₹ {formatCurrency(customer.avgOrderValue)}
                               </span>
                             </td>
                             <td>
@@ -811,7 +811,7 @@ const AllAddressesTab = ({
                             Spent
                           </span>
                           <span className="customer-card-enhanced-stat-value">
-                            ₹{formatCurrency(customer.totalSpent)}
+                            ₹ {formatCurrency(customer.totalSpent)}
                           </span>
                         </div>
                         <div className="customer-card-enhanced-stat-item">
@@ -819,7 +819,7 @@ const AllAddressesTab = ({
                             Avg
                           </span>
                           <span className="customer-card-enhanced-stat-value">
-                            ₹{formatCurrency(customer.avgOrderValue)}
+                            ₹ {formatCurrency(customer.avgOrderValue)}
                           </span>
                         </div>
                       </div>
@@ -972,7 +972,7 @@ const AllAddressesTab = ({
                           Total Spent:
                         </span>
                         <span className="customer-detail-value font-bold text-accent">
-                          ₹{formatCurrency(selectedCustomer.totalSpent)}
+                          ₹ {formatCurrency(selectedCustomer.totalSpent)}
                         </span>
                       </div>
                       <div>
@@ -980,7 +980,7 @@ const AllAddressesTab = ({
                           Average Order Value:
                         </span>
                         <span className="customer-detail-value">
-                          ₹{formatCurrency(selectedCustomer.avgOrderValue)}
+                          ₹ {formatCurrency(selectedCustomer.avgOrderValue)}
                         </span>
                       </div>
                       <div>
@@ -1043,7 +1043,7 @@ const AllAddressesTab = ({
                                   <td>{dateStr}</td>
                                   <td>{order.quantity || 1}</td>
                                   <td>
-                                    ₹{formatCurrency(getOrderAmount(order))}
+                                    ₹ {formatCurrency(getOrderAmount(order))}
                                   </td>
                                   <td>
                                     <span
@@ -1067,13 +1067,16 @@ const AllAddressesTab = ({
               </div>
               <div className="modal-footer">
                 <button
-                  className="btn btn-secondary"
+                  className="btn btn-small btn-section-link"
                   onClick={() => {
                     setShowCustomerModal(false);
                     if (onViewOrders) onViewOrders(selectedCustomer.address);
                   }}
                 >
-                  View All Orders
+                  View All Orders{' '}
+                  <span className="section-link-arrow" aria-hidden="true">
+                    →
+                  </span>
                 </button>
                 <button
                   className="btn btn-primary"

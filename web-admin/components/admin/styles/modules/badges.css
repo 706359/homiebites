@@ -3,15 +3,18 @@
    ======================================================================== */
 
 .badge {
-  display: inline-block;
-  height: 24px;
-  padding: 4px 8px;
-  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 8px 14px;
+  border-radius: 999px;
   font-size: var(--admin-fs-sm);
   font-weight: 500;
-  line-height: 1;
+  line-height: 1.25;
   text-transform: none;
   letter-spacing: 0;
+  box-sizing: border-box;
 }
 
 .badge-success {

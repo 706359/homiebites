@@ -20,7 +20,7 @@ export default function EnterpriseLoader({
   progress = null,
   logoSrc = '/logo.png',
 }) {
-  const sizePx = { small: 56, medium: 80, large: 120 }[size] ?? 120;
+  const sizePx = { small: 60, medium: 85, large: 125 }[size] ?? 125;
   const showProgressBar =
     progress != null &&
     typeof progress === 'number' &&
@@ -46,21 +46,58 @@ export default function EnterpriseLoader({
         className="enterprise-loader__frame"
         style={{ '--loader-size': `${sizePx}px` }}
       >
-        <div className="enterprise-loader__logo-wrap" aria-hidden="true">
-          <img
-            src={logoSrc}
-            alt=""
-            className="enterprise-loader__logo"
-            onError={(e) => {
-              const img = e.target;
-              const fallback = img?.nextElementSibling;
-              if (img) img.style.display = 'none';
-              if (fallback) {
-                fallback.style.display = 'flex';
-                fallback.classList.add('enterprise-loader__logo-fallback--visible');
-              }
-            }}
+        {/* Outside progress – runs around the square (on top of track) */}
+        <svg
+          className="enterprise-loader__svg-outside"
+          viewBox="0 0 100 100"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <rect
+            x="1.5"
+            y="1.5"
+            width="97"
+            height="97"
+            rx="10"
+            ry="10"
+            fill="none"
+            strokeWidth="3"
+            strokeDasharray="388"
+            strokeDashoffset="291"
+            className="enterprise-loader__svg-progress-rect"
           />
+        </svg>
+        <div className="enterprise-loader__logo-wrap" aria-hidden="true">
+          <div className="enterprise-loader__logo-blur">
+            <img
+              src={logoSrc}
+              alt=""
+              className="enterprise-loader__logo"
+              onError={(e) => {
+                const wrap = e.target?.closest('.enterprise-loader__logo-wrap');
+                const blur = wrap?.querySelector(
+                  '.enterprise-loader__logo-blur'
+                );
+                const clean = wrap?.querySelector(
+                  '.enterprise-loader__logo-clean'
+                );
+                const fallback = wrap?.querySelector(
+                  '.enterprise-loader__logo-fallback'
+                );
+                if (blur) blur.style.display = 'none';
+                if (clean) clean.style.display = 'none';
+                if (fallback) {
+                  fallback.style.display = 'flex';
+                  fallback.classList.add(
+                    'enterprise-loader__logo-fallback--visible'
+                  );
+                }
+              }}
+            />
+          </div>
+          <div className="enterprise-loader__logo-clean">
+            <img src={logoSrc} alt="" className="enterprise-loader__logo" />
+          </div>
           <div
             className="enterprise-loader__logo-fallback"
             aria-hidden="true"

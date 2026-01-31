@@ -25,40 +25,7 @@
   font-size: var(--admin-fs-base);
 }
 
-/* Header – same as other admin tables (orders-table) */
-.analytics-delivery-table thead {
-  background: #f3f4f6;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  border-bottom: 1px solid var(--admin-border, #e5e7eb);
-}
-
-.analytics-delivery-table thead th,
-.analytics-delivery-table tbody td,
-.analytics-delivery-table thead th *,
-.analytics-delivery-table tbody td * {
-  font-size: var(--admin-fs-base);
-  font-weight: 500;
-}
-
-.analytics-delivery-table thead th {
-  height: 52px;
-  padding: 0 16px;
-  text-align: left;
-  color: var(--admin-text-primary, #1e293b);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--admin-border, #e5e7eb);
-  border-right: 1px solid var(--admin-table-grid-line-col, rgba(0, 0, 0, 0.05));
-  white-space: nowrap;
-  vertical-align: middle;
-  background: #f3f4f6;
-  line-height: 1.4;
-  box-sizing: border-box;
-}
-
-/* Fixed column widths for stable layout (sum = 100%) */
+/* Fixed column widths for stable layout (sum = 100%) – base from tables.css */
 .analytics-delivery-table thead th.analytics-th-sno {
   width: 4%;
   min-width: 48px;
@@ -134,21 +101,6 @@
 /* ============================================
      TABLE BODY (fixed column widths, aligned with thead)
      ============================================ */
-
-.analytics-delivery-table tbody td {
-  height: 56px;
-  padding: 0 16px;
-  color: var(--admin-text-primary, #1e293b);
-  border-bottom: 1px solid var(--admin-table-grid-line, rgba(0, 0, 0, 0.08));
-  border-right: 1px solid var(--admin-table-grid-line-col, rgba(0, 0, 0, 0.05));
-  vertical-align: middle;
-  white-space: nowrap;
-  line-height: 1.5;
-  font-variant-numeric: tabular-nums;
-  box-sizing: border-box;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 .analytics-delivery-table tbody tr {
   transition: background-color 0.15s ease;
@@ -792,8 +744,8 @@
 
 .top-areas-range-select:focus {
   outline: none;
-  border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 2px var(--admin-accent-20);
+  border: 1px solid var(--admin-accent, #449031);
+  box-shadow: none;
 }
 
 .analytics-chart-section {

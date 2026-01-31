@@ -366,7 +366,7 @@ const Pricing = () => {
                         <div className="pricing-item-price">
                           {item.price ? (
                             <span className="pricing-price-value">
-                              ₹{item.price}
+                              ₹ {item.price}
                             </span>
                           ) : (
                             <span className="pricing-price-na">

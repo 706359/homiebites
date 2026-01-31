@@ -61,8 +61,8 @@
 }
 
 .premium-select-wrapper:focus-within {
-  border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px var(--admin-accent-10);
+  border: 1px solid var(--admin-accent, #449031);
+  box-shadow: none;
 }
 
 .premium-select-wrapper .select-icon {
@@ -116,29 +116,32 @@
 
 .global-search-input-wrapper {
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 0;
-  padding: 10px 16px;
-  border: 1px solid var(--admin-border, #e2e8f0);
+  padding: 0;
+  border: none;
   border-radius: 12px;
-  background: var(--admin-bg-secondary, #f9fafb);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  transition: background 0.2s ease;
 }
 
 .global-search-input-wrapper:focus-within {
   background: var(--admin-bg, #ffffff);
-  border-color: var(--admin-accent, #449031);
-  box-shadow:
-    0 0 0 3px var(--admin-accent-10),
-    0 2px 8px var(--admin-accent-10);
+}
+
+/* Single border on input only – no wrapper border to avoid double border */
+.global-search-input-wrapper input:focus,
+.global-search-input-wrapper input:focus-visible {
+  outline: none;
 }
 
 .global-search-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 20px 24px;
+  gap: 12px;
+  padding: 16px 20px;
   border-bottom: 1px solid rgba(226, 232, 240, 0.8);
   background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(10px);
@@ -147,16 +150,29 @@
 
 .global-search-input {
   width: 100%;
-  border: none;
-  background: transparent;
+  min-height: 40px;
+  height: 40px;
+  border: 1px solid var(--admin-border, #e2e8f0);
+  border-radius: 8px;
+  padding: 0 12px;
+  background: var(--admin-bg, #ffffff);
   font-size: var(--admin-fs-md);
   line-height: 1.5;
   color: var(--admin-text-primary, #1e293b);
-  padding: 0;
   outline: none;
   font-weight: 500;
   box-sizing: border-box;
   vertical-align: middle;
+  transition: border-color 0.2s ease;
+}
+
+.global-search-input:hover {
+  border-color: var(--admin-secondary, #c45c2d);
+}
+
+.global-search-input:focus {
+  border-color: var(--admin-secondary, #c45c2d);
+  box-shadow: none;
 }
 
 .global-search-input::placeholder {
@@ -165,22 +181,39 @@
 }
 
 .global-search-close {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
   border-radius: 8px;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  color: var(--admin-text-secondary, #6b7280);
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease;
 }
 
 .global-search-close:hover {
-  background: var(--admin-bg-secondary, #f9fafb);
-  color: var(--admin-text-primary, #1e293b);
-  transform: scale(1.05);
+  border-color: var(--admin-secondary, #c45c2d);
+  color: var(--admin-secondary, #c45c2d);
+  background: rgba(196, 92, 45, 0.06);
+}
+
+.global-search-header .global-search-close:focus,
+.global-search-header .global-search-close:focus-visible {
+  outline: none;
+  border: 1px solid var(--admin-secondary, #c45c2d);
+  box-shadow: none;
 }
 
 .global-search-close:active {
-  transform: scale(0.95);
+  opacity: 0.9;
 }
 
 .input-field {
@@ -204,12 +237,14 @@
   color: var(--admin-text-secondary, #64748b);
 }
 
+.input-field:hover {
+  border-color: var(--admin-border-hover, #d1d5db);
+}
+
 .input-field:focus {
   outline: none;
-  border-color: var(--admin-accent, #449031);
-  box-shadow:
-    0 0 0 3px var(--admin-accent-10),
-    0 2px 8px color-mix(in srgb, var(--admin-accent) 15%, transparent);
+  border: 1px solid var(--admin-accent, #449031);
+  box-shadow: none;
 }
 
 /* Dropdown selects: center selected text (filter-select, premium-select only; text-align-last avoided for Safari) */
@@ -237,8 +272,8 @@
 
 .filter-select:focus {
   outline: none;
-  border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px var(--admin-accent-10);
+  border: 1px solid var(--admin-accent, #449031);
+  box-shadow: none;
 }
 
 .premium-select {

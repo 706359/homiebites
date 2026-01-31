@@ -105,8 +105,8 @@ textarea.settings-input-field {
 
 .settings-input-field:focus {
   outline: none;
-  border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px var(--admin-accent-10);
+  border: 1px solid var(--admin-accent, #449031);
+  box-shadow: none;
 }
 
 .settings-input-with-symbol {
@@ -122,10 +122,11 @@ textarea.settings-input-field {
   color: var(--admin-text-secondary, #6b7280);
   font-weight: 600;
   z-index: 1;
+  margin-right: 6px; /* space between symbol and number (input padding accounts for it) */
 }
 
 .settings-input-with-symbol .settings-input-field {
-  padding-left: 32px;
+  padding-left: 38px; /* space for ₹ symbol + gap before number */
 }
 
 /* Font size presets: Small 17px, Normal 18px, Large 19px */

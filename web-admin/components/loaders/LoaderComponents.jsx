@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import CompactSpinner from '../admin/CompactSpinner';
 import EnterpriseLoader from '../admin/EnterpriseLoader';
 import AdminSkeletonLoader from '../admin/SkeletonLoader';
@@ -71,7 +71,13 @@ export function FullPageLoader({
   if (!show) return null;
   const ariaLabel = subtitle ? `${title}. ${subtitle}` : title;
   return (
-    <div className="hb-loader-fullpage" role="region" aria-label={ariaLabel}>
+    <div
+      className="hb-loader-fullpage"
+      role="status"
+      aria-live="polite"
+      aria-label={ariaLabel}
+      aria-busy="true"
+    >
       <EnterpriseLoader
         variant="fullpage"
         size="large"
@@ -86,10 +92,25 @@ export function FullPageLoader({
 // Overlay Loader (refresh, sync)
 // ---------------------------------------------------------------------------
 export function OverlayLoader({ show = false, message = 'Loading...' }) {
+  const overlayRef = useRef(null);
   if (!show) return null;
   return (
-    <div className="hb-loader-overlay" role="region" aria-label={message}>
-      <EnterpriseLoader variant="overlay" size="medium" ariaLabel={message} />
+    <div
+      ref={(el) => {
+        overlayRef.current = el;
+        if (el) el.setAttribute('inert', '');
+      }}
+      className="hb-loader-overlay"
+      role="status"
+      aria-live="polite"
+      aria-label={message}
+      aria-busy="true"
+    >
+      <EnterpriseLoader
+        variant="overlay"
+        size="medium"
+        ariaLabel={message}
+      />
     </div>
   );
 }
@@ -103,7 +124,13 @@ export function InlineLoader({
   logoSrc = '/logo.png',
 }) {
   return (
-    <div className="hb-loader-inline" role="status" aria-label={message}>
+    <div
+      className="hb-loader-inline"
+      role="status"
+      aria-live="polite"
+      aria-label={message}
+      aria-busy="true"
+    >
       <EnterpriseLoader
         variant="inline"
         size="large"
@@ -118,8 +145,18 @@ export function InlineLoader({
 // Compact Loader (buttons, small areas)
 // ---------------------------------------------------------------------------
 export function CompactLoader({ message = 'Loading...', size = 'medium' }) {
+  const sizeClass =
+    size === 'small'
+      ? 'hb-loader-compact--small'
+      : size === 'large'
+        ? 'hb-loader-compact--large'
+        : 'hb-loader-compact--medium';
   return (
-    <div className="hb-loader-compact" role="status" aria-label={message}>
+    <div
+      className={`hb-loader-compact ${sizeClass}`}
+      role="status"
+      aria-label={message}
+    >
       <CompactSpinner label={message} ariaLabel={message} />
     </div>
   );
@@ -174,9 +211,11 @@ export function SkeletonLoaderWrapper({
     type === 'faq' ||
     (type === 'card' && count != null);
   if (usePublicSkeleton) {
+    const publicCount =
+      type === 'default' ? count ?? lines ?? items ?? 1 : count ?? items ?? 1;
     return (
       <div className="hb-skeleton-loader">
-        <PublicSkeleton type={type} count={count ?? items ?? 1} />
+        <PublicSkeleton type={type} count={publicCount} />
       </div>
     );
   }
@@ -235,10 +274,13 @@ export function LoadingWrapper({
 
   if (loaderType === 'overlay') {
     return (
-      <OverlayLoader
-        show={true}
-        message={loaderProps.message || 'Loading...'}
-      />
+      <>
+        {children}
+        <OverlayLoader
+          show={true}
+          message={loaderProps.message || 'Loading...'}
+        />
+      </>
     );
   }
 
@@ -280,7 +322,13 @@ export function ProgressLoader({
 }) {
   const showProgress = progress != null && progress >= 0 && progress <= 100;
   return (
-    <div className="hb-loader-inline" role="status" aria-label={message}>
+    <div
+      className="hb-loader-inline"
+      role="status"
+      aria-live="polite"
+      aria-label={message}
+      aria-busy={!showProgress}
+    >
       <EnterpriseLoader
         variant="inline"
         size="medium"

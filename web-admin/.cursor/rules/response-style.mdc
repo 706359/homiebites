@@ -1,0 +1,10 @@
+---
+description: Keep responses concise; avoid long numbered summaries
+alwaysApply: true
+---
+
+# Response style
+
+- Do **not** end with long "Summary of changes" blocks (numbered lists, many bullets, step-by-step breakdowns).
+- After edits, give a **short** confirmation (one or two sentences) or say "Done." when enough.
+- Prefer brief over exhaustive.

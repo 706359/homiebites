@@ -326,7 +326,7 @@ const TopNav = ({
                         onClick={() => handleSearch(search)}
                       >
                         <Icon name="clock-rotate-left" />
-                        {search}
+                        <span>{search}</span>
                       </button>
                     ))}
                   </div>
@@ -346,7 +346,7 @@ const TopNav = ({
                       }}
                     >
                       <Icon name={action.icon} />
-                      {action.label}
+                      <span>{action.label}</span>
                     </button>
                   ))}
                 </div>

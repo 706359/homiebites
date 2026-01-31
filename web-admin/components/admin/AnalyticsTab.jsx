@@ -850,7 +850,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
             <div className="stat-card">
               <Icon name="rupee-sign" />
               <div>
-                <h3>₹{formatCurrency(keyMetrics.totalRevenue)}</h3>
+                <h3>₹ {formatCurrency(keyMetrics.totalRevenue)}</h3>
                 <p>Total Revenue</p>
                 {keyMetrics.growthRate !== 0 && (
                   <p className="stat-card-subtitle">
@@ -876,7 +876,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                 className="icon-color-warning"
               />
               <div>
-                <h3>₹{formatCurrency(keyMetrics.pendingAmount)}</h3>
+                <h3>₹ {formatCurrency(keyMetrics.pendingAmount)}</h3>
                 <p>Pending Payments</p>
                 <p className="stat-card-subtitle">
                   {keyMetrics.pendingOrdersCount}{' '}
@@ -895,14 +895,14 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
             <div className="stat-card">
               <Icon name="chart-line" className="icon-color-success" />
               <div>
-                <h3>₹{formatCurrency(keyMetrics.avgOrderValue)}</h3>
+                <h3>₹ {formatCurrency(keyMetrics.avgOrderValue)}</h3>
                 <p>Avg Order Value</p>
               </div>
             </div>
             <div className="stat-card">
               <Icon name="chart-line" className="stat-card-icon-success" />
               <div>
-                <h3>₹{formatCurrency(keyMetrics.profitStats.profit)}</h3>
+                <h3>₹ {formatCurrency(keyMetrics.profitStats.profit)}</h3>
                 <p>Profit After Expenses</p>
                 <p className="stat-card-subtitle">
                   {keyMetrics.profitStats.profitMarginPercent.toFixed(1)}%
@@ -993,7 +993,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                                 <div className="revenue-trend-bar-value-wrap">
                                   {month.revenue > 0 && (
                                     <span className="revenue-trend-bar-value">
-                                      ₹{formatNumberIndian(month.revenue)}
+                                      ₹ {formatNumberIndian(month.revenue)}
                                     </span>
                                   )}
                                 </div>
@@ -1015,7 +1015,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                     <div className="revenue-trend-summary">
                       Peak:{' '}
                       <span className="revenue-trend-summary-value">
-                        ₹{formatCurrency(peakMonth.revenue)}
+                        ₹ {formatCurrency(peakMonth.revenue)}
                       </span>
                       <span className="revenue-trend-summary-month">
                         ({peakMonth.month})
@@ -1072,7 +1072,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                                 {area.address}
                               </span>
                               <span className="analytics-top-areas-card-revenue">
-                                ₹{formatCurrency(area.revenue)}
+                                ₹ {formatCurrency(area.revenue)}
                               </span>
                             </div>
                             <div className="analytics-top-areas-bar-wrap">
@@ -1143,7 +1143,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                               {trend.mode}
                             </span>
                             <span className="font-bold text-accent text-lg">
-                              ₹{formatCurrency(trend.amount)} (
+                              ₹ {formatCurrency(trend.amount)} (
                               {percentage.toFixed(2)}%)
                             </span>
                           </div>
@@ -1380,7 +1380,7 @@ const AnalyticsTab = ({ orders = [], loading = false, onViewDayDetails }) => {
                                     : '—'}
                                 </td>
                                 <td className="analytics-td-grand-total">
-                                  ₹{formatCurrency(data.grandTotal)}
+                                  ₹ {formatCurrency(data.grandTotal)}
                                 </td>
                                 <td className="analytics-td-trend">
                                   <span

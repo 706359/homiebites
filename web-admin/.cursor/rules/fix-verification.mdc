@@ -1,0 +1,12 @@
+---
+description: Never claim a fix works without verification; prefer root-cause fixes over overrides
+alwaysApply: true
+---
+
+# Fix verification and approach
+
+- **Do not** say "it should work now", "it is fixed", or "the buttons should now turn orange" (or similar) unless the user has confirmed it works. Prefer: "Here’s what I changed; please check if it’s fixed."
+- **Prefer root-cause fixes** over layering overrides: e.g. remove a conflicting class or fix the source of the wrong style instead of adding more `!important` or specificity elsewhere.
+- When the user says "still not fixed" or "it’s still not working", treat it as "the approach is wrong" and consider a different fix (e.g. change markup or remove the conflicting rule), not only another override.
+- For CSS conflicts: consider removing the class that triggers the unwanted rule (e.g. don’t use `btn-ghost` on section-link buttons) so the wrong rule never applies.
+- **Section-link buttons**: Use `btn btn-small btn-section-link` only. Do NOT add `btn-ghost`. Styling lives in `styles/globals.css` (default grey, hover/active orange #c45c2d / #b04f25).

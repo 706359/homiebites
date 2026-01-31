@@ -12,6 +12,8 @@ const MenuPriceTab = ({
   showNotification,
   showConfirmation,
   loading = false,
+  activeTab = '',
+  dataRefreshKey = 0,
 }) => {
   const [menuItems, setMenuItems] = useState([]);
   const [originalCategories, setOriginalCategories] = useState([]);
@@ -43,6 +45,17 @@ const MenuPriceTab = ({
   const [filterCategory, setFilterCategory] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
+  const [statusDisplay, setStatusDisplay] = useState('full'); // 'full' | 'short'
+
+  const statusLabel = (isAvailable) =>
+    statusDisplay === 'short'
+      ? isAvailable
+        ? 'Avail'
+        : 'Unavail'
+      : isAvailable
+        ? 'Available'
+        : 'Unavailable';
 
   useAutoKeyboardAvoidance({
     containerSelector: '.modal-container, .menu-price-tab',
@@ -100,9 +113,114 @@ const MenuPriceTab = ({
     ],
   };
 
+  const getImageUrl = (item) => {
+    const publicImages = [
+      'Amritsarichhole.png',
+      'Curd.jpg',
+      'DeliciousAaluParatha.jpg',
+      'DesiThali.jpeg',
+      'food.jpeg',
+      'FullTiffin.jpg',
+      'hero.jpeg',
+      'kadhipakora.jpg',
+      'kalachana.jpg',
+      'lobhiya.jpg',
+      'lokikofte.jpg',
+      'MoondDalKhichdi.jpg',
+      'rajma.jpg',
+      'RotiSabji.png',
+      'veg-thali.png',
+      'VegThali.png',
+    ];
+    const normalizeName = (name) =>
+      name
+        ?.toLowerCase()
+        .replace(/\s+/g, '')
+        .replace(/[^a-z0-9]/g, '')
+        .trim() ?? '';
+    const findImageByName = (itemName) => {
+      if (!itemName) return '/food.jpeg';
+      const normalizedName = normalizeName(itemName);
+      const commonMatches = {
+        chhole: 'Amritsarichhole.png',
+        chole: 'Amritsarichhole.png',
+        chana: 'kalachana.jpg',
+        dal: 'MoondDalKhichdi.jpg',
+        khichdi: 'MoondDalKhichdi.jpg',
+        paratha: 'DeliciousAaluParatha.jpg',
+        aloo: 'DeliciousAaluParatha.jpg',
+        thali: 'DesiThali.jpeg',
+        rajma: 'rajma.jpg',
+        roti: 'RotiSabji.png',
+        sabji: 'RotiSabji.png',
+        pakora: 'kadhipakora.jpg',
+        kadhi: 'kadhipakora.jpg',
+        lobhiya: 'lobhiya.jpg',
+        kofta: 'lokikofte.jpg',
+        koofte: 'lokikofte.jpg',
+        curd: 'Curd.jpg',
+        dahi: 'Curd.jpg',
+        tiffin: 'FullTiffin.jpg',
+        full: 'FullTiffin.jpg',
+      };
+      for (const [key, imageFile] of Object.entries(commonMatches)) {
+        if (normalizedName.includes(key)) return '/' + imageFile;
+      }
+      for (const image of publicImages) {
+        const imageName = normalizeName(
+          image.replace(/\.(jpg|jpeg|png)$/i, '')
+        );
+        if (
+          imageName.includes(normalizedName) ||
+          normalizedName.includes(imageName)
+        ) {
+          return '/' + image;
+        }
+      }
+      return '/food.jpeg';
+    };
+    if (item.imageUrl?.trim()) {
+      const imageUrl = item.imageUrl.trim();
+      if (imageUrl.startsWith('/')) return imageUrl;
+      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+        return imageUrl;
+      }
+      return '/' + imageUrl;
+    }
+    return findImageByName(item.name);
+  };
+
+  const categoryColors = {
+    Lunch: {
+      bg: 'var(--admin-accent-light, rgba(68, 144, 49, 0.1))',
+      color: 'var(--admin-accent, #449031)',
+      icon: 'utensils',
+    },
+    Dinner: {
+      bg: 'var(--admin-secondary-light, rgba(196, 92, 45, 0.1))',
+      color: 'var(--admin-secondary, #c45c2d)',
+      icon: 'moon',
+    },
+    Breakfast: {
+      bg: 'rgba(255, 193, 7, 0.1)',
+      color: '#ffc107',
+      icon: 'sun',
+    },
+  };
+
+  const getCategoryStyle = (item) =>
+    categoryColors[item.category] || {
+      bg: 'var(--admin-glass-border)',
+      color: 'var(--admin-text-secondary)',
+      icon: 'circle',
+    };
+
+  // Load when tab is shown or when global refresh runs (so table updates without needing delete/edit)
   useEffect(() => {
-    loadMenuItems();
-  }, []);
+    if (activeTab === 'menuPrice') {
+      loadMenuItems();
+    }
+  }, [activeTab, dataRefreshKey]);
 
   useEffect(() => {
     // Ensure predefined categories are always present
@@ -755,8 +873,12 @@ const MenuPriceTab = ({
     }
 
     filtered.sort((a, b) => {
-      let aVal, bVal;
+      /* Available on top first */
+      const aAvail = a.isAvailable !== false ? 1 : 0;
+      const bAvail = b.isAvailable !== false ? 1 : 0;
+      if (bAvail !== aAvail) return bAvail - aAvail;
 
+      let aVal, bVal;
       switch (sortBy) {
         case 'price':
           aVal = parseFloat(a.price || 0);
@@ -1334,6 +1456,34 @@ const MenuPriceTab = ({
                 </button>
               )}
               <div className="action-buttons-group menu-price-actions">
+                <div
+                  className="view-mode-toggle"
+                  role="group"
+                  aria-label="View mode"
+                >
+                  <button
+                    type="button"
+                    className={`btn btn-ghost btn-icon btn-small ${
+                      viewMode === 'grid' ? 'active' : ''
+                    }`}
+                    onClick={() => setViewMode('grid')}
+                    title="Grid view"
+                    aria-pressed={viewMode === 'grid'}
+                  >
+                    <Icon name="th" />
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn btn-ghost btn-icon btn-small ${
+                      viewMode === 'list' ? 'active' : ''
+                    }`}
+                    onClick={() => setViewMode('list')}
+                    title="List / table view"
+                    aria-pressed={viewMode === 'list'}
+                  >
+                    <Icon name="table" />
+                  </button>
+                </div>
                 <button
                   className="btn btn-primary btn-small"
                   onClick={() => {
@@ -1412,243 +1562,306 @@ const MenuPriceTab = ({
             </div>
           ) : (
             <div className="kitchen-tab-body-inner">
-              <div className="dashboard-grid-layout menu-items-grid">
-                {filteredMenuItems.map((item, index) => {
-                  const getImageUrl = () => {
-                    const publicImages = [
-                      'Amritsarichhole.png',
-                      'Curd.jpg',
-                      'DeliciousAaluParatha.jpg',
-                      'DesiThali.jpeg',
-                      'food.jpeg',
-                      'FullTiffin.jpg',
-                      'hero.jpeg',
-                      'kadhipakora.jpg',
-                      'kalachana.jpg',
-                      'lobhiya.jpg',
-                      'lokikofte.jpg',
-                      'MoondDalKhichdi.jpg',
-                      'rajma.jpg',
-                      'RotiSabji.png',
-                      'veg-thali.png',
-                      'VegThali.png',
-                    ];
-
-                    const normalizeName = (name) => {
-                      return name
-                        .toLowerCase()
-                        .replace(/\s+/g, '')
-                        .replace(/[^a-z0-9]/g, '')
-                        .trim();
-                    };
-
-                    const findImageByName = (itemName) => {
-                      if (!itemName) return '/food.jpeg';
-                      const normalizedName = normalizeName(itemName);
-
-                      const commonMatches = {
-                        chhole: 'Amritsarichhole.png',
-                        chole: 'Amritsarichhole.png',
-                        chana: 'kalachana.jpg',
-                        dal: 'MoondDalKhichdi.jpg',
-                        khichdi: 'MoondDalKhichdi.jpg',
-                        paratha: 'DeliciousAaluParatha.jpg',
-                        aloo: 'DeliciousAaluParatha.jpg',
-                        thali: 'DesiThali.jpeg',
-                        rajma: 'rajma.jpg',
-                        roti: 'RotiSabji.png',
-                        sabji: 'RotiSabji.png',
-                        pakora: 'kadhipakora.jpg',
-                        kadhi: 'kadhipakora.jpg',
-                        lobhiya: 'lobhiya.jpg',
-                        kofta: 'lokikofte.jpg',
-                        koofte: 'lokikofte.jpg',
-                        curd: 'Curd.jpg',
-                        dahi: 'Curd.jpg',
-                        tiffin: 'FullTiffin.jpg',
-                        full: 'FullTiffin.jpg',
-                      };
-
-                      for (const [key, imageFile] of Object.entries(
-                        commonMatches
-                      )) {
-                        if (normalizedName.includes(key)) {
-                          return '/' + imageFile;
-                        }
-                      }
-
-                      for (const image of publicImages) {
-                        const imageName = normalizeName(
-                          image.replace(/\.(jpg|jpeg|png)$/i, '')
-                        );
-                        if (
-                          imageName.includes(normalizedName) ||
-                          normalizedName.includes(imageName)
-                        ) {
-                          return '/' + image;
-                        }
-                      }
-
-                      return '/food.jpeg';
-                    };
-
-                    if (item.imageUrl && item.imageUrl.trim() !== '') {
-                      const imageUrl = item.imageUrl.trim();
-                      if (imageUrl.startsWith('/')) {
-                        return imageUrl;
-                      } else if (
-                        imageUrl.startsWith('http://') ||
-                        imageUrl.startsWith('https://')
-                      ) {
-                        return imageUrl;
-                      } else {
-                        return '/' + imageUrl;
-                      }
-                    }
-
-                    return findImageByName(item.name);
-                  };
-
-                  const categoryColors = {
-                    Lunch: {
-                      bg: 'var(--admin-accent-light, rgba(68, 144, 49, 0.1))',
-                      color: 'var(--admin-accent, #449031)',
-                      icon: 'utensils',
-                    },
-                    Dinner: {
-                      bg: 'var(--admin-secondary-light, rgba(196, 92, 45, 0.1))',
-                      color: 'var(--admin-secondary, #c45c2d)',
-                      icon: 'moon',
-                    },
-                    Breakfast: {
-                      bg: 'rgba(255, 193, 7, 0.1)',
-                      color: '#ffc107',
-                      icon: 'sun',
-                    },
-                  };
-
-                  const categoryStyle = categoryColors[item.category] || {
-                    bg: 'var(--admin-glass-border)',
-                    color: 'var(--admin-text-secondary)',
-                    icon: 'circle',
-                  };
-
-                  return (
-                    <div
-                      key={`${item.id}-${item.name}-${index}`}
-                      className="menu-item-card-enhanced"
-                    >
-                      <div className="menu-item-card-header">
-                        <div className="menu-item-image-wrapper">
-                          <img
-                            src={getImageUrl()}
-                            alt={item.name || 'Menu item'}
-                            className="menu-item-image"
-                            onError={(e) => {
-                              const fallback = '/food.jpeg';
-                              if (
-                                e.target.src !== fallback &&
-                                !e.target.src.includes(fallback)
-                              ) {
-                                e.target.src = fallback;
-                              }
-                            }}
-                            loading="lazy"
-                          />
-                          <div className="menu-item-availability-badge">
-                            <Icon
-                              name={
-                                item.isAvailable
-                                  ? 'check-circle'
-                                  : 'times-circle'
-                              }
+              {viewMode === 'grid' && (
+                <div className="dashboard-grid-layout menu-items-grid">
+                  {filteredMenuItems.map((item, index) => {
+                    const categoryStyle = getCategoryStyle(item);
+                    return (
+                      <div
+                        key={`${item.id}-${item.name}-${index}`}
+                        className="menu-item-card-enhanced"
+                      >
+                        <div className="menu-item-card-header">
+                          <div className="menu-item-image-wrapper">
+                            <img
+                              src={getImageUrl(item)}
+                              alt={item.name || 'Menu item'}
+                              className="menu-item-image"
+                              onError={(e) => {
+                                const fallback = '/food.jpeg';
+                                if (
+                                  e.target.src !== fallback &&
+                                  !e.target.src.includes(fallback)
+                                ) {
+                                  e.target.src = fallback;
+                                }
+                              }}
+                              loading="lazy"
                             />
-                            <span>
-                              {item.isAvailable ? 'Available' : 'Unavailable'}
-                            </span>
+                            <div
+                              className="menu-item-availability-badge menu-item-availability-badge-clickable"
+                              role="button"
+                              tabIndex={0}
+                              onClick={() =>
+                                setStatusDisplay((s) =>
+                                  s === 'full' ? 'short' : 'full'
+                                )
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  setStatusDisplay((s) =>
+                                    s === 'full' ? 'short' : 'full'
+                                  );
+                                }
+                              }}
+                              title="Click to toggle full/short status label"
+                              aria-label={`Status: ${item.isAvailable ? 'Available' : 'Unavailable'}. Click to toggle label length.`}
+                            >
+                              <Icon
+                                name={
+                                  item.isAvailable
+                                    ? 'check-circle'
+                                    : 'times-circle'
+                                }
+                              />
+                              <span>{statusLabel(item.isAvailable)}</span>
+                            </div>
+                            <div className="menu-item-category-badge">
+                              <Icon name={categoryStyle.icon} />
+                              <span>{item.category || 'Uncategorized'}</span>
+                            </div>
                           </div>
-                          <div className="menu-item-category-badge">
-                            <Icon name={categoryStyle.icon} />
-                            <span>{item.category || 'Uncategorized'}</span>
+                        </div>
+
+                        <div className="menu-item-card-body">
+                          <div className="menu-item-title-section">
+                            <h3 className="menu-item-title">{item.name}</h3>
+                            {item.description && (
+                              <p className="menu-item-description">
+                                {item.description}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="menu-item-footer">
+                            <div className="menu-item-price-section">
+                              <span className="menu-item-price-label">
+                                Price
+                              </span>
+                              <div className="menu-item-price">
+                                <span className="menu-item-price-symbol">
+                                  ₹
+                                </span>
+                                <span className="menu-item-price-amount">
+                                  {formatCurrency(item.price || 0)}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="menu-item-actions">
+                              <button
+                                className="menu-item-action-btn menu-item-action-view"
+                                onClick={() => openViewModal(item)}
+                                title="View Item Details"
+                              >
+                                <Icon name="eye" />
+                              </button>
+                              <button
+                                className={`menu-item-action-btn menu-item-action-toggle ${
+                                  togglingItemId === item.id ? 'toggling' : ''
+                                }`}
+                                onClick={() => handleToggleAvailability(item)}
+                                disabled={togglingItemId === item.id}
+                                title={
+                                  togglingItemId === item.id
+                                    ? 'Changing status...'
+                                    : item.isAvailable
+                                      ? 'Mark as Unavailable'
+                                      : 'Mark as Available'
+                                }
+                              >
+                                {togglingItemId === item.id ? (
+                                  <Spinner type="circular" size="small" />
+                                ) : (
+                                  <Icon
+                                    name={
+                                      item.isAvailable
+                                        ? 'toggle-on'
+                                        : 'toggle-off'
+                                    }
+                                  />
+                                )}
+                              </button>
+                              <button
+                                className="menu-item-action-btn menu-item-action-edit"
+                                onClick={() => openEditModal(item)}
+                                title="Edit Item"
+                              >
+                                <Icon name="pencil" />
+                              </button>
+                              <button
+                                className="menu-item-action-btn menu-item-action-delete"
+                                onClick={() => openDeleteModal(item)}
+                                title="Delete Item"
+                              >
+                                <Icon name="trash" />
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
-
-                      <div className="menu-item-card-body">
-                        <div className="menu-item-title-section">
-                          <h3 className="menu-item-title">{item.name}</h3>
-                          {item.description && (
-                            <p className="menu-item-description">
-                              {item.description}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="menu-item-footer">
-                          <div className="menu-item-price-section">
-                            <span className="menu-item-price-label">Price</span>
-                            <div className="menu-item-price">
-                              <span className="menu-item-price-symbol">₹</span>
-                              <span className="menu-item-price-amount">
-                                {formatCurrency(item.price || 0)}
+                    );
+                  })}
+                </div>
+              )}
+              {viewMode === 'list' && (
+                <div className="orders-table-container">
+                  <table className="menu-items-table orders-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">S.No.</th>
+                        <th scope="col">Image</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredMenuItems.map((item, index) => {
+                        const categoryStyle = getCategoryStyle(item);
+                        return (
+                          <tr key={`${item.id}-${item.name}-${index}`}>
+                            <td className="menu-items-table-cell-sno">
+                              {index + 1}
+                            </td>
+                            <td className="menu-items-table-cell-image">
+                              <img
+                                src={getImageUrl(item)}
+                                alt={item.name || 'Menu item'}
+                                className="menu-items-table-thumb"
+                                onError={(e) => {
+                                  if (e.target.src !== '/food.jpeg') {
+                                    e.target.src = '/food.jpeg';
+                                  }
+                                }}
+                                loading="lazy"
+                              />
+                            </td>
+                            <td className="menu-items-table-cell-name">
+                              <span className="menu-items-table-name">
+                                {item.name}
                               </span>
-                            </div>
-                          </div>
-                          <div className="menu-item-actions">
-                            <button
-                              className="menu-item-action-btn menu-item-action-view"
-                              onClick={() => openViewModal(item)}
-                              title="View Item Details"
-                            >
-                              <Icon name="eye" />
-                            </button>
-                            <button
-                              className={`menu-item-action-btn menu-item-action-toggle ${
-                                togglingItemId === item.id ? 'toggling' : ''
-                              }`}
-                              onClick={() => handleToggleAvailability(item)}
-                              disabled={togglingItemId === item.id}
-                              title={
-                                togglingItemId === item.id
-                                  ? 'Changing status...'
-                                  : item.isAvailable
-                                    ? 'Mark as Unavailable'
-                                    : 'Mark as Available'
-                              }
-                            >
-                              {togglingItemId === item.id ? (
-                                <Spinner type="circular" size="small" />
-                              ) : (
+                              {item.description && (
+                                <span className="menu-items-table-desc">
+                                  {item.description}
+                                </span>
+                              )}
+                            </td>
+                            <td className="menu-items-table-cell-category">
+                              <span
+                                className="menu-items-table-category-badge"
+                                style={{
+                                  background: categoryStyle.bg,
+                                  color: categoryStyle.color,
+                                }}
+                              >
+                                <Icon name={categoryStyle.icon} />
+                                {item.category || 'Uncategorized'}
+                              </span>
+                            </td>
+                            <td className="menu-items-table-cell-price">
+                              <span className="menu-item-price">
+                                <span className="menu-item-price-symbol">
+                                  ₹
+                                </span>
+                                <span className="menu-item-price-amount">
+                                  {formatCurrency(item.price || 0)}
+                                </span>
+                              </span>
+                            </td>
+                            <td className="menu-items-table-cell-status">
+                              <span
+                                className={`menu-items-table-status menu-items-table-status-clickable ${
+                                  item.isAvailable ? 'available' : 'unavailable'
+                                }`}
+                                role="button"
+                                tabIndex={0}
+                                onClick={() =>
+                                  setStatusDisplay((s) =>
+                                    s === 'full' ? 'short' : 'full'
+                                  )
+                                }
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    setStatusDisplay((s) =>
+                                      s === 'full' ? 'short' : 'full'
+                                    );
+                                  }
+                                }}
+                                title="Click to toggle full/short status label"
+                                aria-label={`Status: ${item.isAvailable ? 'Available' : 'Unavailable'}. Click to toggle label length.`}
+                              >
                                 <Icon
                                   name={
                                     item.isAvailable
-                                      ? 'toggle-on'
-                                      : 'toggle-off'
+                                      ? 'check-circle'
+                                      : 'times-circle'
                                   }
                                 />
-                              )}
-                            </button>
-                            <button
-                              className="menu-item-action-btn menu-item-action-edit"
-                              onClick={() => openEditModal(item)}
-                              title="Edit Item"
-                            >
-                              <Icon name="pencil" />
-                            </button>
-                            <button
-                              className="menu-item-action-btn menu-item-action-delete"
-                              onClick={() => openDeleteModal(item)}
-                              title="Delete Item"
-                            >
-                              <Icon name="trash" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                                {statusLabel(item.isAvailable)}
+                              </span>
+                            </td>
+                            <td className="menu-items-table-cell-actions">
+                              <div className="menu-item-actions">
+                                <button
+                                  className="menu-item-action-btn menu-item-action-view"
+                                  onClick={() => openViewModal(item)}
+                                  title="View Item Details"
+                                >
+                                  <Icon name="eye" />
+                                </button>
+                                <button
+                                  className={`menu-item-action-btn menu-item-action-toggle ${
+                                    togglingItemId === item.id ? 'toggling' : ''
+                                  }`}
+                                  onClick={() => handleToggleAvailability(item)}
+                                  disabled={togglingItemId === item.id}
+                                  title={
+                                    togglingItemId === item.id
+                                      ? 'Changing status...'
+                                      : item.isAvailable
+                                        ? 'Mark as Unavailable'
+                                        : 'Mark as Available'
+                                  }
+                                >
+                                  {togglingItemId === item.id ? (
+                                    <Spinner type="circular" size="small" />
+                                  ) : (
+                                    <Icon
+                                      name={
+                                        item.isAvailable
+                                          ? 'toggle-on'
+                                          : 'toggle-off'
+                                      }
+                                    />
+                                  )}
+                                </button>
+                                <button
+                                  className="menu-item-action-btn menu-item-action-edit"
+                                  onClick={() => openEditModal(item)}
+                                  title="Edit Item"
+                                >
+                                  <Icon name="pencil" />
+                                </button>
+                                <button
+                                  className="menu-item-action-btn menu-item-action-delete"
+                                  onClick={() => openDeleteModal(item)}
+                                  title="Delete Item"
+                                >
+                                  <Icon name="trash" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -2110,7 +2323,7 @@ const MenuPriceTab = ({
                   <div className="menu-view-detail-row">
                     <span className="menu-view-label">Price:</span>
                     <span className="menu-view-value">
-                      ₹{formatCurrency(selectedItem.price || 0)}
+                      ₹ {formatCurrency(selectedItem.price || 0)}
                     </span>
                   </div>
                   <div className="menu-view-detail-row">
@@ -2144,9 +2357,26 @@ const MenuPriceTab = ({
                   <div className="menu-view-detail-row">
                     <span className="menu-view-label">Status:</span>
                     <span
-                      className={`menu-view-status ${
+                      className={`menu-view-status menu-view-status-clickable ${
                         selectedItem.isAvailable ? 'available' : 'unavailable'
                       }`}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() =>
+                        setStatusDisplay((s) =>
+                          s === 'full' ? 'short' : 'full'
+                        )
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setStatusDisplay((s) =>
+                            s === 'full' ? 'short' : 'full'
+                          );
+                        }
+                      }}
+                      title="Click to toggle full/short status label"
+                      aria-label={`Status: ${selectedItem.isAvailable ? 'Available' : 'Unavailable'}. Click to toggle label length.`}
                     >
                       <Icon
                         name={
@@ -2155,9 +2385,7 @@ const MenuPriceTab = ({
                             : 'times-circle'
                         }
                       />
-                      <span>
-                        {selectedItem.isAvailable ? 'Available' : 'Unavailable'}
-                      </span>
+                      <span>{statusLabel(selectedItem.isAvailable)}</span>
                     </span>
                   </div>
                   {selectedItem.imageUrl && selectedItem.imageUrl.trim() && (

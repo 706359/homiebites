@@ -158,6 +158,7 @@ const AdminDashboard = () => {
   const [showOverdueFilter, setShowOverdueFilter] = useState(false);
   const [dateFilterForOrders, setDateFilterForOrders] = useState(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [dataRefreshKey, setDataRefreshKey] = useState(0);
 
   const {
     orders,
@@ -1844,7 +1845,12 @@ const AdminDashboard = () => {
 
       case 'menuPrice':
         return (
-          <MenuPriceTab {...commonProps} showConfirmation={showConfirmation} />
+          <MenuPriceTab
+            {...commonProps}
+            showConfirmation={showConfirmation}
+            activeTab={activeTab}
+            dataRefreshKey={dataRefreshKey}
+          />
         );
 
       case 'offers':
@@ -1913,6 +1919,7 @@ const AdminDashboard = () => {
         if (promises.length > 0) {
           await Promise.all(promises);
         }
+        setDataRefreshKey((k) => k + 1);
       } catch (error) {
         console.error('Error refreshing data:', error);
       }

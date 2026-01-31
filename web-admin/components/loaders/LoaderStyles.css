@@ -34,13 +34,16 @@
   box-sizing: border-box;
 }
 
-/* Inline loader container (tabs, sections) */
+/* Inline loader container (tabs, sections) – always centered in viewport */
 .hb-loader-inline {
+  position: fixed;
+  inset: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 50vh;
-  padding: 24px;
+  z-index: 9998;
   width: 100%;
   box-sizing: border-box;
 }
@@ -51,6 +54,16 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+}
+
+.hb-loader-compact--small {
+  padding: 4px 8px;
+}
+.hb-loader-compact--medium {
+  padding: 8px 12px;
+}
+.hb-loader-compact--large {
+  padding: 12px 16px;
 }
 
 /* Spinner variants (used by Spinner component) */
@@ -65,7 +78,7 @@
   width: 24px;
   height: 24px;
   border: 2px solid var(--admin-border, #e5e7eb);
-  border-top-color: var(--admin-accent, #449031);
+  border-top-color: var(--admin-accent, var(--primary-green, #449031));
   border-radius: 50%;
   animation: hb-spin 0.8s linear infinite;
 }
@@ -74,7 +87,7 @@
   width: 24px;
   height: 24px;
   border: 2px solid var(--admin-border, #e5e7eb);
-  border-top-color: var(--admin-accent, #449031);
+  border-top-color: var(--admin-accent, var(--primary-green, #449031));
   border-radius: 50%;
   animation: hb-spin 0.8s linear infinite;
 }
@@ -88,7 +101,7 @@
 .hb-spinner-dots span {
   width: 6px;
   height: 6px;
-  background: var(--admin-accent, #449031);
+  background: var(--admin-accent, var(--primary-green, #449031));
   border-radius: 50%;
   animation: hb-bounce 1.4s ease-in-out infinite both;
 }
@@ -127,7 +140,7 @@
 .hb-progress-bar-fill {
   height: 100%;
   min-width: 0;
-  background: var(--admin-accent, #449031);
+  background: var(--admin-accent, var(--primary-green, #449031));
   border-radius: 999px;
   transition: width 0.3s ease-out;
 }

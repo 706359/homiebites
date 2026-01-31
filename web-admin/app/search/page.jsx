@@ -88,7 +88,7 @@ export default function SearchPage() {
                   >
                     <div className="result-category">{item.category}</div>
                     <h3 className="result-name">{item.name}</h3>
-                    <div className="result-price">₹{item.price}</div>
+                    <div className="result-price">₹ {item.price}</div>
                   </div>
                 ))}
               </div>

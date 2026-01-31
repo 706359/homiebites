@@ -215,7 +215,7 @@ const FinancialSummaryTab = ({
               <Icon name="indian-rupee-sign" />
             </div>
             <div className="stat-card-content">
-              <h3>₹{formatCurrency(financialData.totalRevenue)}</h3>
+              <h3>₹ {formatCurrency(financialData.totalRevenue)}</h3>
               <p>Total Revenue</p>
               <p className="stat-card-subtitle">
                 {financialData.totalOrders} orders
@@ -227,7 +227,7 @@ const FinancialSummaryTab = ({
               <Icon name="check-circle" />
             </div>
             <div className="stat-card-content">
-              <h3>₹{formatCurrency(financialData.paidRevenue)}</h3>
+              <h3>₹ {formatCurrency(financialData.paidRevenue)}</h3>
               <p>Paid Revenue</p>
               <p className="stat-card-subtitle">
                 {financialData.paidOrders} orders
@@ -239,7 +239,7 @@ const FinancialSummaryTab = ({
               <Icon name="clock" />
             </div>
             <div className="stat-card-content">
-              <h3>₹{formatCurrency(financialData.pendingRevenue)}</h3>
+              <h3>₹ {formatCurrency(financialData.pendingRevenue)}</h3>
               <p>Pending Revenue</p>
               <p className="stat-card-subtitle">
                 {financialData.pendingOrders} orders
@@ -251,7 +251,7 @@ const FinancialSummaryTab = ({
               <Icon name="calculator" />
             </div>
             <div className="stat-card-content">
-              <h3>₹{formatCurrency(financialData.avgOrderValue)}</h3>
+              <h3>₹ {formatCurrency(financialData.avgOrderValue)}</h3>
               <p>Avg Order Value</p>
             </div>
           </div>
@@ -273,7 +273,7 @@ const FinancialSummaryTab = ({
                   <span>Revenue</span>
                 </div>
                 <div className="profit-card-value">
-                  ₹{formatCurrency(financialData.profitStats.revenue)}
+                  ₹ {formatCurrency(financialData.profitStats.revenue)}
                 </div>
               </div>
               <div className="profit-card">
@@ -282,7 +282,7 @@ const FinancialSummaryTab = ({
                   <span>Expenses ({expensePercentage}%)</span>
                 </div>
                 <div className="profit-card-value profit-card-expense">
-                  ₹{formatCurrency(financialData.profitStats.expenses)}
+                  ₹ {formatCurrency(financialData.profitStats.expenses)}
                 </div>
               </div>
               <div className="profit-card profit-card-highlight">
@@ -291,7 +291,7 @@ const FinancialSummaryTab = ({
                   <span>Profit</span>
                 </div>
                 <div className="profit-card-value profit-card-profit">
-                  ₹{formatCurrency(financialData.profitStats.profit)}
+                  ₹ {formatCurrency(financialData.profitStats.profit)}
                 </div>
                 <div className="profit-card-margin">
                   {financialData.profitStats.profitMarginPercent.toFixed(1)}%
@@ -304,7 +304,7 @@ const FinancialSummaryTab = ({
                   <span>Target Profit ({targetProfitMargin}%)</span>
                 </div>
                 <div className="profit-card-value">
-                  ₹{formatCurrency(financialData.profitStats.targetProfit)}
+                  ₹ {formatCurrency(financialData.profitStats.targetProfit)}
                 </div>
                 <div className="profit-card-diff">
                   {financialData.profitStats.profit >=
@@ -359,11 +359,11 @@ const FinancialSummaryTab = ({
                           <strong>{method.method}</strong>
                         </td>
                         <td>{method.count}</td>
-                        <td>₹{formatCurrency(method.revenue)}</td>
+                        <td>₹ {formatCurrency(method.revenue)}</td>
                         <td>{method.paidCount}</td>
-                        <td>₹{formatCurrency(method.paidRevenue)}</td>
+                        <td>₹ {formatCurrency(method.paidRevenue)}</td>
                         <td>{method.pendingCount}</td>
-                        <td>₹{formatCurrency(method.pendingRevenue)}</td>
+                        <td>₹ {formatCurrency(method.pendingRevenue)}</td>
                         <td>
                           <div className="percentage-bar-container">
                             <div
@@ -416,10 +416,10 @@ const FinancialSummaryTab = ({
                       <tr key={idx}>
                         <td>{formatDateMonthDay(new Date(day.date))}</td>
                         <td>{day.orders}</td>
-                        <td>₹{formatCurrency(day.revenue)}</td>
-                        <td>₹{formatCurrency(day.paidRevenue)}</td>
-                        <td>₹{formatCurrency(day.pendingRevenue)}</td>
-                        <td>₹{formatCurrency(avgValue)}</td>
+                        <td>₹ {formatCurrency(day.revenue)}</td>
+                        <td>₹ {formatCurrency(day.paidRevenue)}</td>
+                        <td>₹ {formatCurrency(day.pendingRevenue)}</td>
+                        <td>₹ {formatCurrency(avgValue)}</td>
                       </tr>
                     );
                   })

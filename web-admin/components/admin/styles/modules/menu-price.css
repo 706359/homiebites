@@ -28,6 +28,72 @@
   flex-shrink: 0;
 }
 
+/* View mode toggle (grid / list) */
+.view-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--admin-bg, #ffffff);
+}
+
+.view-mode-toggle .btn {
+  color: var(--admin-text-secondary, #6b7280);
+}
+
+.view-mode-toggle .btn:hover {
+  color: var(--admin-accent, #449031);
+  background: var(--admin-accent-light);
+}
+
+.view-mode-toggle .btn.active {
+  background: var(--admin-accent-light);
+  color: var(--admin-accent, #449031);
+  border-radius: 6px;
+}
+
+/* Clickable status badge – toggle full/short label on click */
+.menu-item-availability-badge-clickable {
+  cursor: pointer;
+}
+
+.menu-item-availability-badge-clickable:hover {
+  opacity: 0.9;
+}
+
+.menu-item-availability-badge-clickable:focus {
+  outline: 2px solid var(--admin-accent, #449031);
+  outline-offset: 2px;
+}
+
+.menu-items-table-status-clickable {
+  cursor: pointer;
+}
+
+.menu-items-table-status-clickable:hover {
+  opacity: 0.9;
+}
+
+.menu-items-table-status-clickable:focus {
+  outline: 2px solid var(--admin-accent, #449031);
+  outline-offset: 2px;
+}
+
+.menu-view-status-clickable {
+  cursor: pointer;
+}
+
+.menu-view-status-clickable:hover {
+  opacity: 0.9;
+}
+
+.menu-view-status-clickable:focus {
+  outline: 2px solid var(--admin-accent, #449031);
+  outline-offset: 2px;
+}
+
 /* Responsive: stack on smaller screens */
 @media (max-width: 1024px) {
   .menu-price-tab .dashboard-header.menu-price-header,
@@ -256,7 +322,7 @@
 .menu-item-price {
   display: flex;
   align-items: baseline;
-  gap: 2px;
+  gap: 8px;
 }
 
 .menu-item-price-symbol {
@@ -327,6 +393,116 @@
 
 .menu-item-action-toggle .lucide-icon-spin {
   color: var(--admin-accent, #449031);
+}
+
+/* Menu Items Table (list view) – base from tables.css; only cell-specific overrides here */
+.menu-items-table-cell-sno {
+  width: 56px;
+  min-width: 56px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--admin-text-secondary, #6b7280);
+  font-size: var(--admin-fs-sm);
+}
+
+.menu-items-table-cell-image {
+  width: 72px;
+  padding-right: 8px;
+}
+
+.menu-items-table-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+.menu-items-table-cell-name {
+  min-width: 180px;
+}
+
+.menu-items-table-name {
+  display: block;
+  font-weight: 600;
+  color: var(--admin-text-primary, #1e293b);
+}
+
+.menu-items-table-desc {
+  display: block;
+  font-size: var(--admin-fs-sm);
+  color: var(--admin-text-secondary, #6b7280);
+  margin-top: 2px;
+  line-height: 1.4;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-items-table-cell-category {
+  white-space: nowrap;
+}
+
+.menu-items-table-category-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: var(--admin-fs-xs);
+  font-weight: 600;
+}
+
+.menu-items-table-cell-price .menu-item-price {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.menu-items-table-cell-price .menu-item-price-amount {
+  font-weight: 700;
+  color: var(--admin-accent, #449031);
+}
+
+.menu-items-table-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: var(--admin-fs-xs);
+  font-weight: 600;
+}
+
+.menu-items-table-status.available {
+  background: var(--admin-accent-light);
+  color: var(--admin-accent, #449031);
+}
+
+.menu-items-table-status.unavailable {
+  background: var(--admin-glass-border);
+  color: var(--admin-text-secondary, #6b7280);
+}
+
+.menu-items-table-cell-actions .menu-item-actions {
+  flex-wrap: nowrap;
+}
+
+@media (max-width: 768px) {
+  .menu-items-table th,
+  .menu-items-table td {
+    padding: 10px 12px;
+    font-size: var(--admin-fs-sm);
+  }
+
+  .menu-items-table-cell-name {
+    min-width: 140px;
+  }
+
+  .menu-items-table-desc {
+    display: none;
+  }
 }
 
 @keyframes spin {

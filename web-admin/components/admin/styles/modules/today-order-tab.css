@@ -134,8 +134,8 @@
 }
 
 .search-wrapper:focus-within {
-  border-color: var(--admin-accent);
-  box-shadow: 0 0 0 4px var(--admin-accent-10);
+  border: 1px solid var(--admin-accent, #449031);
+  box-shadow: none;
 }
 
 .search-icon {
@@ -207,60 +207,9 @@
   min-width: 1000px;
 }
 
-.today-order-table thead {
-  background: var(--admin-bg-secondary);
-  border-bottom: 1px solid var(--admin-border);
-}
-
-.today-order-table th {
-  padding: 16px 20px;
-  text-align: left;
-  font-size: var(--admin-fs-base);
-  font-weight: 500;
-  color: var(--admin-text-primary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-  position: sticky;
-  top: 0;
-  background: var(--admin-bg-secondary);
-  z-index: 10;
-}
-
 .today-order-table th.actions-column {
   text-align: center;
   width: 280px;
-}
-
-.today-order-table tbody tr {
-  border-bottom: 1px solid var(--admin-border);
-  transition: all 0.2s ease;
-}
-
-.today-order-table tbody tr:hover {
-  background: var(--admin-bg-secondary);
-}
-
-.today-order-table tbody tr:last-child {
-  border-bottom: none;
-}
-
-.today-order-table td {
-  padding: 20px;
-  font-size: var(--admin-fs-base);
-  color: var(--admin-text-primary);
-  vertical-align: middle;
-}
-
-/* Equal font-size and font-weight 500 in table columns */
-.today-order-table th *,
-.today-order-table td * {
-  font-size: var(--admin-fs-base);
-  font-weight: 500;
-}
-.today-order-table th,
-.today-order-table td {
-  font-weight: 500;
 }
 
 /* Order ID Cell */

@@ -390,7 +390,7 @@ const CurrentMonthOrdersTab = ({
           <div className="stat-card">
             <Icon name="coins" />
             <div>
-              <h3>₹{formatCurrency(currentMonthStats.revenue)}</h3>
+              <h3>₹ {formatCurrency(currentMonthStats.revenue)}</h3>
               <p>This Month Revenue</p>
             </div>
           </div>
@@ -404,7 +404,7 @@ const CurrentMonthOrdersTab = ({
           <div className="stat-card">
             <Icon name="exclamation-triangle" className="icon-color-warning" />
             <div>
-              <h3>₹{formatCurrency(currentMonthStats.pendingAmount)}</h3>
+              <h3>₹ {formatCurrency(currentMonthStats.pendingAmount)}</h3>
               <p>Pending Payments</p>
               <p className="stat-card-subtitle">
                 {currentMonthStats.pendingCount} orders
@@ -591,8 +591,8 @@ const CurrentMonthOrdersTab = ({
                                 'N/A'}
                             </td>
                             <td>{order.quantity || 1}</td>
-                            <td>₹{formatCurrency(order.unitPrice || 0)}</td>
-                            <td>₹{formatCurrency(getOrderAmount(order))}</td>
+                            <td>₹ {formatCurrency(order.unitPrice || 0)}</td>
+                            <td>₹ {formatCurrency(getOrderAmount(order))}</td>
                             <td>{order.mode || 'N/A'}</td>
                             <td>
                               <select

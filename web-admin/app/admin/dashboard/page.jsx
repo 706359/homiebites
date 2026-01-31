@@ -8,7 +8,6 @@ import NotificationWrapper from '../../../components/admin/NotificationWrapper.j
 import ErrorBoundary from '../../../components/ErrorBoundary';
 import FontSettingsLoader from '../../../components/FontSettingsLoader';
 import { checkSessionAndClearIfExpired } from '../../../lib/auth-admin.js';
-import '../../../styles/globals.css';
 
 export default function AdminDashboardPage() {
   const router = useRouter();

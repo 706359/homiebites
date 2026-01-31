@@ -1440,7 +1440,7 @@ Please confirm. Thank you! 🙏`;
                               {item.name}
                             </span>
                             <span className="add-more-item-price">
-                              ₹{item.price}
+                              ₹ {item.price}
                             </span>
                           </button>
                         ))}
@@ -1511,7 +1511,7 @@ Please confirm. Thank you! 🙏`;
                         </div>
                         <div className="order-item-info">
                           <span className="order-item-price">
-                            ₹{item.price}
+                            ₹ {item.price}
                           </span>
                           {item.category && (
                             <span className="order-item-category">
@@ -1536,7 +1536,7 @@ Please confirm. Thank you! 🙏`;
                 <>
                   <div className="order-summary-row">
                     <span>{t('order.subtotal') || 'Subtotal'}:</span>
-                    <span>₹{getTotalPrice()}</span>
+                    <span>₹ {getTotalPrice()}</span>
                   </div>
                   <div className="order-summary-row">
                     <span>
@@ -1565,7 +1565,7 @@ Please confirm. Thank you! 🙏`;
                       <div className="order-minimum-notice">
                         {(
                           t('order.addMoreForFreeDelivery') ||
-                          'Add ₹{amount} more for free delivery'
+                          'Add ₹ {amount} more for free delivery'
                         ).replace('{amount}', String(100 - getTotalPrice()))}
                       </div>
                     )}
@@ -1736,7 +1736,7 @@ Please confirm. Thank you! 🙏`;
                         borderTop: '1px solid #e5e7eb',
                       }}
                     >
-                      <strong>Total:</strong> ₹{pendingOrderData.grandTotal}
+                      <strong>Total:</strong> ₹ {pendingOrderData.grandTotal}
                     </div>
                   </div>
                 </div>

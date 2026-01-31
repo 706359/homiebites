@@ -680,6 +680,62 @@
   transition: all 0.2s ease;
 }
 
+/* Section-link style: minimal grey text + arrow (same as View All Orders) */
+.notification-dropdown-action.btn-section-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #6b7280 !important;
+  font-weight: 500 !important;
+  padding: 8px 12px !important;
+}
+
+.notification-dropdown-action.btn-section-link [class*='lucide'],
+.notification-dropdown-action.btn-section-link svg {
+  flex-shrink: 0;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.notification-dropdown-action.btn-section-link .section-link-arrow {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  vertical-align: middle;
+}
+
+.notification-dropdown-action.btn-section-link:hover {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #c45c2d !important;
+  transform: none !important;
+}
+
+.notification-dropdown-action.btn-section-link:hover [class*='lucide'],
+.notification-dropdown-action.btn-section-link:hover svg,
+.notification-dropdown-action.btn-section-link:hover .section-link-arrow {
+  color: #c45c2d !important;
+  fill: #c45c2d !important;
+}
+
+.notification-dropdown-action.btn-section-link:active {
+  background: transparent !important;
+  color: #b04f25 !important;
+  transform: none !important;
+}
+
+.notification-dropdown-action.btn-section-link:active [class*='lucide'],
+.notification-dropdown-action.btn-section-link:active svg,
+.notification-dropdown-action.btn-section-link:active .section-link-arrow {
+  color: #b04f25 !important;
+  fill: #b04f25 !important;
+}
+
 .notification-dropdown-action:hover {
   background: var(--admin-accent-hover, #3a7a2a);
   transform: translateY(-1px);

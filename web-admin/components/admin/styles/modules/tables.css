@@ -89,8 +89,8 @@
 
 .action-bar .search-container:focus-within {
   background: var(--admin-bg, #ffffff);
-  border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px var(--admin-accent-10);
+  border: 1px solid var(--admin-accent, #449031);
+  box-shadow: none;
 }
 
 .action-bar .search-icon {
@@ -234,7 +234,8 @@
 .pagination-controls .btn {
   height: 40px;
   min-height: 40px;
-  padding: 0 16px;
+  padding: 0 !important;
+  padding-inline: 18px !important;
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -312,8 +313,8 @@
 
 .pagination-select:focus {
   outline: none;
-  border-color: var(--admin-accent, #449031);
-  box-shadow: 0 0 0 3px var(--admin-accent-10);
+  border: 1px solid var(--admin-accent, #449031);
+  box-shadow: none;
 }
 
 @media (max-width: 480px) {
@@ -355,7 +356,8 @@
     min-width: 0 !important;
     max-width: calc(50% - 4px) !important;
     flex: 1 1 calc(50% - 4px) !important;
-    padding: 8px 12px !important;
+    padding: 8px !important;
+    padding-inline: 18px !important;
     font-size: var(--admin-fs-sm-mid) !important;
     white-space: nowrap !important;
     overflow: hidden !important;
@@ -426,7 +428,13 @@
   border-radius: 0;
 }
 
-.orders-table {
+/* Shared base: all admin tables use the same look */
+.orders-table,
+.menu-items-table,
+.recent-orders-table,
+.today-order-table,
+.analytics-delivery-table,
+.pending-amounts-table {
   width: 100%;
   max-width: 100%;
   min-width: auto;
@@ -441,7 +449,12 @@
   min-width: auto;
 }
 
-.orders-table thead {
+.orders-table thead,
+.menu-items-table thead,
+.recent-orders-table thead,
+.today-order-table thead,
+.analytics-delivery-table thead,
+.pending-amounts-table thead {
   background: #f3f4f6;
   position: sticky;
   top: 0;
@@ -451,11 +464,31 @@
 
 /* Single font-size for all table columns (th + td and their content) */
 .orders-table th,
-.orders-table td {
+.orders-table td,
+.menu-items-table th,
+.menu-items-table td,
+.recent-orders-table th,
+.recent-orders-table td,
+.today-order-table th,
+.today-order-table td,
+.analytics-delivery-table th,
+.analytics-delivery-table td,
+.pending-amounts-table th,
+.pending-amounts-table td {
   font-size: var(--admin-fs-base);
 }
 .orders-table th *,
-.orders-table td * {
+.orders-table td *,
+.menu-items-table th *,
+.menu-items-table td *,
+.recent-orders-table th *,
+.recent-orders-table td *,
+.today-order-table th *,
+.today-order-table td *,
+.analytics-delivery-table th *,
+.analytics-delivery-table td *,
+.pending-amounts-table th *,
+.pending-amounts-table td * {
   font-size: var(--admin-fs-base);
 }
 
@@ -463,7 +496,27 @@
 .orders-table th,
 .orders-table td,
 .orders-table th *,
-.orders-table td * {
+.orders-table td *,
+.menu-items-table th,
+.menu-items-table td,
+.menu-items-table th *,
+.menu-items-table td *,
+.recent-orders-table th,
+.recent-orders-table td,
+.recent-orders-table th *,
+.recent-orders-table td *,
+.today-order-table th,
+.today-order-table td,
+.today-order-table th *,
+.today-order-table td *,
+.analytics-delivery-table th,
+.analytics-delivery-table td,
+.analytics-delivery-table th *,
+.analytics-delivery-table td *,
+.pending-amounts-table th,
+.pending-amounts-table td,
+.pending-amounts-table th *,
+.pending-amounts-table td * {
   font-weight: 500;
 }
 .orders-table .font-semibold,
@@ -472,8 +525,13 @@
   font-weight: 500;
 }
 
-/* Standard: 1% visibility column/row grid for all admin tables */
-.orders-table th {
+/* Standard: column/row grid for all admin tables */
+.orders-table th,
+.menu-items-table th,
+.recent-orders-table th,
+.today-order-table th,
+.analytics-delivery-table th,
+.pending-amounts-table th {
   height: 52px;
   padding: 0 20px;
   text-align: left;
@@ -493,7 +551,12 @@
   vertical-align: middle;
 }
 
-.orders-table th:last-child {
+.orders-table th:last-child,
+.menu-items-table th:last-child,
+.recent-orders-table th:last-child,
+.today-order-table th:last-child,
+.analytics-delivery-table th:last-child,
+.pending-amounts-table th:last-child {
   border-right: none;
 }
 
@@ -511,7 +574,12 @@
   min-width: 100px;
 }
 
-.orders-table td {
+.orders-table td,
+.menu-items-table td,
+.recent-orders-table td,
+.today-order-table td,
+.analytics-delivery-table td,
+.pending-amounts-table td {
   height: 56px;
   padding: 0 20px;
   color: var(--admin-text-primary, #1e293b);
@@ -523,34 +591,54 @@
   text-overflow: ellipsis;
   box-sizing: border-box;
   line-height: 1.5;
-  /* Smooth content updates without visual flicker */
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
-  /* Optimize for content updates */
   contain: layout style;
 }
 
-.orders-table td:last-child {
+.orders-table td:last-child,
+.menu-items-table td:last-child,
+.recent-orders-table td:last-child,
+.today-order-table td:last-child,
+.analytics-delivery-table td:last-child,
+.pending-amounts-table td:last-child {
   border-right: none;
 }
 
-.orders-table tbody tr {
+.orders-table tbody tr,
+.menu-items-table tbody tr,
+.recent-orders-table tbody tr,
+.today-order-table tbody tr,
+.analytics-delivery-table tbody tr,
+.pending-amounts-table tbody tr {
   transition:
     background-color 0.15s ease,
     border-color 0.15s ease;
   border-bottom: 1px solid var(--admin-border, #e2e8f0);
   display: table-row;
   width: 100%;
-  /* Prevent flickering during updates */
   contain: layout style;
-  /* Stable rendering during data updates */
   backface-visibility: hidden;
-  transform: translateZ(0); /* Force GPU acceleration */
+  transform: translateZ(0);
 }
 
-.orders-table tbody tr:last-child td {
+.orders-table tbody tr:last-child td,
+.menu-items-table tbody tr:last-child td,
+.recent-orders-table tbody tr:last-child td,
+.today-order-table tbody tr:last-child td,
+.analytics-delivery-table tbody tr:last-child td,
+.pending-amounts-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+.orders-table tbody tr:hover,
+.menu-items-table tbody tr:hover,
+.recent-orders-table tbody tr:hover,
+.today-order-table tbody tr:hover,
+.analytics-delivery-table tbody tr:hover,
+.pending-amounts-table tbody tr:hover {
+  background: var(--admin-bg-secondary, #f9fafb);
 }
 
 .orders-table tbody tr.table-row-selected {
@@ -627,9 +715,18 @@
   text-align: center;
 }
 
-.order-row-price {
+.order-row-price,
+.order-row-total {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
   font-size: var(--admin-fs-base);
   color: var(--admin-text-primary, #1e293b);
+}
+
+.order-row-price-symbol,
+.order-row-total-symbol {
+  margin-right: 2px;
 }
 
 /* All other order-row-* used in orders-table (total, mode, payment) – 14px (body-sm) */

@@ -539,7 +539,6 @@
   font-weight: 500;
 }
 
-.order-items-loading,
 .order-items-empty {
   padding: 2rem;
   text-align: center;
@@ -972,7 +971,6 @@
     margin-top: 0.625rem;
   }
 
-  .order-items-loading,
   .order-items-empty {
     padding: 1.5rem 1rem;
     font-size: 0.9rem;

@@ -271,7 +271,10 @@ const NotificationDropdown = ({
       aria-modal="false"
     >
       <div className="notification-dropdown-header">
-        <h3 id="notification-dropdown-title" className="notification-dropdown-title">
+        <h3
+          id="notification-dropdown-title"
+          className="notification-dropdown-title"
+        >
           Notifications
         </h3>
         <button
@@ -285,7 +288,10 @@ const NotificationDropdown = ({
         </button>
       </div>
 
-      <div className="notification-dropdown-content" aria-labelledby="notification-dropdown-title">
+      <div
+        className="notification-dropdown-content"
+        aria-labelledby="notification-dropdown-title"
+      >
         {notifications.length === 0 ? (
           <div className="notification-dropdown-empty" role="status">
             <Icon name="bell-slash" aria-hidden="true" />
@@ -293,7 +299,11 @@ const NotificationDropdown = ({
             <span>All caught up!</span>
           </div>
         ) : (
-          <ul className="notification-dropdown-list" role="list" aria-label="Notification list">
+          <ul
+            className="notification-dropdown-list"
+            role="list"
+            aria-label="Notification list"
+          >
             {notifications.map((notification) => (
               <li
                 key={notification.id}
@@ -311,7 +321,10 @@ const NotificationDropdown = ({
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    if (notification.type === 'overdue' && onViewPendingAmounts) {
+                    if (
+                      notification.type === 'overdue' &&
+                      onViewPendingAmounts
+                    ) {
                       onViewPendingAmounts();
                     } else if (onViewOrder && notification.orderId) {
                       onViewOrder(notification.order);
@@ -355,7 +368,7 @@ const NotificationDropdown = ({
           {notifications.some((n) => n.type === 'overdue') && (
             <button
               type="button"
-              className="notification-dropdown-action"
+              className="btn btn-small btn-section-link notification-dropdown-action"
               onClick={() => {
                 if (onViewPendingAmounts) {
                   onViewPendingAmounts();
@@ -365,7 +378,10 @@ const NotificationDropdown = ({
               aria-label="View all pending amounts"
             >
               <Icon name="exclamation-triangle" />
-              View All Pending Amounts
+              View All Pending Amounts{' '}
+              <span className="section-link-arrow" aria-hidden="true">
+                →
+              </span>
             </button>
           )}
         </div>

@@ -470,95 +470,12 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
         <div className="dashboard-main-content">
           <section
             className="dashboard-section-block"
-            aria-labelledby="dashboard-at-a-glance"
-          >
-            <h2
-              id="dashboard-at-a-glance"
-              className="dashboard-section-heading"
-            >
-              At a glance
-            </h2>
-            <div
-              className="dashboard-quick-stats"
-              aria-label="Today, week, month, pending"
-            >
-              <div className="dashboard-quick-stat">
-                <span className="dashboard-quick-stat-label">Today</span>
-                <span className="dashboard-quick-stat-value">
-                  ₹{formatCurrency(todayRevenue)}
-                </span>
-                <span className="dashboard-quick-stat-meta">
-                  {todayOrdersCount} orders
-                </span>
-              </div>
-              <div className="dashboard-quick-stat">
-                <span className="dashboard-quick-stat-label">This week</span>
-                <span className="dashboard-quick-stat-value">
-                  ₹{formatCurrency(thisWeekRevenue)}
-                </span>
-                <span className="dashboard-quick-stat-meta">
-                  {thisWeekOrdersCount} orders
-                </span>
-              </div>
-              <div className="dashboard-quick-stat">
-                <span className="dashboard-quick-stat-label">This month</span>
-                <span className="dashboard-quick-stat-value">
-                  ₹{formatCurrency(thisMonthRevenue)}
-                </span>
-                <span
-                  className={`dashboard-quick-stat-meta ${
-                    monthOverMonthGrowth >= 0
-                      ? 'dashboard-quick-stat-meta--up'
-                      : 'dashboard-quick-stat-meta--down'
-                  }`}
-                >
-                  {thisMonthOrdersCount} orders
-                  {lastMonthRevenue >= 0 && (
-                    <>
-                      {' · '}
-                      {monthOverMonthGrowth >= 0 ? '+' : ''}
-                      {monthOverMonthGrowth.toFixed(0)}% vs last month
-                    </>
-                  )}
-                </span>
-              </div>
-              <div
-                className="dashboard-quick-stat dashboard-quick-stat--pending"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (setActiveTab) setActiveTab('pendingAmounts');
-                }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if ((e.key === 'Enter' || e.key === ' ') && setActiveTab) {
-                    e.preventDefault();
-                    setActiveTab('pendingAmounts');
-                  }
-                }}
-                title="View pending payments"
-              >
-                <span className="dashboard-quick-stat-label">Pending</span>
-                <span className="dashboard-quick-stat-value">
-                  ₹{formatCurrency(allTimeUnpaidAmount)}
-                </span>
-                <span className="dashboard-quick-stat-meta">
-                  {unpaidOrdersCount} orders
-                </span>
-              </div>
-            </div>
-          </section>
-
-          <section
-            className="dashboard-section-block"
             aria-labelledby="dashboard-key-metrics"
           >
             <h2
               id="dashboard-key-metrics"
               className="dashboard-section-heading"
-            >
-              Key metrics
-            </h2>
+            ></h2>
             <div
               className="admin-stats"
               key={`stats-${allTimeTotal}-${allTimeRevenue}-${allTimeUnpaidAmount}`}
@@ -586,7 +503,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
               >
                 <Icon name="rupee-sign" />
                 <div>
-                  <h3>₹{formatCurrency(allTimeRevenue)}</h3>
+                  <h3>₹ {formatCurrency(allTimeRevenue)}</h3>
                   <p>Total Revenue</p>
                   <p
                     className={`stat-card-subtitle ${
@@ -659,7 +576,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                   className="stat-card-icon-warning"
                 />
                 <div>
-                  <h3>₹{formatCurrency(allTimeUnpaidAmount)}</h3>
+                  <h3>₹ {formatCurrency(allTimeUnpaidAmount)}</h3>
                   <p>Pending Payments</p>
                   <p className="stat-card-subtitle">
                     {unpaidOrdersCount}{' '}
@@ -698,19 +615,98 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
               <div className="stat-card">
                 <Icon name="chart-line" className="stat-card-icon-success" />
                 <div>
-                  <h3>₹{formatCurrency(allTimeAvgOrderValue)}</h3>
+                  <h3>₹ {formatCurrency(allTimeAvgOrderValue)}</h3>
                   <p>Avg Order Value</p>
                 </div>
               </div>
               <div className="stat-card">
                 <Icon name="chart-line" className="stat-card-icon-success" />
                 <div>
-                  <h3>₹{formatCurrency(profitStats.profit)}</h3>
+                  <h3>₹ {formatCurrency(profitStats.profit)}</h3>
                   <p>Profit After Expenses</p>
                   <p className="stat-card-subtitle">
                     {profitStats.profitMarginPercent.toFixed(1)}% margin
                   </p>
                 </div>
+              </div>
+            </div>
+          </section>
+
+          <section
+            className="dashboard-section-block"
+            aria-labelledby="dashboard-at-a-glance"
+          >
+            <h2
+              id="dashboard-at-a-glance"
+              className="dashboard-section-heading"
+            ></h2>
+            <div
+              className="dashboard-quick-stats"
+              aria-label="Today, week, month, pending"
+            >
+              <div className="dashboard-quick-stat">
+                <span className="dashboard-quick-stat-label">Today</span>
+                <span className="dashboard-quick-stat-value">
+                  ₹ {formatCurrency(todayRevenue)}
+                </span>
+                <span className="dashboard-quick-stat-meta">
+                  {todayOrdersCount} orders
+                </span>
+              </div>
+              <div className="dashboard-quick-stat">
+                <span className="dashboard-quick-stat-label">This week</span>
+                <span className="dashboard-quick-stat-value">
+                  ₹ {formatCurrency(thisWeekRevenue)}
+                </span>
+                <span className="dashboard-quick-stat-meta">
+                  {thisWeekOrdersCount} orders
+                </span>
+              </div>
+              <div className="dashboard-quick-stat">
+                <span className="dashboard-quick-stat-label">This month</span>
+                <span className="dashboard-quick-stat-value">
+                  ₹ {formatCurrency(thisMonthRevenue)}
+                </span>
+                <span
+                  className={`dashboard-quick-stat-meta ${
+                    monthOverMonthGrowth >= 0
+                      ? 'dashboard-quick-stat-meta--up'
+                      : 'dashboard-quick-stat-meta--down'
+                  }`}
+                >
+                  {thisMonthOrdersCount} orders
+                  {lastMonthRevenue >= 0 && (
+                    <>
+                      {' · '}
+                      {monthOverMonthGrowth >= 0 ? '+' : ''}
+                      {monthOverMonthGrowth.toFixed(0)}% vs last month
+                    </>
+                  )}
+                </span>
+              </div>
+              <div
+                className="dashboard-quick-stat dashboard-quick-stat--pending"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (setActiveTab) setActiveTab('pendingAmounts');
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if ((e.key === 'Enter' || e.key === ' ') && setActiveTab) {
+                    e.preventDefault();
+                    setActiveTab('pendingAmounts');
+                  }
+                }}
+                title="View pending payments"
+              >
+                <span className="dashboard-quick-stat-label">Pending</span>
+                <span className="dashboard-quick-stat-value">
+                  ₹ {formatCurrency(allTimeUnpaidAmount)}
+                </span>
+                <span className="dashboard-quick-stat-meta">
+                  {unpaidOrdersCount} orders
+                </span>
               </div>
             </div>
           </section>
@@ -784,7 +780,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                   <div className="revenue-trend-bar-value-wrap">
                                     {rev > 0 && (
                                       <span className="revenue-trend-bar-value">
-                                        ₹{formatCurrency(month.revenue)}
+                                        ₹ {formatCurrency(month.revenue)}
                                       </span>
                                     )}
                                   </div>
@@ -807,7 +803,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                         <div className="revenue-trend-summary">
                           Peak:{' '}
                           <span className="revenue-trend-summary-value">
-                            ₹{formatCurrency(peakMonth12.revenue)}
+                            ₹ {formatCurrency(peakMonth12.revenue)}
                           </span>
                           <span className="revenue-trend-summary-month">
                             ({peakMonth12.month})
@@ -817,42 +813,74 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                     {setActiveTab && (
                       <button
                         type="button"
-                        className="btn btn-ghost btn-small revenue-trend-cta"
+                        className="btn btn-small btn-section-link revenue-trend-cta"
                         onClick={() => setActiveTab('analytics')}
                       >
-                        See full analytics →
+                        See full analytics{' '}
+                        <span className="section-link-arrow" aria-hidden="true">
+                          →
+                        </span>
                       </button>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Revenue YoY: same card/header/bar style as Top 10 Delivery Areas (analytics-top-areas-full) */}
+              {/* Revenue YoY: unique vertical grouped bar chart + year progress strip */}
               <div className="dashboard-chart-full-width">
-                <div className="dashboard-card widget revenue-trend-card analytics-top-areas-full">
-                  <div className="section-header-with-select analytics-top-areas-full-header">
+                <div className="dashboard-card widget revenue-yoy-card">
+                  {/* Year progress strip: visual “how far through the year” */}
+                  {monthlyRevenueData.length > 0 && (
+                    <div
+                      className="revenue-yoy-progress-strip"
+                      aria-hidden="true"
+                    >
+                      <div className="revenue-yoy-progress-strip-inner">
+                        {monthNames.map((name, i) => {
+                          const isPast =
+                            i < now.getMonth() ||
+                            (i === now.getMonth() && now.getDate() >= 15);
+                          return (
+                            <span
+                              key={name}
+                              className={`revenue-yoy-progress-segment ${
+                                isPast
+                                  ? 'revenue-yoy-progress-segment-filled'
+                                  : ''
+                              }`}
+                              title={`${name} ${now.getFullYear()}`}
+                            />
+                          );
+                        })}
+                      </div>
+                      <span className="revenue-yoy-progress-label">
+                        {now.getMonth() + 1}/12 months
+                      </span>
+                    </div>
+                  )}
+                  <div className="revenue-yoy-header">
                     <h3 className="dashboard-section-title m-0">
                       <Icon name="chart-line" className="icon-opacity" />
                       Revenue (Year-over-Year)
                     </h3>
                     {sortedYears.length > 1 &&
                       monthlyRevenueData.length > 0 && (
-                        <div className="revenue-trend-legend">
+                        <div className="revenue-yoy-legend">
                           {sortedYears.map((year) => {
                             const isCurrentYear = year === now.getFullYear();
                             const isLastYear = year === now.getFullYear() - 1;
                             return (
                               <div
                                 key={year}
-                                className="revenue-trend-legend-item"
+                                className="revenue-yoy-legend-item"
                               >
                                 <span
-                                  className={`revenue-trend-legend-dot ${
+                                  className={`revenue-yoy-legend-dot ${
                                     isCurrentYear
-                                      ? 'revenue-trend-legend-current'
+                                      ? 'revenue-yoy-legend-current'
                                       : isLastYear
-                                        ? 'revenue-trend-legend-last'
-                                        : 'revenue-trend-legend-other'
+                                        ? 'revenue-yoy-legend-last'
+                                        : 'revenue-yoy-legend-other'
                                   }`}
                                 />
                                 <span>{year}</span>
@@ -862,107 +890,140 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                         </div>
                       )}
                   </div>
-                  <div className="analytics-top-areas-full-body">
-                  {monthlyRevenueData.length > 0 ? (
-                    <div className="revenue-trend-chart">
-                      <div className="revenue-trend-y-axis">
-                        {(() => {
-                          const maxRev = Math.max(
-                            ...monthlyRevenueData.flatMap((m) =>
-                              Object.values(m.years).map((y) => y.revenue)
-                            ),
-                            1
-                          );
-                          const steps = [0, 0.25, 0.5, 0.75, 1];
-                          return steps.map((pct, i) => (
-                            <div key={i} className="revenue-trend-y-tick">
-                              ₹{formatCurrency(Math.round(pct * maxRev))}
-                            </div>
-                          ));
-                        })()}
-                      </div>
-                      <div className="revenue-trend-bars-wrap">
-                        {monthlyRevenueData.map((monthData, idx) => {
-                          const maxRevenue = Math.max(
-                            ...monthlyRevenueData.flatMap((m) =>
-                              Object.values(m.years).map((y) => y.revenue)
-                            ),
-                            1
-                          );
-                          const yearEntries = sortedYears
-                            .map((year) => ({
-                              year,
-                              ...(monthData.years[year] || {
-                                revenue: 0,
-                                orders: 0,
-                              }),
-                            }))
-                            .sort((a, b) => a.year - b.year);
+                  <div className="revenue-yoy-body">
+                    {monthlyRevenueData.length > 0 ? (
+                      <>
+                        <div className="revenue-yoy-chart">
+                          <div className="revenue-yoy-y-axis">
+                            {(() => {
+                              const maxRev = Math.max(
+                                ...monthlyRevenueData.flatMap((m) =>
+                                  Object.values(m.years).map((y) => y.revenue)
+                                ),
+                                1
+                              );
+                              const steps = [1, 0.75, 0.5, 0.25, 0];
+                              return steps.map((pct, i) => (
+                                <div key={i} className="revenue-yoy-y-tick">
+                                  ₹ {formatCurrency(Math.round(pct * maxRev))}
+                                </div>
+                              ));
+                            })()}
+                          </div>
+                          <div className="revenue-yoy-bars-container">
+                            {monthlyRevenueData.map((monthData, idx) => {
+                              const maxRevenue = Math.max(
+                                ...monthlyRevenueData.flatMap((m) =>
+                                  Object.values(m.years).map((y) => y.revenue)
+                                ),
+                                1
+                              );
+                              const yearEntries = sortedYears
+                                .map((year) => ({
+                                  year,
+                                  ...(monthData.years[year] || {
+                                    revenue: 0,
+                                    orders: 0,
+                                  }),
+                                }))
+                                .sort((a, b) => a.year - b.year);
+                              const currentYearRev =
+                                monthData.years[now.getFullYear()]?.revenue ??
+                                0;
+                              const lastYearRev =
+                                monthData.years[now.getFullYear() - 1]
+                                  ?.revenue ?? 0;
+                              const growthPct =
+                                lastYearRev > 0
+                                  ? ((currentYearRev - lastYearRev) /
+                                      lastYearRev) *
+                                    100
+                                  : currentYearRev > 0
+                                    ? 100
+                                    : null;
 
-                          return (
-                            <div key={idx} className="revenue-trend-month-row">
-                              <div className="revenue-trend-month-label">
-                                {monthData.monthName}
-                              </div>
-                              <div className="revenue-trend-month-bars">
-                                {yearEntries.map(
-                                  ({ year, revenue, orders }) => {
-                                    const widthPct =
-                                      maxRevenue > 0
-                                        ? (revenue / maxRevenue) * 100
-                                        : 0;
-                                    const isCurrentYear =
-                                      year === now.getFullYear();
-                                    const isLastYear =
-                                      year === now.getFullYear() - 1;
-                                    return (
-                                      <div
-                                        key={year}
-                                        className="revenue-trend-bar-row"
-                                        title={`${monthData.monthName} ${year}: ₹${formatCurrency(revenue)} (${orders} orders)`}
-                                      >
-                                        <span className="revenue-trend-year-tag">
-                                          {String(year).slice(-2)}
-                                        </span>
-                                        <div className="revenue-trend-bar-track">
+                              return (
+                                <div
+                                  key={idx}
+                                  className="revenue-yoy-month-group"
+                                  title={`${monthData.monthName}: ${yearEntries
+                                    .map(
+                                      (e) =>
+                                        `${e.year} ₹ ${formatCurrency(e.revenue)}`
+                                    )
+                                    .join(', ')}`}
+                                >
+                                  <div className="revenue-yoy-month-bars">
+                                    {yearEntries.map(
+                                      ({ year, revenue, orders }) => {
+                                        const heightPct =
+                                          maxRevenue > 0
+                                            ? (revenue / maxRevenue) * 100
+                                            : 0;
+                                        const isCurrentYear =
+                                          year === now.getFullYear();
+                                        const isLastYear =
+                                          year === now.getFullYear() - 1;
+                                        return (
                                           <div
-                                            className={`revenue-trend-bar-fill ${
-                                              isCurrentYear
-                                                ? 'revenue-trend-bar-current'
-                                                : isLastYear
-                                                  ? 'revenue-trend-bar-last'
-                                                  : 'revenue-trend-bar-other'
-                                            }`}
-                                            style={{ width: `${widthPct}%` }}
-                                          />
-                                        </div>
-                                        <span className="revenue-trend-value">
-                                          ₹{formatCurrency(revenue)}
-                                        </span>
+                                            key={year}
+                                            className="revenue-yoy-bar-wrap"
+                                            title={`${monthData.monthName} ${year}: ₹ ${formatCurrency(revenue)} (${orders} orders)`}
+                                          >
+                                            <div
+                                              className={`revenue-yoy-bar ${
+                                                isCurrentYear
+                                                  ? 'revenue-yoy-bar-current'
+                                                  : isLastYear
+                                                    ? 'revenue-yoy-bar-last'
+                                                    : 'revenue-yoy-bar-other'
+                                              }`}
+                                              style={{
+                                                height: `${heightPct}%`,
+                                              }}
+                                            />
+                                          </div>
+                                        );
+                                      }
+                                    )}
+                                  </div>
+                                  <div className="revenue-yoy-month-label">
+                                    {monthData.monthName}
+                                  </div>
+                                  {growthPct !== null &&
+                                    sortedYears.length >= 2 && (
+                                      <div
+                                        className={`revenue-yoy-growth ${
+                                          growthPct >= 0
+                                            ? 'revenue-yoy-growth-up'
+                                            : 'revenue-yoy-growth-down'
+                                        }`}
+                                        title={`YoY: ${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}%`}
+                                      >
+                                        {growthPct >= 0 ? '+' : ''}
+                                        {growthPct.toFixed(0)}%
                                       </div>
-                                    );
-                                  }
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
+                                    )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="revenue-trend-empty">
+                        <Icon
+                          name="chart-line"
+                          className="revenue-trend-empty-icon"
+                        />
+                        <p className="revenue-trend-empty-title">
+                          No revenue data available
+                        </p>
+                        <p className="revenue-trend-empty-desc">
+                          Start adding orders to see your revenue trends
+                        </p>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="revenue-trend-empty">
-                      <Icon
-                        name="chart-line"
-                        className="revenue-trend-empty-icon"
-                      />
-                      <p className="revenue-trend-empty-title">
-                        No revenue data available
-                      </p>
-                      <p className="revenue-trend-empty-desc">
-                        Start adding orders to see your revenue trends
-                      </p>
-                    </div>
-                  )}
+                    )}
                   </div>
                 </div>
               </div>
@@ -988,7 +1049,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                   </h3>
                   <button
                     type="button"
-                    className="btn btn-ghost btn-small"
+                    className="btn btn-small btn-section-link"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -997,7 +1058,10 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                       }
                     }}
                   >
-                    View All Orders →
+                    View All Orders{' '}
+                    <span className="section-link-arrow" aria-hidden="true">
+                      →
+                    </span>
                   </button>
                 </div>
                 <div className="dashboard-card widget">
@@ -1031,7 +1095,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                                   'N/A'}
                               </td>
                               <td>{order.quantity || 1}</td>
-                              <td>₹{formatCurrency(getOrderAmount(order))}</td>
+                              <td>₹ {formatCurrency(getOrderAmount(order))}</td>
                               <td>{order.mode || 'N/A'}</td>
                               <td>
                                 <span
