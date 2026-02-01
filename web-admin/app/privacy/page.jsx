@@ -16,15 +16,16 @@ export default function PrivacyPolicyPage() {
   };
 
   return (
-    <div className="page-layout">
+    <div className="legal-page">
       <Header onOrderClick={openOrderModal} />
-      <main className="page-main" id="main-content" tabIndex="-1">
-        <div className="page-content">
-          <h1>Privacy Policy</h1>
-          <p className="page-content__updated">
+      <main id="main-content" tabIndex="-1">
+        <div className="legal-hero">
+          <h1 className="legal-hero-title">Privacy Policy</h1>
+          <p className="legal-hero-updated">
             Last Updated: {new Date().toLocaleDateString()}
           </p>
-
+        </div>
+        <div className="legal-content">
           <section>
             <h2>1. Introduction</h2>
             <p>

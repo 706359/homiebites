@@ -19,8 +19,10 @@ const TopNav = ({
   onNewOrder,
   onRefresh,
   orders = [],
+  reviews = [],
   onViewOrder,
   onViewPendingAmounts,
+  onViewReviews,
 }) => {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
@@ -260,6 +262,7 @@ const TopNav = ({
           {/* Notification Dropdown */}
           <NotificationDropdown
             orders={orders}
+            reviews={reviews}
             isOpen={showNotificationDropdown}
             onClose={() => setShowNotificationDropdown(false)}
             onViewOrder={(order) => {
@@ -274,6 +277,13 @@ const TopNav = ({
                 onViewPendingAmounts();
               } else {
                 setActiveTab('pendingAmounts');
+              }
+            }}
+            onViewReviews={() => {
+              if (onViewReviews) {
+                onViewReviews();
+              } else {
+                setActiveTab('reviews');
               }
             }}
           />

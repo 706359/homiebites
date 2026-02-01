@@ -491,12 +491,21 @@ const Gallery = () => {
     return '/food.jpeg';
   };
 
-  // Map items to main categories (Breakfast, Lunch, Dinner, Lunch & Dinner) and subcategories
-  // Items are categorized by their category field, which should be one of: Breakfast, Lunch, Dinner, Lunch & Dinner
+  // Map items to main categories (All time, Fast Food, Breakfast, Lunch, Dinner, Lunch & Dinner) and subcategories
+  // Items are categorized by their category field
   // Subcategories are determined by package names like "Mix & Match Tiffin", "Full Tiffin", etc.
   const categorizedItems = useMemo(() => {
-    const mainCategories = ['Breakfast', 'Lunch', 'Dinner', 'Lunch & Dinner'];
+    const mainCategories = [
+      'All time',
+      'Fast Food',
+      'Breakfast',
+      'Lunch',
+      'Dinner',
+      'Lunch & Dinner',
+    ];
     const result = {
+      'All time': {},
+      'Fast Food': {},
       Breakfast: {},
       Lunch: {},
       Dinner: {},
@@ -505,6 +514,15 @@ const Gallery = () => {
 
     // Common subcategory patterns to detect from item names
     const subcategoryPatterns = [
+      { keywords: ['snack', 'namkeen', 'chips'], name: 'Snacks' },
+      { keywords: ['beverage', 'drink', 'juice', 'cold', 'soda'], name: 'Beverages' },
+      { keywords: ['quick', 'bite'], name: 'Quick Bites' },
+      { keywords: ['chai', 'coffee', 'tea'], name: 'Chai & Coffee' },
+      { keywords: ['burger'], name: 'Burgers' },
+      { keywords: ['pizza'], name: 'Pizzas' },
+      { keywords: ['sandwich'], name: 'Sandwiches' },
+      { keywords: ['fries', 'sides'], name: 'Fries & Sides' },
+      { keywords: ['wrap', 'roll'], name: 'Wraps & Rolls' },
       {
         keywords: ['mix', 'match', '&'],
         name: 'Mix & Match Tiffin',
@@ -595,7 +613,14 @@ const Gallery = () => {
 
   // Get main categories that have items
   const mainCategories = useMemo(() => {
-    return ['Breakfast', 'Lunch', 'Dinner', 'Lunch & Dinner'].filter(
+    return [
+      'All time',
+      'Fast Food',
+      'Breakfast',
+      'Lunch',
+      'Dinner',
+      'Lunch & Dinner',
+    ].filter(
       (cat) =>
         categorizedItems[cat] && Object.keys(categorizedItems[cat]).length > 0
     );

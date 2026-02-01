@@ -174,9 +174,13 @@ export const getFilteredOrdersByDate = (
       try {
         if (!order) return false;
 
-        const orderDate = parseOrderDate(
-          order.date || order.order_date || order.orderDate || null
-        );
+        const dateValue =
+          order.date ??
+          order.order_date ??
+          order.orderDate ??
+          order.createdAt ??
+          null;
+        const orderDate = parseOrderDate(dateValue);
         if (!orderDate) return false;
 
         orderDate.setHours(0, 0, 0, 0);

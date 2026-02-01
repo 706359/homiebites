@@ -312,13 +312,12 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
       }
     }
     const trend = [];
+    const anchor = new Date(mostRecentDate);
+    anchor.setDate(1);
+    anchor.setHours(0, 0, 0, 0);
     for (let i = 11; i >= 0; i--) {
-      const date = new Date(mostRecentDate);
-      date.setMonth(date.getMonth() - i);
-      date.setDate(1);
-      date.setHours(0, 0, 0, 0);
-      const nextMonth = new Date(date);
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      const date = new Date(anchor.getFullYear(), anchor.getMonth() - i, 1, 0, 0, 0, 0);
+      const nextMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1, 0, 0, 0, 0);
       const monthOrders = orders.filter((o) => {
         try {
           const orderDate = parseOrderDate(o.date || o.order_date || null);

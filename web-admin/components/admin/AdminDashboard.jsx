@@ -240,9 +240,14 @@ const AdminDashboard = () => {
       }
     }).length;
 
+    // 3. Unapproved reviews (matching NotificationDropdown)
+    const reviewCount = Array.isArray(reviews)
+      ? reviews.filter((r) => r.isApproved === false).length
+      : 0;
+
     // Return total count (matching what NotificationDropdown will show)
-    return overdueCount + websiteOrdersCount;
-  }, [orders]);
+    return overdueCount + websiteOrdersCount + reviewCount;
+  }, [orders, reviews]);
 
   // Helper function for color conversion
   const hexToRgb = (hex) => {
@@ -1984,6 +1989,7 @@ const AdminDashboard = () => {
             }}
             onRefresh={handleRefresh}
             orders={orders}
+            reviews={reviews}
             onViewOrder={(order) => {
               if (order && order._id) {
                 handleViewOrder(order._id);
@@ -1992,6 +1998,7 @@ const AdminDashboard = () => {
               }
             }}
             onViewPendingAmounts={handleViewPendingAmounts}
+            onViewReviews={() => setActiveTab('reviews')}
           />
 
           <Suspense fallback={null}>

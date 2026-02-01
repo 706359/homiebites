@@ -646,6 +646,22 @@ html.admin-active .login-page-wrapper .btn {
     font-size: var(--admin-fs-base) !important;
   }
 
+  /* Dashboard: allow cards to shrink so layout doesn't overflow */
+  .admin-content:has(.dashboard-with-sidebar) .stat-card[role='button'],
+  .admin-content:has(.dashboard-with-sidebar) .stat-card[tabindex='0'],
+  .admin-content:has(.dashboard-with-sidebar) .dashboard-quick-stat {
+    min-width: 0 !important;
+    min-height: 44px !important;
+  }
+
+  .admin-content:has(.dashboard-with-sidebar) .admin-stats,
+  .admin-content:has(.dashboard-with-sidebar) .dashboard-quick-stats,
+  .admin-content:has(.dashboard-with-sidebar) .dashboard-charts-container,
+  .admin-content:has(.dashboard-with-sidebar) .revenue-trend-chart,
+  .admin-content:has(.dashboard-with-sidebar) .revenue-trend-bars-row {
+    min-width: 0 !important;
+  }
+
   .admin-dashboard input:not([type='checkbox']):not([type='radio']),
   .admin-dashboard select,
   .admin-dashboard textarea {
@@ -723,7 +739,6 @@ html.admin-active .login-page-wrapper .btn {
     box-sizing: border-box;
   }
 
-  /* Allow specific elements to scroll horizontally if needed */
   .admin-dashboard .orders-table-container,
   .admin-dashboard table {
     max-width: 100% !important;

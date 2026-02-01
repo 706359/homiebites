@@ -497,13 +497,16 @@
     min-width: 0 !important;
   }
 
+  /* Single column key metrics so cards are readable and don't overflow */
   .dashboard-main-content .admin-stats {
     min-width: 0 !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
   }
 
   .dashboard-main-content .admin-stats .stat-card {
     min-width: 0 !important;
-    padding: var(--admin-space-sm, 12px) !important;
+    padding: 10px 12px !important;
   }
 
   .dashboard-main-content .admin-stats .stat-card h3 {
@@ -536,7 +539,44 @@
 
   .dashboard-charts-container .dashboard-card.widget,
   .dashboard-charts-container .dashboard-card.revenue-trend-card {
-    padding: 14px 12px !important;
+    padding: 12px 10px !important;
+  }
+
+  /* Quick stats: single column, compact */
+  .dashboard-quick-stats {
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .dashboard-quick-stat {
+    padding: 10px 12px !important;
+    min-width: 0 !important;
+  }
+
+  .dashboard-quick-stat-label {
+    font-size: var(--admin-fs-2xs, 0.6875rem) !important;
+  }
+
+  .dashboard-quick-stat-value {
+    font-size: var(--admin-fs-sm, 0.8125rem) !important;
+  }
+
+  .dashboard-quick-stat-meta {
+    font-size: var(--admin-fs-2xs, 0.6875rem) !important;
+  }
+
+  /* Section headings smaller */
+  .dashboard-section-heading {
+    font-size: var(--admin-fs-2xs, 0.6875rem) !important;
+    margin-bottom: 6px !important;
+  }
+
+  .dashboard-with-sidebar {
+    gap: var(--admin-space-lg, 18px) !important;
+  }
+
+  .dashboard-main-content {
+    gap: var(--admin-space-lg, 18px) !important;
   }
 }
 

@@ -19,6 +19,17 @@ const MenuPriceTab = ({
   const [originalCategories, setOriginalCategories] = useState([]);
   // Predefined categories from menuData.js
   const predefinedCategories = [
+    'All time',
+    'Fast Food',
+    'Snacks',
+    'Beverages',
+    'Quick Bites',
+    'Chai & Coffee',
+    'Burgers',
+    'Pizzas',
+    'Sandwiches',
+    'Fries & Sides',
+    'Wraps & Rolls',
     'Breakfast',
     'Lunch',
     'Dinner',
@@ -73,11 +84,31 @@ const MenuPriceTab = ({
     subcategory: '',
   });
 
-  // Main categories (Breakfast, Lunch, Dinner, Lunch & Dinner)
-  const mainCategories = ['Breakfast', 'Lunch', 'Dinner', 'Lunch & Dinner'];
+  // Main categories (Breakfast, Lunch, Dinner, Lunch & Dinner, All time, Fast Food)
+  const mainCategories = [
+    'All time',
+    'Fast Food',
+    'Breakfast',
+    'Lunch',
+    'Dinner',
+    'Lunch & Dinner',
+  ];
 
   // Subcategories for each main category
   const subcategoriesByMainCategory = {
+    'All time': [
+      'Snacks',
+      'Beverages',
+      'Quick Bites',
+      'Chai & Coffee',
+    ],
+    'Fast Food': [
+      'Burgers',
+      'Pizzas',
+      'Sandwiches',
+      'Fries & Sides',
+      'Wraps & Rolls',
+    ],
     Breakfast: [
       'Mix & Match Tiffin',
       'Full Tiffin',

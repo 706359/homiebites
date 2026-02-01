@@ -16,15 +16,16 @@ export default function TermsOfServicePage() {
   };
 
   return (
-    <div className="page-layout">
+    <div className="legal-page">
       <Header onOrderClick={openOrderModal} />
-      <main className="page-main" id="main-content" tabIndex="-1">
-        <div className="page-content">
-          <h1>Terms of Service</h1>
-          <p className="page-content__updated">
+      <main id="main-content" tabIndex="-1">
+        <div className="legal-hero">
+          <h1 className="legal-hero-title">Terms of Service</h1>
+          <p className="legal-hero-updated">
             Last Updated: {new Date().toLocaleDateString()}
           </p>
-
+        </div>
+        <div className="legal-content">
           <section>
             <h2>1. Acceptance of Terms</h2>
             <p>

@@ -5,6 +5,7 @@ import { useAutoKeyboardAvoidance } from '../hooks/useKeyboardAvoidance';
 import api from '../lib/api';
 import { getWhatsAppLink } from '../lib/businessConstants';
 import { getFirstError, hasValidationErrors } from '../lib/formValidation';
+import { getSocietyFlatSuggestions } from '../lib/societyFlats';
 import { InlineLoader } from './loaders/LoaderComponents';
 import './OrderModal.css';
 import Icon from './ui/Icon.jsx';
@@ -542,7 +543,7 @@ const OrderModal = ({ isOpen, onClose }) => {
     return trimmed;
   };
 
-  // Get address suggestions instantly from cache (no API call needed)
+  // Get address suggestions: society flats (all towers) + cached/API addresses
   const getAddressSuggestions = (query) => {
     const searchQuery = query ? query.trim() : '';
 
@@ -554,29 +555,46 @@ const OrderModal = ({ isOpen, onClose }) => {
       return;
     }
 
-    // Use cached addresses for instant suggestions
+    // Society flat suggestions (TowerBlock-Floor-Flat: A1-1-1, B2-19-4, F4-19-6, etc.)
+    const societyMatches = getSocietyFlatSuggestions(searchQuery, 20);
+    const societySet = new Set(
+      societyMatches.map((s) => s.trim().toUpperCase())
+    );
+
+    // Cached addresses from orders (may include names)
     const cachedAddresses = allAddressesRef.current;
+    let cachedFiltered = [];
     if (cachedAddresses.length > 0) {
-      const filtered = getCachedAddressSuggestions(
+      cachedFiltered = getCachedAddressSuggestions(
         searchQuery,
         cachedAddresses
       );
+    }
 
-      if (filtered.length > 0) {
-        // Store full addresses (with names) for selection
-        setAddressSuggestionsFull(filtered);
-        // Extract only address part (remove names) for display
-        const addressesOnly = filtered.map((addr) => extractAddressOnly(addr));
-        setAddressSuggestions(addressesOnly);
-        setShowAddressSuggestions(true);
-      } else {
-        setAddressSuggestions([]);
-        setAddressSuggestionsFull([]);
-        setShowAddressSuggestions(false);
+    // Merge: society flats first, then cached addresses not already covered by society flat
+    const displayList = [...societyMatches];
+    const fullList = [...societyMatches];
+    for (const addr of cachedFiltered) {
+      const addrOnly = extractAddressOnly(addr);
+      const normalized = addrOnly.trim().toUpperCase();
+      if (normalized && !societySet.has(normalized)) {
+        displayList.push(addrOnly);
+        fullList.push(addr);
+        societySet.add(normalized);
       }
-    } else {
+    }
+
+    if (displayList.length > 0) {
+      setAddressSuggestionsFull(fullList);
+      setAddressSuggestions(displayList);
+      setShowAddressSuggestions(true);
+    } else if (cachedAddresses.length === 0) {
       // Cache not loaded yet, fetch from API as fallback
       fetchAddressSuggestionsFromAPI(query);
+    } else {
+      setAddressSuggestions([]);
+      setAddressSuggestionsFull([]);
+      setShowAddressSuggestions(false);
     }
   };
 
@@ -874,22 +892,38 @@ const OrderModal = ({ isOpen, onClose }) => {
     const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
     const preferredTimeFormatted = `${hour12}:${minutes} ${ampm}`;
 
+    const modeLabel =
+      deliveryMode === 'pickup'
+        ? 'Mode'
+        : deliveryMode === 'outside'
+          ? 'Mode'
+          : 'Delivery';
+    const addressLine =
+      deliveryMode === 'pickup' ? '' : `  •  *Address:* ${addressText}`;
+    const slotLine =
+      deliveryMode === 'home'
+        ? `*Slot:* ${timeLabel}  •  *Preferred:* ${preferredTimeFormatted} ±10 min`
+        : `*Preferred:* ${preferredTimeFormatted} ±10 min`;
+    const deliveryLine =
+      deliveryMode === 'pickup'
+        ? ''
+        : deliveryCharge > 0
+          ? `  •  *Delivery:* ₹${deliveryCharge}`
+          : '  •  *Delivery:* FREE';
+
     const message = `🍽️ *NEW ORDER*
 
 *Customer:* ${customerName}
-*${deliveryMode === 'pickup' ? 'Pickup' : deliveryMode === 'outside' ? 'Pickup' : 'Delivery'} Mode:* ${deliveryModeText}
-${deliveryMode === 'pickup' ? '' : `*Address:* ${addressText}`}
+*${modeLabel}:* ${deliveryModeText}${addressLine}
 
 *Date:* ${formattedDate}
-${deliveryMode === 'home' ? `*Time Slot:* ${timeLabel}` : ''}
-*Preferred Time:* ${preferredTimeFormatted} (±10 minutes)
+${slotLine}
 
 *Items:*
 ${selectedItems.map((item) => `• ${item}`).join('\n')}
 
-*Total:* ₹${totalAmount}
-${deliveryMode === 'pickup' ? '' : deliveryCharge > 0 ? `*Delivery:* ₹${deliveryCharge}` : '*Delivery:* FREE'}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*Total:* ₹${totalAmount}${deliveryLine}
+━━━━━━━━━━━━━━━━━━
 *Grand Total: ₹${grandTotal}*
 
 Please confirm. Thank you! 🙏`;
@@ -1096,14 +1130,10 @@ Please confirm. Thank you! 🙏`;
               )}
             </div>
             {/* 2. Address */}
-            {(deliveryMode === 'home' || deliveryMode === 'outside') && (
+            {deliveryMode === 'home' && (
               <div className="form-group address-autocomplete-wrapper">
                 <label>
-                  {deliveryMode === 'outside'
-                    ? t('order.originalAddress') ||
-                      'Original Address (for reference)'
-                    : t('order.deliveryAddress') || 'Delivery Address'}{' '}
-                  *
+                  {t('order.deliveryAddress') || 'Delivery Address'} *
                 </label>
                 <div className="address-input-container">
                   <textarea
@@ -1176,19 +1206,6 @@ Please confirm. Thank you! 🙏`;
                     {validationErrors.deliveryAddress}
                   </span>
                 )}
-                {deliveryMode === 'outside' && (
-                  <p
-                    className="helper-text"
-                    style={{
-                      marginTop: '4px',
-                      fontSize: 'var(--admin-fs-sm, 12px)',
-                      color: '#666',
-                    }}
-                  >
-                    {t('order.outsideAddressHelper') ||
-                      'Note: Please provide your original address for reference. Order will be handed over at the main gate of Panchsheel Greens-1 only (no home delivery for outside orders).'}
-                  </p>
-                )}
               </div>
             )}
             {/* 3. Delivery Mode */}
@@ -1228,23 +1245,6 @@ Please confirm. Thank you! 🙏`;
                 >
                   <Icon name="walking" />
                   {t('order.pickup') || 'Self-Pickup'}
-                </button>
-                <button
-                  type="button"
-                  className={`btn btn-ghost ${deliveryMode === 'outside' ? 'active' : ''}`}
-                  onClick={() => {
-                    if (!kitchenStatus.isOpen) return;
-                    setDeliveryMode('outside');
-                    setValidationErrors((prev) => ({
-                      ...prev,
-                      minimumOrder: undefined,
-                      deliveryMode: undefined,
-                    }));
-                  }}
-                  disabled={!kitchenStatus.isOpen}
-                >
-                  <Icon name="gate" />
-                  {t('order.outsideDelivery') || 'Outside Panchsheel Greens-1'}
                 </button>
               </div>
               {validationErrors.deliveryMode && (

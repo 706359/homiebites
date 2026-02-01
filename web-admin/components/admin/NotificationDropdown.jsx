@@ -24,17 +24,26 @@ function getTimeAgo(date) {
   return `${Math.floor(days / 30)} month${Math.floor(days / 30) > 1 ? 's' : ''} ago`;
 }
 
+function starRating(rating) {
+  if (rating == null) return '—';
+  const n = Math.min(5, Math.max(1, Math.round(Number(rating))));
+  return `${n}${String.fromCodePoint(0x2b50)}`; // n + ⭐
+}
+
 const NotificationDropdown = ({
   orders = [],
+  reviews = [],
   isOpen,
   onClose,
   onViewOrder,
   onViewPendingAmounts,
+  onViewReviews,
 }) => {
   const dropdownRef = useRef(null);
 
   // Ensure orders is an array
   const ordersArray = Array.isArray(orders) ? orders : [];
+  const reviewsArray = Array.isArray(reviews) ? reviews : [];
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -135,12 +144,16 @@ const NotificationDropdown = ({
       order.deliveryAddress || order.customerAddress || order.address || 'N/A';
     const amount = getOrderAmount(order);
 
+    const customerName =
+      order.customerName || order.customer_name || address.split(',')[0]?.trim() || 'Customer';
     notifications.push({
       id: `overdue-${order._id || order.orderId}`,
       type: 'overdue',
+      alertTypeLabel: 'Payment pending',
       icon: 'exclamation-triangle',
       title: 'Payment Overdue',
       message: `Order #${order.orderId || 'N/A'} from ${address}`,
+      summary: `${customerName} (${formatCurrency(amount)})`,
       details: `${formatCurrency(amount)} • ${daysPending} days pending`,
       timeAgo,
       orderId: order._id || order.orderId,
@@ -218,12 +231,16 @@ const NotificationDropdown = ({
       order.deliveryAddress || order.customerAddress || order.address || 'N/A';
     const amount = getOrderAmount(order);
 
+    const customerName =
+      order.customerName || order.customer_name || address.split(',')[0]?.trim() || 'Customer';
     notifications.push({
       id: `website-${order._id || order.orderId}`,
       type: 'website',
+      alertTypeLabel: 'New order',
       icon: 'globe',
       title: 'New Website Order',
       message: `Order #${order.orderId || 'N/A'} from ${address}`,
+      summary: `${customerName} (${formatCurrency(amount)})`,
       details: `${formatCurrency(amount)} • ${order.mode || 'N/A'} • ${order.status || 'N/A'}`,
       timeAgo,
       orderId: order._id || order.orderId,
@@ -231,11 +248,39 @@ const NotificationDropdown = ({
     });
   });
 
-  // Sort: overdue first, then by time
+  // 3. Reviews needing response (unapproved)
+  const unapprovedReviews = reviewsArray
+    .filter((r) => r.isApproved === false)
+    .slice(0, 5)
+    .map((r) => {
+      const createdAt = r.createdAt ? new Date(r.createdAt) : null;
+      return { review: r, createdAt };
+    })
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+  unapprovedReviews.forEach(({ review, createdAt }) => {
+    const timeAgo = getTimeAgo(createdAt);
+    const name = review.userName?.trim() || 'Customer';
+    const ratingStr = starRating(review.rating);
+    notifications.push({
+      id: `review-${review._id}`,
+      type: 'review',
+      alertTypeLabel: 'Review needs response',
+      icon: 'message-square',
+      title: 'Review needs response',
+      message: review.comment ? `${review.comment.slice(0, 60)}${review.comment.length > 60 ? '…' : ''}` : 'New review',
+      summary: `${name} (${ratingStr})`,
+      details: ratingStr,
+      timeAgo,
+      review,
+    });
+  });
+
   notifications.sort((a, b) => {
-    if (a.type === 'overdue' && b.type !== 'overdue') return -1;
-    if (a.type !== 'overdue' && b.type === 'overdue') return 1;
-    return 0;
+    const order = { overdue: 0, review: 1, website: 2 };
+    const ai = order[a.type] ?? 2;
+    const bi = order[b.type] ?? 2;
+    return ai - bi;
   });
 
   // Debug: Log final notifications count
@@ -313,6 +358,8 @@ const NotificationDropdown = ({
                 onClick={() => {
                   if (notification.type === 'overdue' && onViewPendingAmounts) {
                     onViewPendingAmounts();
+                  } else if (notification.type === 'review' && onViewReviews) {
+                    onViewReviews();
                   } else if (onViewOrder && notification.orderId) {
                     onViewOrder(notification.order);
                   }
@@ -326,6 +373,8 @@ const NotificationDropdown = ({
                       onViewPendingAmounts
                     ) {
                       onViewPendingAmounts();
+                    } else if (notification.type === 'review' && onViewReviews) {
+                      onViewReviews();
                     } else if (onViewOrder && notification.orderId) {
                       onViewOrder(notification.order);
                     }
@@ -338,23 +387,26 @@ const NotificationDropdown = ({
                 </div>
                 <div className="notification-item-content">
                   <div className="notification-item-header">
-                    <h4 className="notification-item-title">
-                      {notification.title}
-                    </h4>
+                    <span
+                      className={`notification-item-alert-type notification-item-alert-type--${notification.type}`}
+                      aria-label={`Alert type: ${notification.alertTypeLabel || notification.title}`}
+                    >
+                      {notification.alertTypeLabel || notification.title}
+                    </span>
                     <span className="notification-item-time">
                       {notification.timeAgo}
                     </span>
                   </div>
-                  <p className="notification-item-message">
-                    {notification.message}
+                  <p className="notification-item-summary">
+                    {notification.summary || notification.message}
                   </p>
                   <p className="notification-item-details">
                     {notification.details}
                   </p>
                 </div>
-                {notification.type === 'overdue' && (
+                {(notification.type === 'overdue' || notification.type === 'review') && (
                   <div className="notification-item-badge" aria-hidden="true">
-                    <Icon name="exclamation" />
+                    <Icon name={notification.type === 'overdue' ? 'exclamation' : 'message-square'} />
                   </div>
                 )}
               </li>
@@ -379,6 +431,23 @@ const NotificationDropdown = ({
             >
               <Icon name="exclamation-triangle" />
               View All Pending Amounts{' '}
+              <span className="section-link-arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
+          )}
+          {notifications.some((n) => n.type === 'review') && onViewReviews && (
+            <button
+              type="button"
+              className="btn btn-small btn-section-link notification-dropdown-action"
+              onClick={() => {
+                onViewReviews();
+                onClose();
+              }}
+              aria-label="View reviews needing response"
+            >
+              <Icon name="message-square" />
+              Reviews Needing Response{' '}
               <span className="section-link-arrow" aria-hidden="true">
                 →
               </span>

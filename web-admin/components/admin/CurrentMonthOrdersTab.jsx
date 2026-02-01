@@ -80,7 +80,8 @@ const CurrentMonthOrdersTab = ({
   }, []);
 
   const currentMonthOrders = useMemo(() => {
-    return getFilteredOrdersByDate(orders, 'month', '', '');
+    const list = Array.isArray(orders) ? orders : [];
+    return getFilteredOrdersByDate(list, 'month', '', '');
   }, [orders]);
 
   const currentMonthStats = useMemo(() => {
