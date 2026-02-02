@@ -80,11 +80,6 @@
     margin-bottom: var(--space-32);
   }
 
-  .hero-features {
-    margin-bottom: var(--space-32);
-    gap: var(--space-24);
-  }
-
   .hero-benefits {
     margin: var(--space-48) auto;
     gap: var(--space-32);
@@ -133,11 +128,6 @@
 
   .hero-description {
     margin-bottom: 2.5rem;
-  }
-
-  .hero-features {
-    margin-bottom: 2.5rem;
-    gap: 2rem;
   }
 
   .hero-benefits {
@@ -252,33 +242,6 @@
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.hero-features {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-20);
-  flex-wrap: wrap;
-  margin-bottom: var(--space-24);
-  animation: fadeInUp 0.8s ease 0.6s both;
-}
-
-.hero-feature-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.95);
-  font-weight: 500;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
-}
-
-.hero-feature-item i {
-  color: var(--primary-green);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-}
-
-.hero-feature-item:nth-child(even) i {
-  color: var(--primary-orange);
 }
 
 /* Hide mobile order button on desktop (default) - will be overridden in media query */
@@ -470,16 +433,6 @@
     word-wrap: break-word;
     overflow-wrap: break-word;
   }
-
-  .hero-features {
-    gap: 0.875rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .hero-feature-item {
-    font-size: 0.85rem;
-  }
 }
 
 @media (max-width: 480px) {
@@ -525,17 +478,6 @@
     font-size: 0.75rem;
     padding: 5px 0.875rem;
     margin-bottom: 0.625rem;
-  }
-
-  /* Make features more compact */
-  .hero-features {
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-    flex-wrap: wrap;
-  }
-
-  .hero-feature-item {
-    font-size: 0.75rem;
   }
 
   /* Make benefits more compact */

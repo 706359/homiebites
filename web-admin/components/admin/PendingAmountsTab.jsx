@@ -362,11 +362,53 @@ const PendingAmountsTab = ({
         message: `Are you sure you want to mark ${orderInfo} as paid?`,
         type: 'info',
         confirmText: 'Mark as Paid',
-        onConfirm: async () => {
+        options: [
+          { value: 'single', label: 'Only this record' },
+          { value: 'address', label: 'All pending for same address' },
+        ],
+        defaultOption: 'single',
+        onConfirm: async (scope) => {
           try {
-            await onUpdateOrderStatus(orderId, 'Paid', true);
-            if (showNotification)
-              showNotification('Order marked as paid', 'success');
+            if (scope === 'address' && order) {
+              const address =
+                order.deliveryAddress ||
+                order.customerAddress ||
+                order.address ||
+                '';
+              const sameAddressPending = orders.filter(
+                (o) =>
+                  isPendingStatus(o.status, o.paymentStatus) &&
+                  (o.deliveryAddress || o.customerAddress || o.address || '') ===
+                    address
+              );
+              let successCount = 0;
+              let errorCount = 0;
+              for (const o of sameAddressPending) {
+                try {
+                  await onUpdateOrderStatus(o._id || o.orderId, 'Paid', true);
+                  successCount++;
+                } catch (err) {
+                  console.error('Error marking order as paid:', err);
+                  errorCount++;
+                }
+              }
+              if (showNotification) {
+                if (errorCount === 0)
+                  showNotification(
+                    `${successCount} order${successCount !== 1 ? 's' : ''} marked as paid`,
+                    'success'
+                  );
+                else
+                  showNotification(
+                    `${successCount} marked as paid, ${errorCount} failed`,
+                    'warning'
+                  );
+              }
+            } else {
+              await onUpdateOrderStatus(orderId, 'Paid', true);
+              if (showNotification)
+                showNotification('Order marked as paid', 'success');
+            }
           } catch (error) {
             console.error('Error marking order as paid:', error);
             if (showNotification)

@@ -199,11 +199,45 @@
 }
 
 .csv-format-requirements {
-  margin-top: 24px;
+  margin-top: 12px;
+}
+
+/* Compact file upload area and gap between the two cards */
+.csv-upload-modal-body .file-upload-container {
+  padding: var(--admin-space-lg, 20px);
+}
+
+.csv-upload-modal-body .file-upload-container .file-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.csv-upload-modal-body .file-upload-container .file-upload-icon,
+.csv-upload-modal-body .file-upload-container .file-upload-icon-style {
+  margin-bottom: 0;
+}
+
+.csv-upload-modal-body .file-upload-container .file-upload-title {
+  margin: 0;
+}
+
+.csv-upload-modal-body .file-upload-container .file-upload-or {
+  margin: 0;
+  font-size: var(--admin-fs-sm);
+  color: var(--admin-text-secondary);
+}
+
+.csv-upload-modal-body .file-upload-container .file-upload-hint {
+  margin: 0;
+  font-size: var(--admin-fs-xs);
+  color: var(--admin-text-secondary);
 }
 
 .csv-format-requirements-title {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .csv-format-requirements-list {
@@ -217,7 +251,7 @@
 }
 
 .csv-margin-top-16 {
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
 .csv-upload-minimize-btn {

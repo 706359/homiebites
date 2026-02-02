@@ -75,13 +75,17 @@ const NotificationWrapper = () => {
 
   return (
     <div
-      className="admin-notification-container toast-container"
+      className="admin-notification-container toast-container admin-notification-enterprise"
       ref={containerRef}
       role="region"
       aria-label="Notifications"
       aria-live="polite"
       aria-atomic="false"
     >
+      <div className="admin-notification-stack-header" aria-hidden="true">
+        <span className="admin-notification-stack-title">Notifications</span>
+        <span className="admin-notification-stack-count">{notifications.length}</span>
+      </div>
       {notifications.map((notification) => (
         <div
           key={notification.id}
@@ -112,6 +116,12 @@ const NotificationWrapper = () => {
               <Icon name={getIcon(notification.type)} />
             </div>
             <div className="admin-notification-body">
+              <span
+                className={`admin-notification-type admin-notification-type--${notification.type}`}
+                aria-hidden="true"
+              >
+                {getTypeLabel(notification.type)}
+              </span>
               <div className="admin-notification-message">
                 {notification.message}
               </div>

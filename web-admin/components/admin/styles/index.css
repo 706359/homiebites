@@ -29,6 +29,9 @@
   --admin-text-muted: #a1a1a6;
   --admin-border: #e5e7eb;
   --admin-border-light: #e5e5ea;
+  /* Shared card style – use for all dashboard/tab cards */
+  --admin-card-radius: 12px;
+  --admin-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
   --admin-glass-bg: rgba(255, 255, 255, 0.95);
   --admin-glass-border: rgba(0, 0, 0, 0.08);
   --admin-accent: #449031;

@@ -500,7 +500,7 @@ const DashboardTab = ({ orders, setActiveTab, settings, loading = false }) => {
                   }
                 }}
               >
-                <Icon name="rupee-sign" />
+                <Icon name="rupee-sign" className="icon-color-accent" />
                 <div>
                   <h3>₹ {formatCurrency(allTimeRevenue)}</h3>
                   <p>Total Revenue</p>

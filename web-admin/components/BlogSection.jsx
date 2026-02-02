@@ -1,19 +1,20 @@
 'use client';
 
+import Link from 'next/link';
 import { useLanguage } from '../contexts/LanguageContext';
 import './BlogSection.css';
 import Icon from './ui/Icon.jsx';
 
+const articles = [
+  { key: 'article1', slug: 'benefits-of-less-oil' },
+  { key: 'article2', slug: 'how-we-source-ingredients' },
+  { key: 'article3', slug: 'weekly-menu-highlights' },
+  { key: 'article4', slug: 'story-behind-dal-tadka' },
+  { key: 'article5', slug: 'meal-prep-vs-home-delivery' },
+];
+
 const BlogSection = () => {
   const { t } = useLanguage();
-
-  const articles = [
-    { key: 'article1', slug: 'benefits-of-less-oil' },
-    { key: 'article2', slug: 'how-we-source-ingredients' },
-    { key: 'article3', slug: 'weekly-menu-highlights' },
-    { key: 'article4', slug: 'story-behind-dal-tadka' },
-    { key: 'article5', slug: 'meal-prep-vs-home-delivery' },
-  ];
 
   return (
     <section id="blog" className="blog-section">
@@ -33,14 +34,19 @@ const BlogSection = () => {
         <ul className="blog-list" aria-label="Blog articles">
           {articles.map(({ key, slug }) => (
             <li key={key} className="blog-item">
-              <a
-                href={`/#blog`}
+              <Link
+                href={`/blog/${slug}`}
                 className="blog-link"
                 aria-label={t(`blog.${key}`)}
               >
                 <Icon name="file-text" className="blog-link-icon" aria-hidden />
-                <span>{t(`blog.${key}`)}</span>
-              </a>
+                <span className="blog-link-text">{t(`blog.${key}`)}</span>
+                <Icon
+                  name="arrow-right"
+                  className="blog-link-arrow"
+                  aria-hidden
+                />
+              </Link>
             </li>
           ))}
         </ul>

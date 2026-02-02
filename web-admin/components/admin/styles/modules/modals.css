@@ -604,7 +604,6 @@
     background: var(--admin-accent-light);
     border-color: var(--admin-accent, #449031);
     color: var(--admin-accent, #449031);
-    transform: scale(0.95);
   }
 
   /* Order Modal Form Specific Fixes for Mobile */

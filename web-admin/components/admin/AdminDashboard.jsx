@@ -135,6 +135,8 @@ const AdminDashboard = () => {
     confirmText: 'Confirm',
     cancelText: 'Cancel',
     isLoading: false,
+    options: null,
+    defaultOption: null,
   });
   const [newOrder, setNewOrder] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -159,6 +161,10 @@ const AdminDashboard = () => {
   const [dateFilterForOrders, setDateFilterForOrders] = useState(null);
   const [isMounted, setIsMounted] = useState(false);
   const [dataRefreshKey, setDataRefreshKey] = useState(0);
+  const [isSyncingGoogleSheet, setIsSyncingGoogleSheet] = useState(false);
+  const [syncGoogleSheetMessage, setSyncGoogleSheetMessage] = useState(null);
+  const [syncGoogleSheetMessageType, setSyncGoogleSheetMessageType] =
+    useState('success');
 
   const {
     orders,
@@ -747,11 +753,11 @@ const AdminDashboard = () => {
       title: config.title || 'Confirm Action',
       message: config.message || 'Are you sure you want to proceed?',
       type: config.type || 'warning',
-      onConfirm: async () => {
+      onConfirm: async (selectedValue) => {
         if (config.onConfirm) {
           setConfirmationModal((prev) => ({ ...prev, isLoading: true }));
           try {
-            await config.onConfirm();
+            await config.onConfirm(selectedValue);
             setConfirmationModal((prev) => ({
               ...prev,
               show: false,
@@ -776,6 +782,8 @@ const AdminDashboard = () => {
       confirmText: config.confirmText || 'Confirm',
       cancelText: config.cancelText || 'Cancel',
       isLoading: false,
+      options: config.options ?? null,
+      defaultOption: config.defaultOption ?? null,
     });
   };
 
@@ -1571,6 +1579,45 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleSyncGoogleSheet = async () => {
+    setIsSyncingGoogleSheet(true);
+    setSyncGoogleSheetMessage(null);
+    try {
+      const response = await api.syncGoogleSheet();
+      if (response?.success && response?.data) {
+        const { imported = 0, updated = 0, total = 0, errors = 0 } =
+          response.data;
+        const parts = [];
+        if (imported > 0) parts.push(`${imported} imported`);
+        if (updated > 0) parts.push(`${updated} updated`);
+        if (errors > 0) parts.push(`${errors} error${errors !== 1 ? 's' : ''}`);
+        const msg =
+          parts.length > 0
+            ? `${parts.join(', ')}.`
+            : total > 0
+              ? 'Synced.'
+              : 'No new or changed orders in sheet.';
+        setSyncGoogleSheetMessage(msg);
+        setSyncGoogleSheetMessageType('success');
+        if (showNotification) showNotification(`Google Sheet sync: ${msg}`, 'success');
+        if (loadOrders) loadOrders({}, true).catch(() => {});
+      } else {
+        const errMsg = response?.error || 'Google Sheet sync failed';
+        setSyncGoogleSheetMessage(errMsg);
+        setSyncGoogleSheetMessageType('error');
+        if (showNotification) showNotification(errMsg, 'error');
+      }
+    } catch (error) {
+      const errMsg = error?.message || 'Google Sheet sync failed';
+      setSyncGoogleSheetMessage(errMsg);
+      setSyncGoogleSheetMessageType('error');
+      if (showNotification) showNotification(errMsg, 'error');
+    } finally {
+      setIsSyncingGoogleSheet(false);
+      setTimeout(() => setSyncGoogleSheetMessage(null), 6000);
+    }
+  };
+
   const getTabInfo = () => {
     const getMonthLockStatus = () => {
       if (!settings || !settings.monthLockedTill) {
@@ -1698,6 +1745,10 @@ const AdminDashboard = () => {
             allOrdersFilterPaymentStatus={allOrdersFilterPaymentStatus}
             setAllOrdersFilterPaymentStatus={setAllOrdersFilterPaymentStatus}
             onLoadExcelFile={() => setShowCSVUploadModal(true)}
+            onSyncGoogleSheet={handleSyncGoogleSheet}
+            syncGoogleSheetLoading={isSyncingGoogleSheet}
+            syncGoogleSheetMessage={syncGoogleSheetMessage}
+            syncGoogleSheetMessageType={syncGoogleSheetMessageType}
             onClearAllData={handleClearAllData}
             onEditOrder={(order) => {
               setEditingOrder(order);
@@ -2102,6 +2153,8 @@ const AdminDashboard = () => {
               }));
             }}
             isLoading={confirmationModal.isLoading}
+            options={confirmationModal.options}
+            defaultOption={confirmationModal.defaultOption}
           />
         </Suspense>
 

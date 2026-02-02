@@ -564,7 +564,7 @@ HB-Jan'25-14-000001,2025-01-25,B2-405,2,100,Lunch,Paid,UPI,1,2025,Bob Johnson,98
             <Icon name="times" />
           </button>
         </div>
-        <div className="modal-body">
+        <div className="modal-body csv-upload-modal-body">
           {!file && (
             <div
               className="dashboard-card file-upload file-upload-container"

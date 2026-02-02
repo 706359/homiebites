@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { LoadingButton } from '../loaders/LoaderComponents';
 import Icon from '../ui/Icon.jsx';
@@ -15,9 +15,20 @@ const ConfirmationModal = ({
   onConfirm,
   onCancel,
   isLoading = false,
+  options = null,
+  defaultOption = null,
 }) => {
   const containerRef = useRef(null);
   const previousFocusRef = useRef(/** @type {HTMLElement | null} */ (null));
+  const initialOption =
+    defaultOption ?? (Array.isArray(options) && options.length > 0 ? options[0].value : null);
+  const [selectedOption, setSelectedOption] = useState(initialOption);
+
+  useEffect(() => {
+    const next =
+      defaultOption ?? (Array.isArray(options) && options.length > 0 ? options[0].value : null);
+    setSelectedOption(next);
+  }, [show, defaultOption, options]);
 
   useEffect(() => {
     if (!show) return;
@@ -35,7 +46,8 @@ const ConfirmationModal = ({
       }
       if (e.key === 'Enter' && !isLoading && onConfirm) {
         e.preventDefault();
-        onConfirm();
+        if (options?.length) onConfirm(selectedOption);
+        else onConfirm();
         return;
       }
       if (e.key !== 'Tab') return;
@@ -174,6 +186,39 @@ const ConfirmationModal = ({
           <p id="confirmation-modal-message" className="text-no-margin">
             {message}
           </p>
+          {Array.isArray(options) && options.length > 0 && (
+            <fieldset
+              className="confirmation-modal-options"
+              aria-label="Choose scope"
+              style={{ marginTop: '16px', marginBottom: 0, padding: 0, border: 'none' }}
+            >
+              {options.map((opt) => (
+                <label
+                  key={opt.value}
+                  className="confirmation-modal-option"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    marginBottom: '8px',
+                    cursor: 'pointer',
+                    fontSize: 'var(--admin-fs-base, 0.875rem)',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="confirmation-scope"
+                    value={opt.value}
+                    checked={selectedOption === opt.value}
+                    onChange={() => setSelectedOption(opt.value)}
+                    disabled={isLoading}
+                    aria-describedby="confirmation-modal-message"
+                  />
+                  <span>{opt.label}</span>
+                </label>
+              ))}
+            </fieldset>
+          )}
         </div>
         <div className="modal-footer confirmation-modal-footer">
           <button
@@ -188,7 +233,10 @@ const ConfirmationModal = ({
           <LoadingButton
             type="button"
             className={`btn ${styles.confirmBtn}`}
-            onClick={onConfirm}
+            onClick={() => {
+              if (options?.length) onConfirm(selectedOption);
+              else onConfirm();
+            }}
             disabled={isLoading}
             loading={isLoading}
             loadingText="Processing..."

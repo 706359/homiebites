@@ -90,56 +90,37 @@ const ImportantNotificationsBanner = ({
 
   if (importantNotifications.length === 0) return null;
 
-  const getNotificationStyles = (type) => {
-    switch (type) {
-      case 'danger':
-        return {
-          background: 'rgba(220, 38, 38, 0.08)',
-          borderColor: 'var(--admin-danger, #dc2626)',
-          iconColor: 'var(--admin-danger, #dc2626)',
-          textColor: 'var(--admin-danger, #dc2626)',
-        };
-      case 'warning':
-        return {
-          background: 'rgba(245, 158, 11, 0.08)',
-          borderColor: 'var(--admin-warning, #f59e0b)',
-          iconColor: 'var(--admin-warning, #f59e0b)',
-          textColor: 'var(--admin-warning, #f59e0b)',
-        };
-      default:
-        return {
-          background: 'rgba(68, 144, 49, 0.08)',
-          borderColor: 'var(--admin-accent, #449031)',
-          iconColor: 'var(--admin-accent, #449031)',
-          textColor: 'var(--admin-accent, #449031)',
-        };
-    }
-  };
-
   return (
     <section
-      className="important-notifications-banner"
+      className="important-notifications-banner admin-notification-enterprise"
       role="region"
       aria-label="Important notifications"
     >
-      {importantNotifications.map((notif) => {
-        const styles = getNotificationStyles(notif.type);
-        return (
-          <div key={notif.id} className="important-notification-item">
-            <div className="important-notification-content">
-              <div className="important-notification-icon" aria-hidden="true">
-                <Icon name={notif.icon} />
-              </div>
-              <div className="important-notification-text">
-                <div className="important-notification-title">
-                  {notif.title}
-                </div>
-                <div className="important-notification-message">
-                  {notif.message}
-                </div>
-              </div>
+      <div className="important-notifications-header" aria-hidden="true">
+        <span className="important-notifications-header-title">Important updates</span>
+        <span className="important-notifications-header-count">{importantNotifications.length}</span>
+      </div>
+      {importantNotifications.map((notif) => (
+        <div
+          key={notif.id}
+          className={`important-notification-item important-notification-item--${notif.type}`}
+        >
+          <div className="important-notification-content">
+            <div className="important-notification-icon" aria-hidden="true">
+              <Icon name={notif.icon} />
             </div>
-            <div className="important-notification-actions">
+            <div className="important-notification-text">
+              <span
+                className={`important-notification-type important-notification-type--${notif.type}`}
+                aria-hidden="true"
+              >
+                {notif.type === 'danger' ? 'Critical' : notif.type === 'warning' ? 'Urgent' : 'Update'}
+              </span>
+              <div className="important-notification-title">{notif.title}</div>
+              <div className="important-notification-message">{notif.message}</div>
+            </div>
+          </div>
+          <div className="important-notification-actions">
               {notif.action === 'viewPending' && onViewPendingAmounts && (
                 <button
                   type="button"
@@ -163,8 +144,7 @@ const ImportantNotificationsBanner = ({
               )}
             </div>
           </div>
-        );
-      })}
+        ))}
     </section>
   );
 };

@@ -242,12 +242,19 @@
   color: var(--admin-text-secondary, #6b7280);
 }
 
-/* When inside a button (LoadingButton): fill full button width */
+/* When inside a button (LoadingButton): fill full button width, no inner panel */
 .btn .compact-spinner,
 button .compact-spinner {
+  display: flex;
   width: 100%;
   min-width: 100%;
+  max-width: none;
   box-sizing: border-box;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: inherit;
 }
 
 .compact-spinner__spinner {

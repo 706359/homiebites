@@ -31,10 +31,8 @@
   padding: var(--admin-space-md, 16px) var(--admin-space-lg, 20px);
   background: var(--admin-bg, #ffffff);
   border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 12px;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    0 1px 2px rgba(0, 0, 0, 0.04);
+  border-radius: var(--admin-card-radius, 12px);
+  box-shadow: var(--admin-card-shadow);
 }
 
 .kitchen-tab-actions-left {
@@ -53,15 +51,38 @@
   flex-shrink: 0;
 }
 
+.kitchen-tab-import-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-xs, 8px);
+}
+
+.sync-google-sheet-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-space-xs, 6px);
+  font-size: var(--admin-fs-sm, 0.875rem);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.sync-google-sheet-status--success {
+  color: var(--admin-success-text, #166534);
+  background: var(--admin-success-bg, #dcfce7);
+}
+
+.sync-google-sheet-status--error {
+  color: var(--admin-error-text, #b91c1c);
+  background: var(--admin-error-bg, #fee2e2);
+}
+
 .kitchen-tab-body {
   flex: 1;
   min-width: 0;
   background: var(--admin-bg, #ffffff);
   border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 12px;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    0 1px 2px rgba(0, 0, 0, 0.04);
+  border-radius: var(--admin-card-radius, 12px);
+  box-shadow: var(--admin-card-shadow);
   overflow: hidden;
 }
 
@@ -104,10 +125,8 @@
 .kitchen-tab-card {
   background: var(--admin-bg, #ffffff);
   border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 12px;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    0 1px 2px rgba(0, 0, 0, 0.04);
+  border-radius: var(--admin-card-radius, 12px);
+  box-shadow: var(--admin-card-shadow);
   overflow: hidden;
 }
 

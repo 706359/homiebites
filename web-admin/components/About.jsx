@@ -18,7 +18,6 @@ const About = () => {
             {t('about.description1')} <strong>{t('about.location')}</strong>{' '}
             {t('about.description2')}
           </p>
-          <p>{t('about.description3')}</p>
           <p>
             {t('about.description4')} <strong>{t('about.founded')}</strong>{' '}
             {t('about.description5')}

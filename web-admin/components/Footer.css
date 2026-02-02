@@ -32,6 +32,16 @@
   font-family: var(--font-website);
 }
 
+/* When footer is inside a padded container (e.g. .legal-page, .blog-post-page), break out so it uses full viewport width */
+.legal-page .site-footer,
+.blog-post-page .site-footer {
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  box-sizing: border-box;
+}
+
 .site-footer::before {
   content: '';
   position: absolute;
@@ -50,7 +60,8 @@
 
 .footer-container {
   max-width: var(--footer-max);
-  margin: 0 auto;
+  margin-left: auto;
+  margin-right: auto;
   width: 100%;
   box-sizing: border-box;
 }
@@ -127,7 +138,10 @@
   border: none;
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .footer-btn:focus-visible {
@@ -325,7 +339,6 @@
   line-height: 1.5;
   padding-top: 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  max-width: var(--footer-max);
   width: 100%;
 }
 

@@ -59,18 +59,6 @@ const Hero = ({ onOrderClick }) => {
         <p className="hero-subtitle">{t('hero.subtitle')}</p>
         <p className="hero-description">{t('hero.description')}</p>
 
-        <div className="hero-features">
-          <span className="hero-feature-item">
-            <Icon name="heart" /> {t('hero.feature1') || 'Made with Love'}
-          </span>
-          <span className="hero-feature-item">
-            <Icon name="fire" /> {t('hero.feature2') || 'Fresh Daily'}
-          </span>
-          <span className="hero-feature-item">
-            <Icon name="home" /> {t('hero.feature3') || 'Home-like Taste'}
-          </span>
-        </div>
-
         <div className="hero-benefits">
           <div className="hero-benefit-item">
             <Icon name="check-circle" />

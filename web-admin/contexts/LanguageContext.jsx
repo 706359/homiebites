@@ -36,17 +36,35 @@ export const LanguageProvider = ({ children }) => {
 
   const t = (key) => {
     const keys = key.split('.');
-    let value = translations[language] || translations.en;
+    const locale = translations[language] || translations.en;
 
+    let value = locale;
     for (const k of keys) {
       if (value && typeof value === 'object') {
         value = value[k];
       } else {
-        return key; // Return key if translation not found
+        value = undefined;
+        break;
       }
     }
 
-    return value || key;
+    // When Hindi is selected but key is missing, fall back to English so every word shows a translation
+    if ((value === undefined || value === null || value === '') && language === 'hi' && locale !== translations.en) {
+      let enValue = translations.en;
+      for (const k of keys) {
+        if (enValue && typeof enValue === 'object') {
+          enValue = enValue[k];
+        } else {
+          enValue = undefined;
+          break;
+        }
+      }
+      if (enValue !== undefined && enValue !== null && enValue !== '') {
+        return enValue;
+      }
+    }
+
+    return value ?? key;
   };
 
   return (

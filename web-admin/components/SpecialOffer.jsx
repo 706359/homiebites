@@ -260,43 +260,61 @@ const SpecialOffer = ({ onOrderClick }) => {
     'For busy professionals and families';
   const ctaText = activeOffer?.ctaText || t('common.orderOnWhatsApp');
 
+  // Only append discount line when it exists and isn't already in the description (avoids "50/- off Flat 50/- on first Order... Flat 50/- on your total bill")
+  const descriptionIncludesDiscount =
+    offerDiscount &&
+    offerDescription &&
+    offerDescription
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .includes(offerDiscount.toLowerCase().replace(/\s+/g, ' '));
+  const showDiscountSuffix = offerDiscount && !descriptionIncludesDiscount;
+
   return (
-    <section className="offer-section">
-      <div className="section-container">
-        <div className="offer-header">
-          {offerKicker && <span className="offer-kicker">{offerKicker}</span>}
-          <h2 className="offer-title">{offerTitle}</h2>
-          <p className="offer-text">
-            {offerDescription}{' '}
-            {offerDiscount && (
-              <>
-                <strong>{offerDiscount}</strong> {t('specialOffer.onTotal')}
-              </>
-            )}
-          </p>
-          {activeOffer?.terms &&
-            Array.isArray(activeOffer.terms) &&
-            activeOffer.terms.length > 0 && (
-              <ul className="offer-terms">
-                {activeOffer.terms
-                  .filter((term) => term && term.trim() !== '')
-                  .map((term, index) => (
-                    <li key={index}>{term}</li>
-                  ))}
-              </ul>
-            )}
-        </div>
-        <div className="offer-actions">
-          <button
-            onClick={handleGetDeal}
-            className="btn btn-primary btn-small"
-            type="button"
-          >
-            <Icon name="whatsapp" /> {ctaText}
-          </button>
-          <a href={getPhoneLink()} className="btn btn-secondary btn-small">
-            <Icon name="phone" /> {t('common.call')} {getFormattedPhone()}
-          </a>
+    <section className="offer-section" aria-labelledby="offer-title">
+      <div className="offer-section-inner">
+        <div className="offer-card">
+          <div className="offer-header">
+            {offerKicker && <span className="offer-kicker">{offerKicker}</span>}
+            <h2 id="offer-title" className="offer-title">
+              {offerTitle}
+            </h2>
+            <p className="offer-text">
+              {offerDescription}
+              {showDiscountSuffix && (
+                <>
+                  {' '}
+                  <strong>{offerDiscount}</strong> {t('specialOffer.onTotal')}
+                </>
+              )}
+            </p>
+            {activeOffer?.terms &&
+              Array.isArray(activeOffer.terms) &&
+              activeOffer.terms.length > 0 && (
+                <ul className="offer-terms">
+                  {activeOffer.terms
+                    .filter((term) => term && term.trim() !== '')
+                    .map((term, index) => (
+                      <li key={index}>{term}</li>
+                    ))}
+                </ul>
+              )}
+          </div>
+          <div className="offer-actions">
+            <button
+              onClick={handleGetDeal}
+              className="btn btn-primary offer-cta-primary"
+              type="button"
+            >
+              <Icon name="whatsapp" /> {ctaText}
+            </button>
+            <a
+              href={getPhoneLink()}
+              className="btn btn-secondary offer-cta-secondary"
+            >
+              <Icon name="phone" /> {t('common.call')} {getFormattedPhone()}
+            </a>
+          </div>
         </div>
       </div>
     </section>

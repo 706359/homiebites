@@ -12,7 +12,6 @@
     },
     "founded": "Feb 2024"
   },
-
   "common": {
     "home": "Home",
     "menu": "Menu",
@@ -54,7 +53,6 @@
     "call": "Call",
     "items": "items"
   },
-
   "header": {
     "announcement": "Home delivery on orders ₹100 and above",
     "subscribe": "Subscribe",
@@ -66,84 +64,117 @@
     "gallery": "Gallery",
     "pricing": "Price"
   },
-
   "hero": {
-    "title": "Homemade Food, Delivered Daily",
-    "subtitle": "Experience authentic home cooking, delivered fresh to your door every day.",
-    "description": "Traditional recipes cooked fresh in our home kitchen with care and less oil. Roti, sabzi, dal, rice—the way you’d make it at home.",
+    "title": "Ghar Jaisa Khana, Roz Aapke Ghar",
+    "subtitle": "Miss Ghar Ka Khana? We Bring It Fresh to Your Door Daily",
+    "description": "Authentic home-cooked vegetarian meals made with love in our home kitchen. No restaurant setup, no commercial cooking—just pure, healthy food the way your mom makes it.",
     "orderNow": "Order Now",
     "viewMenu": "View Menu",
-    "feature1": "Made with Love",
-    "feature2": "Fresh Daily",
-    "feature3": "Home-like Taste",
-    "benefit1Title": "100% Homemade Food",
-    "benefit1Desc": "Cooked in our home kitchen with fresh ingredients and traditional recipes. No commercial setup—just real home cooking.",
-    "benefit2Title": "Flexible Delivery Slots",
-    "benefit2Desc": "Morning 7 to 10 AM, Noon 12 to 3 PM, Night 7 to 9 PM",
-    "benefit3Title": "Affordable Pricing",
-    "benefit3Desc": "Home delivery on orders above ₹100. Meals start from ₹80.",
+    "feature1": "FSSAI Certified Kitchen",
+    "feature2": "500+ Happy Customers",
+    "feature3": "1000+ Meals Served Monthly",
+    "benefit1Title": "Fresh Ingredients Daily",
+    "benefit1Desc": "Sourced daily, cooked with care. Same ingredients we use for our own family.",
+    "benefit2Title": "Less Oil, More Health",
+    "benefit2Desc": "Morning 7–10 AM, Noon 12–3 PM, Night 7–9 PM. Delivered to your door.",
+    "benefit3Title": "Cooked with Care",
+    "benefit3Desc": "Free delivery on orders ₹100+. Meals from ₹80. Monthly subscription 7% off.",
     "trust1": "500+ Happy Customers",
     "trust1Label": "Happy Customers",
     "trust2": "Daily Fresh Meals",
     "trust2Label": "Daily Fresh Meals",
     "trust3": "Hygienic Kitchen",
     "trust3Label": "Orders Delivered",
-    "ctaText": "Order today and taste the difference. Fresh, home-style meals delivered to your door."
+    "ctaText": "Ready to Taste the Difference? Order your first meal today. No commitment, no subscription required. Just pure, fresh, home-cooked food delivered to your door."
   },
-
   "howItWorks": {
     "kicker": "Simple process",
-    "title": "How It Works",
-    "subtitle": "Three steps to fresh, home-style meals. Choose your meal, pick a slot, and we deliver.",
-    "step1Title": "Contact Us",
-    "step1Desc": "Reach out via WhatsApp or call to place your order",
-    "step2Title": "Choose Your Meal",
-    "step2Desc": "Pick from our daily menu—breakfast, lunch, or dinner",
-    "step3Title": "Confirm Details",
-    "step3Desc": "Confirm your delivery time slot and address",
-    "step4Title": "Enjoy Fresh Food",
-    "step4Desc": "Receive your meal at your doorstep, fresh from our kitchen",
+    "title": "From Our Kitchen to Your Table in 4 Simple Steps",
+    "subtitle": "Getting your favorite home-cooked meals is just a few steps away.",
+    "step1Title": "Place Your Order",
+    "step1Desc": "WhatsApp us at +91-9958983578 or call directly. Tell us what you'd like—breakfast, lunch, or dinner. We'll confirm your order within minutes. Simple. No app downloads, no complicated menus.",
+    "step2Title": "We Cook Fresh for You",
+    "step2Desc": "Every morning we source fresh vegetables and ingredients from the local market. Your meal is cooked fresh in our home kitchen—never reheated, never frozen. We prepare each dish with the same care we'd use for our own family.",
+    "step3Title": "Choose Your Delivery Slot",
+    "step3Desc": "Pick what works for you: Morning (7-10 AM) for breakfast, Noon (12-3 PM) for lunch, or Night (7-9 PM) for dinner. We deliver to your doorstep in Panchsheel Greens, or you can pick up from our building lobby.",
+    "step4Title": "Enjoy Your Home-Cooked Meal",
+    "step4Desc": "Receive your meal hot and fresh. Open the tiffin, serve yourself, and enjoy the taste of real home cooking. No cooking, no cleaning, no stress—just delicious, healthy food exactly when you need it.",
     "ctaText": "Start Your Order Now"
   },
-
   "features": {
     "kicker": "Why choose us",
-    "title": "Why HomieBites",
-    "subtitle": "Traditional recipes, cooked fresh in our home kitchen with care and less oil.",
-    "pureVeg": "100% Pure Vegetarian",
-    "pureVegDesc": "Fresh, wholesome ingredients prepared with care. Real home kitchen, real home taste.",
-    "lessOil": "Less Oil & Healthy",
-    "lessOilDesc": "Balanced, light meals with minimal oil—the way home cooking should be.",
-    "homeTaste": "Home-like Taste",
-    "homeTasteDesc": "Authentic desi flavors that remind you of home-cooked meals.",
-    "onTime": "Flexible Daily Delivery",
-    "onTimeDesc": "Morning, noon, or night—choose a slot that works for you.",
-    "freshDaily": "Cooked Fresh Daily",
-    "freshDailyDesc": "Every meal is prepared fresh. No frozen or reheated food.",
-    "madeWithLove": "Made with Care",
-    "madeWithLoveDesc": "Prepared in a clean home kitchen with attention to every dish.",
-    "ctaText": "Order today and taste the difference."
+    "title": "Why Busy Professionals & Families Trust HomieBites",
+    "subtitle": "Not a cloud kitchen. Not a restaurant. Real home cooking from Panchsheel Greens.",
+    "pureVeg": "100% Pure Home Cooking",
+    "pureVegDesc": "Our meals are prepared in a real home kitchen in Panchsheel Greens by a family that cares about what you eat. Same ingredients we use for our own family—fresh vegetables from the market, quality atta, pure ghee, and traditional spices. No preservatives, no MSG, no shortcuts.",
+    "lessOil": "Healthier Than Outside Food",
+    "lessOilDesc": "Tired of oily restaurant food? Our meals use 50% less oil than typical tiffin services. Light on the stomach, heavy on nutrition. Perfect for those managing weight, digestion issues, or simply wanting to eat cleaner.",
+    "homeTaste": "Tastes Like Home, Feels Like Home",
+    "homeTasteDesc": "Missing ghar ka khana? Our customers say our dal tadka reminds them of their mother's recipe. We cook with the same love, care, and traditional methods. No fancy fusion—just simple, soul-satisfying Indian home food.",
+    "onTime": "Saves Your Time & Energy",
+    "onTimeDesc": "No more 2 hours in the kitchen after work. No grocery shopping on weekends. Get fresh, hot meals delivered right to your door—morning, noon, or night. Spend your time on what truly matters.",
+    "freshDaily": "More Affordable Than You Think",
+    "freshDailyDesc": "Quality home food doesn't have to break the bank. Full meals starting at just ₹80. Monthly subscriptions with 7% discount. Free delivery on orders above ₹100. Better nutrition at half the cost of eating out.",
+    "madeWithLove": "Hyper-Local & Reliable",
+    "madeWithLoveDesc": "We're your neighbors in Panchsheel Greens. Not a faceless app-based service. You can visit our kitchen (A1-405), meet us personally, and see exactly where your food comes from. Reliable delivery, personal service.",
+    "ctaText": "Ready to Taste the Difference? Order your first meal today. No commitment, no subscription required."
   },
-
+  "cta": {
+    "primaryHeadline": "Ready to Taste the Difference?",
+    "primaryBody": "Order your first meal today. No commitment, no subscription required. Just pure, fresh, home-cooked food delivered to your door.",
+    "orderWhatsApp": "Order on WhatsApp",
+    "call": "Call +91-9958983578",
+    "secondaryHeadline": "Not Sure Yet? View This Week's Menu",
+    "seeMenu": "See Menu",
+    "browseGallery": "Browse Food Gallery",
+    "urgencyHeadline": "Limited Slots Available for This Week",
+    "urgencyBody": "We can only take 15 orders per time slot to maintain quality. Don't miss out—order now to secure your spot!"
+  },
+  "nutrition": {
+    "title": "Healthy Eating Made Simple",
+    "intro": "We believe in transparency. Every meal we prepare is not just delicious—it's nutritionally balanced and made with your health in mind.",
+    "healthPromise1": "50% less oil than typical restaurant food",
+    "healthPromise2": "No MSG, preservatives, or artificial colors",
+    "healthPromise3": "Fresh vegetables sourced daily",
+    "healthPromise4": "Whole wheat rotis (never maida)",
+    "healthPromise5": "Balanced portions of protein, carbs, and fiber",
+    "sampleTitle": "Sample Nutritional Breakdown",
+    "sampleMeal": "Standard Lunch/Dinner Meal (2 Roti + Dal + Sabzi + Rice)",
+    "calories": "Calories: 420–480 kcal",
+    "protein": "Protein: 14–18g",
+    "carbs": "Carbohydrates: 70–85g",
+    "fats": "Fats: 8–12g (healthy fats from ghee/oil)",
+    "fiber": "Fiber: 10–12g",
+    "highlight1": "High in plant-based protein",
+    "highlight2": "Rich in fiber for digestion",
+    "highlight3": "Low in unhealthy fats",
+    "highlight4": "Perfect for balanced nutrition",
+    "downloadGuide": "Download Complete Nutrition Guide PDF"
+  },
   "pricing": {
     "kicker": "Our rates",
-    "title": "Pricing & Menu",
-    "subtitle": "Fresh meals at affordable prices. Prices are updated automatically.",
+    "title": "Simple, Honest Pricing. No Hidden Charges.",
+    "subtitle": "Quality home-cooked meals at prices that won't shock you. Pay per meal or save with our monthly subscription.",
     "itemName": "Item Name",
     "price": "Price",
     "contactForPrice": "Contact for price",
-    "note": "Prices are subject to change. Home delivery on orders ₹100 and above.",
+    "note": "FREE delivery on orders ₹100 and above. Orders below ₹100: ₹20 delivery charge. Cash on Delivery • UPI / Google Pay / PhonePe / PayTM.",
     "noItemsTitle": "Pricing Coming Soon",
-    "noItems": "We're currently updating our pricing. Check back soon!"
+    "noItems": "We're currently updating our pricing. Check back soon!",
+    "perMealBreakfast": "Breakfast: ₹60–₹100 (Poha, Paratha, Upma, etc.)",
+    "perMealLunch": "Lunch/Dinner: ₹80–₹160 (2-3 Rotis + Dal + Sabzi + Rice)",
+    "perMealThali": "Full Thali: ₹140–₹200 (Complete meal with multiple items)",
+    "subscriptionTitle": "Monthly Subscription (SAVE 7%)",
+    "subscriptionDesc": "Subscribe for 30 days and get 7% OFF on your total bill. Example: Daily lunch @ ₹120 × 30 = ₹3,600 → With subscription: ₹3,348 (Save ₹252!). Pause or cancel anytime with 2 days notice.",
+    "deliveryFree": "FREE home delivery on orders ₹100 and above",
+    "deliveryCharge": "Orders below ₹100: ₹20 delivery charge. Free pickup from Tower A1 lobby (all orders)."
   },
-
   "rates": {
     "title": "Rate List",
     "readyToOrder": "Ready to order? Call",
     "orWhatsApp": "or WhatsApp us. Delivery slots: Morning 7–10 AM, Noon 12–3 PM, Night 7–9 PM",
     "orderNow": "Order Now"
   },
-
   "gallery": {
     "kicker": "From our kitchen",
     "title": "Food Gallery",
@@ -158,7 +189,6 @@
     "noItemsTitle": "Gallery Coming Soon",
     "noItems": "We're currently updating our gallery with fresh, delicious meals. Check back soon to see our latest offerings!"
   },
-
   "testimonials": {
     "kicker": "What people say",
     "title": "Customer Reviews",
@@ -166,7 +196,6 @@
     "review2": "Healthy food and perfect for working professionals.",
     "review3": "Khichdi is fresh and comforting."
   },
-
   "reviews": {
     "writeReview": "Write a Review",
     "submitReview": "Submit Your Review",
@@ -181,7 +210,6 @@
     "location": "Location (Optional)",
     "locationPlaceholder": "e.g., Panchsheel Greens, Tower A1"
   },
-
   "blog": {
     "kicker": "Read & learn",
     "title": "From Our Kitchen",
@@ -192,7 +220,6 @@
     "article4": "The Story Behind Our Dal Tadka Recipe",
     "article5": "Meal Prep vs. Home Delivery: A Cost Comparison"
   },
-
   "specialOffer": {
     "intro": "Perfect for busy professionals and families",
     "title": "Monthly Subscription Offer",
@@ -202,24 +229,23 @@
     "getDeal": "Get This Deal",
     "whatsappMessage": "I am interested in the monthly subscription offer"
   },
-
   "about": {
     "kicker": "Our story",
-    "title": "About HomieBites",
-    "description1": "We serve fresh, home-cooked vegetarian meals from",
+    "title": "Your Neighbors Who Love to Cook",
+    "description1": "HomieBites started in February 2024 with a simple idea: bring back the comfort of home-cooked food to people who miss it most—working professionals, busy parents, students away from home, and seniors living alone. We're a family living in",
     "location": "A1-405, Panchsheel Greens",
-    "description2": "with daily delivery to nearby societies.",
-    "description3": "Our food is prepared in a clean home kitchen using simple, traditional recipes—less oil, fresh ingredients, and the kind of taste you’d expect at home.",
-    "description4": "Founded in",
+    "description2": "who genuinely love cooking and sharing good food. Every meal we make carries the same attention and care we put into cooking for our own family.",
+    "description3": "",
+    "description4": "Since launching in",
     "founded": "Feb 2024",
-    "description5": "our mission is to bring honest, home-style meals to your table every day.",
+    "description5": "we've served over 1,000 meals to 500+ happy customers in our community. Our goal isn't to become the biggest tiffin service—it's to be the most trusted one. We want you to feel confident that the food reaching your table is as good as what we'd serve our own loved ones.",
     "badge1": "100% HOMEMADE",
     "badge2": "HOME KITCHEN",
     "badge3": "LESS OIL & HEALTHY",
     "badge4": "FRESH DAILY",
     "whyChoose": "Why HomieBites",
     "whyChooseSubtitle": "Traditional recipes, fresh ingredients, and the warmth of home cooking.",
-    "whyChooseIntro": "We cook the way you would at home—simple, nutritious, and with care. No heavy spices or excess oil. Just roti, sabzi, dal, and rice made with traditional recipes and delivered fresh to your door.",
+    "whyChooseIntro": "When you order from HomieBites, you're not just getting food—you're getting a little piece of home, made with love, delivered with care.",
     "benefit1": "Home kitchen cooking",
     "benefit2": "Simple & healthy meals",
     "benefit3": "Less oil, fresh ingredients",
@@ -230,7 +256,6 @@
     "familyRecipes": "Many of our dishes come from family recipes passed down and refined over time—so you get authentic, homely flavours every day.",
     "fssaiNote": "We are FSSAI registered. You can verify our license number in the footer."
   },
-
   "contact": {
     "kicker": "Get in touch",
     "title": "Contact",
@@ -244,26 +269,28 @@
     "deliveryOptions": "Delivery Options",
     "deliveryPanchsheel": "Panchsheel Greens 1: Home Delivery & Pick up option from Tower A1 lobby"
   },
-
   "faq": {
     "kicker": "Common questions",
-    "title": "Frequently Asked Questions",
-    "q1": "How do I place an order?",
-    "a1": "You can place an order via WhatsApp (+91-9958983578) or call us directly.",
-    "q2": "What are your delivery timings?",
-    "a2": "We deliver in three slots: Morning (7–10 AM), Noon (12–3 PM), Night (7–9 PM).",
-    "q3": "What areas do you deliver to?",
-    "a3": "Panchsheel Greens 1: Home delivery available. Pickup option from Tower A1 lobby.",
-    "q4": "What payment methods do you accept?",
-    "a4": "Cash on Delivery, UPI, and online payments.",
-    "q5": "Do you offer subscriptions?",
-    "a5": "Yes, monthly subscription plans are available.",
-    "q6": "What are the delivery options?",
-    "a6": "For Panchsheel Greens 1 residents: Home delivery to your doorstep or pickup from Tower A1 lobby.",
+    "title": "Got Questions? We've Got Answers.",
+    "q1": "Is your food really made in a home kitchen?",
+    "a1": "Yes! We cook in our residential apartment (A1-405, Panchsheel Greens), not a commercial kitchen. Same ingredients and care we use for our own family. We're FSSAI registered and maintain strict hygiene standards. You're welcome to visit and see for yourself!",
+    "q2": "How do I know the food is fresh and not reheated?",
+    "a2": "We cook every meal fresh on the day of delivery. No batch cooking, no freezing, no microwaving old food. What you get is food that was literally cooking 1-2 hours before it reaches you. That's why it tastes and smells like home-cooked food—because it is.",
+    "q3": "Can I customize my meals? I don't eat onion/garlic.",
+    "a3": "Absolutely! Just tell us your preferences when ordering. We regularly make meals without onion-garlic, less spicy, extra rotis, no rice, etc. Since we cook in small batches, customization is easy. Just WhatsApp us your requirements.",
+    "q4": "What if I'm not satisfied with a meal?",
+    "a4": "Your satisfaction matters to us. If you're unhappy with any meal, just call or WhatsApp us immediately. We'll either replace it or adjust your next bill. We're a small, local business that depends on happy customers, so we take feedback seriously.",
+    "q5": "Do you deliver outside Panchsheel Greens?",
+    "a5": "Currently we only deliver within Panchsheel Greens 1 to ensure food reaches you fresh and hot. We're a small operation focused on quality over quantity. If you live nearby, you can arrange pickup from our building lobby.",
+    "q6": "Can I try one meal before committing to a subscription?",
+    "a6": "Of course! Order a single meal first—no subscription required. Try our food, see if you like it, then decide. Most of our subscribers started with a one-time order and came back because they loved the taste and quality.",
+    "q7": "What's included in a typical lunch/dinner meal?",
+    "a7": "Our standard meal includes 2-3 fresh rotis, dal (usually tadka dal or rajma), seasonal sabzi (like aloo gobi, bhindi, or paneer), and rice. Portions are generous—enough to satisfy an adult's meal. You can add extra rotis, raita, or salad for a small charge.",
+    "q8": "Is the food suitable for weight loss or special diets?",
+    "a8": "Yes! We use minimal oil and cook with health in mind. Many customers order specifically for weight management or digestive issues. We can make oil-free rotis, prepare sabzi with less masala, skip rice, etc. Just tell us your dietary goals and we'll work with you.",
     "stillHaveQuestions": "Still have questions?",
     "contactWhatsApp": "Contact us on WhatsApp"
   },
-
   "menu": {
     "title": "Our Menu",
     "addToCart": "Add to Cart",
@@ -280,7 +307,6 @@
     "emptyCart": "Your cart is empty",
     "noItems": "No menu items available"
   },
-
   "login": {
     "title": "Welcome Back",
     "login": "Log In",
@@ -291,7 +317,6 @@
     "loginError": "Invalid login details",
     "registerError": "Registration failed"
   },
-
   "account": {
     "title": "My Account",
     "profile": "Profile",
@@ -302,7 +327,6 @@
     "noOrders": "No orders yet",
     "noAddresses": "No saved addresses"
   },
-
   "order": {
     "orderPlaced": "Order sent to WhatsApp! Our team will confirm shortly.",
     "selectItems": "Please select at least one item",
@@ -359,7 +383,6 @@
     "cancel": "Cancel",
     "confirmAndSend": "Confirm & Send to WhatsApp"
   },
-
   "chatbot": {
     "greeting": "Hello! 👋 Welcome to HomieBites! How can I help you?",
     "options": "I can help you with:\n1. Placing orders (via WhatsApp)\n2. Menu information\n3. Delivery details\n4. Contact information\n\nWhat would you like to know?",
@@ -419,7 +442,6 @@
     "openingContact": "Opening contact section...",
     "openingHome": "Going to homepage..."
   },
-
   "footer": {
     "viewMenu": "View Menu",
     "orderNow": "Order Now",
@@ -438,7 +460,6 @@
     "fssaiNumber": "22726446000300",
     "copyright": "© 2024 HomieBites. All rights reserved."
   },
-
   "error": {
     "title": "Something went wrong",
     "description": "Please try again",

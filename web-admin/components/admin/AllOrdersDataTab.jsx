@@ -25,6 +25,10 @@ const AllOrdersDataTab = ({
   allOrdersFilterPaymentStatus,
   setAllOrdersFilterPaymentStatus,
   onLoadExcelFile,
+  onSyncGoogleSheet,
+  syncGoogleSheetLoading = false,
+  syncGoogleSheetMessage = null,
+  syncGoogleSheetMessageType = 'success',
   onClearAllData,
   onEditOrder,
   onDeleteOrder,
@@ -767,6 +771,57 @@ const AllOrdersDataTab = ({
             </button>
           </div>
           <div className="kitchen-tab-actions-right">
+            {(onLoadExcelFile || onSyncGoogleSheet) && (
+              <div className="kitchen-tab-import-buttons">
+                {onLoadExcelFile && (
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-small"
+                    onClick={onLoadExcelFile}
+                    title="Upload CSV or Excel file to import orders"
+                  >
+                    <Icon name="upload" />
+                    Upload CSV/Excel
+                  </button>
+                )}
+                {onSyncGoogleSheet && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-small"
+                    onClick={onSyncGoogleSheet}
+                    disabled={syncGoogleSheetLoading}
+                    title="Sync orders from linked Google Sheet"
+                    aria-busy={syncGoogleSheetLoading}
+                  >
+                    {syncGoogleSheetLoading ? (
+                      <>
+                        <Icon name="spinner" />
+                        Syncing…
+                      </>
+                    ) : (
+                      <>
+                        <Icon name="refresh" />
+                        Sync from Google Sheet
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            )}
+            {syncGoogleSheetMessage && (
+              <span
+                className={`sync-google-sheet-status sync-google-sheet-status--${syncGoogleSheetMessageType}`}
+                role="status"
+                aria-live="polite"
+              >
+                {syncGoogleSheetMessageType === 'success' ? (
+                  <Icon name="check-circle" aria-hidden="true" />
+                ) : (
+                  <Icon name="triangle-exclamation" aria-hidden="true" />
+                )}{' '}
+                {syncGoogleSheetMessage}
+              </span>
+            )}
             <span className="table-info-text">
               Showing {startIndex + 1}-
               {Math.min(startIndex + recordsPerPage, filteredOrders.length)} of{' '}

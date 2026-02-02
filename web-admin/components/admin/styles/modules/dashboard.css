@@ -287,10 +287,10 @@
   white-space: nowrap;
 }
 
-/* Compact styles for Reviews and Financial tabs */
+/* Reviews and Financial tabs – same card style */
 .reviews-stats-grid .stat-card,
 .financial-stats-grid .stat-card {
-  border-radius: 8px;
+  border-radius: var(--admin-card-radius, 12px);
 }
 
 /* Compact section headers for reviews and financial tabs (spacing only) */
@@ -609,6 +609,11 @@
   gap: var(--admin-space-xl, 20px);
 }
 
+/* Tighter gap between key metrics (first row) and quick stats (second row) */
+.dashboard-main-content > .dashboard-section-block:first-of-type {
+  margin-bottom: calc(-1 * var(--admin-space-xl, 24px));
+}
+
 .dashboard-section {
   margin-bottom: var(--admin-space-2xl, 28px);
 }
@@ -619,15 +624,13 @@
   margin-bottom: var(--admin-space-lg, 20px);
 } */
 
-/* Dashboard Cards */
+/* Dashboard Cards – same style as all admin cards */
 .dashboard-card {
   background: var(--admin-bg, #ffffff);
   border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 12px;
+  border-radius: var(--admin-card-radius, 12px);
   padding: var(--admin-space-xl, 24px);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.08),
-    0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--admin-card-shadow);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -646,9 +649,9 @@
 .dashboard-card.widget {
   background: var(--admin-bg, #ffffff);
   border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 12px;
+  border-radius: var(--admin-card-radius, 12px);
   padding: var(--admin-space-xl, 24px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--admin-card-shadow);
 }
 
 .dashboard-card-spaced {
@@ -703,11 +706,12 @@
 .dashboard-quick-stat {
   background: var(--admin-bg, #fff);
   border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 12px;
+  border-radius: var(--admin-card-radius, 12px);
   padding: var(--admin-space-md, 16px);
   display: flex;
   flex-direction: column;
   gap: var(--admin-space-xs, 6px);
+  box-shadow: var(--admin-card-shadow);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -715,13 +719,13 @@
 
 .dashboard-quick-stat--pending {
   cursor: pointer;
-  border-color: var(--admin-warning-30);
-  background: var(--admin-bg-secondary, #f9fafb);
+  border-color: var(--admin-warning, #f59e0b);
+  background: color-mix(in srgb, var(--admin-warning, #f59e0b) 8%, var(--admin-bg, #fff));
 }
 
 .dashboard-quick-stat--pending:hover {
   border-color: var(--admin-warning, #f59e0b);
-  box-shadow: 0 2px 8px var(--admin-warning-light);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--admin-warning) 20%, transparent);
 }
 
 .dashboard-quick-stat-label {
@@ -852,12 +856,10 @@
 
 .dashboard-charts-container .dashboard-card.widget,
 .dashboard-charts-container .dashboard-card.revenue-trend-card {
-  padding: 24px 28px;
-  border-radius: 14px;
-  border: 1px solid color-mix(in srgb, var(--admin-border) 80%, transparent);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    0 4px 14px rgba(0, 0, 0, 0.04);
+  padding: var(--admin-space-xl, 24px);
+  border-radius: var(--admin-card-radius, 12px);
+  border: 1px solid var(--admin-border, #e5e7eb);
+  box-shadow: var(--admin-card-shadow);
   transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -867,7 +869,7 @@
 .dashboard-charts-container
   .dashboard-card.widget.revenue-trend-card.analytics-top-areas-full {
   padding: var(--admin-space-xl, 24px) !important;
-  border-radius: 12px !important;
+  border-radius: var(--admin-card-radius, 12px) !important;
   border: 1px solid var(--admin-border, #e5e7eb) !important;
   border-left-width: 4px !important;
   border-left-style: solid !important;
@@ -877,9 +879,7 @@
     var(--admin-bg, #fff) 0%,
     color-mix(in srgb, var(--admin-accent) 5%, transparent) 100%
   ) !important;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    0 4px 12px rgba(0, 0, 0, 0.04) !important;
+  box-shadow: var(--admin-card-shadow) !important;
 }
 
 .dashboard-charts-container
@@ -1707,13 +1707,13 @@
   color: var(--admin-secondary, #c45c2d);
 }
 
-/* Table Container Card */
+/* Table Container Card – same style as all admin cards */
 .table-container-card {
   background: var(--admin-bg, #ffffff);
   border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 12px;
+  border-radius: var(--admin-card-radius, 12px);
   padding: var(--admin-space-xl, 24px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--admin-card-shadow);
 }
 
 /* Inside kitchen-tab, gap handles spacing – no extra margin */

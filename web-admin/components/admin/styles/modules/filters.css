@@ -121,7 +121,6 @@
   border-color: var(--admin-accent, #449031);
   color: var(--admin-accent, #449031);
   box-shadow: 0 2px 4px var(--admin-accent-10);
-  transform: translateY(-1px);
 }
 
 .filter-toggle-btn.active {
@@ -305,11 +304,9 @@
 .filter-bar-card {
   background: var(--admin-bg, #ffffff);
   border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.08),
-    0 1px 2px rgba(0, 0, 0, 0.06);
+  border-radius: var(--admin-card-radius, 12px);
+  padding: var(--admin-space-xl, 24px);
+  box-shadow: var(--admin-card-shadow);
 }
 
 /* Filter field group standard - used in reviews and financial tabs */

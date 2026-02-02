@@ -315,3 +315,23 @@
   outline: 2px solid var(--primary-green);
   outline-offset: 2px;
 }
+
+/* Blog post page */
+.blog-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--text-small);
+  color: var(--primary-green);
+  text-decoration: none;
+  margin-bottom: var(--space-16);
+  font-weight: 500;
+}
+
+.blog-back-link:hover {
+  text-decoration: underline;
+}
+
+.blog-back-link-top {
+  margin-bottom: var(--space-8);
+}

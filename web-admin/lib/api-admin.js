@@ -362,6 +362,18 @@ export const api = {
     );
   },
 
+  async syncGoogleSheet() {
+    return retryAsync(
+      () =>
+        this.request('/api/orders/sync-google-sheet', {
+          method: 'POST',
+          body: JSON.stringify({}),
+        }),
+      2,
+      1000
+    );
+  },
+
   async clearAllOrders() {
     return retryAsync(
       () =>

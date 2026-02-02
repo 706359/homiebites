@@ -384,12 +384,10 @@
 }
 
 .btn-action:hover {
-  transform: translateY(-1px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
 .btn-action:active {
-  transform: translateY(0);
 }
 
 .btn-accept {
